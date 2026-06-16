@@ -1,0 +1,65 @@
+{
+  "name": "tsone",
+  "version": "1.0.0",
+  "description": "TSone 是轻量级纯 TypeScript 前端框架，提供响应式系统、类组件、策略化渲染和路由功能",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "bun": "./lib/index.ts",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./router": {
+      "bun": "./lib/router/index.ts",
+      "import": "./dist/router/index.js",
+      "types": "./dist/router/index.d.ts"
+    },
+    "./style": {
+      "bun": "./lib/style/index.ts",
+      "import": "./dist/style/index.js",
+      "types": "./dist/style/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "bun scripts/dev.ts",
+    "docs": "bun scripts/docs.ts",
+    "build": "bun scripts/build.ts",
+    "build:types": "bunx tsc --project tsconfig.build.json",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write *.ts",
+    "test": "bun test",
+    "preview": "bun scripts/docs.ts"
+  },
+  "keywords": [
+    "typescript",
+    "frontend",
+    "framework",
+    "reactive",
+    "component",
+    "router"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "happy-dom": "^20.9.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.pnpm-store/
+.DS_Store
+coverage/
+*.log
+.env*
+.worktrees/
+docs/node_modules/
+docs/src/.vitepress/cache/
+docs/src/.vitepress/dist/
