@@ -15,13 +15,23 @@
 ## 安装
 
 ```bash
-bun add tsone
+bun add @geektech/tsone
+```
+
+```bash
+pnpm add @geektech/tsone
 ```
 
 ## 快速开始
 
 ```typescript
-import { Component, VNode, createApp, computed, reactive } from 'tsone';
+import {
+  Component,
+  VNode,
+  createApp,
+  computed,
+  reactive,
+} from '@geektech/tsone';
 
 interface AppState {
   count: number;
@@ -32,7 +42,7 @@ class App extends Component<Record<string, never>, AppState> {
   protected initState(): AppState {
     return {
       count: 0,
-      version: '1.0.0'
+      version: '0.0.1',
     };
   }
 
@@ -50,11 +60,11 @@ class App extends Component<Record<string, never>, AppState> {
           listeners: {
             click: () => {
               this.state.count += 1;
-            }
+            },
           },
-          children: [`count: {{count}}`]
-        }
-      ]
+          children: [`count: {{count}}`],
+        },
+      ],
     };
   }
 }
@@ -71,8 +81,8 @@ console.log(status.value);
 ## 路由
 
 ```typescript
-import { Component, VNode, createApp } from 'tsone';
-import { RouterLink, RouterView, createRouter } from 'tsone/router';
+import { Component, VNode, createApp } from '@geektech/tsone';
+import { RouterLink, RouterView, createRouter } from '@geektech/tsone/router';
 
 class Layout extends Component {
   protected initState(): object {
@@ -87,14 +97,14 @@ class Layout extends Component {
       children: [
         {
           component: RouterLink,
-          props: { to: '/', children: ['首页'] }
+          props: { to: '/', children: ['首页'] },
         },
         {
           component: RouterLink,
-          props: { to: '/users/42', children: ['用户'] }
+          props: { to: '/users/42', children: ['用户'] },
         },
-        { component: RouterView }
-      ]
+        { component: RouterView },
+      ],
     };
   }
 }
@@ -103,8 +113,8 @@ const router = createRouter({
   mode: 'history',
   routes: [
     { path: '/', component: HomePage },
-    { path: '/users/:id', component: UserPage, meta: { title: '用户详情' } }
-  ]
+    { path: '/users/:id', component: UserPage, meta: { title: '用户详情' } },
+  ],
 });
 
 createApp({ root: Layout, rootElement: '#app' }).use(router).mount();
@@ -122,7 +132,7 @@ bun run docs
 
 ## 公开 API
 
-主入口 `tsone`：
+主入口 `@geektech/tsone`：
 
 - `createApp(options)`
 - `Component<Props, State>`
@@ -132,9 +142,9 @@ bun run docs
 - `effect()` / `stop()`
 - `computed()`
 - `ref()` / `isRef()` / `unref()`
-- `version`，当前为 `1.0.0`
+- `version`，当前为 `0.0.1`
 
-路由入口 `tsone/router`：
+路由入口 `@geektech/tsone/router`：
 
 - `createRouter({ routes, mode, base })`
 - `Router`
@@ -144,7 +154,7 @@ bun run docs
 - `RouteRecord`
 - `RouteLocation`
 
-样式入口 `tsone/style`：
+样式入口 `@geektech/tsone/style`：
 
 - `StyleManager`
 

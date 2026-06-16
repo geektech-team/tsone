@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
-import { FreeApp } from '../../core/app';
+import { OneApp } from '../../core/app';
 import { Component } from '../../core/component';
 import { VNode } from '../../core/vnode';
 import { resetRouter, useRouter } from '../instance';
@@ -55,7 +55,7 @@ class TestUserComponent extends Component {
 
 describe('Router', () => {
   let router: Router;
-  let app: FreeApp;
+  let app: OneApp;
   let pushStateSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
@@ -71,7 +71,7 @@ describe('Router', () => {
         { path: '/users/:id', component: TestUserComponent, name: 'user' },
       ],
     });
-    app = new FreeApp();
+    app = new OneApp();
   });
 
   describe('路由实例管理', () => {

@@ -5,10 +5,10 @@ import { TemplateEngine } from './template';
 
 // 插件接口定义
 export interface Plugin {
-  install: (app: FreeApp, ...args: unknown[]) => void;
-  onMounted?: (app: FreeApp) => void;
-  onUpdated?: (app: FreeApp) => void;
-  onBeforeUnmount?: (app: FreeApp) => void;
+  install: (app: OneApp, ...args: unknown[]) => void;
+  onMounted?: (app: OneApp) => void;
+  onUpdated?: (app: OneApp) => void;
+  onBeforeUnmount?: (app: OneApp) => void;
 }
 
 // 泛型化AppOptions接口
@@ -28,14 +28,14 @@ export interface AppOptions<
 
 // 泛型化AppContext接口
 export interface AppContext<TConfig = Record<string, unknown>> {
-  app: FreeApp;
+  app: OneApp;
   version: string;
   config: TConfig;
   router?: Router;
 }
 
-// 泛型化FreeApp类
-export class FreeApp<
+// 泛型化OneApp类
+export class OneApp<
   TState extends object = Record<string, unknown>,
   TConfig extends object = Record<string, unknown>,
 > {
@@ -53,8 +53,8 @@ export class FreeApp<
     this.container = document.body;
 
     this.appContext = {
-      app: this as unknown as FreeApp,
-      version: '1.0.0',
+      app: this as unknown as OneApp,
+      version: '0.0.1',
       config: options.config || ({} as TConfig),
     };
   }
@@ -86,7 +86,7 @@ export class FreeApp<
     if (typeof plugin.install !== 'function') {
       throw new Error('插件必须提供 install 方法');
     }
-    plugin.install(this as unknown as FreeApp, ...args);
+    plugin.install(this as unknown as OneApp, ...args);
     this.plugins.push({ plugin, args });
     return this;
   }
@@ -291,7 +291,7 @@ export class FreeApp<
     // 触发插件的mounted钩子
     this.plugins.forEach(({ plugin: pluginObj }) => {
       if (pluginObj && typeof pluginObj.onMounted === 'function') {
-        pluginObj.onMounted(this as unknown as FreeApp);
+        pluginObj.onMounted(this as unknown as OneApp);
       }
     });
   }
@@ -300,7 +300,7 @@ export class FreeApp<
     // 触发插件的updated钩子
     this.plugins.forEach(({ plugin: pluginObj }) => {
       if (pluginObj && typeof pluginObj.onUpdated === 'function') {
-        pluginObj.onUpdated(this as unknown as FreeApp);
+        pluginObj.onUpdated(this as unknown as OneApp);
       }
     });
   }
@@ -309,7 +309,7 @@ export class FreeApp<
     // 触发插件的beforeUnmount钩子
     this.plugins.forEach(({ plugin: pluginObj }) => {
       if (pluginObj && typeof pluginObj.onBeforeUnmount === 'function') {
-        pluginObj.onBeforeUnmount(this as unknown as FreeApp);
+        pluginObj.onBeforeUnmount(this as unknown as OneApp);
       }
     });
   }
@@ -321,6 +321,6 @@ export class FreeApp<
 export function createApp<
   TState extends object = Record<string, unknown>,
   TConfig extends object = Record<string, unknown>,
->(options: AppOptions<TState, TConfig> = {}): FreeApp<TState, TConfig> {
-  return new FreeApp<TState, TConfig>(options);
+>(options: AppOptions<TState, TConfig> = {}): OneApp<TState, TConfig> {
+  return new OneApp<TState, TConfig>(options);
 }

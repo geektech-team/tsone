@@ -9,13 +9,13 @@ TSone 的组件系统是框架的核心功能之一，允许您将 UI 拆分为�
 ### 基本组件结构
 
 ```typescript
-import { Component } from 'tsone';
+import { Component } from '@geektech/tsone';
 
 class MyComponent extends Component {
   // 初始化组件状态
   protected initState() {
     return {
-      message: 'Hello, TSone!'
+      message: 'Hello, TSone!',
     };
   }
 
@@ -26,8 +26,8 @@ class MyComponent extends Component {
       properties: {
         color: '#333',
         fontSize: '16px',
-        padding: '10px'
-      }
+        padding: '10px',
+      },
     });
   }
 
@@ -36,7 +36,7 @@ class MyComponent extends Component {
     return {
       tag: 'div',
       props: { className: 'my-component' },
-      children: [`{{message}}`]
+      children: [`{{message}}`],
     };
   }
 }
@@ -105,9 +105,9 @@ class LifecycleComponent extends Component {
         {
           tag: 'button',
           listeners: { click: () => this.state.count++ },
-          children: ['Increment']
-        }
-      ]
+          children: ['Increment'],
+        },
+      ],
     };
   }
 }
@@ -122,7 +122,7 @@ class LifecycleComponent extends Component {
 您可以为组件定义属性接口，以获得更好的类型提示：
 
 ```typescript
-import { Component, ComponentProps } from 'tsone';
+import { Component, ComponentProps } from '@geektech/tsone';
 
 interface ButtonProps extends ComponentProps {
   text: string;
@@ -141,14 +141,14 @@ class Button extends Component<ButtonProps> {
 
   protected render() {
     const { text, disabled = false, size = 'medium' } = this.props;
-    
+
     return {
       tag: 'button',
       props: {
         className: `btn btn-${size} ${disabled ? 'btn-disabled' : ''}`,
-        disabled
+        disabled,
       },
-      children: [text]
+      children: [text],
     };
   }
 }
@@ -168,10 +168,10 @@ class ParentComponent extends Component {
           component: Button,
           props: {
             text: 'Click Me',
-            size: 'large'
-          }
-        }
-      ]
+            size: 'large',
+          },
+        },
+      ],
     };
   }
 }
@@ -211,14 +211,14 @@ class CounterComponent extends Component {
         {
           tag: 'button',
           listeners: { click: this.handleIncrement.bind(this) },
-          children: ['+']
+          children: ['+'],
         },
         {
           tag: 'button',
           listeners: { click: this.handleDecrement.bind(this) },
-          children: ['-']
-        }
-      ]
+          children: ['-'],
+        },
+      ],
     };
   }
 }
@@ -240,10 +240,10 @@ class ParentComponent extends Component {
           component: CounterComponent,
           listeners: {
             increment: this.handleCounterChange.bind(this),
-            decrement: this.handleCounterChange.bind(this)
-          }
-        }
-      ]
+            decrement: this.handleCounterChange.bind(this),
+          },
+        },
+      ],
     };
   }
 }
@@ -264,22 +264,18 @@ class App extends Component {
           tag: 'header',
           children: [
             { tag: 'h1', children: ['My App'] },
-            { component: NavigationComponent }
-          ]
+            { component: NavigationComponent },
+          ],
         },
         {
           tag: 'main',
-          children: [
-            { component: HomeComponent }
-          ]
+          children: [{ component: HomeComponent }],
         },
         {
           tag: 'footer',
-          children: [
-            { tag: 'p', children: ['© 2023 My App'] }
-          ]
-        }
-      ]
+          children: [{ tag: 'p', children: ['© 2023 My App'] }],
+        },
+      ],
     };
   }
 }

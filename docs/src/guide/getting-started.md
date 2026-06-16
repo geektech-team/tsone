@@ -7,7 +7,7 @@
 首先，您需要安装 TSone 包。项目默认使用 Bun：
 
 ```bash
-bun add tsone
+bun add @geektech/tsone
 ```
 
 ## 创建第一个应用
@@ -17,12 +17,12 @@ bun add tsone
 首先，创建一个继承自 `Component` 类的组件：
 
 ```typescript
-import { createApp, Component } from 'tsone';
+import { createApp, Component } from '@geektech/tsone';
 
 class App extends Component {
   protected initState() {
     return {
-      count: 0
+      count: 0,
     };
   }
 
@@ -31,8 +31,8 @@ class App extends Component {
       selector: '.app',
       properties: {
         textAlign: 'center',
-        padding: '20px'
-      }
+        padding: '20px',
+      },
     });
   }
 
@@ -43,17 +43,17 @@ class App extends Component {
       children: [
         {
           tag: 'h1',
-          children: [`计数: {{count}}`]
+          children: [`计数: {{count}}`],
         },
         {
           tag: 'button',
           props: { className: 'btn' },
           listeners: {
-            click: () => this.state.count++
+            click: () => this.state.count++,
           },
-          children: ['增加计数']
-        }
-      ]
+          children: ['增加计数'],
+        },
+      ],
     };
   }
 }
@@ -66,8 +66,8 @@ class App extends Component {
 const app = createApp({
   rootElement: '#app',
   state: {
-    appName: 'TSone 示例'
-  }
+    appName: 'TSone 示例',
+  },
 });
 
 // 挂载应用
@@ -81,15 +81,15 @@ app.mount();
 ```html
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TSone 示例</title>
-</head>
-<body>
-  <div id="app"></div>
-  <script type="module" src="./index.ts"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TSone 示例</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./index.ts"></script>
+  </body>
 </html>
 ```
 

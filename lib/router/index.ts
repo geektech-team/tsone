@@ -1,5 +1,5 @@
 import { AnyComponentConstructor, Component } from '../core/component';
-import { FreeApp } from '../core/app';
+import { OneApp } from '../core/app';
 import type { VNode } from '../core/vnode';
 import { setRouter } from './instance';
 import {
@@ -42,7 +42,7 @@ export class Router {
   protected currentRoute: RouteRecord | null = null;
   protected currentLocation: RouteLocation | null = null;
   private readonly routes: RouteRecord[] = [];
-  private app: FreeApp | null = null;
+  private app: OneApp | null = null;
   private readonly mode: 'history' | 'hash';
   private readonly base: string;
   private readonly routeChangeListeners: RouteChangeListener[] = [];
@@ -61,7 +61,7 @@ export class Router {
     this.resolveCurrentRoute();
   }
 
-  public install(app: FreeApp): void {
+  public install(app: OneApp): void {
     this.app = app;
     app.router = this;
     setRouter(this);

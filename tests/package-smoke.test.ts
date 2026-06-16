@@ -3,6 +3,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   readdirSync,
   rmSync,
   writeFileSync,
@@ -15,8 +16,14 @@ import { describe, expect, it } from 'bun:test';
 const root = process.cwd();
 const bunTemp = '/private/tmp/tsone-bun-tmp';
 const bunCache = '/private/tmp/tsone-bun-cache';
+const packageName = '@geektech/tsone';
 const require = createRequire(import.meta.url);
 const tscBin = require.resolve('typescript/bin/tsc');
+
+function packageVersion(): string {
+  return JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
+    .version as string;
+}
 
 function run(command: string, args: string[], cwd = root): string {
   try {
@@ -105,10 +112,42 @@ describe('package smoke', () => {
       run('bun', ['add', '--ignore-scripts', tarball], tempDir);
 
       writeFileSync(
+        join(tempDir, 'bun-consumer.ts'),
+        [
+          `import { Component, name, reactive, version } from '${packageName}';`,
+          `import { RouterLink, RouterView, createRouter } from '${packageName}/router';`,
+          `import { StyleManager } from '${packageName}/style';`,
+          '',
+          'console.log(JSON.stringify({',
+          '  name,',
+          '  version,',
+          '  component: typeof Component,',
+          '  reactive: typeof reactive,',
+          '  router: typeof createRouter,',
+          '  routerLink: typeof RouterLink,',
+          '  routerView: typeof RouterView,',
+          '  style: typeof StyleManager,',
+          '}));',
+        ].join('\n')
+      );
+      expect(
+        JSON.parse(run('bun', ['run', 'bun-consumer.ts'], tempDir))
+      ).toEqual({
+        name: '@geektech/tsone',
+        version: packageVersion(),
+        component: 'function',
+        reactive: 'function',
+        router: 'function',
+        routerLink: 'function',
+        routerView: 'function',
+        style: 'function',
+      });
+
+      writeFileSync(
         join(tempDir, 'consumer.ts'),
         [
-          "import { Component, VNode, createApp, reactive } from 'tsone';",
-          "import { RouterLink, RouterView, createRouter } from 'tsone/router';",
+          `import { Component, VNode, createApp, reactive } from '${packageName}';`,
+          `import { RouterLink, RouterView, createRouter } from '${packageName}/router';`,
           '',
           'interface AppState {',
           '  count: number;',

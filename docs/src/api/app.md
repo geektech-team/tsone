@@ -5,7 +5,7 @@
 ## createApp
 
 ```typescript
-import { Component, VNode, createApp } from 'tsone';
+import { Component, VNode, createApp } from '@geektech/tsone';
 
 class App extends Component {
   protected initState(): object {
@@ -17,7 +17,7 @@ class App extends Component {
   protected render(): VNode {
     return {
       tag: 'main',
-      children: ['Hello TSone']
+      children: ['Hello TSone'],
     };
   }
 }
@@ -26,11 +26,11 @@ const app = createApp({
   root: App,
   rootElement: '#app',
   state: {
-    appName: 'TSone'
+    appName: 'TSone',
   },
   config: {
-    debug: true
-  }
+    debug: true,
+  },
 });
 
 app.mount();
@@ -54,7 +54,7 @@ interface AppOptions<TState, TConfig> {
 - `state`: 应用级状态，会传递给根组件。
 - `config`: 应用级配置，会出现在 `app.getContext().config`。
 
-## FreeApp 方法
+## OneApp 方法
 
 ### mount
 
@@ -75,7 +75,7 @@ app.unmount();
 ### use
 
 ```typescript
-import { createRouter } from 'tsone/router';
+import { createRouter } from '@geektech/tsone/router';
 
 const router = createRouter({ routes: [{ path: '/', component: App }] });
 app.use(router);

@@ -7,14 +7,14 @@
 `reactive` 函数用于创建响应式对象：
 
 ```typescript
-import { reactive } from 'tsone';
+import { reactive } from '@geektech/tsone';
 
 const state = reactive({
   count: 0,
   user: {
     name: 'John',
-    age: 30
-  }
+    age: 30,
+  },
 });
 ```
 
@@ -37,7 +37,7 @@ const state = reactive({
 `effect` 函数用于创建副作用函数，当依赖的响应式对象发生变化时，副作用函数会自动重新执行：
 
 ```typescript
-import { reactive, effect } from 'tsone';
+import { reactive, effect } from '@geektech/tsone';
 
 const state = reactive({ count: 0 });
 
@@ -95,7 +95,7 @@ const effectFn = effect(
       setTimeout(() => {
         effect();
       }, 1000);
-    }
+    },
   }
 );
 
@@ -108,7 +108,7 @@ state.count = 1;
 `computed` 函数用于创建计算属性，它会缓存计算结果，只有当依赖的响应式属性发生变化时才会重新计算：
 
 ```typescript
-import { reactive, computed } from 'tsone';
+import { reactive, computed } from '@geektech/tsone';
 
 const state = reactive({ count: 0 });
 
@@ -147,7 +147,7 @@ console.log(doubleCount.value);
 `readonly` 函数用于创建只读响应式对象，您可以访问其属性，但不能修改它们：
 
 ```typescript
-import { reactive, readonly } from 'tsone';
+import { reactive, readonly } from '@geektech/tsone';
 
 const original = reactive({ count: 0 });
 const readOnlyState = readonly(original);
@@ -184,7 +184,7 @@ console.log(readOnlyState.count);
 `stop` 函数用于停止副作用函数的执行：
 
 ```typescript
-import { reactive, effect, stop } from 'tsone';
+import { reactive, effect, stop } from '@geektech/tsone';
 
 const state = reactive({ count: 0 });
 
@@ -218,7 +218,7 @@ state.count = 2;
 `isReactive` 函数用于检查一个对象是否是响应式对象：
 
 ```typescript
-import { reactive, isReactive } from 'tsone';
+import { reactive, isReactive } from '@geektech/tsone';
 
 const state = reactive({ count: 0 });
 const normalObj = { count: 0 };
@@ -243,7 +243,7 @@ console.log(isReactive(normalObj));
 `isReadonly` 函数用于检查一个对象是否是只读响应式对象：
 
 ```typescript
-import { reactive, readonly, isReadonly } from 'tsone';
+import { reactive, readonly, isReadonly } from '@geektech/tsone';
 
 const state = reactive({ count: 0 });
 const readOnlyState = readonly(state);
@@ -268,15 +268,23 @@ console.log(isReadonly(readOnlyState));
 ### 完整响应式系统示例
 
 ```typescript
-import { reactive, effect, computed, readonly, stop, isReactive, isReadonly } from 'tsone';
+import {
+  reactive,
+  effect,
+  computed,
+  readonly,
+  stop,
+  isReactive,
+  isReadonly,
+} from '@geektech/tsone';
 
 // 创建响应式对象
 const state = reactive({
   count: 0,
   user: {
     name: 'John',
-    age: 30
-  }
+    age: 30,
+  },
 });
 
 // 创建计算属性

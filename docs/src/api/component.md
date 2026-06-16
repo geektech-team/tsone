@@ -5,7 +5,7 @@ TSone 使用面向对象组件模型。每个组件继承 `Component<Props, Stat
 ## Component<Props, State>
 
 ```typescript
-import { Component, VNode } from 'tsone';
+import { Component, VNode } from '@geektech/tsone';
 
 interface CounterProps {
   initial?: number;
@@ -18,7 +18,7 @@ interface CounterState {
 class Counter extends Component<CounterProps, CounterState> {
   protected initState(): CounterState {
     return {
-      count: this.props.initial ?? 0
+      count: this.props.initial ?? 0,
     };
   }
 
@@ -30,9 +30,9 @@ class Counter extends Component<CounterProps, CounterState> {
       listeners: {
         click: () => {
           this.state.count += 1;
-        }
+        },
       },
-      children: [`count: {{count}}`]
+      children: [`count: {{count}}`],
     };
   }
 }
@@ -112,8 +112,8 @@ class Panel extends Component {
       tag: 'section',
       children: [
         { tag: 'slot', props: { name: 'header' } },
-        { tag: 'slot', props: { name: 'default' } }
-      ]
+        { tag: 'slot', props: { name: 'default' } },
+      ],
     };
   }
 }

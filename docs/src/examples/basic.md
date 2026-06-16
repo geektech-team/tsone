@@ -7,12 +7,12 @@
 最基本的 TSone 应用：
 
 ```typescript
-import { createApp, Component } from 'tsone';
+import { createApp, Component } from '@geektech/tsone';
 
 class App extends Component {
   protected initState() {
     return {
-      message: 'Hello, TSone!'
+      message: 'Hello, TSone!',
     };
   }
 
@@ -22,8 +22,8 @@ class App extends Component {
       properties: {
         textAlign: 'center',
         padding: '20px',
-        fontSize: '24px'
-      }
+        fontSize: '24px',
+      },
     });
   }
 
@@ -31,13 +31,13 @@ class App extends Component {
     return {
       tag: 'div',
       props: { className: 'app' },
-      children: [`{{message}}`]
+      children: [`{{message}}`],
     };
   }
 }
 
 const app = createApp({
-  rootElement: '#app'
+  rootElement: '#app',
 });
 
 app.mount();
@@ -48,12 +48,12 @@ app.mount();
 一个简单的计数器应用：
 
 ```typescript
-import { createApp, Component } from 'tsone';
+import { createApp, Component } from '@geektech/tsone';
 
 class Counter extends Component {
   protected initState() {
     return {
-      count: 0
+      count: 0,
     };
   }
 
@@ -62,8 +62,8 @@ class Counter extends Component {
       selector: '.counter',
       properties: {
         textAlign: 'center',
-        padding: '20px'
-      }
+        padding: '20px',
+      },
     });
 
     this.styleManager.addStyle('.counter button', {
@@ -71,15 +71,15 @@ class Counter extends Component {
       properties: {
         padding: '8px 16px',
         margin: '0 10px',
-        fontSize: '16px'
-      }
+        fontSize: '16px',
+      },
     });
 
     this.styleManager.addStyle('.counter h2', {
       selector: '.counter h2',
       properties: {
-        marginBottom: '20px'
-      }
+        marginBottom: '20px',
+      },
     });
   }
 
@@ -98,7 +98,7 @@ class Counter extends Component {
       children: [
         {
           tag: 'h2',
-          children: [`Count: {{count}}`]
+          children: [`Count: {{count}}`],
         },
         {
           tag: 'div',
@@ -106,22 +106,22 @@ class Counter extends Component {
             {
               tag: 'button',
               listeners: { click: () => this.decrement() },
-              children: ['-']
+              children: ['-'],
             },
             {
               tag: 'button',
               listeners: { click: () => this.increment() },
-              children: ['+']
-            }
-          ]
-        }
-      ]
+              children: ['+'],
+            },
+          ],
+        },
+      ],
     };
   }
 }
 
 const app = createApp({
-  rootElement: '#app'
+  rootElement: '#app',
 });
 
 app.mount();
@@ -132,14 +132,14 @@ app.mount();
 一个简单的表单处理示例：
 
 ```typescript
-import { createApp, Component } from 'tsone';
+import { createApp, Component } from '@geektech/tsone';
 
 class FormExample extends Component {
   protected initState() {
     return {
       name: '',
       email: '',
-      message: ''
+      message: '',
     };
   }
 
@@ -151,15 +151,15 @@ class FormExample extends Component {
         margin: '0 auto',
         padding: '20px',
         border: '1px solid #ddd',
-        borderRadius: '8px'
-      }
+        borderRadius: '8px',
+      },
     });
 
     this.styleManager.addStyle('.form-group', {
       selector: '.form-group',
       properties: {
-        marginBottom: '15px'
-      }
+        marginBottom: '15px',
+      },
     });
 
     this.styleManager.addStyle('.form-group label', {
@@ -167,8 +167,8 @@ class FormExample extends Component {
       properties: {
         display: 'block',
         marginBottom: '5px',
-        fontWeight: 'bold'
-      }
+        fontWeight: 'bold',
+      },
     });
 
     this.styleManager.addStyle('.form-group input, .form-group textarea', {
@@ -178,16 +178,16 @@ class FormExample extends Component {
         padding: '8px',
         border: '1px solid #ddd',
         borderRadius: '4px',
-        boxSizing: 'border-box'
-      }
+        boxSizing: 'border-box',
+      },
     });
 
     this.styleManager.addStyle('.form-group textarea', {
       selector: '.form-group textarea',
       properties: {
         height: '100px',
-        resize: 'vertical'
-      }
+        resize: 'vertical',
+      },
     });
 
     this.styleManager.addStyle('.form button', {
@@ -198,15 +198,15 @@ class FormExample extends Component {
         color: '#fff',
         border: 'none',
         borderRadius: '4px',
-        cursor: 'pointer'
-      }
+        cursor: 'pointer',
+      },
     });
 
     this.styleManager.addStyle('.form button:hover', {
       selector: '.form button:hover',
       properties: {
-        backgroundColor: '#0069d9'
-      }
+        backgroundColor: '#0069d9',
+      },
     });
   }
 
@@ -229,22 +229,22 @@ class FormExample extends Component {
             {
               tag: 'label',
               props: { htmlFor: 'name' },
-              children: ['Name:']
+              children: ['Name:'],
             },
             {
               tag: 'input',
               props: {
                 type: 'text',
                 id: 'name',
-                value: this.state.name
+                value: this.state.name,
               },
               listeners: {
                 input: (e: Event) => {
                   this.state.name = (e.target as HTMLInputElement).value;
-                }
-              }
-            }
-          ]
+                },
+              },
+            },
+          ],
         },
         {
           tag: 'div',
@@ -253,22 +253,22 @@ class FormExample extends Component {
             {
               tag: 'label',
               props: { htmlFor: 'email' },
-              children: ['Email:']
+              children: ['Email:'],
             },
             {
               tag: 'input',
               props: {
                 type: 'email',
                 id: 'email',
-                value: this.state.email
+                value: this.state.email,
               },
               listeners: {
                 input: (e: Event) => {
                   this.state.email = (e.target as HTMLInputElement).value;
-                }
-              }
-            }
-          ]
+                },
+              },
+            },
+          ],
         },
         {
           tag: 'div',
@@ -277,34 +277,34 @@ class FormExample extends Component {
             {
               tag: 'label',
               props: { htmlFor: 'message' },
-              children: ['Message:']
+              children: ['Message:'],
             },
             {
               tag: 'textarea',
               props: {
                 id: 'message',
-                value: this.state.message
+                value: this.state.message,
               },
               listeners: {
                 input: (e: Event) => {
                   this.state.message = (e.target as HTMLTextAreaElement).value;
-                }
-              }
-            }
-          ]
+                },
+              },
+            },
+          ],
         },
         {
           tag: 'button',
           props: { type: 'submit' },
-          children: ['Submit']
-        }
-      ]
+          children: ['Submit'],
+        },
+      ],
     };
   }
 }
 
 const app = createApp({
-  rootElement: '#app'
+  rootElement: '#app',
 });
 
 app.mount();
@@ -315,13 +315,13 @@ app.mount();
 一个简单的列表渲染示例：
 
 ```typescript
-import { createApp, Component } from 'tsone';
+import { createApp, Component } from '@geektech/tsone';
 
 class ListExample extends Component {
   protected initState() {
     return {
       items: ['Item 1', 'Item 2', 'Item 3'],
-      newItem: ''
+      newItem: '',
     };
   }
 
@@ -331,8 +331,8 @@ class ListExample extends Component {
       properties: {
         maxWidth: '500px',
         margin: '0 auto',
-        padding: '20px'
-      }
+        padding: '20px',
+      },
     });
 
     this.styleManager.addStyle('.list', {
@@ -340,24 +340,24 @@ class ListExample extends Component {
       properties: {
         listStyle: 'none',
         padding: '0',
-        margin: '15px 0'
-      }
+        margin: '15px 0',
+      },
     });
 
     this.styleManager.addStyle('.list li', {
       selector: '.list li',
       properties: {
         padding: '8px',
-        borderBottom: '1px solid #ddd'
-      }
+        borderBottom: '1px solid #ddd',
+      },
     });
 
     this.styleManager.addStyle('.add-item', {
       selector: '.add-item',
       properties: {
         display: 'flex',
-        gap: '10px'
-      }
+        gap: '10px',
+      },
     });
 
     this.styleManager.addStyle('.add-item input', {
@@ -366,8 +366,8 @@ class ListExample extends Component {
         flex: '1',
         padding: '8px',
         border: '1px solid #ddd',
-        borderRadius: '4px'
-      }
+        borderRadius: '4px',
+      },
     });
 
     this.styleManager.addStyle('.add-item button', {
@@ -378,8 +378,8 @@ class ListExample extends Component {
         color: '#fff',
         border: 'none',
         borderRadius: '4px',
-        cursor: 'pointer'
-      }
+        cursor: 'pointer',
+      },
     });
   }
 
@@ -401,7 +401,7 @@ class ListExample extends Component {
       children: [
         {
           tag: 'h2',
-          children: ['Todo List']
+          children: ['Todo List'],
         },
         {
           tag: 'div',
@@ -412,7 +412,7 @@ class ListExample extends Component {
               props: {
                 type: 'text',
                 placeholder: 'Add new item',
-                value: this.state.newItem
+                value: this.state.newItem,
               },
               listeners: {
                 input: (e: Event) => {
@@ -422,15 +422,15 @@ class ListExample extends Component {
                   if (e.key === 'Enter') {
                     this.addItem();
                   }
-                }
-              }
+                },
+              },
             },
             {
               tag: 'button',
               listeners: { click: () => this.addItem() },
-              children: ['Add']
-            }
-          ]
+              children: ['Add'],
+            },
+          ],
         },
         {
           tag: 'ul',
@@ -449,22 +449,22 @@ class ListExample extends Component {
                     border: 'none',
                     borderRadius: '4px',
                     padding: '2px 8px',
-                    cursor: 'pointer'
-                  }
+                    cursor: 'pointer',
+                  },
                 },
                 listeners: { click: () => this.removeItem(index) },
-                children: ['Remove']
-              }
-            ]
-          }))
-        }
-      ]
+                children: ['Remove'],
+              },
+            ],
+          })),
+        },
+      ],
     };
   }
 }
 
 const app = createApp({
-  rootElement: '#app'
+  rootElement: '#app',
 });
 
 app.mount();

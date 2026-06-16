@@ -22,7 +22,7 @@ TSone 提供了内置的样式管理系统，通过 `StyleManager` 类管理组�
 每个组件都可以通过 `initStyles()` 方法初始化样式：
 
 ```typescript
-import { Component } from 'tsone';
+import { Component } from '@geektech/tsone';
 
 class ButtonComponent extends Component {
   protected initState() {
@@ -41,16 +41,16 @@ class ButtonComponent extends Component {
         borderRadius: '4px',
         cursor: 'pointer',
         fontSize: '14px',
-        transition: 'background-color 0.2s'
-      }
+        transition: 'background-color 0.2s',
+      },
     });
 
     // 添加 hover 状态
     this.styleManager.addStyle('.button:hover', {
       selector: '.button:hover',
       properties: {
-        backgroundColor: '#0069d9'
-      }
+        backgroundColor: '#0069d9',
+      },
     });
 
     // 添加 disabled 状态
@@ -58,8 +58,8 @@ class ButtonComponent extends Component {
       selector: '.button:disabled',
       properties: {
         backgroundColor: '#6c757d',
-        cursor: 'not-allowed'
-      }
+        cursor: 'not-allowed',
+      },
     });
   }
 
@@ -67,7 +67,7 @@ class ButtonComponent extends Component {
     return {
       tag: 'button',
       props: { className: 'button' },
-      children: ['Click Me']
+      children: ['Click Me'],
     };
   }
 }
@@ -87,8 +87,8 @@ this.styleManager.addStyle('.container', {
     width: '100%',
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '0 15px'
-  }
+    padding: '0 15px',
+  },
 });
 ```
 
@@ -176,7 +176,7 @@ protected initStyles() {
 class DynamicStyleComponent extends Component {
   protected initState() {
     return {
-      isActive: false
+      isActive: false,
     };
   }
 
@@ -188,16 +188,16 @@ class DynamicStyleComponent extends Component {
         width: '200px',
         height: '200px',
         backgroundColor: '#f0f0f0',
-        transition: 'background-color 0.3s'
-      }
+        transition: 'background-color 0.3s',
+      },
     });
 
     // 激活状态样式
     this.styleManager.addStyle('.box.active', {
       selector: '.box.active',
       properties: {
-        backgroundColor: '#007bff'
-      }
+        backgroundColor: '#007bff',
+      },
     });
   }
 
@@ -209,12 +209,12 @@ class DynamicStyleComponent extends Component {
     return {
       tag: 'div',
       props: {
-        className: `box ${this.state.isActive ? 'active' : ''}`
+        className: `box ${this.state.isActive ? 'active' : ''}`,
       },
       listeners: {
-        click: () => this.toggleActive()
+        click: () => this.toggleActive(),
       },
-      children: ['Click to toggle']
+      children: ['Click to toggle'],
     };
   }
 }
@@ -225,22 +225,23 @@ class DynamicStyleComponent extends Component {
 您可以在应用级别添加全局样式：
 
 ```typescript
-import { createApp } from 'tsone';
+import { createApp } from '@geektech/tsone';
 
 const app = createApp({
-  rootElement: '#app'
+  rootElement: '#app',
 });
 
 // 添加全局样式
 app.styleManager.addStyle('body', {
   selector: 'body',
   properties: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     fontSize: '16px',
     lineHeight: '1.5',
     color: '#333',
-    backgroundColor: '#fff'
-  }
+    backgroundColor: '#fff',
+  },
 });
 
 app.mount();
@@ -318,7 +319,7 @@ class ButtonComponent extends Component {
     return {
       tag: 'button',
       props: { className: styles.button },
-      children: ['Click Me']
+      children: ['Click Me'],
     };
   }
 }
@@ -337,7 +338,7 @@ class ButtonComponent extends Component {
     return {
       tag: 'button',
       props: { className: 'btn btn-primary' },
-      children: ['Click Me']
+      children: ['Click Me'],
     };
   }
 }

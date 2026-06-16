@@ -5,7 +5,7 @@ TSone 路由以插件形式安装，并通过 `RouterView` 渲染当前路由组
 ## createRouter
 
 ```typescript
-import { createRouter } from 'tsone/router';
+import { createRouter } from '@geektech/tsone/router';
 
 const router = createRouter({
   mode: 'history',
@@ -16,9 +16,9 @@ const router = createRouter({
       path: '/users/:id',
       name: 'user',
       component: UserPage,
-      meta: { title: '用户详情' }
-    }
-  ]
+      meta: { title: '用户详情' },
+    },
+  ],
 });
 ```
 
@@ -29,7 +29,7 @@ const router = createRouter({
 ```typescript
 const router = createRouter([
   { path: '/', component: HomePage },
-  { path: '/about', component: AboutPage }
+  { path: '/about', component: AboutPage },
 ]);
 ```
 
@@ -63,8 +63,8 @@ interface RouteRecord {
 ## RouterView
 
 ```typescript
-import { Component, VNode } from 'tsone';
-import { RouterView } from 'tsone/router';
+import { Component, VNode } from '@geektech/tsone';
+import { RouterView } from '@geektech/tsone/router';
 
 class Layout extends Component {
   protected initState(): object {
@@ -76,7 +76,7 @@ class Layout extends Component {
   protected render(): VNode {
     return {
       tag: 'main',
-      children: [{ component: RouterView }]
+      children: [{ component: RouterView }],
     };
   }
 }
@@ -87,7 +87,7 @@ class Layout extends Component {
 ## RouterLink
 
 ```typescript
-import { RouterLink } from 'tsone/router';
+import { RouterLink } from '@geektech/tsone/router';
 
 {
   component: RouterLink,
@@ -158,7 +158,7 @@ stop();
 ```typescript
 router.addRoute({
   path: '/settings',
-  component: SettingsPage
+  component: SettingsPage,
 });
 ```
 

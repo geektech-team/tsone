@@ -28,17 +28,18 @@ function trackedTextFiles(): string[] {
 }
 
 describe('brand consistency', () => {
-  it('uses TSone as the public brand and tsone as the package name', () => {
+  it('uses TSone as the public brand and @geektech/tsone as the package name', () => {
     const packageJson = JSON.parse(
       readFileSync(join(root, 'package.json'), 'utf8')
     );
     const readme = readFileSync(join(root, 'README.md'), 'utf8');
 
-    expect(packageJson.name).toBe('tsone');
+    expect(packageJson.name).toBe('@geektech/tsone');
+    expect(packageJson.publishConfig.access).toBe('public');
     expect(packageJson.description).toContain('TSone');
     expect(readme).toContain('# TSone');
-    expect(readme).toContain('bun add tsone');
-    expect(name).toBe('tsone');
+    expect(readme).toContain('bun add @geektech/tsone');
+    expect(name).toBe('@geektech/tsone');
   });
 
   it('does not leave old project names in tracked text files', () => {

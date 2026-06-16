@@ -9,7 +9,7 @@
 ### 创建 StyleManager
 
 ```typescript
-import { StyleManager } from 'tsone/style';
+import { StyleManager } from '@geektech/tsone/style';
 
 const styleManager = new StyleManager();
 ```
@@ -29,8 +29,8 @@ styleManager.addStyle('.button', {
     color: '#fff',
     border: 'none',
     borderRadius: '4px',
-    cursor: 'pointer'
-  }
+    cursor: 'pointer',
+  },
 });
 ```
 
@@ -153,16 +153,16 @@ class ButtonComponent extends Component {
         color: '#fff',
         border: 'none',
         borderRadius: '4px',
-        cursor: 'pointer'
-      }
+        cursor: 'pointer',
+      },
     });
 
     // 添加 hover 状态
     this.styleManager.addStyle('.button:hover', {
       selector: '.button:hover',
       properties: {
-        backgroundColor: '#0069d9'
-      }
+        backgroundColor: '#0069d9',
+      },
     });
   }
 
@@ -170,7 +170,7 @@ class ButtonComponent extends Component {
     return {
       tag: 'button',
       props: { className: 'button' },
-      children: ['Click Me']
+      children: ['Click Me'],
     };
   }
 }
@@ -184,7 +184,7 @@ class ButtonComponent extends Component {
 class ThemedButtonComponent extends Component {
   protected initState() {
     return {
-      isDarkTheme: false
+      isDarkTheme: false,
     };
   }
 
@@ -196,8 +196,8 @@ class ThemedButtonComponent extends Component {
         padding: '8px 16px',
         border: 'none',
         borderRadius: '4px',
-        cursor: 'pointer'
-      }
+        cursor: 'pointer',
+      },
     });
 
     // 添加亮色主题样式
@@ -205,8 +205,8 @@ class ThemedButtonComponent extends Component {
       selector: '.button.light',
       properties: {
         backgroundColor: '#007bff',
-        color: '#fff'
-      }
+        color: '#fff',
+      },
     });
 
     // 添加暗色主题样式
@@ -214,8 +214,8 @@ class ThemedButtonComponent extends Component {
       selector: '.button.dark',
       properties: {
         backgroundColor: '#343a40',
-        color: '#fff'
-      }
+        color: '#fff',
+      },
     });
   }
 
@@ -230,16 +230,16 @@ class ThemedButtonComponent extends Component {
         {
           tag: 'button',
           props: {
-            className: `button ${this.state.isDarkTheme ? 'dark' : 'light'}`
+            className: `button ${this.state.isDarkTheme ? 'dark' : 'light'}`,
           },
-          children: ['Themed Button']
+          children: ['Themed Button'],
         },
         {
           tag: 'button',
           listeners: { click: () => this.toggleTheme() },
-          children: ['Toggle Theme']
-        }
-      ]
+          children: ['Toggle Theme'],
+        },
+      ],
     };
   }
 }
@@ -252,22 +252,23 @@ class ThemedButtonComponent extends Component {
 您可以在应用级别添加全局样式：
 
 ```typescript
-import { createApp } from 'tsone';
+import { createApp } from '@geektech/tsone';
 
 const app = createApp({
-  rootElement: '#app'
+  rootElement: '#app',
 });
 
 // 添加全局样式
 app.styleManager.addStyle('body', {
   selector: 'body',
   properties: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     fontSize: '16px',
     lineHeight: '1.5',
     color: '#333',
-    backgroundColor: '#fff'
-  }
+    backgroundColor: '#fff',
+  },
 });
 
 app.mount();
@@ -278,8 +279,8 @@ app.mount();
 ### 完整样式管理示例
 
 ```typescript
-import { Component, createApp } from 'tsone';
-import { StyleManager } from 'tsone/style';
+import { Component, createApp } from '@geektech/tsone';
+import { StyleManager } from '@geektech/tsone/style';
 
 // 创建全局样式管理器
 const globalStyleManager = new StyleManager();
@@ -290,19 +291,20 @@ globalStyleManager.addStyle('*', {
   properties: {
     boxSizing: 'border-box',
     margin: '0',
-    padding: '0'
-  }
+    padding: '0',
+  },
 });
 
 globalStyleManager.addStyle('body', {
   selector: 'body',
   properties: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     fontSize: '16px',
     lineHeight: '1.5',
     color: '#333',
-    backgroundColor: '#fff'
-  }
+    backgroundColor: '#fff',
+  },
 });
 
 // 创建组件
@@ -310,7 +312,7 @@ class CardComponent extends Component {
   protected initState() {
     return {
       title: 'Card Title',
-      content: 'Card content goes here'
+      content: 'Card content goes here',
     };
   }
 
@@ -323,8 +325,8 @@ class CardComponent extends Component {
         borderRadius: '8px',
         padding: '20px',
         margin: '10px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-      }
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+      },
     });
 
     // 添加卡片标题样式
@@ -334,8 +336,8 @@ class CardComponent extends Component {
         fontSize: '1.25rem',
         fontWeight: 'bold',
         marginBottom: '10px',
-        color: '#212529'
-      }
+        color: '#212529',
+      },
     });
 
     // 添加卡片内容样式
@@ -343,8 +345,8 @@ class CardComponent extends Component {
       selector: '.card-content',
       properties: {
         fontSize: '1rem',
-        color: '#495057'
-      }
+        color: '#495057',
+      },
     });
   }
 
@@ -356,21 +358,21 @@ class CardComponent extends Component {
         {
           tag: 'h3',
           props: { className: 'card-title' },
-          children: [this.state.title]
+          children: [this.state.title],
         },
         {
           tag: 'p',
           props: { className: 'card-content' },
-          children: [this.state.content]
-        }
-      ]
+          children: [this.state.content],
+        },
+      ],
     };
   }
 }
 
 // 创建应用
 const app = createApp({
-  rootElement: '#app'
+  rootElement: '#app',
 });
 
 // 使用全局样式管理器

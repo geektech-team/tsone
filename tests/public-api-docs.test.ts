@@ -12,12 +12,17 @@ function packageVersion(): string {
   return JSON.parse(readText('package.json')).version as string;
 }
 
+function packageName(): string {
+  return JSON.parse(readText('package.json')).name as string;
+}
+
 describe('public API documentation', () => {
   it('keeps README examples aligned with current package metadata and Bun commands', () => {
     const readme = readText('README.md');
 
     expect(readme).toContain(`version: '${packageVersion()}'`);
-    expect(readme).not.toMatch(/version:\s*['"]0\.0\./);
+    expect(readme).toContain(`bun add ${packageName()}`);
+    expect(readme).not.toMatch(/version:\s*['"]0\.0\.0['"]/);
     expect(readme).toContain('bun run build');
     expect(readme).toContain('bun run dev');
     expect(readme).toContain('bun run docs');

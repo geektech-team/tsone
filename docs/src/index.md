@@ -23,19 +23,19 @@ description: 轻量级纯TypeScript前端框架，提供响应式系统、组件
 
 ```bash
 # 使用 Bun
-bun add tsone
+bun add @geektech/tsone
 ```
 
 ### 创建第一个应用
 
 ```typescript
-import { createApp, Component } from 'tsone';
+import { createApp, Component } from '@geektech/tsone';
 
 // 创建一个简单的组件
 class App extends Component {
   protected initState() {
     return {
-      count: 0
+      count: 0,
     };
   }
 
@@ -44,8 +44,8 @@ class App extends Component {
       selector: '.app',
       properties: {
         textAlign: 'center',
-        padding: '20px'
-      }
+        padding: '20px',
+      },
     });
   }
 
@@ -56,17 +56,17 @@ class App extends Component {
       children: [
         {
           tag: 'h1',
-          children: [`计数: {{count}}`]
+          children: [`计数: {{count}}`],
         },
         {
           tag: 'button',
           props: { className: 'btn' },
           listeners: {
-            click: () => this.state.count++
+            click: () => this.state.count++,
           },
-          children: ['增加计数']
-        }
-      ]
+          children: ['增加计数'],
+        },
+      ],
     };
   }
 }
