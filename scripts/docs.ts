@@ -1,5 +1,12 @@
-import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
-import { dirname, join, relative } from 'node:path';
+import {
+  access,
+  mkdir,
+  readdir,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { dirname, extname, join, normalize, relative } from 'node:path';
 import { Window } from 'happy-dom';
 import { DocsPage } from '../docs/app/components/DocsPage';
 import { docPages, type DocPage as ContentDocPage } from '../docs/app/content';
@@ -20,6 +27,12 @@ export interface DocsBuildResult {
   outDir: string;
   pagesBuilt: number;
   assetsBuilt: string[];
+}
+
+export interface DocsServerOptions {
+  hostname: string;
+  port: number;
+  outDir: string;
 }
 
 const DEFAULT_OUT_DIR = 'docs/dist';
@@ -143,6 +156,67 @@ export async function buildDocs(
   };
 }
 
+function readOption(args: string[], name: string): string | undefined {
+  const inlinePrefix = `${name}=`;
+  const inline = args.find((arg) => arg.startsWith(inlinePrefix));
+  if (inline) {
+    return inline.slice(inlinePrefix.length);
+  }
+
+  const index = args.indexOf(name);
+  const value = index >= 0 ? args[index + 1] : undefined;
+  return value && !value.startsWith('--') ? value : undefined;
+}
+
+function parsePort(value: string): number {
+  const port = Number(value);
+  if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    throw new Error(`Invalid docs server port: ${value}`);
+  }
+
+  return port;
+}
+
+export function resolveDocsServerOptions(
+  argv: string[] = Bun.argv,
+  env: Record<string, string | undefined> = process.env
+): DocsServerOptions {
+  const args = argv.slice(2);
+
+  return {
+    hostname: readOption(args, '--host') ?? env.HOST ?? '127.0.0.1',
+    port: parsePort(readOption(args, '--port') ?? env.PORT ?? '5173'),
+    outDir: readOption(args, '--out-dir') ?? env.DOCS_OUT_DIR ?? DEFAULT_OUT_DIR,
+  };
+}
+
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function startDocsServer(
+  options = resolveDocsServerOptions()
+): Promise<ReturnType<typeof Bun.serve>> {
+  const indexPath = join(options.outDir, 'index.html');
+  if (!(await fileExists(indexPath))) {
+    await buildDocs({ outDir: options.outDir });
+  }
+
+  const server = Bun.serve({
+    hostname: options.hostname,
+    port: options.port,
+    fetch: (request) => serveDocsFile(request, options.outDir),
+  });
+
+  console.log(`TSone docs: http://${options.hostname}:${server.port}/`);
+  return server;
+}
+
 export function renderMarkdownToHtml(markdown: string): string {
   const lines = markdown.replace(/^---\n[\s\S]*?\n---\n?/, '').split('\n');
   const html: string[] = [];
@@ -247,45 +321,6 @@ export function renderDocPage(
   ].join('\n');
 }
 
-function renderPage(page: DocPage, docs: DocPage[], markdown: string): string {
-  const nav = docs
-    .map(
-      (doc) =>
-        `<a href="${doc.route}"${doc.route === page.route ? ' aria-current="page"' : ''}>${escapeHtml(doc.title)}</a>`
-    )
-    .join('');
-
-  return `<!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(page.title)} - TSone Docs</title>
-  <style>
-    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1f2937; background: #f8fafc; }
-    .layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
-    nav { padding: 24px 18px; background: #ffffff; border-right: 1px solid #e5e7eb; overflow: auto; }
-    nav strong { display: block; margin-bottom: 16px; font-size: 18px; }
-    nav a { display: block; padding: 7px 8px; border-radius: 6px; color: #334155; text-decoration: none; }
-    nav a[aria-current="page"], nav a:hover { background: #eef2ff; color: #3730a3; }
-    main { max-width: 880px; padding: 44px 56px; }
-    h1, h2, h3, h4 { color: #0f172a; }
-    p, li { line-height: 1.75; }
-    code { background: #e2e8f0; padding: 2px 5px; border-radius: 4px; }
-    pre { overflow: auto; padding: 16px; border-radius: 8px; background: #0f172a; color: #e2e8f0; }
-    pre code { background: transparent; padding: 0; }
-    @media (max-width: 760px) { .layout { display: block; } nav { border-right: 0; border-bottom: 1px solid #e5e7eb; } main { padding: 28px 20px; } }
-  </style>
-</head>
-<body>
-  <div class="layout">
-    <nav><strong>TSone</strong>${nav}</nav>
-    <main>${renderMarkdownToHtml(markdown)}</main>
-  </div>
-</body>
-</html>`;
-}
-
 async function buildClientBundle(outDir: string): Promise<string[]> {
   const result = await Bun.build({
     entrypoints: ['./docs/app/client.ts'],
@@ -344,41 +379,78 @@ function installBuildDom(route: string): void {
   });
 }
 
-function parsePort(): number {
-  const portArg = Bun.argv.find((arg) => arg.startsWith('--port='));
-  if (portArg) {
-    return Number(portArg.split('=')[1]);
+async function serveDocsFile(
+  request: Request,
+  outDir: string
+): Promise<Response> {
+  const url = new URL(request.url);
+
+  let pathname: string;
+  try {
+    pathname = decodeURIComponent(url.pathname);
+  } catch {
+    return new Response('Not found', { status: 404 });
   }
 
-  const index = Bun.argv.indexOf('--port');
-  if (index >= 0 && Bun.argv[index + 1]) {
-    return Number(Bun.argv[index + 1]);
+  const filePath = resolveStaticFile(outDir, pathname);
+  if (!filePath) {
+    return new Response('Not found', { status: 404 });
   }
 
-  return Number(process.env.PORT ?? 5173);
+  try {
+    const body = await readFile(filePath);
+    return new Response(body, {
+      headers: { 'content-type': contentType(filePath) },
+    });
+  } catch {
+    return new Response('Not found', { status: 404 });
+  }
+}
+
+function resolveStaticFile(outDir: string, pathname: string): string | null {
+  if (pathname.includes('..') || pathname.includes('\0')) {
+    return null;
+  }
+
+  const normalizedPath = pathname === '/' ? '/index.html' : pathname;
+  const normalizedOutDir = normalize(outDir);
+  const normalizedCandidate = normalize(
+    extname(normalizedPath) === ''
+      ? join(outDir, normalizedPath, 'index.html')
+      : join(outDir, normalizedPath)
+  );
+  const relativePath = relative(normalizedOutDir, normalizedCandidate);
+
+  if (relativePath.startsWith('..') || relativePath === '') {
+    return null;
+  }
+
+  return normalizedCandidate;
+}
+
+function contentType(filePath: string): string {
+  if (filePath.endsWith('.html')) {
+    return 'text/html; charset=utf-8';
+  }
+  if (filePath.endsWith('.js')) {
+    return 'text/javascript; charset=utf-8';
+  }
+  if (filePath.endsWith('.css')) {
+    return 'text/css; charset=utf-8';
+  }
+  if (filePath.endsWith('.json')) {
+    return 'application/json; charset=utf-8';
+  }
+  return 'text/plain; charset=utf-8';
 }
 
 if (import.meta.main) {
-  const rootDir = 'docs/src';
-  const port = parsePort();
+  const options = resolveDocsServerOptions();
 
-  Bun.serve({
-    port,
-    async fetch(request) {
-      const url = new URL(request.url);
-      const docs = await discoverDocs(rootDir);
-      const page = resolveDocPath(url.pathname, docs);
-
-      if (!page) {
-        return new Response('Not found', { status: 404 });
-      }
-
-      const markdown = await Bun.file(page.filePath).text();
-      return new Response(renderPage(page, docs, markdown), {
-        headers: { 'content-type': 'text/html; charset=utf-8' },
-      });
-    },
-  });
-
-  console.log(`TSone docs: http://127.0.0.1:${port}/`);
+  if (Bun.argv.includes('--build')) {
+    await buildDocs({ outDir: options.outDir });
+    console.log(`TSone docs built at ${options.outDir}`);
+  } else {
+    await startDocsServer(options);
+  }
 }

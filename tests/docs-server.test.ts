@@ -1,39 +1,76 @@
-import { describe, expect, it } from 'bun:test';
 import {
-  discoverDocs,
-  renderMarkdownToHtml,
-  resolveDocPath,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, it } from 'bun:test';
+import {
+  resolveDocsServerOptions,
+  startDocsServer,
 } from '../scripts/docs';
 
-describe('Bun docs server helpers', () => {
-  it('discovers markdown docs and resolves clean routes', async () => {
-    const docs = await discoverDocs();
+let server: ReturnType<typeof Bun.serve> | undefined;
 
-    expect(docs.some((doc) => doc.route === '/')).toBe(true);
-    expect(docs.some((doc) => doc.route === '/guide/getting-started')).toBe(
-      true
-    );
-    expect(resolveDocPath('/guide/getting-started', docs)?.filePath).toContain(
-      'docs/src/guide/getting-started.md'
-    );
+function getAvailablePort(): number {
+  const probe = Bun.serve({
+    port: 0,
+    fetch: () => new Response('ok'),
+  });
+  const port = probe.port;
+  probe.stop(true);
+  return port;
+}
+
+afterEach(() => {
+  server?.stop(true);
+  server = undefined;
+});
+
+describe('TSone docs preview server', () => {
+  it('resolves host, port, and output directory from args', () => {
+    expect(
+      resolveDocsServerOptions([
+        'bun',
+        'scripts/docs.ts',
+        '--host',
+        '127.0.0.1',
+        '--port',
+        '51234',
+        '--out-dir',
+        '/tmp/docs',
+      ])
+    ).toEqual({
+      hostname: '127.0.0.1',
+      port: 51234,
+      outDir: '/tmp/docs',
+    });
   });
 
-  it('renders basic markdown into safe html', () => {
-    const html = renderMarkdownToHtml(
-      [
-        '# Title',
-        '',
-        'A [link](https://example.com) and `inline` code.',
-        '',
-        '```ts',
-        'const count = 1;',
-        '```',
-      ].join('\n')
-    );
+  it('serves prebuilt static docs output', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'tsone-docs-server-'));
+    writeFileSync(join(outDir, 'index.html'), '<h1>Docs Home</h1>');
+    writeFileSync(join(outDir, 'asset.txt'), 'asset');
+    const port = getAvailablePort();
 
-    expect(html).toContain('<h1>Title</h1>');
-    expect(html).toContain('<a href="https://example.com">link</a>');
-    expect(html).toContain('<code>inline</code>');
-    expect(html).toContain('<pre><code class="language-ts">');
+    try {
+      server = await startDocsServer({
+        hostname: '127.0.0.1',
+        port,
+        outDir,
+      });
+
+      const home = await fetch(`http://127.0.0.1:${port}/`);
+      expect(home.ok).toBe(true);
+      expect(await home.text()).toContain('Docs Home');
+
+      const asset = await fetch(`http://127.0.0.1:${port}/asset.txt`);
+      expect(asset.ok).toBe(true);
+      expect(asset.headers.get('content-type')).toContain('text/plain');
+      expect(await asset.text()).toBe('asset');
+    } finally {
+      rmSync(outDir, { recursive: true, force: true });
+    }
   });
 });

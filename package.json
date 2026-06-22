@@ -28,6 +28,7 @@
     "lint": "eslint . --ext .ts",
     "format": "prettier --write *.ts",
     "test": "bun test",
+    "docs:build": "bun scripts/docs.ts --build",
     "preview": "bun scripts/docs.ts"
   },
   "keywords": [
