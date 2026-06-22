@@ -130,6 +130,36 @@ describe('docs content model', () => {
     ).toThrow('Documentation page has no path');
   });
 
+  it('rejects malformed non-empty documentation paths', () => {
+    const basePage: DocPage = {
+      path: '/valid/',
+      title: 'Valid',
+      description: 'Valid description',
+      section: 'Guide',
+      sectionOrder: 1,
+      order: 1,
+      body: [paragraph('Has content')],
+    };
+
+    expect(() =>
+      validateDocPages([
+        {
+          ...basePage,
+          path: ' /guide',
+        },
+      ])
+    ).toThrow('Invalid documentation route:  /guide');
+
+    expect(() =>
+      validateDocPages([
+        {
+          ...basePage,
+          path: '///',
+        },
+      ])
+    ).toThrow('Invalid documentation route: ///');
+  });
+
   it('extracts plain text from structured docs content', () => {
     const page: DocPage = {
       path: '/guide/getting-started/',

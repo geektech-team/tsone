@@ -112,13 +112,17 @@ export function apiTable(rows: ApiTableBlock['rows']): DocBlock {
 
 export function normalizeDocPath(path: string): string {
   const withoutMarkdown = path.replace(/\.md$/, '');
-  const normalized = `/${withoutMarkdown.replace(/^\/+|\/+$/g, '')}`;
 
-  if (normalized === '/') {
+  if (withoutMarkdown === '/') {
     return '/';
   }
 
-  return `${normalized}/`;
+  const trimmedSlashes = withoutMarkdown.replace(/^\/+|\/+$/g, '');
+  if (!/^[a-z0-9-]+(?:\/[a-z0-9-]+)*$/.test(trimmedSlashes)) {
+    throw new Error(`Invalid documentation route: ${path}`);
+  }
+
+  return `/${trimmedSlashes}/`;
 }
 
 export function sortDocPages(pages: DocPage[]): DocPage[] {
