@@ -2,12 +2,14 @@ import { describe, expect, it } from 'bun:test';
 import { docPages, findDocPage, searchEntries } from '../docs/app/content';
 import {
   codeBlock,
+  callout,
   docText,
   heading,
   inlineCode,
   link,
   normalizeDocPath,
   paragraph,
+  list,
   sortDocPages,
   validateDocPages,
   type DocPage,
@@ -99,6 +101,25 @@ describe('docs content model', () => {
         },
       ])
     ).toThrow('Documentation page has no content: /empty/');
+
+    expect(() =>
+      validateDocPages([
+        {
+          path: '/blank-content/',
+          title: 'Blank Content',
+          description: 'Body has only blank structured blocks',
+          section: 'Guide',
+          sectionOrder: 1,
+          order: 1,
+          body: [
+            paragraph('   '),
+            list([['   ']]),
+            callout('note', '   ', ['   ']),
+            codeBlock('ts', '   '),
+          ],
+        },
+      ])
+    ).toThrow('Documentation page has no content: /blank-content/');
   });
 
   it('rejects empty and whitespace-only documentation paths', () => {

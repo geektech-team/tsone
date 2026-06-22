@@ -185,7 +185,10 @@ export function validateDocPages(pages: DocPage[]): DocPage[] {
       throw new Error(`Documentation page has no description: ${route}`);
     }
 
-    if (page.body.length === 0) {
+    if (
+      page.body.length === 0 ||
+      !page.body.some((block) => blockText(block).trim().length > 0)
+    ) {
       throw new Error(`Documentation page has no content: ${route}`);
     }
   });

@@ -1,7 +1,6 @@
 import {
   access,
   mkdir,
-  readdir,
   readFile,
   realpath,
   rm,
@@ -20,12 +19,6 @@ import { DocsPage } from '../docs/app/components/DocsPage';
 import { docPages, type DocPage as ContentDocPage } from '../docs/app/content';
 import { normalizeDocPath } from '../docs/app/content/types';
 import { docsCss } from '../docs/app/styles';
-
-export interface DocPage {
-  route: string;
-  filePath: string;
-  title: string;
-}
 
 export interface DocsBuildOptions {
   outDir?: string;
@@ -51,83 +44,6 @@ function escapeHtml(value: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
-}
-
-function renderInline(markdown: string): string {
-  const escaped = escapeHtml(markdown);
-
-  return escaped
-    .replace(
-      /\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]*)\)/g,
-      '<a href="$2">$1</a>'
-    )
-    .replace(/`([^`]+)`/g, '<code>$1</code>');
-}
-
-function routeFromFile(rootDir: string, filePath: string): string {
-  const normalized = relative(rootDir, filePath).replace(/\\/g, '/');
-  const withoutExtension = normalized.replace(/\.md$/, '');
-
-  if (withoutExtension === 'index') {
-    return '/';
-  }
-
-  return `/${withoutExtension}`;
-}
-
-function titleFromMarkdown(markdown: string, fallback: string): string {
-  const title = markdown
-    .split('\n')
-    .find((line) => line.startsWith('# '))
-    ?.replace(/^#\s+/, '')
-    .trim();
-
-  return title || fallback;
-}
-
-export async function discoverDocs(rootDir = 'docs/src'): Promise<DocPage[]> {
-  const pages: DocPage[] = [];
-
-  async function walk(directory: string): Promise<void> {
-    const entries = await readdir(directory, { withFileTypes: true });
-
-    for (const entry of entries) {
-      if (entry.name.startsWith('.')) {
-        continue;
-      }
-
-      const filePath = join(directory, entry.name);
-
-      if (entry.isDirectory()) {
-        await walk(filePath);
-        continue;
-      }
-
-      if (!entry.name.endsWith('.md')) {
-        continue;
-      }
-
-      const markdown = await Bun.file(filePath).text();
-      pages.push({
-        route: routeFromFile(rootDir, filePath),
-        filePath,
-        title: titleFromMarkdown(markdown, entry.name.replace(/\.md$/, '')),
-      });
-    }
-  }
-
-  await walk(rootDir);
-  return pages.sort((a, b) => a.route.localeCompare(b.route));
-}
-
-export function resolveDocPath(
-  route: string,
-  docs: DocPage[]
-): DocPage | undefined {
-  const normalizedRoute =
-    route === '/' ? '/' : `/${route.replace(/^\/+|\/+$/g, '')}`;
-
-  return docs.find((doc) => doc.route === normalizedRoute);
 }
 
 export function routeToOutputPath(route: string, outDir: string): string {
@@ -233,80 +149,6 @@ export async function startDocsServer(
   return server;
 }
 
-export function renderMarkdownToHtml(markdown: string): string {
-  const lines = markdown.replace(/^---\n[\s\S]*?\n---\n?/, '').split('\n');
-  const html: string[] = [];
-  let listOpen = false;
-  let codeFence: { language: string; lines: string[] } | null = null;
-
-  const closeList = (): void => {
-    if (listOpen) {
-      html.push('</ul>');
-      listOpen = false;
-    }
-  };
-
-  for (const line of lines) {
-    const fence = line.match(/^```(\w*)/);
-    if (fence) {
-      if (codeFence) {
-        html.push(
-          `<pre><code class="language-${escapeHtml(codeFence.language)}">${escapeHtml(
-            codeFence.lines.join('\n')
-          )}</code></pre>`
-        );
-        codeFence = null;
-      } else {
-        closeList();
-        codeFence = { language: fence[1] ?? '', lines: [] };
-      }
-      continue;
-    }
-
-    if (codeFence) {
-      codeFence.lines.push(line);
-      continue;
-    }
-
-    if (!line.trim()) {
-      closeList();
-      continue;
-    }
-
-    const heading = line.match(/^(#{1,4})\s+(.+)$/);
-    if (heading) {
-      closeList();
-      const level = heading[1].length;
-      html.push(`<h${level}>${renderInline(heading[2])}</h${level}>`);
-      continue;
-    }
-
-    const listItem = line.match(/^-\s+(.+)$/);
-    if (listItem) {
-      if (!listOpen) {
-        html.push('<ul>');
-        listOpen = true;
-      }
-      html.push(`<li>${renderInline(listItem[1])}</li>`);
-      continue;
-    }
-
-    closeList();
-    html.push(`<p>${renderInline(line.trim())}</p>`);
-  }
-
-  if (codeFence) {
-    html.push(
-      `<pre><code class="language-${escapeHtml(codeFence.language)}">${escapeHtml(
-        codeFence.lines.join('\n')
-      )}</code></pre>`
-    );
-  }
-
-  closeList();
-  return html.join('\n');
-}
-
 export function renderDocPage(
   page: ContentDocPage,
   pages: ContentDocPage[]
@@ -342,7 +184,6 @@ async function buildClientBundle(outDir: string): Promise<string[]> {
     entrypoints: ['./docs/app/client.ts'],
     target: 'browser',
     format: 'esm',
-    sourcemap: 'inline',
     write: false,
   });
 

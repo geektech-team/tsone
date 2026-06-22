@@ -50,6 +50,7 @@ describe('docs static build', () => {
       expect(clientBundle).toContain('mountDocsClient');
       expect(clientBundle).toContain('data-doc-search-root');
       expect(clientBundle).toContain('data-doc-theme-root');
+      expect(clientBundle).not.toContain('sourceMappingURL');
 
       const home = readFileSync(join(outDir, 'index.html'), 'utf8');
       expect(home).toContain('<!doctype html>');

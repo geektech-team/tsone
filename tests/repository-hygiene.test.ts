@@ -47,7 +47,6 @@ describe('repository hygiene', () => {
     expect(gitIgnoreMatches('coverage/lcov.info')).toBe(true);
     expect(gitIgnoreMatches('docs/dist/index.html')).toBe(true);
     expect(gitIgnoreMatches('docs/node_modules/.modules.yaml')).toBe(true);
-    expect(gitIgnoreMatches('docs/src/.vitepress/cache/index.html')).toBe(true);
     expect(gitIgnoreMatches('.worktrees/open-source-priority')).toBe(true);
   });
 });
