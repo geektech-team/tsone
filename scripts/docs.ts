@@ -1,11 +1,28 @@
-import { readdir } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
+import { dirname, join, relative } from 'node:path';
+import { Window } from 'happy-dom';
+import { DocsPage } from '../docs/app/components/DocsPage';
+import { docPages, type DocPage as ContentDocPage } from '../docs/app/content';
+import { normalizeDocPath } from '../docs/app/content/types';
+import { docsCss } from '../docs/app/styles';
 
 export interface DocPage {
   route: string;
   filePath: string;
   title: string;
 }
+
+export interface DocsBuildOptions {
+  outDir?: string;
+}
+
+export interface DocsBuildResult {
+  outDir: string;
+  pagesBuilt: number;
+  assetsBuilt: string[];
+}
+
+const DEFAULT_OUT_DIR = 'docs/dist';
 
 function escapeHtml(value: string): string {
   return value
@@ -92,6 +109,40 @@ export function resolveDocPath(
   return docs.find((doc) => doc.route === normalizedRoute);
 }
 
+export function routeToOutputPath(route: string, outDir: string): string {
+  const normalizedRoute = normalizeDocPath(route);
+
+  if (normalizedRoute === '/') {
+    return join(outDir, 'index.html');
+  }
+
+  return join(outDir, normalizedRoute.slice(1, -1), 'index.html');
+}
+
+export async function buildDocs(
+  options: DocsBuildOptions = {}
+): Promise<DocsBuildResult> {
+  const outDir = options.outDir ?? DEFAULT_OUT_DIR;
+
+  await rm(outDir, { recursive: true, force: true });
+  await mkdir(join(outDir, 'assets'), { recursive: true });
+
+  const assetsBuilt = await buildClientBundle(outDir);
+
+  for (const page of docPages) {
+    const html = renderDocPage(page, docPages);
+    const outputPath = routeToOutputPath(page.path, outDir);
+    await mkdir(dirname(outputPath), { recursive: true });
+    await writeFile(outputPath, html);
+  }
+
+  return {
+    outDir,
+    pagesBuilt: docPages.length,
+    assetsBuilt,
+  };
+}
+
 export function renderMarkdownToHtml(markdown: string): string {
   const lines = markdown.replace(/^---\n[\s\S]*?\n---\n?/, '').split('\n');
   const html: string[] = [];
@@ -166,6 +217,36 @@ export function renderMarkdownToHtml(markdown: string): string {
   return html.join('\n');
 }
 
+export function renderDocPage(
+  page: ContentDocPage,
+  pages: ContentDocPage[]
+): string {
+  installBuildDom(page.path);
+
+  const mountRoot = document.createElement('div');
+  mountRoot.id = 'app';
+  document.body.appendChild(mountRoot);
+
+  new DocsPage({ page, pages }).mount(mountRoot);
+
+  return [
+    '<!doctype html>',
+    '<html lang="zh-CN">',
+    '<head>',
+    '  <meta charset="utf-8">',
+    '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+    `  <title>${escapeHtml(page.title)} - TSone Docs</title>`,
+    `  <meta name="description" content="${escapeHtml(page.description)}">`,
+    `  <style>${docsCss}</style>`,
+    '</head>',
+    '<body>',
+    mountRoot.innerHTML,
+    '  <script type="module" src="/assets/docs-client.js"></script>',
+    '</body>',
+    '</html>',
+  ].join('\n');
+}
+
 function renderPage(page: DocPage, docs: DocPage[], markdown: string): string {
   const nav = docs
     .map(
@@ -203,6 +284,64 @@ function renderPage(page: DocPage, docs: DocPage[], markdown: string): string {
   </div>
 </body>
 </html>`;
+}
+
+async function buildClientBundle(outDir: string): Promise<string[]> {
+  const result = await Bun.build({
+    entrypoints: ['./docs/app/client.ts'],
+    target: 'browser',
+    format: 'esm',
+    sourcemap: 'inline',
+    write: false,
+  });
+
+  if (!result.success || result.outputs.length === 0) {
+    const messages = result.logs.map((log) => log.message).join('\n');
+    throw new Error(`Failed to build docs client bundle: ${messages}`);
+  }
+
+  const outputPath = join(outDir, 'assets', 'docs-client.js');
+  await writeFile(outputPath, await result.outputs[0].text());
+  return [outputPath];
+}
+
+function installBuildDom(route: string): void {
+  const window = new Window({
+    url: `http://127.0.0.1${normalizeDocPath(route)}`,
+  });
+  const keys = [
+    'window',
+    'document',
+    'Node',
+    'Text',
+    'Comment',
+    'Element',
+    'HTMLElement',
+    'HTMLInputElement',
+    'HTMLTextAreaElement',
+    'HTMLSelectElement',
+    'HTMLButtonElement',
+    'DocumentFragment',
+    'Event',
+    'MouseEvent',
+    'KeyboardEvent',
+    'CustomEvent',
+    'EventTarget',
+    'history',
+    'location',
+    'navigator',
+    'localStorage',
+  ] as const;
+
+  const windowRecord = window as unknown as Record<string, unknown>;
+
+  keys.forEach((key) => {
+    Object.defineProperty(globalThis, key, {
+      configurable: true,
+      writable: true,
+      value: windowRecord[key],
+    });
+  });
 }
 
 function parsePort(): number {
