@@ -360,6 +360,15 @@ function installBuildDom(route: string): void {
   const window = new Window({
     url: `http://127.0.0.1${normalizeDocPath(route)}`,
   });
+  Object.assign(window, {
+    Error,
+    EvalError,
+    RangeError,
+    ReferenceError,
+    SyntaxError,
+    TypeError,
+    URIError,
+  });
   const keys = [
     'window',
     'document',
