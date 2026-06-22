@@ -245,4 +245,36 @@ describe('docs content registry', () => {
     expect(findDocPage('/guide/getting-started/')?.title).toBe('快速开始');
     expect(findDocPage('/missing/')).toBeUndefined();
   });
+
+  it('keeps contributing guidance aligned with the typed content registry', () => {
+    const contributing = findDocPage('/contributing/');
+
+    expect(contributing).toBeDefined();
+    expect(docText(contributing!)).not.toContain('Markdown 格式');
+    expect(docText(contributing!)).not.toContain(
+      'https://github.com/yourusername/tsone.git'
+    );
+    expect(docText(contributing!)).toContain(
+      'docs/app/content/*.ts'
+    );
+    expect(docText(contributing!)).toContain('typed content registry');
+    expect(docText(contributing!)).toContain('结构化 block helper');
+  });
+
+  it('includes complete form and list examples without truncation', () => {
+    const example = findDocPage('/examples/basic/');
+
+    expect(example).toBeDefined();
+
+    const text = docText(example!);
+
+    expect(text).not.toContain('...表单字段省略...');
+    expect(text).toContain("children: ['Submit']");
+    expect(text).toContain("props: { htmlFor: 'name' }");
+    expect(text).toContain("props: { htmlFor: 'email' }");
+    expect(text).toContain("props: { htmlFor: 'message' }");
+    expect(text).toContain('this.state.items.map((item, index) => ({');
+    expect(text).toContain("children: ['Remove']");
+    expect(text).toContain("children: ['Add']");
+  });
 });

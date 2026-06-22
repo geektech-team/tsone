@@ -1,4 +1,11 @@
-import { codeBlock, heading, list, paragraph, type DocPage } from './types';
+import {
+  codeBlock,
+  heading,
+  inlineCode,
+  list,
+  paragraph,
+  type DocPage,
+} from './types';
 
 export const contributingPages: DocPage[] = [
   {
@@ -17,7 +24,7 @@ export const contributingPages: DocPage[] = [
       codeBlock(
         'bash',
         [
-          'git clone https://github.com/yourusername/tsone.git',
+          'git clone https://github.com/geektech/tsone.git',
           'cd tsone',
         ].join('\n')
       ),
@@ -111,8 +118,17 @@ export const contributingPages: DocPage[] = [
       list([['更新 API 文档'], ['更新指南文档'], ['更新示例代码']]),
       heading(3, '文档命令'),
       codeBlock('bash', ['bun run docs', 'bun run docs:build'].join('\n')),
-      heading(3, '文档格式'),
-      list([['使用 Markdown 格式'], ['保持文档清晰、简洁'], ['提供示例代码']]),
+      heading(3, '文档维护'),
+      paragraph(
+        '文档内容维护在 ',
+        inlineCode('docs/app/content/*.ts'),
+        ' 的 typed content registry 中，并使用结构化 block helper 组织页面内容。'
+      ),
+      list([
+        ['直接编辑 TypeScript 内容注册表，而不是 Markdown 源文件'],
+        ['使用结构化 block helper 组合标题、段落、列表和代码块'],
+        ['保持页面内容与可搜索文本一致'],
+      ]),
       heading(2, '问题报告'),
       heading(3, 'Bug 报告'),
       list([
