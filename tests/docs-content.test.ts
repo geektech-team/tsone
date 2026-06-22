@@ -158,6 +158,24 @@ describe('docs content model', () => {
         },
       ])
     ).toThrow('Invalid documentation route: ///');
+
+    expect(() =>
+      validateDocPages([
+        {
+          ...basePage,
+          path: '///guide',
+        },
+      ])
+    ).toThrow('Invalid documentation route: ///guide');
+
+    expect(() =>
+      validateDocPages([
+        {
+          ...basePage,
+          path: 'guide///',
+        },
+      ])
+    ).toThrow('Invalid documentation route: guide///');
   });
 
   it('extracts plain text from structured docs content', () => {

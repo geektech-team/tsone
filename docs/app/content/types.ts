@@ -110,7 +110,29 @@ export function apiTable(rows: ApiTableBlock['rows']): DocBlock {
   return { type: 'api-table', rows };
 }
 
+const DOC_ROUTE_WITH_TRAILING_SLASH = /^\/?[a-z0-9-]+(?:\/[a-z0-9-]+)*(?:\/)?$/;
+const DOC_ROUTE_WITHOUT_TRAILING_SLASH = /^\/?[a-z0-9-]+(?:\/[a-z0-9-]+)*\.md$/;
+
+function validateRawDocPath(path: string): void {
+  if (path === '/') {
+    return;
+  }
+
+  if (/\s/.test(path)) {
+    throw new Error(`Invalid documentation route: ${path}`);
+  }
+
+  if (
+    !DOC_ROUTE_WITH_TRAILING_SLASH.test(path) &&
+    !DOC_ROUTE_WITHOUT_TRAILING_SLASH.test(path)
+  ) {
+    throw new Error(`Invalid documentation route: ${path}`);
+  }
+}
+
 export function normalizeDocPath(path: string): string {
+  validateRawDocPath(path);
+
   const withoutMarkdown = path.replace(/\.md$/, '');
 
   if (withoutMarkdown === '/') {
