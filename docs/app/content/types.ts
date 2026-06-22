@@ -141,6 +141,10 @@ export function validateDocPages(pages: DocPage[]): DocPage[] {
   const routes = new Set<string>();
 
   pages.forEach((page) => {
+    if (!page.path.trim()) {
+      throw new Error(`Documentation page has no path`);
+    }
+
     const route = normalizeDocPath(page.path);
     if (routes.has(route)) {
       throw new Error(`Duplicate documentation route: ${route}`);

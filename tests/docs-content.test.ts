@@ -100,6 +100,36 @@ describe('docs content model', () => {
     ).toThrow('Documentation page has no content: /empty/');
   });
 
+  it('rejects empty and whitespace-only documentation paths', () => {
+    const basePage: DocPage = {
+      path: '/valid/',
+      title: 'Valid',
+      description: 'Valid description',
+      section: 'Guide',
+      sectionOrder: 1,
+      order: 1,
+      body: [paragraph('Has content')],
+    };
+
+    expect(() =>
+      validateDocPages([
+        {
+          ...basePage,
+          path: '',
+        },
+      ])
+    ).toThrow('Documentation page has no path');
+
+    expect(() =>
+      validateDocPages([
+        {
+          ...basePage,
+          path: '   ',
+        },
+      ])
+    ).toThrow('Documentation page has no path');
+  });
+
   it('extracts plain text from structured docs content', () => {
     const page: DocPage = {
       path: '/guide/getting-started/',
