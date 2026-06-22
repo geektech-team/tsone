@@ -6,6 +6,7 @@
 
 - 纯 TypeScript 实现，公开 API 提供类型定义
 - Bun 原生工具链：安装、测试、构建、示例服务和文档服务均由 Bun 驱动
+- 文档内容由 TSone 的 TypeScript typed content registry 提供
 - 响应式系统：`reactive`、`effect`、`computed`
 - 面向对象组件模型：`Component<Props, State>`、生命周期、事件、插槽
 - 策略模式渲染层：文本、元素、组件、插槽按 VNode 类型分发
@@ -128,6 +129,15 @@ bun test
 bun run build
 bun run dev
 bun run docs
+bun run docs:build
+```
+
+文档站点内容维护在 `docs/app/content/*.ts` 的 typed content registry 中。
+
+生成静态文档产物：
+
+```bash
+bun run docs:build
 ```
 
 ## 公开 API

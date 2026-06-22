@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'bun:test';
+import { docPages, docText } from '../docs/app/content';
 
 const root = process.cwd();
 
@@ -16,6 +17,15 @@ function packageName(): string {
   return JSON.parse(readText('package.json')).name as string;
 }
 
+function docsTextFor(path: string): string {
+  const page = docPages.find((item) => item.path === path);
+  if (!page) {
+    throw new Error(`Missing docs page: ${path}`);
+  }
+
+  return docText(page);
+}
+
 describe('public API documentation', () => {
   it('keeps README examples aligned with current package metadata and Bun commands', () => {
     const readme = readText('README.md');
@@ -26,14 +36,15 @@ describe('public API documentation', () => {
     expect(readme).toContain('bun run build');
     expect(readme).toContain('bun run dev');
     expect(readme).toContain('bun run docs');
+    expect(readme).toContain('bun run docs:build');
     expect(readme).toContain('bun test');
   });
 
   it('documents the public root exports used by framework consumers', () => {
     const readme = readText('README.md');
-    const appApi = readText('docs/src/api/app.md');
-    const componentApi = readText('docs/src/api/component.md');
-    const reactiveApi = readText('docs/src/api/reactive.md');
+    const appApi = docsTextFor('/api/app/');
+    const componentApi = docsTextFor('/api/component/');
+    const reactiveApi = docsTextFor('/api/reactive/');
 
     for (const symbol of [
       'createApp',
@@ -55,7 +66,7 @@ describe('public API documentation', () => {
 
   it('documents RouterView and RouterLink as public router component exits', () => {
     const readme = readText('README.md');
-    const routerApi = readText('docs/src/api/router.md');
+    const routerApi = docsTextFor('/api/router/');
 
     expect(readme).toContain('RouterView');
     expect(readme).toContain('RouterLink');
