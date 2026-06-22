@@ -3,10 +3,18 @@ import {
   mkdir,
   readdir,
   readFile,
+  realpath,
   rm,
   writeFile,
 } from 'node:fs/promises';
-import { dirname, extname, join, normalize, relative } from 'node:path';
+import {
+  dirname,
+  extname,
+  isAbsolute,
+  join,
+  normalize,
+  relative,
+} from 'node:path';
 import { Window } from 'happy-dom';
 import { DocsPage } from '../docs/app/components/DocsPage';
 import { docPages, type DocPage as ContentDocPage } from '../docs/app/content';
@@ -168,6 +176,13 @@ function readOption(args: string[], name: string): string | undefined {
   return value && !value.startsWith('--') ? value : undefined;
 }
 
+function resolveDocsOutDir(
+  args: string[],
+  env: Record<string, string | undefined>
+): string {
+  return readOption(args, '--out-dir') ?? env.DOCS_OUT_DIR ?? DEFAULT_OUT_DIR;
+}
+
 function parsePort(value: string): number {
   const port = Number(value);
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
@@ -186,7 +201,7 @@ export function resolveDocsServerOptions(
   return {
     hostname: readOption(args, '--host') ?? env.HOST ?? '127.0.0.1',
     port: parsePort(readOption(args, '--port') ?? env.PORT ?? '5173'),
-    outDir: readOption(args, '--out-dir') ?? env.DOCS_OUT_DIR ?? DEFAULT_OUT_DIR,
+    outDir: resolveDocsOutDir(args, env),
   };
 }
 
@@ -207,10 +222,11 @@ export async function startDocsServer(
     await buildDocs({ outDir: options.outDir });
   }
 
+  const realOutDir = await realpath(options.outDir);
   const server = Bun.serve({
     hostname: options.hostname,
     port: options.port,
-    fetch: (request) => serveDocsFile(request, options.outDir),
+    fetch: (request) => serveDocsFile(request, options.outDir, realOutDir),
   });
 
   console.log(`TSone docs: http://${options.hostname}:${server.port}/`);
@@ -381,7 +397,8 @@ function installBuildDom(route: string): void {
 
 async function serveDocsFile(
   request: Request,
-  outDir: string
+  outDir: string,
+  realOutDir: string
 ): Promise<Response> {
   const url = new URL(request.url);
 
@@ -398,9 +415,14 @@ async function serveDocsFile(
   }
 
   try {
-    const body = await readFile(filePath);
+    const realFilePath = await realpath(filePath);
+    if (!isPathInside(realOutDir, realFilePath)) {
+      return new Response('Not found', { status: 404 });
+    }
+
+    const body = await readFile(realFilePath);
     return new Response(body, {
-      headers: { 'content-type': contentType(filePath) },
+      headers: { 'content-type': contentType(realFilePath) },
     });
   } catch {
     return new Response('Not found', { status: 404 });
@@ -428,6 +450,11 @@ function resolveStaticFile(outDir: string, pathname: string): string | null {
   return normalizedCandidate;
 }
 
+function isPathInside(rootPath: string, candidatePath: string): boolean {
+  const relativePath = relative(rootPath, candidatePath);
+  return relativePath !== '' && !relativePath.startsWith('..') && !isAbsolute(relativePath);
+}
+
 function contentType(filePath: string): string {
   if (filePath.endsWith('.html')) {
     return 'text/html; charset=utf-8';
@@ -445,12 +472,14 @@ function contentType(filePath: string): string {
 }
 
 if (import.meta.main) {
-  const options = resolveDocsServerOptions();
+  const args = Bun.argv.slice(2);
 
-  if (Bun.argv.includes('--build')) {
-    await buildDocs({ outDir: options.outDir });
-    console.log(`TSone docs built at ${options.outDir}`);
+  if (args.includes('--build')) {
+    const outDir = resolveDocsOutDir(args, process.env);
+    await buildDocs({ outDir });
+    console.log(`TSone docs built at ${outDir}`);
   } else {
+    const options = resolveDocsServerOptions();
     await startDocsServer(options);
   }
 }
