@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { docPages, findDocPage, searchEntries } from '../docs/app/content';
 import {
   codeBlock,
   docText,
@@ -198,5 +199,50 @@ describe('docs content model', () => {
     expect(docText(page)).toContain('@geektech/tsone');
     expect(docText(page)).toContain('router guide');
     expect(docText(page)).toContain('createApp');
+  });
+});
+
+describe('docs content registry', () => {
+  it('contains every migrated documentation route in stable order', () => {
+    expect(docPages.map((page) => page.path)).toEqual([
+      '/',
+      '/guide/getting-started/',
+      '/guide/core-concepts/',
+      '/guide/component-system/',
+      '/guide/reactive-system/',
+      '/guide/router-system/',
+      '/guide/style-management/',
+      '/api/app/',
+      '/api/component/',
+      '/api/reactive/',
+      '/api/router/',
+      '/api/style/',
+      '/examples/basic/',
+      '/contributing/',
+    ]);
+  });
+
+  it('keeps public API terms searchable from typed docs content', () => {
+    const allText = searchEntries.map((entry) => entry.text).join('\n');
+
+    for (const term of [
+      '@geektech/tsone',
+      'createapp',
+      'component<props, state>',
+      'protected render(): vnode',
+      'routerview',
+      'routerlink',
+      'stylemanager',
+      'bun run docs',
+      'bun run docs:build',
+    ]) {
+      expect(allText).toContain(term);
+    }
+  });
+
+  it('finds pages by normalized route', () => {
+    expect(findDocPage('/api/component')?.title).toBe('Component API');
+    expect(findDocPage('/guide/getting-started/')?.title).toBe('快速开始');
+    expect(findDocPage('/missing/')).toBeUndefined();
   });
 });
