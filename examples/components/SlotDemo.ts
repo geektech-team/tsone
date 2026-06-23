@@ -1,4 +1,4 @@
-import { Component, VNode } from '../../lib';
+import { Button, Component, Div, VNode } from '../../lib';
 import { StyleOptions } from '../../lib/style/StyleManager';
 
 interface SlotDemoState {
@@ -98,8 +98,7 @@ export class SlotDemo extends Component<object, SlotDemoState> {
   };
 
   protected render(): VNode {
-    return {
-      tag: 'div',
+    return Div({
       props: { class: 'slot-demo' },
       children: [
         {
@@ -107,37 +106,30 @@ export class SlotDemo extends Component<object, SlotDemoState> {
           props: { class: 'slot-demo-title' },
           children: ['{{title}}'],
         },
-        {
-          tag: 'div',
+        Div({
           props: {},
           children: [
-            {
-              tag: 'div',
+            Div({
               props: { class: 'card-header' },
               children: ['自定义卡片标题'],
-            },
-            {
-              tag: 'div',
+            }),
+            Div({
               props: { class: 'card-content' },
               children: [
-                {
-                  tag: 'div',
+                Div({
                   children: ['{{content}}'],
-                },
-                {
-                  tag: 'div',
+                }),
+                Div({
                   props: { style: { marginTop: '16px' } },
                   children: [
-                    {
-                      tag: 'button',
+                    Button({
                       props: { class: 'slot-demo-button' },
                       listeners: {
                         click: this.incrementCounter,
                       },
                       children: ['增加计数'],
-                    },
-                    {
-                      tag: 'button',
+                    }),
+                    Button({
                       props: {
                         class: 'slot-demo-button',
                         style: {
@@ -149,28 +141,27 @@ export class SlotDemo extends Component<object, SlotDemoState> {
                         click: this.addMessage,
                       },
                       children: ['添加消息'],
-                    },
+                    }),
                   ],
-                },
-                {
-                  tag: 'div',
+                }),
+                Div({
                   props: { style: { marginTop: '16px' } },
-                  children: this.state.messages.map((message: string) => ({
-                    tag: 'div',
-                    props: { class: 'slot-demo-message' },
-                    children: [message],
-                  })),
-                },
+                  children: this.state.messages.map((message: string) =>
+                    Div({
+                      props: { class: 'slot-demo-message' },
+                      children: [message],
+                    })
+                  ),
+                }),
               ],
-            },
-            {
-              tag: 'div',
+            }),
+            Div({
               props: { class: 'card-footer' },
               children: ['{{footerText}}'],
-            },
+            }),
           ],
-        },
+        }),
       ],
-    };
+    });
   }
 }

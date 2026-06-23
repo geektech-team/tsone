@@ -38,6 +38,11 @@ describe('public API documentation', () => {
     for (const symbol of [
       'createApp',
       'Component',
+      'Div',
+      'Span',
+      'P',
+      'Button',
+      'Input',
       'VNode',
       'reactive',
       'effect',

@@ -64,6 +64,29 @@ protected render(): VNode;
 
 返回虚拟节点。渲染器会根据 VNode 类型选择对应策略：文本、元素、组件或插槽。
 
+## 元素快捷函数
+
+常用 HTML 元素可以用快捷函数创建 VNode，减少重复书写 `tag` 字段。
+
+```typescript
+import { Button, Div, Input, P, Span } from '@geektech/tsone';
+
+Div({
+  props: { className: 'card' },
+  children: [
+    Span({ children: ['标题'] }),
+    P({ children: ['{{content}}'] }),
+    Input({
+      props: { 'aria-label': '内容' },
+      directions: { model: 'content' },
+    }),
+    Button({ children: ['保存'] }),
+  ],
+});
+```
+
+当前公开快捷函数包括 `Div()`、`Span()`、`P()`、`Button()` 和 `Input()`。它们接收与普通元素 VNode 相同的 `props`、`children`、`listeners`、`key`、`slot` 和 `directions` 字段。
+
 ## 生命周期
 
 - `beforeMount()`: 首次渲染前。

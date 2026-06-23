@@ -138,6 +138,7 @@ bun run docs
 - `Component<Props, State>`
 - `VNode`
 - `h()` / `createComponent()` / `slot()`
+- `Div()` / `Span()` / `P()` / `Button()` / `Input()`
 - `reactive()` / `readonly()`
 - `effect()` / `stop()`
 - `computed()`

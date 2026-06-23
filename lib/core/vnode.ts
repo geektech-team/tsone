@@ -82,6 +82,10 @@ export interface SlotInjector {
 
 export type VNode = HTMLNode | ComponentNode | SlotProvider | SlotInjector;
 
+export type ElementShortcutOptions = Omit<HTMLNode, 'tag'>;
+
+export type ElementShortcut = (options?: ElementShortcutOptions) => HTMLNode;
+
 export function isComponentNode(vnode: VNode): vnode is ComponentNode {
   return typeof vnode === 'object' && vnode !== null && 'component' in vnode;
 }
@@ -121,6 +125,19 @@ export function h(
     directions,
   };
 }
+
+function createElementFactory(tag: string): ElementShortcut {
+  return (options: ElementShortcutOptions = {}) => ({
+    tag,
+    ...options,
+  });
+}
+
+export const Div = createElementFactory('div');
+export const Span = createElementFactory('span');
+export const P = createElementFactory('p');
+export const Button = createElementFactory('button');
+export const Input = createElementFactory('input');
 
 export function createComponent<P extends VNodeComponentProps>(
   componentClass: ComponentConstructor<P>,

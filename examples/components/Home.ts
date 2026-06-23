@@ -1,4 +1,4 @@
-import { Component, VNode } from '../../lib';
+import { Component, Div, VNode } from '../../lib';
 import { StyleOptions } from '../../lib/style/StyleManager';
 import { Navigation } from './Navigation';
 import { TextInput } from './TextInput';
@@ -118,8 +118,7 @@ export class Home extends Component<object, HomeState> {
   }
 
   protected render(): VNode {
-    return {
-      tag: 'div',
+    return Div({
       props: { class: 'container' },
       children: [
         {
@@ -127,19 +126,16 @@ export class Home extends Component<object, HomeState> {
           props: { class: 'title' },
           children: [this.state.title],
         },
-        {
-          tag: 'div',
+        Div({
           props: { class: 'section' },
           children: [
-            {
-              tag: 'div',
+            Div({
               props: { class: 'counter-container' },
               children: ['Counter Component'],
-            },
+            }),
           ],
-        },
-        {
-          tag: 'div',
+        }),
+        Div({
           props: { class: 'section' },
           children: [
             {
@@ -147,7 +143,7 @@ export class Home extends Component<object, HomeState> {
               props: {},
             },
           ],
-        },
+        }),
         {
           component: Navigation,
           props: {
@@ -155,13 +151,12 @@ export class Home extends Component<object, HomeState> {
             onNavigate: (path: string) => this.handleNavigation(path),
           },
         },
-        {
-          tag: 'div',
+        Div({
           props: { class: 'content' },
           children: [
             '这是一个轻量级的前端框架示例，展示了组件化、响应式状态管理、路由等功能。',
           ],
-        },
+        }),
         {
           component: TextInput,
           props: {
@@ -172,20 +167,17 @@ export class Home extends Component<object, HomeState> {
           },
           children: [],
         },
-        {
-          tag: 'div',
+        Div({
           props: { class: 'navigation-info' },
           children: ['{{lastNavigation}}'],
-        },
-        {
-          tag: 'div',
+        }),
+        Div({
           children: ['{{inputValue}}'],
-        },
-        {
-          tag: 'div',
+        }),
+        Div({
           children: [this.state.inputValue],
-        },
+        }),
       ],
-    };
+    });
   }
 }

@@ -114,7 +114,7 @@ describe('package smoke', () => {
       writeFileSync(
         join(tempDir, 'bun-consumer.ts'),
         [
-          `import { Component, name, reactive, version } from '${packageName}';`,
+          `import { Button, Component, Div, Input, P, Span, name, reactive, version } from '${packageName}';`,
           `import { RouterLink, RouterView, createRouter } from '${packageName}/router';`,
           `import { StyleManager } from '${packageName}/style';`,
           '',
@@ -127,6 +127,11 @@ describe('package smoke', () => {
           '  routerLink: typeof RouterLink,',
           '  routerView: typeof RouterView,',
           '  style: typeof StyleManager,',
+          '  div: typeof Div,',
+          '  span: typeof Span,',
+          '  paragraph: typeof P,',
+          '  button: typeof Button,',
+          '  input: typeof Input,',
           '}));',
         ].join('\n')
       );
@@ -141,12 +146,17 @@ describe('package smoke', () => {
         routerLink: 'function',
         routerView: 'function',
         style: 'function',
+        div: 'function',
+        span: 'function',
+        paragraph: 'function',
+        button: 'function',
+        input: 'function',
       });
 
       writeFileSync(
         join(tempDir, 'consumer.ts'),
         [
-          `import { Component, VNode, createApp, reactive } from '${packageName}';`,
+          `import { Component, Div, VNode, createApp, reactive } from '${packageName}';`,
           `import { RouterLink, RouterView, createRouter } from '${packageName}/router';`,
           '',
           'interface AppState {',
@@ -159,7 +169,7 @@ describe('package smoke', () => {
           '  }',
           '  protected initStyles(): void {}',
           '  protected render(): VNode {',
-          "    return { tag: 'main', children: [String(this.state.count)] };",
+          '    return Div({ children: [String(this.state.count)] });',
           '  }',
           '}',
           '',

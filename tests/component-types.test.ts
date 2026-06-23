@@ -39,7 +39,7 @@ describe('component public types', () => {
       writeFileSync(
         join(tempDir, 'component-consumer.ts'),
         [
-          "import { Component, EventListeners, HTMLProps, VNode } from 'tsone-source';",
+          "import { Button, Component, Div, EventListeners, HTMLProps, Input, P, Span, VNode } from 'tsone-source';",
           "import { RouteLocation, RouteMeta, createRouter } from 'tsone-source/router';",
           '',
           'interface Props {',
@@ -63,7 +63,7 @@ describe('component public types', () => {
           '    const count: number = this.state.count;',
           '    const ready: boolean = this.state.ready;',
           '    this.setState({ count: count + 1 });',
-          "    return { tag: 'button', children: [`${label}:${count}:${ready}`] };",
+          '    return Div({ children: [Span({ children: [label] }), P({ children: [`${count}:${ready}`] })] });',
           '  }',
           '}',
           '',
@@ -83,6 +83,9 @@ describe('component public types', () => {
           '  }',
           '};',
           '',
+          "const shortcutButton: VNode = Button({ listeners, children: ['Save'] });",
+          "const shortcutInput: VNode = Input({ props: { 'aria-label': 'Name' }, directions: { model: 'label' } });",
+          '',
           "const routeMeta: RouteMeta = { title: 'Home', requiresAuth: true };",
           "const router = createRouter({ routes: [{ path: '/', component: TypedCounter, meta: routeMeta }] });",
           'const route: RouteLocation | null = router.getCurrentRoute();',
@@ -90,6 +93,8 @@ describe('component public types', () => {
           '',
           'void htmlProps;',
           'void listeners;',
+          'void shortcutButton;',
+          'void shortcutInput;',
           'void title;',
         ].join('\n')
       );

@@ -1,4 +1,4 @@
-import { Component, VNode } from '../../lib';
+import { Component, Div, Input, VNode } from '../../lib';
 import { StyleOptions } from '../../lib/style/StyleManager';
 
 interface TextInputProps {
@@ -93,25 +93,25 @@ export class TextInput extends Component<TextInputProps, TextInputState> {
       });
     }
 
-    children.push({
-      tag: 'input',
-      props: {
-        class: 'text-input',
-        type: 'text',
-        value: this.state.value,
-        placeholder: this.props.placeholder ?? '',
-      },
-      listeners: {
-        input: (e: Event) => this.handleInput(e),
-        focus: () => (this.state.isFocused = true),
-        blur: () => (this.state.isFocused = false),
-      },
-    });
+    children.push(
+      Input({
+        props: {
+          class: 'text-input',
+          type: 'text',
+          value: this.state.value,
+          placeholder: this.props.placeholder ?? '',
+        },
+        listeners: {
+          input: (e: Event) => this.handleInput(e),
+          focus: () => (this.state.isFocused = true),
+          blur: () => (this.state.isFocused = false),
+        },
+      })
+    );
 
-    return {
-      tag: 'div',
+    return Div({
       props: { class: 'text-input-container' },
       children,
-    };
+    });
   }
 }

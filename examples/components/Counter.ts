@@ -1,4 +1,4 @@
-import { Component, VNode, computed } from '../../lib';
+import { Button, Component, Div, VNode, computed } from '../../lib';
 import { StyleOptions } from '../../lib/style/StyleManager';
 
 export interface CounterProps {
@@ -116,52 +116,45 @@ export class Counter extends Component<CounterProps, CounterState> {
   }
 
   protected render(): VNode {
-    return {
-      tag: 'div',
+    return Div({
       props: {
         className: 'counter',
       },
       children: [
         { tag: 'h2', props: {}, children: ['计数器示例'] },
-        {
-          tag: 'div',
+        Div({
           props: { className: 'counter-count' },
           children: [String(this.state.count)],
-        },
-        {
-          tag: 'div',
+        }),
+        Div({
           props: { className: 'double-count' },
           children: [`两倍值: ${this.doubleCount.value}`],
-        },
-        {
-          tag: 'div',
+        }),
+        Div({
           props: {},
           children: [
-            {
-              tag: 'button',
+            Button({
               props: {
                 onClick: this.decrement.bind(this),
               },
               children: ['-'],
-            },
-            {
-              tag: 'button',
+            }),
+            Button({
               props: {
                 onClick: this.reset.bind(this),
               },
               children: ['重置'],
-            },
-            {
-              tag: 'button',
+            }),
+            Button({
               props: {
                 onClick: this.increment.bind(this),
               },
               children: ['+'],
-            },
+            }),
           ],
-        },
+        }),
       ],
-    };
+    });
   }
 
   // 组件生命周期钩子

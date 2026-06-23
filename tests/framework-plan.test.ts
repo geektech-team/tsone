@@ -1,5 +1,16 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
-import { Component, VNode, computed, createApp, reactive } from '../lib';
+import {
+  Button,
+  Component,
+  Div,
+  Input,
+  P,
+  Span,
+  VNode,
+  computed,
+  createApp,
+  reactive,
+} from '../lib';
 import { createRouter, RouterLink, RouterView } from '../lib/router';
 
 class ChildComponent extends Component<{ label: string }> {
@@ -188,6 +199,48 @@ class SlotHost extends Component {
   }
 }
 
+class ShortcutHost extends Component<
+  Record<string, never>,
+  { content: string; name: string }
+> {
+  protected initState(): { content: string; name: string } {
+    return {
+      content: 'Shortcut content',
+      name: 'Ada',
+    };
+  }
+
+  protected initStyles(): void {}
+
+  protected render(): VNode {
+    return Div({
+      props: { className: 'shortcut-host' },
+      children: [
+        Span({
+          props: { className: 'shortcut-label' },
+          children: ['Label'],
+        }),
+        P({
+          props: { className: 'shortcut-content' },
+          children: ['{{content}}'],
+        }),
+        Input({
+          props: { 'aria-label': 'Name' },
+          directions: { model: 'name' },
+        }),
+        Button({
+          listeners: {
+            click: () => {
+              this.state.content = 'Clicked';
+            },
+          },
+          children: ['Update'],
+        }),
+      ],
+    });
+  }
+}
+
 describe('framework public plan', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
@@ -323,6 +376,33 @@ describe('framework public plan', () => {
     );
     expect(container.querySelector('footer')?.textContent).toBe(
       'Projected footer'
+    );
+  });
+
+  it('renders VNodes created by element shortcut helpers', () => {
+    const container = document.createElement('div');
+    const component = new ShortcutHost();
+
+    component.mount(container);
+
+    expect(container.querySelector('.shortcut-host')).toBeTruthy();
+    expect(container.querySelector('.shortcut-label')?.textContent).toBe(
+      'Label'
+    );
+    expect(container.querySelector('.shortcut-content')?.textContent).toBe(
+      'Shortcut content'
+    );
+
+    const input = container.querySelector('input');
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    expect((input as HTMLInputElement).value).toBe('Ada');
+
+    container
+      .querySelector('button')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(container.querySelector('.shortcut-content')?.textContent).toBe(
+      'Clicked'
     );
   });
 });

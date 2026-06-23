@@ -1,4 +1,4 @@
-import { Component, VNode } from '../../lib';
+import { Component, Div, VNode } from '../../lib';
 import { StyleOptions } from '../../lib/style/StyleManager';
 
 export class Card extends Component {
@@ -57,12 +57,10 @@ export class Card extends Component {
   }
 
   protected render(): VNode {
-    return {
-      tag: 'div',
+    return Div({
       props: { class: 'card' },
       children: [
-        {
-          tag: 'div',
+        Div({
           props: { class: 'card-header' },
           children: [
             {
@@ -71,9 +69,8 @@ export class Card extends Component {
               children: ['默认标题'],
             },
           ],
-        },
-        {
-          tag: 'div',
+        }),
+        Div({
           props: { class: 'card-content' },
           children: [
             {
@@ -82,9 +79,8 @@ export class Card extends Component {
               children: ['默认内容'],
             },
           ],
-        },
-        {
-          tag: 'div',
+        }),
+        Div({
           props: { class: 'card-footer' },
           children: [
             {
@@ -93,8 +89,8 @@ export class Card extends Component {
               children: ['默认页脚'],
             },
           ],
-        },
+        }),
       ],
-    };
+    });
   }
 }
