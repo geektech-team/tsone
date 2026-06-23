@@ -32,6 +32,7 @@ describe('repository hygiene', () => {
       /(^|\/)\.vite\//,
       /(^|\/)\.pnpm-store\//,
       /^dist\//,
+      /^docs\/dist\//,
     ];
 
     const forbiddenFiles = files.filter((file) =>
@@ -44,8 +45,8 @@ describe('repository hygiene', () => {
   it('ignores recurring local and generated artifacts', () => {
     expect(gitIgnoreMatches('.DS_Store')).toBe(true);
     expect(gitIgnoreMatches('coverage/lcov.info')).toBe(true);
+    expect(gitIgnoreMatches('docs/dist/index.html')).toBe(true);
     expect(gitIgnoreMatches('docs/node_modules/.modules.yaml')).toBe(true);
-    expect(gitIgnoreMatches('docs/src/.vitepress/cache/index.html')).toBe(true);
     expect(gitIgnoreMatches('.worktrees/open-source-priority')).toBe(true);
   });
 });

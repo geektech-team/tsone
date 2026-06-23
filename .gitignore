@@ -8,5 +8,4 @@ coverage/
 .worktrees
 worktrees
 docs/node_modules/
-docs/src/.vitepress/cache/
-docs/src/.vitepress/dist/
+docs/dist/
