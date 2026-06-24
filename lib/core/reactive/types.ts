@@ -17,6 +17,11 @@ export interface ComputedRef<T> {
 
 export const IS_REACTIVE = Symbol('is_reactive');
 export const IS_READONLY = Symbol('is_readonly');
+export const IS_REF = Symbol('is_ref');
+
+export interface Ref<T = unknown> {
+  value: T;
+}
 
 export const MUTATING_ARRAY_METHODS = [
   'push',

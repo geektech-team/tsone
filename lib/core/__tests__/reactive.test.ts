@@ -1,6 +1,16 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it, spyOn } from 'bun:test';
 
-import { reactive, effect, ReactiveSystem } from '../reactive';
+import {
+  reactive,
+  readonly,
+  effect,
+  ReactiveSystem,
+  isReactive,
+  isReadonly,
+  ref,
+  isRef,
+  unref,
+} from '../reactive';
 
 describe('ReactiveSystem', () => {
   describe('reactive', () => {
@@ -22,6 +32,19 @@ describe('ReactiveSystem', () => {
       observed.nested.count = 1;
       expect(observed.nested.count).toBe(1);
       expect(original.nested.count).toBe(1);
+    });
+
+    it('应该追踪数组中嵌套对象的属性变化', () => {
+      const observed = reactive({ items: [{ count: 0 }] });
+      let dummy = 0;
+
+      effect(() => {
+        dummy = observed.items[0].count;
+      });
+
+      observed.items[0].count = 1;
+
+      expect(dummy).toBe(1);
     });
 
     it('不应重复创建响应式对象', () => {
@@ -82,6 +105,55 @@ describe('ReactiveSystem', () => {
       expect(dummy).toBe(0);
       observed.bar = 1;
       expect(dummy).toBe(1);
+    });
+  });
+
+  describe('readonly', () => {
+    it('应该阻止嵌套数组和数组项被修改', () => {
+      const warnSpy = spyOn(console, 'warn').mockImplementation(() => {});
+      const original = { items: [{ count: 0 }] };
+      const observed = readonly(original);
+
+      expect(isReadonly(observed)).toBe(true);
+      expect(isReactive(observed)).toBe(false);
+      expect(isReadonly(observed.items)).toBe(true);
+      expect(isReadonly(observed.items[0])).toBe(true);
+
+      try {
+        observed.items.push({ count: 1 });
+      } catch {
+        // Proxy set traps may throw in strict mode when readonly mutation fails.
+      }
+
+      try {
+        (observed.items[0] as { count: number }).count = 2;
+      } catch {
+        // Proxy set traps may throw in strict mode when readonly mutation fails.
+      }
+
+      expect(original.items).toHaveLength(1);
+      expect(original.items[0].count).toBe(0);
+      warnSpy.mockRestore();
+    });
+  });
+
+  describe('ref', () => {
+    it('应该创建响应式单值引用并支持unref', () => {
+      const count = ref(0);
+      let dummy = 0;
+
+      expect(isRef(count)).toBe(true);
+      expect(isRef(1)).toBe(false);
+
+      effect(() => {
+        dummy = count.value;
+      });
+
+      count.value = 2;
+
+      expect(dummy).toBe(2);
+      expect(unref(count)).toBe(2);
+      expect(unref('plain')).toBe('plain');
     });
   });
 

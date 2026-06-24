@@ -1,4 +1,6 @@
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'bun:test';
 
 function trackedFiles(): string[] {
@@ -48,5 +50,14 @@ describe('repository hygiene', () => {
     expect(gitIgnoreMatches('docs/dist/index.html')).toBe(true);
     expect(gitIgnoreMatches('docs/node_modules/.modules.yaml')).toBe(true);
     expect(gitIgnoreMatches('.worktrees/open-source-priority')).toBe(true);
+  });
+
+  it('formats the full TypeScript workspace instead of only root files', () => {
+    const packageJson = JSON.parse(
+      readFileSync(join(process.cwd(), 'package.json'), 'utf8')
+    ) as { scripts?: Record<string, string> };
+
+    expect(packageJson.scripts?.format).toContain('.');
+    expect(packageJson.scripts?.format).not.toBe('prettier --write *.ts');
   });
 });

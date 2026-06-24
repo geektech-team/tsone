@@ -1,4 +1,4 @@
-import { effect, ReactiveEffect } from './reactive';
+import { effect, ReactiveEffect, stop } from './reactive';
 
 export interface TemplateBinding {
   node: Text;
@@ -129,7 +129,7 @@ export class TemplateEngine {
   public clearBindings(): void {
     // 停止所有effect
     this.bindings.forEach((binding) => {
-      binding.effect.active = false;
+      stop(binding.effect);
     });
     this.bindings = [];
   }

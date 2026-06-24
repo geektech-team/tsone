@@ -19,14 +19,19 @@ export function getBrowserLocation(
 ): RouteLocation {
   let path: string;
   let fullPath: string;
+  let queryString: string;
 
   if (mode === 'history') {
     fullPath = window.location.pathname + window.location.search;
     path = window.location.pathname;
+    queryString = window.location.search;
   } else {
     const hash = window.location.hash;
     fullPath = hash || '#/';
     path = fullPath.startsWith('#') ? fullPath.slice(1) : fullPath;
+    const queryStart = path.indexOf('?');
+    queryString = queryStart >= 0 ? path.slice(queryStart + 1) : '';
+    path = queryStart >= 0 ? path.slice(0, queryStart) : path;
   }
 
   if (path.startsWith(base) && base !== '/' && path !== '/') {
@@ -38,9 +43,7 @@ export function getBrowserLocation(
   return {
     path,
     fullPath,
-    query: parseQuery(
-      mode === 'hash' ? (path.split('?')[1] ?? '') : window.location.search
-    ),
+    query: parseQuery(queryString),
     params: {},
   };
 }

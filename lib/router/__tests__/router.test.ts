@@ -152,5 +152,29 @@ describe('Router', () => {
         query: { tab: 'profile' },
       });
     });
+
+    it('hash模式应该从path中分离query', () => {
+      window.location.hash = '#/users/42?tab=profile';
+
+      const hashRouter = createRouter({
+        mode: 'hash',
+        routes: [
+          { path: '/', component: TestHomeComponent },
+          { path: '/users/:id', component: TestUserComponent, name: 'user' },
+        ],
+      });
+
+      expect(hashRouter.getCurrentRouteRecord()?.component).toBe(
+        TestUserComponent
+      );
+      expect(hashRouter.getCurrentRoute()).toMatchObject({
+        path: '/users/42',
+        name: 'user',
+        params: { id: '42' },
+        query: { tab: 'profile' },
+      });
+
+      hashRouter.destroy();
+    });
   });
 });

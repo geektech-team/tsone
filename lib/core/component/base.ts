@@ -120,7 +120,7 @@ export abstract class Component<
 
     this.childComponents.clear();
     this.templateEngine.clearBindings();
-    this.styleManager.clearStyles();
+    this.styleManager.destroy();
     stop(this.updateEffect);
 
     if (this.el?.parentNode) {

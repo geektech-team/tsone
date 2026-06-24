@@ -15,10 +15,11 @@ import {
   relative,
 } from 'node:path';
 import { Window } from 'happy-dom';
+import { renderHtmlDocument } from '../lib';
 import { DocsPage } from '../docs/app/components/DocsPage';
 import { docPages, type DocPage as ContentDocPage } from '../docs/app/content';
 import { normalizeDocPath } from '../docs/app/content/types';
-import { docsCss } from '../docs/app/styles';
+import { docsStyles } from '../docs/app/styles';
 
 export interface DocsBuildOptions {
   outDir?: string;
@@ -37,14 +38,6 @@ export interface DocsServerOptions {
 }
 
 const DEFAULT_OUT_DIR = 'docs/dist';
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 export function routeToOutputPath(route: string, outDir: string): string {
   const normalizedRoute = normalizeDocPath(route);
@@ -155,28 +148,17 @@ export function renderDocPage(
 ): string {
   installBuildDom(page.path);
 
-  const mountRoot = document.createElement('div');
-  mountRoot.id = 'app';
-  document.body.appendChild(mountRoot);
-
-  new DocsPage({ page, pages }).mount(mountRoot);
-
-  return [
-    '<!doctype html>',
-    '<html lang="zh-CN">',
-    '<head>',
-    '  <meta charset="utf-8">',
-    '  <meta name="viewport" content="width=device-width, initial-scale=1">',
-    `  <title>${escapeHtml(page.title)} - TSone Docs</title>`,
-    `  <meta name="description" content="${escapeHtml(page.description)}">`,
-    `  <style>${docsCss}</style>`,
-    '</head>',
-    '<body>',
-    mountRoot.innerHTML,
-    '  <script type="module" src="/assets/docs-client.js"></script>',
-    '</body>',
-    '</html>',
-  ].join('\n');
+  return renderHtmlDocument({
+    lang: 'zh-CN',
+    title: `${page.title} - TSone Docs`,
+    description: page.description,
+    body: {
+      component: DocsPage,
+      props: { page, pages },
+    },
+    styles: docsStyles,
+    scripts: [{ type: 'module', src: '/assets/docs-client.js' }],
+  });
 }
 
 async function buildClientBundle(outDir: string): Promise<string[]> {
@@ -302,7 +284,11 @@ function resolveStaticFile(outDir: string, pathname: string): string | null {
 
 function isPathInside(rootPath: string, candidatePath: string): boolean {
   const relativePath = relative(rootPath, candidatePath);
-  return relativePath !== '' && !relativePath.startsWith('..') && !isAbsolute(relativePath);
+  return (
+    relativePath !== '' &&
+    !relativePath.startsWith('..') &&
+    !isAbsolute(relativePath)
+  );
 }
 
 function contentType(filePath: string): string {

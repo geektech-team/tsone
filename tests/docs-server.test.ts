@@ -8,10 +8,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'bun:test';
-import {
-  resolveDocsServerOptions,
-  startDocsServer,
-} from '../scripts/docs';
+import { resolveDocsServerOptions, startDocsServer } from '../scripts/docs';
 
 let server: ReturnType<typeof Bun.serve> | undefined;
 
@@ -55,13 +52,7 @@ describe('TSone docs preview server', () => {
 
     try {
       const proc = Bun.spawn({
-        cmd: [
-          'bun',
-          'scripts/docs.ts',
-          '--build',
-          '--port',
-          'invalid',
-        ],
+        cmd: ['bun', 'scripts/docs.ts', '--build', '--port', 'invalid'],
         cwd: process.cwd(),
         env: {
           ...process.env,
@@ -71,9 +62,7 @@ describe('TSone docs preview server', () => {
         stderr: 'pipe',
       });
       const exitCode = await proc.exited;
-      const stderr = proc.stderr
-        ? await new Response(proc.stderr).text()
-        : '';
+      const stderr = proc.stderr ? await new Response(proc.stderr).text() : '';
 
       expect(exitCode).toBe(0);
       expect(stderr).not.toContain('Invalid docs server port');

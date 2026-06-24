@@ -1,8 +1,10 @@
 import {
   ComputedRef,
   IS_REACTIVE,
+  IS_REF,
   IS_READONLY,
   MUTATING_ARRAY_METHODS,
+  Ref,
   ReactiveEffect,
   ReactiveEffectOptions,
   hasReactiveFlag,
@@ -11,6 +13,7 @@ import {
 
 export type {
   ComputedRef,
+  Ref,
   ReactiveEffect,
   ReactiveEffectOptions,
 } from './reactive/types';
@@ -77,7 +80,7 @@ export class ReactiveSystem {
         const value = Reflect.get(target, key);
 
         // 如果是对象，递归转换为响应式
-        if (value && typeof value === 'object' && !Array.isArray(value)) {
+        if (isObject(value) && !hasReactiveFlag(value, IS_READONLY)) {
           return this.reactive(value);
         }
         return value;
@@ -93,10 +96,9 @@ export class ReactiveSystem {
 
         // 如果新值是对象，转换为响应式
         if (
-          value &&
-          typeof value === 'object' &&
-          !Array.isArray(value) &&
-          !hasReactiveFlag(value, IS_REACTIVE)
+          isObject(value) &&
+          !hasReactiveFlag(value, IS_REACTIVE) &&
+          !hasReactiveFlag(value, IS_READONLY)
         ) {
           value = this.reactive(value);
         }
@@ -175,6 +177,10 @@ export class ReactiveSystem {
           };
         }
 
+        if (isObject(value) && !hasReactiveFlag(value, IS_READONLY)) {
+          return this.reactive(value);
+        }
+
         return value;
       },
       set: (target, key: string | symbol, value) => {
@@ -188,10 +194,9 @@ export class ReactiveSystem {
 
         // 如果新值是对象，转换为响应式
         if (
-          value &&
-          typeof value === 'object' &&
-          !Array.isArray(value) &&
-          !hasReactiveFlag(value, IS_REACTIVE)
+          isObject(value) &&
+          !hasReactiveFlag(value, IS_REACTIVE) &&
+          !hasReactiveFlag(value, IS_READONLY)
         ) {
           value = this.reactive(value);
         }
@@ -254,13 +259,16 @@ export class ReactiveSystem {
     const proxy = new Proxy(target, {
       get: (target, key: string | symbol) => {
         // 处理响应式标记的特殊属性
-        if (key === IS_REACTIVE || key === IS_READONLY) {
+        if (key === IS_REACTIVE) {
+          return false;
+        }
+        if (key === IS_READONLY) {
           return true;
         }
 
         const value = Reflect.get(target, key);
         // 如果是对象，递归转换为只读响应式
-        if (value && typeof value === 'object' && !Array.isArray(value)) {
+        if (isObject(value)) {
           return this.readonly(value);
         }
         return value;
@@ -431,6 +439,25 @@ export function effect<T = unknown>(
 
 export function computed<T>(getter: () => T): ComputedRef<T> {
   return ReactiveSystem.getInstance().computed(getter);
+}
+
+export function ref<T>(value: T): Ref<T> {
+  const wrapper = { value };
+  Object.defineProperty(wrapper, IS_REF, {
+    configurable: false,
+    enumerable: false,
+    value: true,
+  });
+
+  return reactive(wrapper) as Ref<T>;
+}
+
+export function isRef(value: unknown): value is Ref<unknown> {
+  return isObject(value) && Boolean(Reflect.get(value, IS_REF));
+}
+
+export function unref<T>(value: T | Ref<T>): T {
+  return isRef(value) ? value.value : value;
 }
 
 export function stop(effect: ReactiveEffect): void {

@@ -9,6 +9,8 @@ import {
 } from './history';
 import { matchRoute } from './matcher';
 
+export { useRouter } from './instance';
+
 export type RouteMeta = Record<string, unknown>;
 
 export interface RouteRecord {

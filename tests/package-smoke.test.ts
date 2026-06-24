@@ -114,8 +114,8 @@ describe('package smoke', () => {
       writeFileSync(
         join(tempDir, 'bun-consumer.ts'),
         [
-          `import { Button, Component, Div, Input, P, Span, name, reactive, version } from '${packageName}';`,
-          `import { RouterLink, RouterView, createRouter } from '${packageName}/router';`,
+          `import { Button, Component, Div, Input, P, Span, isRef, name, reactive, ref, unref, version } from '${packageName}';`,
+          `import { RouterLink, RouterView, createRouter, useRouter } from '${packageName}/router';`,
           `import { StyleManager } from '${packageName}/style';`,
           '',
           'console.log(JSON.stringify({',
@@ -124,6 +124,7 @@ describe('package smoke', () => {
           '  component: typeof Component,',
           '  reactive: typeof reactive,',
           '  router: typeof createRouter,',
+          '  useRouter: typeof useRouter,',
           '  routerLink: typeof RouterLink,',
           '  routerView: typeof RouterView,',
           '  style: typeof StyleManager,',
@@ -132,6 +133,9 @@ describe('package smoke', () => {
           '  paragraph: typeof P,',
           '  button: typeof Button,',
           '  input: typeof Input,',
+          '  ref: typeof ref,',
+          '  isRef: typeof isRef,',
+          '  unref: typeof unref,',
           '}));',
         ].join('\n')
       );
@@ -143,6 +147,7 @@ describe('package smoke', () => {
         component: 'function',
         reactive: 'function',
         router: 'function',
+        useRouter: 'function',
         routerLink: 'function',
         routerView: 'function',
         style: 'function',
@@ -151,13 +156,16 @@ describe('package smoke', () => {
         paragraph: 'function',
         button: 'function',
         input: 'function',
+        ref: 'function',
+        isRef: 'function',
+        unref: 'function',
       });
 
       writeFileSync(
         join(tempDir, 'consumer.ts'),
         [
-          `import { Component, Div, VNode, createApp, reactive } from '${packageName}';`,
-          `import { RouterLink, RouterView, createRouter } from '${packageName}/router';`,
+          `import { Component, Div, VNode, createApp, isRef, reactive, ref, unref } from '${packageName}';`,
+          `import { RouterLink, RouterView, createRouter, useRouter } from '${packageName}/router';`,
           '',
           'interface AppState {',
           '  count: number;',
@@ -174,11 +182,17 @@ describe('package smoke', () => {
           '}',
           '',
           'const state = reactive({ ready: true });',
+          'const ready = ref(true);',
           "const router = createRouter([{ path: '/', component: App }]);",
           "const app = createApp({ root: App, rootElement: '#app', state });",
           'app.use(router);',
+          'const rawReady: boolean = unref(ready);',
+          'const readyIsRef: boolean = isRef(ready);',
           'void RouterLink;',
           'void RouterView;',
+          'void useRouter;',
+          'void rawReady;',
+          'void readyIsRef;',
         ].join('\n')
       );
       writeFileSync(

@@ -25,13 +25,17 @@ describe('Component', () => {
   let container: HTMLElement;
 
   beforeEach(() => {
+    document.head.innerHTML = '';
     container = document.createElement('div');
     document.body.appendChild(container);
     component = new TestComponent();
   });
 
   afterEach(() => {
-    document.body.removeChild(container);
+    component.unmount();
+    if (container.parentNode) {
+      document.body.removeChild(container);
+    }
   });
 
   describe('生命周期', () => {
@@ -42,6 +46,17 @@ describe('Component', () => {
 
       component.unmount();
       expect(container.querySelector('#test-component')).toBeFalsy();
+    });
+
+    it('卸载时应该移除组件创建的style元素', () => {
+      const initialStyleCount = document.head.querySelectorAll('style').length;
+
+      component.mount(container);
+      component.unmount();
+
+      expect(document.head.querySelectorAll('style')).toHaveLength(
+        initialStyleCount - 1
+      );
     });
   });
 

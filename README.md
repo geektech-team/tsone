@@ -4,7 +4,7 @@
 
 ## 特性
 
-- 纯 TypeScript 实现，公开 API 提供类型定义
+- 纯 TypeScript 实现，TypeScript为第一公民，公开 API 提供类型定义
 - Bun 原生工具链：安装、测试、构建、示例服务和文档服务均由 Bun 驱动
 - 文档内容由 TSone 的 TypeScript typed content registry 提供
 - 响应式系统：`reactive`、`effect`、`computed`
@@ -140,6 +140,27 @@ bun run docs:build
 bun run docs:build
 ```
 
+基础 HTML 文档壳也可以由 TSone 生成，`body` 传入组件或 VNode，不传 HTML 字符串。该 API 会通过 TSone 渲染器挂载节点；在 Bun/Node 静态生成环境中，请先提供 DOM-like document：
+
+```typescript
+import { renderHtmlDocument, type StyleSheet } from '@geektech/tsone';
+
+const styles: StyleSheet = [
+  {
+    selector: '.app',
+    properties: { maxWidth: '72rem' },
+  },
+];
+
+const html = renderHtmlDocument({
+  lang: 'zh-CN',
+  title: 'TSone App',
+  body: { component: App, props: { message: 'Hello TSone' } },
+  styles,
+  scripts: [{ type: 'module', src: '/assets/app.js' }],
+});
+```
+
 ## 公开 API
 
 主入口 `@geektech/tsone`：
@@ -149,6 +170,8 @@ bun run docs:build
 - `VNode`
 - `h()` / `createComponent()` / `slot()`
 - `Div()` / `Span()` / `P()` / `Button()` / `Input()`
+- `renderHtmlDocument(options)`
+- `StyleSheet` / `renderStyleSheet(styles)`
 - `reactive()` / `readonly()`
 - `effect()` / `stop()`
 - `computed()`
@@ -168,6 +191,7 @@ bun run docs:build
 样式入口 `@geektech/tsone/style`：
 
 - `StyleManager`
+- `StyleSheet` / `renderStyleSheet(styles)`
 
 ## 发布前检查
 

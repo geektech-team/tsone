@@ -270,24 +270,27 @@ describe('docs content registry', () => {
   it('keeps contributing guidance aligned with the typed content registry', () => {
     const contributing = findDocPage('/contributing/');
 
-    expect(contributing).toBeDefined();
-    expect(docText(contributing!)).not.toContain('Markdown 格式');
-    expect(docText(contributing!)).not.toContain(
+    if (!contributing) {
+      throw new Error('Missing contributing documentation page');
+    }
+
+    expect(docText(contributing)).not.toContain('Markdown 格式');
+    expect(docText(contributing)).not.toContain(
       'https://github.com/yourusername/tsone.git'
     );
-    expect(docText(contributing!)).toContain(
-      'docs/app/content/*.ts'
-    );
-    expect(docText(contributing!)).toContain('typed content registry');
-    expect(docText(contributing!)).toContain('结构化 block helper');
+    expect(docText(contributing)).toContain('docs/app/content/*.ts');
+    expect(docText(contributing)).toContain('typed content registry');
+    expect(docText(contributing)).toContain('结构化 block helper');
   });
 
   it('includes complete form and list examples without truncation', () => {
     const example = findDocPage('/examples/basic/');
 
-    expect(example).toBeDefined();
+    if (!example) {
+      throw new Error('Missing basic examples documentation page');
+    }
 
-    const text = docText(example!);
+    const text = docText(example);
 
     expect(text).not.toContain('...表单字段省略...');
     expect(text).toContain("children: ['Submit']");

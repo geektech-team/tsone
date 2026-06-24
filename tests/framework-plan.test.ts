@@ -241,6 +241,33 @@ class ShortcutHost extends Component<
   }
 }
 
+class ModelSwitchHost extends Component<
+  Record<string, never>,
+  { useFirst: boolean; first: string; second: string }
+> {
+  protected initState(): {
+    useFirst: boolean;
+    first: string;
+    second: string;
+  } {
+    return {
+      useFirst: true,
+      first: 'alpha',
+      second: 'beta',
+    };
+  }
+
+  protected initStyles(): void {}
+
+  protected render(): VNode {
+    return Input({
+      directions: {
+        model: this.state.useFirst ? 'first' : 'second',
+      },
+    });
+  }
+}
+
 describe('framework public plan', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
@@ -404,5 +431,22 @@ describe('framework public plan', () => {
     expect(container.querySelector('.shortcut-content')?.textContent).toBe(
       'Clicked'
     );
+  });
+
+  it('replaces old model bindings when an input switches model keys', () => {
+    const container = document.createElement('div');
+    const component = new ModelSwitchHost();
+
+    component.mount(container);
+    component.state.useFirst = false;
+
+    const input = container.querySelector('input');
+    expect(input).toBeInstanceOf(HTMLInputElement);
+
+    (input as HTMLInputElement).value = 'gamma';
+    input?.dispatchEvent(new Event('input', { bubbles: true }));
+
+    expect(component.state.first).toBe('alpha');
+    expect(component.state.second).toBe('gamma');
   });
 });

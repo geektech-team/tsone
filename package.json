@@ -26,7 +26,7 @@
     "build": "bun scripts/build.ts",
     "build:types": "bunx tsc --project tsconfig.build.json",
     "lint": "eslint . --ext .ts",
-    "format": "prettier --write *.ts",
+    "format": "prettier --write . --ignore-path .gitignore",
     "test": "bun test",
     "docs:build": "bun scripts/docs.ts --build",
     "preview": "bun scripts/docs.ts"

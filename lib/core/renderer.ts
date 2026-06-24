@@ -287,6 +287,7 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
   >();
   private readonly effects = new WeakMap<HTMLElement, Set<ReactiveEffect>>();
   private readonly modelBindings = new WeakMap<HTMLElement, string>();
+  private readonly modelEffects = new WeakMap<HTMLElement, ReactiveEffect>();
 
   public matches(vnode: Renderable): vnode is HTMLNode {
     return typeof vnode === 'object' && vnode !== null && isHTMLNode(vnode);
@@ -379,6 +380,7 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
       currentNode.removeEventListener(eventName, listener);
     });
     this.listeners.delete(currentNode);
+    this.modelEffects.delete(currentNode);
     this.modelBindings.delete(currentNode);
 
     (vnode.children ?? []).forEach((child, index) => {
@@ -461,8 +463,15 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
       element.style.display = '';
     }
 
-    if (newDirections?.model) {
-      this.setupTwoWayBinding(element, newDirections.model, context);
+    const oldModel = oldDirections?.model;
+    const newModel = newDirections?.model;
+
+    if (oldModel && oldModel !== newModel) {
+      this.cleanupModelBinding(element, oldModel);
+    }
+
+    if (newModel) {
+      this.setupTwoWayBinding(element, newModel, context);
     }
   }
 
@@ -669,8 +678,13 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
       return;
     }
 
-    if (this.modelBindings.get(element) === modelKey) {
+    const previousModelKey = this.modelBindings.get(element);
+    if (previousModelKey === modelKey) {
       return;
+    }
+
+    if (previousModelKey) {
+      this.cleanupModelBinding(element, previousModelKey);
     }
 
     this.modelBindings.set(element, modelKey);
@@ -713,7 +727,34 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
         element.value = nextValue;
       }
     });
+    this.modelEffects.set(element, effectRef);
     this.trackEffect(element, effectRef);
+  }
+
+  private cleanupModelBinding(element: HTMLElement, modelKey: string): void {
+    const store = this.listeners.get(element);
+    const storeKey = `model:${modelKey}`;
+    const stored = store?.get(storeKey);
+
+    if (stored) {
+      element.removeEventListener(stored.eventName, stored.listener);
+      store?.delete(storeKey);
+    }
+
+    if (store && store.size === 0) {
+      this.listeners.delete(element);
+    }
+
+    const effectRef = this.modelEffects.get(element);
+    if (effectRef) {
+      stop(effectRef);
+      this.effects.get(element)?.delete(effectRef);
+      this.modelEffects.delete(element);
+    }
+
+    if (this.modelBindings.get(element) === modelKey) {
+      this.modelBindings.delete(element);
+    }
   }
 
   private getStateValue(

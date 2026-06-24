@@ -4,3 +4,4 @@ export * from './reactive';
 export * from './vnode';
 export * from './template';
 export * from './renderer';
+export * from './document';

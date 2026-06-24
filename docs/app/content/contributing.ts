@@ -23,10 +23,9 @@ export const contributingPages: DocPage[] = [
       heading(3, '克隆仓库'),
       codeBlock(
         'bash',
-        [
-          'git clone https://github.com/geektech/tsone.git',
-          'cd tsone',
-        ].join('\n')
+        ['git clone https://github.com/geektech/tsone.git', 'cd tsone'].join(
+          '\n'
+        )
       ),
       heading(3, '安装依赖'),
       codeBlock('bash', 'bun install'),

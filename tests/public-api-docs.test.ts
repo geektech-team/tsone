@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'bun:test';
+import * as publicApi from '../lib';
+import * as routerApi from '../lib/router';
 import { docPages, docText } from '../docs/app/content';
 
 const root = process.cwd();
@@ -55,18 +57,29 @@ describe('public API documentation', () => {
       'Button',
       'Input',
       'VNode',
+      'renderHtmlDocument',
+      'StyleSheet',
       'reactive',
       'effect',
       'computed',
+      'isRef',
+      'unref',
     ]) {
       expect(readme).toContain(symbol);
     }
 
     expect(appApi).toContain('root');
     expect(appApi).toContain('createApp({ root: App');
+    expect(appApi).toContain('renderHtmlDocument');
+    expect(appApi).toContain('body: { component: App');
+    expect(appApi).toContain('StyleSheet');
+    expect(appApi).toContain('DOM-like document');
+    expect(readme).toContain('DOM-like document');
     expect(componentApi).toContain('Component<Props, State>');
     expect(componentApi).toContain('protected render(): VNode');
     expect(reactiveApi).toContain('computed');
+    expect(reactiveApi).toContain('isRef');
+    expect(reactiveApi).toContain('unref');
   });
 
   it('documents RouterView and RouterLink as public router component exits', () => {
@@ -78,5 +91,40 @@ describe('public API documentation', () => {
     expect(routerApi).toContain('RouterView');
     expect(routerApi).toContain('RouterLink');
     expect(routerApi).toContain('createRouter({ routes');
+  });
+
+  it('keeps documented public symbols exported from source entrypoints', () => {
+    for (const symbol of [
+      'createApp',
+      'Component',
+      'Div',
+      'Span',
+      'P',
+      'Button',
+      'Input',
+      'renderHtmlDocument',
+      'renderStyleSheet',
+      'reactive',
+      'readonly',
+      'effect',
+      'stop',
+      'computed',
+      'ref',
+      'isRef',
+      'unref',
+      'version',
+    ]) {
+      expect(publicApi).toHaveProperty(symbol);
+    }
+
+    for (const symbol of [
+      'createRouter',
+      'Router',
+      'RouterView',
+      'RouterLink',
+      'useRouter',
+    ]) {
+      expect(routerApi).toHaveProperty(symbol);
+    }
   });
 });
