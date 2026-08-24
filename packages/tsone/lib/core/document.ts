@@ -103,6 +103,9 @@ function renderDocumentBody(body: HtmlDocumentBody): string {
     registerChild: (component: ComponentInstance) => {
       mountedComponents.add(component);
     },
+    unregisterChild: (component: ComponentInstance) => {
+      mountedComponents.delete(component);
+    },
   };
 
   renderables.forEach((renderable) => {

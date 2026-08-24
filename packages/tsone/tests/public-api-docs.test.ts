@@ -1,14 +1,12 @@
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'bun:test';
 import * as publicApi from '../lib';
 import * as routerApi from '../lib/router';
 import { docPages, docText } from '../docs/app/content';
-
-const root = process.cwd();
+import { packagePath } from './paths';
 
 function readText(path: string): string {
-  return readFileSync(join(root, path), 'utf8');
+  return readFileSync(packagePath(path), 'utf8');
 }
 
 function packageVersion(): string {
@@ -64,6 +62,11 @@ describe('public API documentation', () => {
       'computed',
       'isRef',
       'unref',
+      'each',
+      'createForm',
+      'required',
+      'minLength',
+      'validate',
     ]) {
       expect(readme).toContain(symbol);
     }
@@ -80,6 +83,11 @@ describe('public API documentation', () => {
     expect(reactiveApi).toContain('computed');
     expect(reactiveApi).toContain('isRef');
     expect(reactiveApi).toContain('unref');
+    expect(componentApi).toContain('directions: { if: this.state.visible }');
+    expect(componentApi).toContain('emitters');
+    expect(componentApi).toContain('provide');
+    expect(componentApi).toContain('directions: { model:');
+    expect(componentApi).toContain('createForm');
   });
 
   it('documents RouterView and RouterLink as public router component exits', () => {
@@ -113,6 +121,11 @@ describe('public API documentation', () => {
       'isRef',
       'unref',
       'version',
+      'each',
+      'createForm',
+      'required',
+      'minLength',
+      'validate',
     ]) {
       expect(publicApi).toHaveProperty(symbol);
     }

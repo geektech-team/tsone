@@ -292,7 +292,7 @@ export class ReactiveSystem {
     fn: () => T,
     options?: ReactiveEffectOptions
   ): ReactiveEffect<T> {
-    const { lazy = false, scheduler } = options || {};
+    const { lazy = false, scheduler, throwOnError = false } = options || {};
 
     const effectFn: ReactiveEffect<T> = () => {
       if (!effectFn.active) {
@@ -306,6 +306,9 @@ export class ReactiveSystem {
         this.activeEffect = effectFn;
         return fn();
       } catch (error) {
+        if (throwOnError) {
+          throw error;
+        }
         console.error('Effect error:', error);
         return undefined;
       } finally {

@@ -1,0 +1,33 @@
+{
+  "name": "tsone-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run --cwd packages/tsone dev",
+    "docs": "bun run --cwd packages/tsone docs",
+    "build": "bun run --cwd packages/tsone build",
+    "build:types": "bun run --cwd packages/tsone build:types",
+    "lint": "bun run --cwd packages/tsone lint",
+    "format": "prettier --write . --ignore-path .gitignore",
+    "test": "bun test",
+    "docs:build": "bun run --cwd packages/tsone docs:build",
+    "preview": "bun run --cwd packages/tsone preview"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "happy-dom": "^20.9.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  }
+}

@@ -100,6 +100,8 @@ export const apiPages: DocPage[] = [
         ],
         [inlineCode('updateRootComponent(App)'), ': 替换根组件'],
         [inlineCode('onUnmounted(callback)'), ': 注册卸载后的回调'],
+        [inlineCode('provide(key, value)'), ': 提供应用级依赖'],
+        [inlineCode('inject(key, fallback?)'), ': 读取应用级依赖'],
       ]),
       heading(2, 'renderHtmlDocument'),
       apiTable([
@@ -280,14 +282,90 @@ export const apiPages: DocPage[] = [
       codeBlock(
         'ts',
         [
-          "component.on('submit', (payload) => {",
+          "const unsubscribe = component.on('submit', (payload) => {",
           '  console.log(payload);',
           '});',
           '',
-          "component.off('submit', listener);",
+          'unsubscribe();',
         ].join('\n')
       ),
       paragraph('组件内部可使用 this.emit(eventName, ...args) 触发事件。'),
+      paragraph(
+        '在父组件 VNode 上使用 ',
+        inlineCode('emitters'),
+        ' 可声明事件处理器；patch 时旧处理器会被替换或清理。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          '{',
+          '  component: Editor,',
+          '  emitters: {',
+          '    saved: (payload) => this.save(payload),',
+          '  },',
+          '}',
+        ].join('\n')
+      ),
+      heading(2, '依赖注入'),
+      paragraph(
+        '使用 ',
+        inlineCode('InjectionKey'),
+        '、',
+        inlineCode('provide'),
+        ' 和 ',
+        inlineCode('inject'),
+        ' 在应用和组件树中共享依赖。组件注入按自身、父级、应用顺序查找。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { InjectionKey } from '@geektech/tsone';",
+          '',
+          "const THEME: InjectionKey<{ mode: string }> = Symbol('theme');",
+          "app.provide(THEME, { mode: 'dark' });",
+          "const theme = this.inject(THEME, { mode: 'light' });",
+        ].join('\n')
+      ),
+      heading(2, '条件、列表与模型绑定'),
+      codeBlock(
+        'ts',
+        [
+          "import { Input, each } from '@geektech/tsone';",
+          '',
+          'const children = each(',
+          '  this.state.users,',
+          "  (user) => ({ tag: 'li', children: [user.name] }),",
+          '  (user) => user.id',
+          ');',
+          '',
+          'const field = Input({',
+          '  directions: {',
+          "    model: { path: 'profile.name' },",
+          '  },',
+          '});',
+          '',
+          'const panel = {',
+          '  component: ProfilePanel,',
+          '  directions: { if: this.state.visible },',
+          '};',
+        ].join('\n')
+      ),
+      heading(2, '表单校验'),
+      codeBlock(
+        'ts',
+        [
+          "import { createForm, minLength, required, validate } from '@geektech/tsone';",
+          '',
+          'const form = createForm(this.state, {',
+          "  'profile.name': [required('请输入姓名'), minLength(2)],",
+          "  'profile.age': [validate((value) => Number(value) >= 18 || '年龄须不小于 18')],",
+          '});',
+          '',
+          'const result = form.validate();',
+          "const field = form.validateField('profile.name');",
+          'form.resetErrors();',
+        ].join('\n')
+      ),
       heading(2, 'Slots'),
       codeBlock(
         'ts',

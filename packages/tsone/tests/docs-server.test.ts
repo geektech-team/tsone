@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'bun:test';
 import { resolveDocsServerOptions, startDocsServer } from '../scripts/docs';
+import { packageRoot } from './paths';
 
 let server: ReturnType<typeof Bun.serve> | undefined;
 
@@ -53,7 +54,7 @@ describe('TSone docs preview server', () => {
     try {
       const proc = Bun.spawn({
         cmd: ['bun', 'scripts/docs.ts', '--build', '--port', 'invalid'],
-        cwd: process.cwd(),
+        cwd: packageRoot,
         env: {
           ...process.env,
           DOCS_OUT_DIR: outDir,

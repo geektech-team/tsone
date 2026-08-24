@@ -1,5 +1,5 @@
 import { effect, ReactiveEffect, stop } from './reactive';
-import type { ComponentProps } from './component/base';
+import type { ComponentEventListener, ComponentProps } from './component/base';
 import {
   eventNameFromProp,
   isEventProp,
@@ -7,6 +7,7 @@ import {
   setStyleValue,
   wrapEventHandler,
 } from './renderer/props';
+import { ModelBindingController } from './model';
 import {
   ComponentNode,
   EventListeners,
@@ -118,6 +119,11 @@ export class TextRenderStrategy implements RenderStrategy<string> {
 
 export class ComponentRenderStrategy implements RenderStrategy<ComponentNode> {
   private readonly instances = new WeakMap<Node, ComponentInstance>();
+  private readonly instanceNodes = new Map<ComponentInstance, Set<Node>>();
+  private readonly emitterUnsubscribers = new WeakMap<
+    ComponentInstance,
+    Map<string, { listener: ComponentEventListener; unsubscribe: () => void }>
+  >();
 
   public matches(vnode: Renderable): vnode is ComponentNode {
     return (
@@ -126,6 +132,10 @@ export class ComponentRenderStrategy implements RenderStrategy<ComponentNode> {
   }
 
   public mount(vnode: ComponentNode, context: RenderRuntimeContext): Node {
+    if (vnode.directions?.if === false) {
+      return document.createComment('if');
+    }
+
     const ComponentClass = vnode.component as new (
       props?: ComponentProps
     ) => ComponentInstance;
@@ -135,16 +145,16 @@ export class ComponentRenderStrategy implements RenderStrategy<ComponentNode> {
       instance.setAppContext(context.appContext);
     }
 
-    if (vnode.emitters) {
-      Object.entries(vnode.emitters).forEach(([eventName, listener]) => {
-        instance.on(eventName, listener);
-      });
-    }
+    this.syncEmitters(instance, vnode.emitters ?? {});
 
     context.registerChild(instance);
 
     const node = instance.mountToNode();
-    this.instances.set(node, instance);
+    this.trackInstanceNode(instance, node);
+    instance.setElementChangeListener?.((previousNode, nextNode) => {
+      this.trackInstanceNode(instance, previousNode);
+      this.trackInstanceNode(instance, nextNode);
+    });
     return node;
   }
 
@@ -154,27 +164,46 @@ export class ComponentRenderStrategy implements RenderStrategy<ComponentNode> {
     currentNode: Node,
     context: RenderRuntimeContext
   ): Node {
+    if (currentNode.nodeType === Node.COMMENT_NODE) {
+      const nextNode = this.mount(newVNode, context);
+      currentNode.parentNode?.replaceChild(nextNode, currentNode);
+      return nextNode;
+    }
+
+    if (newVNode.directions?.if === false) {
+      const nextNode = document.createComment('if');
+      currentNode.parentNode?.replaceChild(nextNode, currentNode);
+      this.unmount(oldVNode, currentNode, context);
+      return nextNode;
+    }
+
     const instance = this.instances.get(currentNode);
 
     if (instance && oldVNode.component === newVNode.component) {
+      this.syncEmitters(instance, newVNode.emitters ?? {});
       instance.setProps(this.createProps(newVNode));
-      instance.update();
       const nextNode = instance.getElement() ?? currentNode;
-      this.instances.set(nextNode, instance);
+      this.trackInstanceNode(instance, nextNode);
       return nextNode;
     }
 
     const nextNode = this.mount(newVNode, context);
     currentNode.parentNode?.replaceChild(nextNode, currentNode);
-    this.unmount(oldVNode, currentNode);
+    this.unmount(oldVNode, currentNode, context);
     return nextNode;
   }
 
-  public unmount(_vnode: ComponentNode, currentNode: Node): void {
+  public unmount(
+    _vnode: ComponentNode,
+    currentNode: Node,
+    context: RenderRuntimeContext
+  ): void {
     const instance = this.instances.get(currentNode);
     if (instance) {
+      this.clearEmitters(instance);
       instance.unmount();
-      this.instances.delete(currentNode);
+      this.clearInstanceNodes(instance);
+      context.unregisterChild(instance);
     }
   }
 
@@ -183,6 +212,55 @@ export class ComponentRenderStrategy implements RenderStrategy<ComponentNode> {
       ...(vnode.props ?? {}),
       children: vnode.children ?? [],
     };
+  }
+
+  private syncEmitters(
+    instance: ComponentInstance,
+    emitters: NonNullable<ComponentNode['emitters']>
+  ): void {
+    const current = this.emitterUnsubscribers.get(instance) ?? new Map();
+
+    current.forEach(({ listener: currentListener, unsubscribe }, eventName) => {
+      const listener = emitters[eventName];
+      if (!listener || listener !== currentListener) {
+        unsubscribe();
+        current.delete(eventName);
+      }
+    });
+
+    Object.entries(emitters).forEach(([eventName, listener]) => {
+      if (current.get(eventName)?.listener === listener) {
+        return;
+      }
+
+      current.set(eventName, {
+        listener,
+        unsubscribe: instance.on(eventName, listener),
+      });
+    });
+
+    this.emitterUnsubscribers.set(instance, current);
+  }
+
+  private clearEmitters(instance: ComponentInstance): void {
+    this.emitterUnsubscribers.get(instance)?.forEach(({ unsubscribe }) => {
+      unsubscribe();
+    });
+    this.emitterUnsubscribers.delete(instance);
+  }
+
+  private trackInstanceNode(instance: ComponentInstance, node: Node): void {
+    this.instances.set(node, instance);
+    const nodes = this.instanceNodes.get(instance) ?? new Set<Node>();
+    nodes.add(node);
+    this.instanceNodes.set(instance, nodes);
+  }
+
+  private clearInstanceNodes(instance: ComponentInstance): void {
+    this.instanceNodes.get(instance)?.forEach((node) => {
+      this.instances.delete(node);
+    });
+    this.instanceNodes.delete(instance);
   }
 }
 
@@ -197,6 +275,10 @@ export class SlotRenderStrategy implements RenderStrategy<SlotProvider> {
   }
 
   public mount(vnode: SlotProvider, context: RenderRuntimeContext): Node {
+    if (vnode.directions?.if === false) {
+      return document.createComment('if');
+    }
+
     const slotContainer = document.createElement('div');
     slotContainer.setAttribute('data-slot', vnode.props.name);
     this.mountSlotChildren(
@@ -213,6 +295,19 @@ export class SlotRenderStrategy implements RenderStrategy<SlotProvider> {
     currentNode: Node,
     context: RenderRuntimeContext
   ): Node {
+    if (currentNode.nodeType === Node.COMMENT_NODE) {
+      const nextNode = this.mount(newVNode, context);
+      currentNode.parentNode?.replaceChild(nextNode, currentNode);
+      return nextNode;
+    }
+
+    if (newVNode.directions?.if === false) {
+      const nextNode = document.createComment('if');
+      currentNode.parentNode?.replaceChild(nextNode, currentNode);
+      this.unmount(oldVNode, currentNode, context);
+      return nextNode;
+    }
+
     if (currentNode instanceof HTMLElement) {
       currentNode.setAttribute('data-slot', newVNode.props.name);
       this.replaceSlotChildren(currentNode, oldVNode, newVNode, context);
@@ -286,8 +381,7 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
     Map<string, { eventName: string; listener: EventListener }>
   >();
   private readonly effects = new WeakMap<HTMLElement, Set<ReactiveEffect>>();
-  private readonly modelBindings = new WeakMap<HTMLElement, string>();
-  private readonly modelEffects = new WeakMap<HTMLElement, ReactiveEffect>();
+  private readonly modelBindings = new ModelBindingController();
 
   public matches(vnode: Renderable): vnode is HTMLNode {
     return typeof vnode === 'object' && vnode !== null && isHTMLNode(vnode);
@@ -300,12 +394,12 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
 
     const element = document.createElement(vnode.tag);
     this.applyProps(element, {}, vnode.props ?? {}, context);
-    this.applyDirections(element, undefined, vnode.directions, context);
     this.updateListeners(element, {}, this.collectListeners(vnode));
 
     (vnode.children ?? []).forEach((child) => {
       element.appendChild(context.renderer.mount(child, context));
     });
+    this.applyDirections(element, undefined, vnode.directions, context);
 
     return element;
   }
@@ -343,12 +437,6 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
       newVNode.props ?? {},
       context
     );
-    this.applyDirections(
-      currentNode,
-      oldVNode.directions,
-      newVNode.directions,
-      context
-    );
     this.updateListeners(
       currentNode,
       this.collectListeners(oldVNode),
@@ -358,6 +446,12 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
       currentNode,
       oldVNode.children ?? [],
       newVNode.children ?? [],
+      context
+    );
+    this.applyDirections(
+      currentNode,
+      oldVNode.directions,
+      newVNode.directions,
       context
     );
 
@@ -380,8 +474,7 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
       currentNode.removeEventListener(eventName, listener);
     });
     this.listeners.delete(currentNode);
-    this.modelEffects.delete(currentNode);
-    this.modelBindings.delete(currentNode);
+    this.modelBindings.cleanup(currentNode);
 
     (vnode.children ?? []).forEach((child, index) => {
       const childNode = currentNode.childNodes[index];
@@ -463,16 +556,16 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
       element.style.display = '';
     }
 
-    const oldModel = oldDirections?.model;
-    const newModel = newDirections?.model;
-
-    if (oldModel && oldModel !== newModel) {
-      this.cleanupModelBinding(element, oldModel);
+    if (!newDirections?.model) {
+      this.modelBindings.cleanup(element);
+      return;
     }
 
-    if (newModel) {
-      this.setupTwoWayBinding(element, newModel, context);
-    }
+    this.modelBindings.bind(
+      element,
+      newDirections.model,
+      context.templateEngine.state as Record<string, unknown>
+    );
   }
 
   private updateChildren(
@@ -481,7 +574,10 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
     newChildren: Array<VNode | string>,
     context: RenderRuntimeContext
   ): void {
-    if (this.hasKeyedChildren(oldChildren, newChildren)) {
+    this.assertNoDuplicateKeys(oldChildren);
+    this.assertNoDuplicateKeys(newChildren);
+
+    if (this.hasOnlyKeyedChildren(oldChildren, newChildren)) {
       this.updateKeyedChildren(element, oldChildren, newChildren, context);
       return;
     }
@@ -586,13 +682,30 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
     });
   }
 
-  private hasKeyedChildren(
+  private hasOnlyKeyedChildren(
     oldChildren: Array<VNode | string>,
     newChildren: Array<VNode | string>
   ): boolean {
-    return [...oldChildren, ...newChildren].some(
+    return [...oldChildren, ...newChildren].every(
       (child) => this.getVNodeKey(child) !== undefined
     );
+  }
+
+  private assertNoDuplicateKeys(children: Array<VNode | string>): void {
+    const keys = new Set<string | number>();
+
+    children.forEach((child) => {
+      const key = this.getVNodeKey(child);
+      if (key === undefined) {
+        return;
+      }
+
+      if (keys.has(key)) {
+        throw new Error(`Duplicate key "${key}"`);
+      }
+
+      keys.add(key);
+    });
   }
 
   private getVNodeKey(vnode: VNode | string): string | number | undefined {
@@ -663,110 +776,6 @@ export class ElementRenderStrategy implements RenderStrategy<HTMLNode> {
     });
 
     this.trackEffect(element, effectRef);
-  }
-
-  private setupTwoWayBinding(
-    element: HTMLElement,
-    modelKey: string,
-    context: RenderRuntimeContext
-  ): void {
-    if (
-      !(element instanceof HTMLInputElement) &&
-      !(element instanceof HTMLTextAreaElement) &&
-      !(element instanceof HTMLSelectElement)
-    ) {
-      return;
-    }
-
-    const previousModelKey = this.modelBindings.get(element);
-    if (previousModelKey === modelKey) {
-      return;
-    }
-
-    if (previousModelKey) {
-      this.cleanupModelBinding(element, previousModelKey);
-    }
-
-    this.modelBindings.set(element, modelKey);
-
-    const getValue = (): string => {
-      const value = this.getStateValue(context, modelKey);
-      return value === undefined || value === null ? '' : String(value);
-    };
-
-    const setValue = (value: string): void => {
-      const keys = modelKey.split('.');
-      let target = context.templateEngine.state as Record<string, unknown>;
-
-      for (let index = 0; index < keys.length - 1; index += 1) {
-        const key = keys[index];
-        if (!target[key] || typeof target[key] !== 'object') {
-          target[key] = {};
-        }
-        target = target[key] as Record<string, unknown>;
-      }
-
-      target[keys[keys.length - 1]] = value;
-    };
-
-    element.value = getValue();
-
-    const eventName = element instanceof HTMLSelectElement ? 'change' : 'input';
-    const inputListener = (): void => {
-      setValue(element.value);
-    };
-    element.addEventListener(eventName, inputListener);
-
-    const store = this.listeners.get(element) ?? new Map();
-    store.set(`model:${modelKey}`, { eventName, listener: inputListener });
-    this.listeners.set(element, store);
-
-    const effectRef = effect(() => {
-      const nextValue = getValue();
-      if (element.value !== nextValue) {
-        element.value = nextValue;
-      }
-    });
-    this.modelEffects.set(element, effectRef);
-    this.trackEffect(element, effectRef);
-  }
-
-  private cleanupModelBinding(element: HTMLElement, modelKey: string): void {
-    const store = this.listeners.get(element);
-    const storeKey = `model:${modelKey}`;
-    const stored = store?.get(storeKey);
-
-    if (stored) {
-      element.removeEventListener(stored.eventName, stored.listener);
-      store?.delete(storeKey);
-    }
-
-    if (store && store.size === 0) {
-      this.listeners.delete(element);
-    }
-
-    const effectRef = this.modelEffects.get(element);
-    if (effectRef) {
-      stop(effectRef);
-      this.effects.get(element)?.delete(effectRef);
-      this.modelEffects.delete(element);
-    }
-
-    if (this.modelBindings.get(element) === modelKey) {
-      this.modelBindings.delete(element);
-    }
-  }
-
-  private getStateValue(
-    context: RenderRuntimeContext,
-    modelKey: string
-  ): unknown {
-    return modelKey.split('.').reduce<unknown>((value, key) => {
-      if (!value || typeof value !== 'object') {
-        return undefined;
-      }
-      return (value as Record<string, unknown>)[key];
-    }, context.templateEngine.state);
   }
 
   private trackEffect(element: HTMLElement, effectRef: ReactiveEffect): void {

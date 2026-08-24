@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'bun:test';
 import { name } from '../lib';
+import { packageRoot, repoRoot } from './paths';
 
-const root = process.cwd();
 const oldDisplayName = ['Free', '-JS'].join('');
 const oldPackageName = ['free', '-js'].join('');
 const oldDottedName = ['Free', '.js'].join('');
@@ -12,13 +12,13 @@ const oldFrameworkName = ['Free', ' Framework'].join('');
 
 function trackedTextFiles(): string[] {
   return execFileSync('git', ['ls-files'], {
-    cwd: root,
+    cwd: repoRoot,
     encoding: 'utf8',
   })
     .split('\n')
     .filter(Boolean)
     .filter((file) => {
-      if (file === 'tests/brand-consistency.test.ts') {
+      if (file.endsWith('tests/brand-consistency.test.ts')) {
         return false;
       }
       return /\.(json|md|ts|tsx|js|html|toml|yml|yaml|gitignore|npmignore)$/.test(
@@ -30,9 +30,9 @@ function trackedTextFiles(): string[] {
 describe('brand consistency', () => {
   it('uses TSone as the public brand and @geektech/tsone as the package name', () => {
     const packageJson = JSON.parse(
-      readFileSync(join(root, 'package.json'), 'utf8')
+      readFileSync(join(packageRoot, 'package.json'), 'utf8')
     );
-    const readme = readFileSync(join(root, 'README.md'), 'utf8');
+    const readme = readFileSync(join(packageRoot, 'README.md'), 'utf8');
 
     expect(packageJson.name).toBe('@geektech/tsone');
     expect(packageJson.publishConfig.access).toBe('public');
@@ -50,7 +50,7 @@ describe('brand consistency', () => {
       oldFrameworkName,
     ];
     const offenders = trackedTextFiles().flatMap((file) => {
-      const text = readFileSync(join(root, file), 'utf8');
+      const text = readFileSync(join(repoRoot, file), 'utf8');
       return forbidden
         .filter((term) => text.includes(term))
         .map((term) => `${file}: ${term}`);

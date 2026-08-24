@@ -12,8 +12,8 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'bun:test';
+import { packageRoot, repoRoot } from './paths';
 
-const root = process.cwd();
 const bunTemp = '/private/tmp/tsone-bun-tmp';
 const bunCache = '/private/tmp/tsone-bun-cache';
 const packageName = '@geektech/tsone';
@@ -21,11 +21,11 @@ const require = createRequire(import.meta.url);
 const tscBin = require.resolve('typescript/bin/tsc');
 
 function packageVersion(): string {
-  return JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
+  return JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'))
     .version as string;
 }
 
-function run(command: string, args: string[], cwd = root): string {
+function run(command: string, args: string[], cwd = packageRoot): string {
   try {
     return execFileSync(command, args, {
       cwd,
@@ -53,6 +53,13 @@ function run(command: string, args: string[], cwd = root): string {
 
 describe('package smoke', () => {
   it('packs an installable library with matching exports and types', () => {
+    const rootPackageJson = JSON.parse(
+      readFileSync(join(repoRoot, 'package.json'), 'utf8')
+    ) as { private?: boolean; workspaces?: string[] };
+
+    expect(rootPackageJson.private).toBe(true);
+    expect(rootPackageJson.workspaces).toEqual(['packages/*']);
+
     mkdirSync(tmpdir(), { recursive: true });
     mkdirSync(bunTemp, { recursive: true });
     mkdirSync(bunCache, { recursive: true });

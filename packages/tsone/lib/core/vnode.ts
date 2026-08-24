@@ -4,11 +4,12 @@ import type {
   ComponentEventListener,
   ComponentProps,
 } from './component';
+import type { ModelBinding } from './model';
 
 export interface ComponentType {
   mount(container: HTMLElement): void;
   unmount(): void;
-  on(eventName: string, listener: ComponentEventListener): void;
+  on(eventName: string, listener: ComponentEventListener): () => void;
 }
 
 type VNodeComponentProps = ComponentProps;
@@ -38,46 +39,42 @@ export interface EventListeners {
 }
 
 export interface Directions {
-  model?: string;
+  model?: ModelBinding;
   if?: boolean;
   show?: boolean;
 }
 
-export interface HTMLNode {
+export interface VNodeBase {
+  key?: string | number;
+  slot?: string;
+  directions?: Directions;
+}
+
+export interface HTMLNode extends VNodeBase {
   tag: string;
   props?: HTMLProps;
   children?: Array<VNode | string>;
   listeners?: EventListeners;
-  key?: string | number;
-  slot?: string;
-  directions?: Directions;
 }
 
 export interface ComponentNode<
   P extends VNodeComponentProps = VNodeComponentProps,
-> {
+> extends VNodeBase {
   component: VNodeComponentConstructor<P>;
   props?: P;
   children?: Array<VNode | string>;
   emitters?: Record<string, ComponentEventListener>;
-  key?: string | number;
-  slot?: string;
-  directions?: Directions;
 }
 
-export interface SlotProvider {
+export interface SlotProvider extends VNodeBase {
   tag: 'slot';
   props: { name: string };
   children?: Array<VNode | string>;
-  key?: string | number;
-  directions?: Directions;
 }
 
-export interface SlotInjector {
+export interface SlotInjector extends VNodeBase {
   tag: string;
   slot: string;
-  key?: string | number;
-  directions?: Directions;
 }
 
 export type VNode = HTMLNode | ComponentNode | SlotProvider | SlotInjector;
@@ -166,4 +163,19 @@ export function slot(
     key,
     directions,
   };
+}
+
+export function each<T>(
+  items: readonly T[],
+  render: (item: T, index: number) => VNode | string,
+  key: (item: T, index: number) => string | number
+): VNode[] {
+  return items.map((item, index) => {
+    const vnode = render(item, index);
+    if (typeof vnode === 'string') {
+      throw new Error('each render callback must return a VNode');
+    }
+
+    return { ...vnode, key: key(item, index) };
+  });
 }

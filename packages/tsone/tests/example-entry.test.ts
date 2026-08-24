@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { resetRouter } from '../lib/router/instance';
+import { packageRoot } from './paths';
 
 describe('example entry', () => {
   beforeEach(() => {
@@ -17,6 +18,8 @@ describe('example entry', () => {
 
     expect(app?.textContent).toContain('TSone 示例');
     expect(app?.textContent).toContain('首页');
+    expect(app?.textContent).toContain('新特性演练场');
+    expect(app?.textContent).toContain('表单校验');
   });
 
   it('uses element shortcut helpers for supported tags in example components', () => {
@@ -27,10 +30,11 @@ describe('example entry', () => {
       'examples/components/Card.ts',
       'examples/components/TextInput.ts',
       'examples/components/Navigation.ts',
+      'examples/components/FeaturePlayground.ts',
     ];
 
     const rawSupportedTags = exampleComponents.flatMap((file) => {
-      const text = readFileSync(join(process.cwd(), file), 'utf8');
+      const text = readFileSync(join(packageRoot, file), 'utf8');
       const matches = text.matchAll(
         /tag:\s*['"](div|span|p|button|input)['"]/g
       );

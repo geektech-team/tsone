@@ -1,4 +1,9 @@
-import { Component, ComponentConstructor } from './component';
+import {
+  Component,
+  ComponentConstructor,
+  InjectionKey,
+  InjectionResult,
+} from './component';
 import type { Router } from '../router';
 
 import { TemplateEngine } from './template';
@@ -44,6 +49,7 @@ export class OneApp<
   private mounted: boolean = false;
   private templateEngine: TemplateEngine | null = null;
   private readonly appContext: AppContext<TConfig>;
+  private readonly providers = new Map<string | symbol, unknown>();
   private plugins: Array<{ plugin: Plugin; args: unknown[] }> = [];
   private unmountedCallback?: () => void;
   public router?: Router;
@@ -243,6 +249,26 @@ export class OneApp<
    */
   public getContext(): AppContext<TConfig> {
     return this.appContext;
+  }
+
+  public provide<T>(key: InjectionKey<T>, value: T): this {
+    this.providers.set(key, value);
+    return this;
+  }
+
+  public inject<T>(key: InjectionKey<T>): T | undefined;
+  public inject<T>(key: InjectionKey<T>, fallback: T): T;
+  public inject<T>(key: InjectionKey<T>, fallback?: T): T | undefined {
+    const result = this.resolveInjection(key);
+    return result.found ? result.value : fallback;
+  }
+
+  public resolveInjection<T>(key: InjectionKey<T>): InjectionResult<T> {
+    if (!this.providers.has(key)) {
+      return { found: false, value: undefined };
+    }
+
+    return { found: true, value: this.providers.get(key) as T | undefined };
   }
 
   /**

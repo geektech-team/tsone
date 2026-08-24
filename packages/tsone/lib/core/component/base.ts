@@ -14,6 +14,15 @@ export type ComponentState = object;
 
 export type ComponentEventListener = (...args: unknown[]) => void;
 
+export type InjectionKey<T> = (string | symbol) & {
+  readonly __injectionType?: T;
+};
+
+export interface InjectionResult<T> {
+  found: boolean;
+  value: T | undefined;
+}
+
 export type ComponentConstructor<
   TProps extends ComponentProps = ComponentProps,
   TState extends ComponentState = ComponentState,
@@ -35,8 +44,13 @@ export abstract class Component<
   private readonly childComponents = new Set<ComponentInstance>();
   private readonly eventListeners: Record<string, Set<ComponentEventListener>> =
     {};
+  private readonly providers = new Map<string | symbol, unknown>();
   private readonly updateEffect: ReactiveEffect;
   private appContext: unknown = null;
+  private parentComponent: ComponentInstance | null = null;
+  private elementChangeListener:
+    | ((previousElement: Node, nextElement: Node) => void)
+    | null = null;
 
   protected styleManager: StyleManager;
   public state: TState;
@@ -48,12 +62,15 @@ export abstract class Component<
     this.templateEngine = new TemplateEngine(this.state);
     this.initStyles();
 
-    this.updateEffect = effect(() => {
-      this.trackStateProperties();
-      if (this.mounted) {
-        this.update();
-      }
-    });
+    this.updateEffect = effect(
+      () => {
+        this.trackStateProperties();
+        if (this.mounted) {
+          this.update();
+        }
+      },
+      { throwOnError: true }
+    );
   }
 
   protected abstract initState(): TState;
@@ -91,20 +108,20 @@ export abstract class Component<
       return;
     }
 
-    try {
-      this.beforeUpdate();
-      const newVNode = this.render();
-      this.el = this.renderer.patch(
-        this.vnode,
-        newVNode,
-        this.el,
-        this.createRenderContext()
-      );
-      this.vnode = newVNode;
-      this.onUpdated();
-    } catch (error) {
-      console.error('组件更新错误:', error);
+    this.beforeUpdate();
+    const newVNode = this.render();
+    const previousElement = this.el;
+    this.el = this.renderer.patch(
+      this.vnode,
+      newVNode,
+      this.el,
+      this.createRenderContext()
+    );
+    if (previousElement !== this.el) {
+      this.elementChangeListener?.(previousElement, this.el);
     }
+    this.vnode = newVNode;
+    this.onUpdated();
   }
 
   public unmount(): void {
@@ -119,6 +136,13 @@ export abstract class Component<
     }
 
     this.childComponents.clear();
+    Object.keys(this.eventListeners).forEach((eventName) => {
+      this.eventListeners[eventName].clear();
+      delete this.eventListeners[eventName];
+    });
+    this.providers.clear();
+    this.parentComponent = null;
+    this.elementChangeListener = null;
     this.templateEngine.clearBindings();
     this.styleManager.destroy();
     stop(this.updateEffect);
@@ -155,6 +179,39 @@ export abstract class Component<
     });
   }
 
+  public setParentComponent(parent: ComponentInstance | null): void {
+    this.parentComponent = parent;
+  }
+
+  public setElementChangeListener(
+    listener: (previousElement: Node, nextElement: Node) => void
+  ): void {
+    this.elementChangeListener = listener;
+  }
+
+  public provide<T>(key: InjectionKey<T>, value: T): void {
+    this.providers.set(key, value);
+  }
+
+  public inject<T>(key: InjectionKey<T>): T | undefined;
+  public inject<T>(key: InjectionKey<T>, fallback: T): T;
+  public inject<T>(key: InjectionKey<T>, fallback?: T): T | undefined {
+    const result = this.resolveInjection(key);
+    return result.found ? result.value : fallback;
+  }
+
+  public resolveInjection<T>(key: InjectionKey<T>): InjectionResult<T> {
+    if (this.providers.has(key)) {
+      return { found: true, value: this.providers.get(key) as T | undefined };
+    }
+
+    if (this.parentComponent?.resolveInjection) {
+      return this.parentComponent.resolveInjection(key);
+    }
+
+    return this.resolveAppInjection(key);
+  }
+
   public getElement(): Node | null {
     return this.el;
   }
@@ -185,11 +242,13 @@ export abstract class Component<
     });
   }
 
-  public on(eventName: string, listener: ComponentEventListener): void {
+  public on(eventName: string, listener: ComponentEventListener): () => void {
     if (!this.eventListeners[eventName]) {
       this.eventListeners[eventName] = new Set();
     }
     this.eventListeners[eventName].add(listener);
+
+    return () => this.off(eventName, listener);
   }
 
   public off(eventName: string, listener: ComponentEventListener): void {
@@ -204,7 +263,12 @@ export abstract class Component<
       slots: this.collectSlots(),
       registerChild: (component) => {
         this.childComponents.add(component);
+        component.setParentComponent?.(this);
         component.setAppContext?.(this.appContext);
+      },
+      unregisterChild: (component) => {
+        this.childComponents.delete(component);
+        component.setParentComponent?.(null);
       },
     };
   }
@@ -260,6 +324,24 @@ export abstract class Component<
   private getRouterFromGlobalApp(): unknown {
     const globalApp = (globalThis as { __APP__?: unknown }).__APP__;
     return this.getRouterFrom(globalApp);
+  }
+
+  private resolveAppInjection<T>(key: InjectionKey<T>): InjectionResult<T> {
+    if (!this.appContext || typeof this.appContext !== 'object') {
+      return { found: false, value: undefined };
+    }
+
+    const app = (
+      this.appContext as {
+        app?: {
+          resolveInjection?: (
+            injectionKey: InjectionKey<T>
+          ) => InjectionResult<T>;
+        };
+      }
+    ).app;
+
+    return app?.resolveInjection?.(key) ?? { found: false, value: undefined };
   }
 
   private trackReactiveValue(value: unknown, seen: Set<object>): void {

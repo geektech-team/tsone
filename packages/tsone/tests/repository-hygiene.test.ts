@@ -2,10 +2,11 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'bun:test';
+import { repoRoot } from './paths';
 
 function trackedFiles(): string[] {
   return execFileSync('git', ['ls-files'], {
-    cwd: process.cwd(),
+    cwd: repoRoot,
     encoding: 'utf8',
   })
     .split('\n')
@@ -15,7 +16,7 @@ function trackedFiles(): string[] {
 function gitIgnoreMatches(path: string): boolean {
   try {
     execFileSync('git', ['check-ignore', '-q', path], {
-      cwd: process.cwd(),
+      cwd: repoRoot,
       stdio: 'ignore',
     });
     return true;
@@ -34,7 +35,9 @@ describe('repository hygiene', () => {
       /(^|\/)\.vite\//,
       /(^|\/)\.pnpm-store\//,
       /^dist\//,
+      /^packages\/[^/]+\/dist\//,
       /^docs\/dist\//,
+      /^packages\/[^/]+\/docs\/dist\//,
     ];
 
     const forbiddenFiles = files.filter((file) =>
@@ -47,14 +50,17 @@ describe('repository hygiene', () => {
   it('ignores recurring local and generated artifacts', () => {
     expect(gitIgnoreMatches('.DS_Store')).toBe(true);
     expect(gitIgnoreMatches('coverage/lcov.info')).toBe(true);
-    expect(gitIgnoreMatches('docs/dist/index.html')).toBe(true);
-    expect(gitIgnoreMatches('docs/node_modules/.modules.yaml')).toBe(true);
+    expect(gitIgnoreMatches('packages/tsone/dist/index.js')).toBe(true);
+    expect(gitIgnoreMatches('packages/tsone/docs/dist/index.html')).toBe(true);
+    expect(
+      gitIgnoreMatches('packages/tsone/docs/node_modules/.modules.yaml')
+    ).toBe(true);
     expect(gitIgnoreMatches('.worktrees/open-source-priority')).toBe(true);
   });
 
   it('formats the full TypeScript workspace instead of only root files', () => {
     const packageJson = JSON.parse(
-      readFileSync(join(process.cwd(), 'package.json'), 'utf8')
+      readFileSync(join(repoRoot, 'package.json'), 'utf8')
     ) as { scripts?: Record<string, string> };
 
     expect(packageJson.scripts?.format).toContain('.');

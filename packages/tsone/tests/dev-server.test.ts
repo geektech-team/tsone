@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test';
+import { packageRoot } from './paths';
 
 let devProcess: ReturnType<typeof Bun.spawn> | undefined;
 
@@ -55,7 +56,7 @@ describe('Bun example dev server', () => {
         '--port',
         String(port),
       ],
-      cwd: process.cwd(),
+      cwd: packageRoot,
       env: {
         ...process.env,
         BUN_INSTALL_CACHE_DIR:

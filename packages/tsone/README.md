@@ -13,6 +13,11 @@
 - 内置路由：`createRouter`、`RouterView`、`RouterLink`
 - 轻量级运行时，生产包无外部运行时依赖
 
+## 仓库结构
+
+本仓库是 Bun workspace monorepo，当前发布包位于 `packages/tsone/`。
+根目录命令会代理到该包，包内仍保留自己的源码、测试、示例、文档和发布配置。
+
 ## 安装
 
 ```bash
@@ -132,7 +137,7 @@ bun run docs
 bun run docs:build
 ```
 
-文档站点内容维护在 `docs/app/content/*.ts` 的 typed content registry 中。
+文档站点内容维护在 `packages/tsone/docs/app/content/*.ts` 的 typed content registry 中。
 
 生成静态文档产物：
 
@@ -168,8 +173,11 @@ const html = renderHtmlDocument({
 - `createApp(options)`
 - `Component<Props, State>`
 - `VNode`
-- `h()` / `createComponent()` / `slot()`
+- `h()` / `createComponent()` / `slot()` / `each()`
 - `Div()` / `Span()` / `P()` / `Button()` / `Input()`
+- `Directions` / `ModelBinding`
+- `InjectionKey`、组件和应用的 `provide()` / `inject()`
+- `createForm()` / `required()` / `minLength()` / `validate()`
 - `renderHtmlDocument(options)`
 - `StyleSheet` / `renderStyleSheet(styles)`
 - `reactive()` / `readonly()`
@@ -177,6 +185,72 @@ const html = renderHtmlDocument({
 - `computed()`
 - `ref()` / `isRef()` / `unref()`
 - `version`，当前为 `0.0.1`
+
+## 渲染、通信与表单
+
+`directions.if` 可以控制元素、组件或插槽的挂载；不满足条件时会卸载节点：
+
+```typescript
+{
+  component: ProfilePanel,
+  directions: { if: this.state.visible },
+}
+```
+
+`each()` 为列表产生稳定 key，供渲染器在排序、插入和删除时复用节点：
+
+```typescript
+const items = each(
+  this.state.users,
+  (user) => ({ tag: 'li', children: [user.name] }),
+  (user) => user.id
+);
+```
+
+组件事件可订阅并用返回的函数取消订阅；组件 VNode 可通过 `emitters` 声明父级监听器。
+
+```typescript
+const stopListening = child.on('saved', (payload) => console.log(payload));
+stopListening();
+// { component: Editor, emitters: { saved: (payload) => this.save(payload) } }
+```
+
+依赖注入从当前组件向父级再到应用实例查找：
+
+```typescript
+const THEME: InjectionKey<{ mode: string }> = Symbol('theme');
+app.provide(THEME, { mode: 'dark' });
+const theme = this.inject(THEME, { mode: 'light' });
+```
+
+`directions.model` 支持点分隔路径和转换函数，原生 input、textarea、checkbox、radio 与 select 会同步：
+
+```typescript
+Input({
+  props: { type: 'number' },
+  directions: {
+    model: {
+      path: 'profile.age',
+      parse: (value) => Number(value),
+      format: (value) => String(value ?? ''),
+    },
+  },
+});
+```
+
+校验是纯函数，不负责错误 UI 或提交：
+
+```typescript
+const form = createForm(this.state, {
+  'profile.name': [required('请输入姓名'), minLength(2)],
+  'profile.age': [
+    validate((value) => Number(value) >= 18 || '年龄须不小于 18'),
+  ],
+});
+
+const result = form.validate();
+form.resetErrors();
+```
 
 路由入口 `@geektech/tsone/router`：
 
@@ -199,7 +273,7 @@ const html = renderHtmlDocument({
 bun test
 bunx tsc --noEmit
 bun run build
-bun pm pack --dry-run
+bun pm pack --cwd packages/tsone --dry-run
 ```
 
 ## 贡献

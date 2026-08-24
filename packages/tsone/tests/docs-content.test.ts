@@ -278,7 +278,9 @@ describe('docs content registry', () => {
     expect(docText(contributing)).not.toContain(
       'https://github.com/yourusername/tsone.git'
     );
-    expect(docText(contributing)).toContain('docs/app/content/*.ts');
+    expect(docText(contributing)).toContain(
+      'packages/tsone/docs/app/content/*.ts'
+    );
     expect(docText(contributing)).toContain('typed content registry');
     expect(docText(contributing)).toContain('结构化 block helper');
   });

@@ -1,5 +1,9 @@
 node_modules/
 dist/
+packages/*/dist/
+packages/*/node_modules/
+packages/*/docs/node_modules/
+packages/*/docs/dist/
 .pnpm-store/
 .DS_Store
 coverage/
@@ -7,5 +11,3 @@ coverage/
 .env*
 .worktrees
 worktrees
-docs/node_modules/
-docs/dist/

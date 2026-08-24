@@ -37,7 +37,8 @@ export interface DocsServerOptions {
   outDir: string;
 }
 
-const DEFAULT_OUT_DIR = 'docs/dist';
+const PACKAGE_ROOT = join(import.meta.dir, '..');
+const DEFAULT_OUT_DIR = join(PACKAGE_ROOT, 'docs/dist');
 
 export function routeToOutputPath(route: string, outDir: string): string {
   const normalizedRoute = normalizeDocPath(route);
@@ -162,12 +163,13 @@ export function renderDocPage(
 }
 
 async function buildClientBundle(outDir: string): Promise<string[]> {
-  const result = await Bun.build({
-    entrypoints: ['./docs/app/client.ts'],
-    target: 'browser',
-    format: 'esm',
+  const buildConfig = {
+    entrypoints: [join(PACKAGE_ROOT, 'docs/app/client.ts')],
+    target: 'browser' as const,
+    format: 'esm' as const,
     write: false,
-  });
+  };
+  const result = await Bun.build(buildConfig);
 
   if (!result.success || result.outputs.length === 0) {
     const messages = result.logs.map((log) => log.message).join('\n');

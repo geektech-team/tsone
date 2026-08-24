@@ -291,16 +291,72 @@ export const guidePages: DocPage[] = [
         ].join('\n')
       ),
       heading(2, '8. 事件系统'),
-      paragraph('组件可以通过 emit/on 进行事件通知。'),
+      paragraph('组件可以通过 emit/on 进行事件通知，on 返回取消订阅函数。'),
       heading(3, '事件示例'),
       codeBlock(
         'ts',
         [
           "this.emit('custom-event', 'event data');",
           '',
-          "component.on('custom-event', (data) => {",
+          "const unsubscribe = component.on('custom-event', (data) => {",
           "  console.log('Event received:', data);",
           '});',
+          'unsubscribe();',
+        ].join('\n')
+      ),
+      heading(2, '9. 条件、列表、依赖与表单'),
+      paragraph(
+        'VNode 的 ',
+        inlineCode('directions.if'),
+        ' 控制元素、组件和插槽的挂载；',
+        inlineCode('each'),
+        ' 为列表提供稳定 key。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          'const rows = each(',
+          '  this.state.rows,',
+          "  (row) => ({ tag: 'li', children: [row.name] }),",
+          '  (row) => row.id',
+          ');',
+          '',
+          'const sidebar = {',
+          '  component: Sidebar,',
+          '  directions: { if: this.state.open },',
+          '};',
+        ].join('\n')
+      ),
+      paragraph(
+        '应用或组件可通过 ',
+        inlineCode('provide'),
+        ' 提供依赖，子组件用 ',
+        inlineCode('inject'),
+        ' 获取最近的值。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "const LOCALE: InjectionKey<string> = Symbol('locale');",
+          "app.provide(LOCALE, 'zh-CN');",
+          "const locale = this.inject(LOCALE, 'en-US');",
+        ].join('\n')
+      ),
+      paragraph(
+        '原生表单节点通过 ',
+        inlineCode('directions.model'),
+        ' 绑定状态，校验由独立的 ',
+        inlineCode('createForm'),
+        ' 控制器完成。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "const name = Input({ directions: { model: 'profile.name' } });",
+          'const form = createForm(this.state, {',
+          "  'profile.name': [required('请输入姓名'), minLength(2)],",
+          '});',
+          'const result = form.validate();',
         ].join('\n')
       ),
       heading(2, '总结'),

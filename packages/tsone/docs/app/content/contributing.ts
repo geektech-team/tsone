@@ -120,7 +120,7 @@ export const contributingPages: DocPage[] = [
       heading(3, '文档维护'),
       paragraph(
         '文档内容维护在 ',
-        inlineCode('docs/app/content/*.ts'),
+        inlineCode('packages/tsone/docs/app/content/*.ts'),
         ' 的 typed content registry 中，并使用结构化 block helper 组织页面内容。'
       ),
       list([

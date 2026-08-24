@@ -9,6 +9,7 @@ export interface ReactiveEffect<T = unknown> {
 export interface ReactiveEffectOptions {
   lazy?: boolean;
   scheduler?: (effect: ReactiveEffect) => void;
+  throwOnError?: boolean;
 }
 
 export interface ComputedRef<T> {

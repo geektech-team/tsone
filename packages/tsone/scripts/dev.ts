@@ -1,7 +1,11 @@
+import { join } from 'node:path';
+
 export interface DevServerOptions {
   hostname: string;
   port: number;
 }
+
+const PACKAGE_ROOT = join(import.meta.dir, '..');
 
 function readOption(args: string[], name: string): string | undefined {
   const inlinePrefix = `${name}=`;
@@ -42,13 +46,14 @@ export function resolveDevServerOptions(
 }
 
 async function buildExampleBundle(): Promise<Response> {
-  const result = await Bun.build({
-    entrypoints: ['./examples/index.ts'],
-    target: 'browser',
-    format: 'esm',
-    sourcemap: 'inline',
+  const buildConfig = {
+    entrypoints: [join(PACKAGE_ROOT, 'examples/index.ts')],
+    target: 'browser' as const,
+    format: 'esm' as const,
+    sourcemap: 'inline' as const,
     write: false,
-  });
+  };
+  const result = await Bun.build(buildConfig);
 
   if (!result.success || !result.outputs[0]) {
     return new Response('Failed to build example bundle', { status: 500 });
@@ -73,7 +78,7 @@ async function serveExample(request: Request): Promise<Response> {
     return new Response('Not found', { status: 404 });
   }
 
-  const html = await Bun.file('examples/index.html').text();
+  const html = await Bun.file(join(PACKAGE_ROOT, 'examples/index.html')).text();
   return new Response(
     html.replace(
       '<script type="module" src="./index.ts"></script>',

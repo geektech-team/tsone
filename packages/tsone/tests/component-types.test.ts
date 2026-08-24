@@ -4,8 +4,8 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'bun:test';
+import { packageRoot } from './paths';
 
-const root = process.cwd();
 const require = createRequire(import.meta.url);
 const tscBin = require.resolve('typescript/bin/tsc');
 
@@ -39,7 +39,7 @@ describe('component public types', () => {
       writeFileSync(
         join(tempDir, 'component-consumer.ts'),
         [
-          "import { Button, Component, Div, EventListeners, HTMLProps, Input, P, Span, VNode } from 'tsone-source';",
+          "import { Button, Component, Div, EventListeners, HTMLProps, InjectionKey, Input, P, Span, VNode, createForm, minLength, required, validate } from 'tsone-source';",
           "import { RouteLocation, RouteMeta, createRouter } from 'tsone-source/router';",
           '',
           'interface Props {',
@@ -70,6 +70,17 @@ describe('component public types', () => {
           "const counter = new TypedCounter({ label: 'Count' });",
           'counter.setState({ ready: false });',
           '',
+          "const REQUIRED_VALUE: InjectionKey<{ enabled: boolean }> = Symbol('required-value');",
+          'class TypedInjectionConsumer extends Component {',
+          '  protected initState(): object { return {}; }',
+          '  protected initStyles(): void {}',
+          '  protected render(): VNode {',
+          '    const injected: { enabled: boolean } = this.inject(REQUIRED_VALUE, { enabled: false });',
+          '    return Span({ children: [String(injected.enabled)] });',
+          '  }',
+          '}',
+          'void TypedInjectionConsumer;',
+          '',
           'const htmlProps: HTMLProps = {',
           "  className: 'counter',",
           '  disabled: false,',
@@ -95,6 +106,13 @@ describe('component public types', () => {
           'void listeners;',
           'void shortcutButton;',
           'void shortcutInput;',
+          '',
+          "const form = createForm({ name: '' }, { name: [required(), minLength(2), validate((value) => Boolean(value) || 'Name required')] });",
+          'const validationResult: boolean = form.validate().valid;',
+          "const fieldResult: boolean = form.validateField('name').valid;",
+          'form.resetErrors();',
+          'void validationResult;',
+          'void fieldResult;',
           'void title;',
         ].join('\n')
       );
@@ -112,8 +130,10 @@ describe('component public types', () => {
               noEmit: true,
               baseUrl: '.',
               paths: {
-                'tsone-source': [join(root, 'lib/index.ts')],
-                'tsone-source/router': [join(root, 'lib/router/index.ts')],
+                'tsone-source': [join(packageRoot, 'lib/index.ts')],
+                'tsone-source/router': [
+                  join(packageRoot, 'lib/router/index.ts'),
+                ],
               },
             },
             include: ['component-consumer.ts'],

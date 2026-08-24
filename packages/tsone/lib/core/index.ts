@@ -5,3 +5,5 @@ export * from './vnode';
 export * from './template';
 export * from './renderer';
 export * from './document';
+export * from './model';
+export * from './form';

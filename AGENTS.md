@@ -4,7 +4,9 @@
 
 ## 项目定位
 
-TSone 是一个轻量级、纯 TypeScript 前端框架。当前公开能力包括：
+本仓库是 Bun workspace monorepo。当前唯一发布包位于
+`packages/tsone/`，包名为 `@geektech/tsone`。TSone 是一个轻量级、
+纯 TypeScript 前端框架。当前公开能力包括：
 
 - 响应式系统：`reactive`、`readonly`、`effect`、`stop`、`computed`、`ref`
 - 面向对象组件：`Component<Props, State>`、生命周期、事件、插槽
@@ -21,20 +23,27 @@ TSone 是一个轻量级、纯 TypeScript 前端框架。当前公开能力包�
 
 - 安装依赖：`bun install`
 - 全量测试：`bun test`
-- 指定测试：`bun test tests/component-types.test.ts`
+- 指定测试：`bun test packages/tsone/tests/component-types.test.ts`
 - 类型检查：`bunx tsc --noEmit`
 - 构建发布产物：`bun run build`
 - 代码检查：`bun run lint`
 - 示例服务：`bun run dev`
 - 文档服务：`bun run docs`
-- 发布前建议检查：`bun test && bunx tsc --noEmit && bun run build && bun pm pack --dry-run`
+- 发布前建议检查：`bun test && bunx tsc --noEmit && bun run build && bun pm pack --cwd packages/tsone --dry-run`
 
-测试使用 `bun:test`。DOM 测试通过 `bunfig.toml` preload `tests/setup-dom.ts` 注入 Happy DOM 全局对象。
+测试使用 `bun:test`。从仓库根运行时，DOM 测试通过根 `bunfig.toml`
+preload `packages/tsone/tests/setup-dom.ts` 注入 Happy DOM 全局对象；从包目录
+运行时，`packages/tsone/bunfig.toml` preload `tests/setup-dom.ts`。
 
 ## 代码地图
 
-- `lib/index.ts` 是根入口，导出核心、路由、`createApp`、`version` 和 `name`。
-- `lib/core/` 存放框架核心：
+- 根 `package.json` 是私有 workspace manifest，根脚本代理到
+  `packages/tsone`。
+- `packages/tsone/package.json` 是发布包 manifest，保留 exports、files 和
+  publishConfig。
+- `packages/tsone/lib/index.ts` 是包入口，导出核心、路由、`createApp`、
+  `version` 和 `name`。
+- `packages/tsone/lib/core/` 存放框架核心：
   - `app.ts` 管理应用实例、插件、全局上下文和根组件挂载。
   - `component/base.ts` 定义类组件、props/state、生命周期、插槽收集和更新。
   - `renderer.ts` 定义策略化渲染上下文和渲染策略。
@@ -42,16 +51,19 @@ TSone 是一个轻量级、纯 TypeScript 前端框架。当前公开能力包�
   - `reactive.ts`、`reactive/types.ts` 是响应式系统。
   - `template.ts` 处理 `{{name}}` 模板绑定。
   - `vnode.ts` 定义 VNode、HTML 节点、组件节点、slot 和 helper。
-- `lib/router/` 存放路由：
+- `packages/tsone/lib/router/` 存放路由：
   - `index.ts` 暴露 `Router`、`createRouter`、`RouterView`、`RouterLink`、`useRouter`。
   - `history.ts` 处理 history/hash URL 读写。
   - `matcher.ts` 处理静态和动态路径匹配。
   - `instance.ts` 管理当前路由实例。
-- `lib/style/StyleManager.ts` 是样式管理实现，`lib/style/index.ts` 是公开入口。
-- `examples/` 是本地示例应用。
-- `docs/src/` 是文档源，`scripts/docs.ts` 是 Bun 文档服务器。
-- `docs/superpowers/` 记录历史设计和实施计划，可作为架构意图参考。
-- `skills/object-oriented-design-constraints/SKILL.md` 是项目内的 OOP 设计约束；涉及类、接口、继承、组合或 SOLID 判断时先读它。
+- `packages/tsone/lib/style/StyleManager.ts` 是样式管理实现，
+  `packages/tsone/lib/style/index.ts` 是公开入口。
+- `packages/tsone/examples/` 是本地示例应用。
+- `packages/tsone/docs/app/content/` 是 typed content 文档源，
+  `packages/tsone/scripts/docs.ts` 是 Bun 文档服务器。
+- `packages/tsone/docs/superpowers/` 记录历史设计和实施计划，可作为架构意图参考。
+- `packages/tsone/skills/object-oriented-design-constraints/SKILL.md` 是项目内的
+  OOP 设计约束；涉及类、接口、继承、组合或 SOLID 判断时先读它。
 
 ## 开发约定
 
@@ -67,15 +79,15 @@ TSone 是一个轻量级、纯 TypeScript 前端框架。当前公开能力包�
 
 改动公开 API、导出路径、包名、版本或 README 示例时，同步检查：
 
-- `package.json` 的 `name`、`version`、`exports`、`files`、scripts
-- `lib/index.ts` 的 `version` 和 `name`
-- `lib/core/app.ts` 中 app context 的 `version`
-- `README.md` 快速开始、公开 API、开发命令、发布前检查
-- `docs/src/api/*.md` 和相关 guide/example 文档
-- `tests/public-api-docs.test.ts`
-- `tests/component-types.test.ts`
-- `tests/package-smoke.test.ts`
-- `tests/brand-consistency.test.ts`
+- `packages/tsone/package.json` 的 `name`、`version`、`exports`、`files`、scripts
+- `packages/tsone/lib/index.ts` 的 `version` 和 `name`
+- `packages/tsone/lib/core/app.ts` 中 app context 的 `version`
+- `packages/tsone/README.md` 快速开始、公开 API、开发命令、发布前检查
+- `packages/tsone/docs/app/content/*.ts` 和相关 guide/example 文档
+- `packages/tsone/tests/public-api-docs.test.ts`
+- `packages/tsone/tests/component-types.test.ts`
+- `packages/tsone/tests/package-smoke.test.ts`
+- `packages/tsone/tests/brand-consistency.test.ts`
 
 品牌统一为显示名 `TSone`、包名 `@geektech/tsone`。不要引入旧项目名或占位版本。
 
@@ -83,26 +95,27 @@ TSone 是一个轻量级、纯 TypeScript 前端框架。当前公开能力包�
 
 改动时优先跑最小相关测试，完成前按风险扩大验证：
 
-- 响应式系统：`bun test lib/core/__tests__/reactive.test.ts`
-- 组件、生命周期、状态、模板、插槽：`bun test lib/core/__tests__/component.test.ts tests/framework-plan.test.ts`
-- 渲染策略、keyed diff、props/listeners：`bun test tests/framework-plan.test.ts`
-- 路由：`bun test lib/router/__tests__/router.test.ts`
-- 样式：`bun test lib/style/__tests__/StyleManager.test.ts`
-- 公开类型：`bun test tests/component-types.test.ts`
-- README/API 文档契约：`bun test tests/public-api-docs.test.ts`
-- 文档服务器 helper：`bun test tests/docs-server.test.ts`
-- 示例入口：`bun test tests/example-entry.test.ts`
-- 仓库卫生：`bun test tests/repository-hygiene.test.ts`
-- 发布包：`bun test tests/package-smoke.test.ts`
+- 响应式系统：`bun test packages/tsone/lib/core/__tests__/reactive.test.ts`
+- 组件、生命周期、状态、模板、插槽：`bun test packages/tsone/lib/core/__tests__/component.test.ts packages/tsone/tests/framework-plan.test.ts`
+- 渲染策略、keyed diff、props/listeners：`bun test packages/tsone/tests/framework-plan.test.ts`
+- 路由：`bun test packages/tsone/lib/router/__tests__/router.test.ts`
+- 样式：`bun test packages/tsone/lib/style/__tests__/StyleManager.test.ts`
+- 公开类型：`bun test packages/tsone/tests/component-types.test.ts`
+- README/API 文档契约：`bun test packages/tsone/tests/public-api-docs.test.ts`
+- 文档服务器 helper：`bun test packages/tsone/tests/docs-server.test.ts`
+- 示例入口：`bun test packages/tsone/tests/example-entry.test.ts`
+- 仓库卫生：`bun test packages/tsone/tests/repository-hygiene.test.ts`
+- 发布包：`bun test packages/tsone/tests/package-smoke.test.ts`
 
-对行为修复和新功能，先补或调整能复现问题的测试，再实现。改动发布面、构建脚本或 exports 时必须跑 `bun run build`，必要时跑 `bun pm pack --dry-run` 或 `tests/package-smoke.test.ts`。
+对行为修复和新功能，先补或调整能复现问题的测试，再实现。改动发布面、构建脚本或 exports 时必须跑 `bun run build`，必要时跑 `bun pm pack --cwd packages/tsone --dry-run` 或 `bun test packages/tsone/tests/package-smoke.test.ts`。
 
 ## 文档和示例
 
-- 用户可见能力变化需要同步 `README.md` 和 `docs/src/`。
+- 用户可见能力变化需要同步 `packages/tsone/README.md` 和
+  `packages/tsone/docs/app/content/`。
 - 示例代码应能代表真实 API，不要展示未导出的符号或过期命令。
-- `scripts/docs.ts` 只支持当前轻量 Markdown 渲染能力；写文档时避免依赖它不支持的复杂 Markdown 功能。
-- `examples/index.ts` 和 `examples/components/` 是开发服务入口，公共组件行为变化时检查示例仍能渲染。
+- `packages/tsone/scripts/docs.ts` 只支持当前 typed content 渲染能力；写文档时避免依赖它不支持的复杂 Markdown 功能。
+- `packages/tsone/examples/index.ts` 和 `packages/tsone/examples/components/` 是开发服务入口，公共组件行为变化时检查示例仍能渲染。
 
 ## 协作守则
 

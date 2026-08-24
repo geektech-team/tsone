@@ -3,6 +3,7 @@ import { StyleOptions } from '../../lib/style/StyleManager';
 import { Navigation } from './Navigation';
 import { TextInput } from './TextInput';
 import { SlotDemo } from './SlotDemo';
+import { FeaturePlayground } from './FeaturePlayground';
 
 interface NavigationLink {
   path: string;
@@ -167,6 +168,7 @@ export class Home extends Component<object, HomeState> {
           },
           children: [],
         },
+        { component: FeaturePlayground },
         Div({
           props: { class: 'navigation-info' },
           children: ['{{lastNavigation}}'],

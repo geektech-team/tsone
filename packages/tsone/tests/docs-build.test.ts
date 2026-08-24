@@ -11,6 +11,7 @@ import { describe, expect, it } from 'bun:test';
 import { docsStyles } from '../docs/app/styles';
 import { renderStyleSheet } from '../lib';
 import { buildDocs, routeToOutputPath } from '../scripts/docs';
+import { packageRoot } from './paths';
 
 function collectHtmlFiles(dir: string): string[] {
   const entries = readdirSync(dir, { withFileTypes: true });
@@ -92,7 +93,7 @@ describe('docs static build', () => {
   });
 
   it('delegates base HTML document rendering to the TSone framework', () => {
-    const docsScript = readFileSync(join(process.cwd(), 'scripts/docs.ts'), {
+    const docsScript = readFileSync(join(packageRoot, 'scripts/docs.ts'), {
       encoding: 'utf8',
     });
 

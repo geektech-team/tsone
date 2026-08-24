@@ -3,6 +3,8 @@ import type {
   AnyComponentConstructor,
   ComponentConstructor,
   ComponentEventListener,
+  InjectionKey,
+  InjectionResult,
   ComponentProps,
   ComponentState,
 } from './base';
@@ -13,6 +15,8 @@ export type {
   AnyComponentConstructor,
   ComponentConstructor,
   ComponentEventListener,
+  InjectionKey,
+  InjectionResult,
   ComponentProps,
   ComponentState,
 };

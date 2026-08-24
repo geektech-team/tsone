@@ -1,5 +1,6 @@
 import type { TemplateEngine } from '../template';
 import type { ComponentEventListener, ComponentProps } from '../component';
+import type { InjectionKey, InjectionResult } from '../component';
 import type { VNode } from '../vnode';
 
 export interface ComponentInstance {
@@ -8,8 +9,13 @@ export interface ComponentInstance {
   unmount(): void;
   setProps(props: Partial<ComponentProps>): void;
   setAppContext?(context: unknown): void;
+  setParentComponent?(parent: ComponentInstance | null): void;
+  setElementChangeListener?(
+    listener: (previousElement: Node, nextElement: Node) => void
+  ): void;
+  resolveInjection?<T>(key: InjectionKey<T>): InjectionResult<T>;
   getElement(): Node | null;
-  on(eventName: string, listener: ComponentEventListener): void;
+  on(eventName: string, listener: ComponentEventListener): () => void;
 }
 
 export type Renderable = VNode | string;
@@ -35,6 +41,7 @@ export interface RenderRuntimeContext {
   renderer: RendererHost;
   slots: Record<string, Array<VNode | string>>;
   registerChild(component: ComponentInstance): void;
+  unregisterChild(component: ComponentInstance): void;
 }
 
 export interface RenderStrategy<T extends Renderable = Renderable> {
