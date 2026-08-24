@@ -12,5 +12,5 @@ export function createApp(options: AppOptions = {}): OneApp {
 }
 
 // 导出框架名称和版本
-export const version = '0.0.1';
+export const version = '0.0.2';
 export const name = '@geektech/tsone';
