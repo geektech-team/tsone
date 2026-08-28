@@ -1,6 +1,9 @@
 import { Component, type VNode } from '@geektech/tsone';
-import type { OneNamedStyle } from '../styles/shared';
-import { normalizeOneSize } from '../styles/shared';
+import {
+  normalizeOneSize,
+  ONE_THEME_DEFAULTS,
+  type OneNamedStyle,
+} from '../styles/shared';
 import type { OneComponentSize } from '../types';
 
 export type OneButtonVariant = 'primary' | 'secondary' | 'danger';
@@ -34,81 +37,81 @@ export const ONE_BUTTON_STYLES: OneNamedStyle[] = [
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 'var(--one-button-gap, 0.5rem)',
+      gap: `var(--one-button-gap, var(--one-space-sm, ${ONE_THEME_DEFAULTS.spaceSm}))`,
       border: '1px solid transparent',
-      borderRadius: 'var(--one-radius-md, 0.375rem)',
-      fontFamily: 'inherit',
-      fontWeight: 'var(--one-font-weight-medium, 500)',
-      lineHeight: 'var(--one-line-height-normal, 1.5)',
+      borderRadius: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
+      fontFamily: `var(--one-font-family, ${ONE_THEME_DEFAULTS.fontFamily})`,
+      fontWeight: '500',
+      lineHeight: '1.5',
       cursor: 'pointer',
-      transition: 'var(--one-transition-fast, 150ms ease)',
+      transition: '150ms ease',
     },
   },
   {
     name: 'one-button-primary',
     selector: '.one-button--primary',
     properties: {
-      color: 'var(--one-color-primary-contrast, #ffffff)',
-      backgroundColor: 'var(--one-color-primary, #2563eb)',
+      color: `var(--one-color-primary-contrast, ${ONE_THEME_DEFAULTS.colorSurface})`,
+      backgroundColor: `var(--one-color-primary, ${ONE_THEME_DEFAULTS.colorPrimary})`,
     },
     hover: {
-      backgroundColor: 'var(--one-color-primary-hover, #1d4ed8)',
+      backgroundColor: `var(--one-color-primary-hover, ${ONE_THEME_DEFAULTS.colorPrimaryHover})`,
     },
   },
   {
     name: 'one-button-secondary',
     selector: '.one-button--secondary',
     properties: {
-      color: 'var(--one-color-secondary-contrast, #1f2937)',
-      backgroundColor: 'var(--one-color-secondary, #e5e7eb)',
+      color: `var(--one-color-secondary-contrast, ${ONE_THEME_DEFAULTS.colorText})`,
+      backgroundColor: `var(--one-color-secondary, ${ONE_THEME_DEFAULTS.colorSurface})`,
     },
     hover: {
-      backgroundColor: 'var(--one-color-secondary-hover, #d1d5db)',
+      backgroundColor: `var(--one-color-secondary-hover, ${ONE_THEME_DEFAULTS.colorBorder})`,
     },
   },
   {
     name: 'one-button-danger',
     selector: '.one-button--danger',
     properties: {
-      color: 'var(--one-color-danger-contrast, #ffffff)',
-      backgroundColor: 'var(--one-color-danger, #dc2626)',
+      color: `var(--one-color-danger-contrast, ${ONE_THEME_DEFAULTS.colorSurface})`,
+      backgroundColor: `var(--one-color-danger, ${ONE_THEME_DEFAULTS.colorDanger})`,
     },
     hover: {
-      backgroundColor: 'var(--one-color-danger-hover, #b91c1c)',
+      backgroundColor: `var(--one-color-danger-hover, ${ONE_THEME_DEFAULTS.colorDanger})`,
     },
   },
   {
     name: 'one-button-sm',
     selector: '.one-button--sm',
     properties: {
-      minHeight: 'var(--one-button-height-sm, 2rem)',
-      padding: 'var(--one-button-padding-sm, 0.25rem 0.75rem)',
-      fontSize: 'var(--one-font-size-sm, 0.875rem)',
+      minHeight: '32px',
+      padding: `var(--one-button-padding-sm, ${ONE_THEME_DEFAULTS.spaceXs} ${ONE_THEME_DEFAULTS.spaceMd})`,
+      fontSize: `var(--one-font-size-sm, ${ONE_THEME_DEFAULTS.fontSizeSm})`,
     },
   },
   {
     name: 'one-button-md',
     selector: '.one-button--md',
     properties: {
-      minHeight: 'var(--one-button-height-md, 2.5rem)',
-      padding: 'var(--one-button-padding-md, 0.5rem 1rem)',
-      fontSize: 'var(--one-font-size-md, 1rem)',
+      minHeight: '40px',
+      padding: `var(--one-button-padding-md, ${ONE_THEME_DEFAULTS.spaceSm} ${ONE_THEME_DEFAULTS.spaceLg})`,
+      fontSize: `var(--one-font-size-md, ${ONE_THEME_DEFAULTS.fontSizeMd})`,
     },
   },
   {
     name: 'one-button-lg',
     selector: '.one-button--lg',
     properties: {
-      minHeight: 'var(--one-button-height-lg, 3rem)',
-      padding: 'var(--one-button-padding-lg, 0.75rem 1.25rem)',
-      fontSize: 'var(--one-font-size-lg, 1.125rem)',
+      minHeight: '48px',
+      padding: `var(--one-button-padding-lg, ${ONE_THEME_DEFAULTS.spaceMd} ${ONE_THEME_DEFAULTS.spaceLg})`,
+      fontSize: `var(--one-font-size-lg, ${ONE_THEME_DEFAULTS.fontSizeLg})`,
     },
   },
   {
     name: 'one-button-disabled',
     selector: '.one-button:disabled',
     properties: {
-      opacity: 'var(--one-disabled-opacity, 0.5)',
+      opacity: '0.5',
       cursor: 'not-allowed',
     },
   },
@@ -116,17 +119,17 @@ export const ONE_BUTTON_STYLES: OneNamedStyle[] = [
     name: 'one-button-focus-visible',
     selector: '.one-button:focus-visible',
     properties: {
-      outline: 'var(--one-focus-outline, 2px solid #2563eb)',
-      outlineOffset: 'var(--one-focus-outline-offset, 2px)',
+      outline: `2px solid var(--one-color-focus, ${ONE_THEME_DEFAULTS.colorFocus})`,
+      outlineOffset: '2px',
     },
   },
   {
     name: 'one-button-spinner',
     selector: '.one-button__spinner',
     properties: {
-      width: 'var(--one-spinner-size, 1em)',
-      height: 'var(--one-spinner-size, 1em)',
-      border: 'var(--one-spinner-border-width, 2px) solid currentColor',
+      width: '1em',
+      height: '1em',
+      border: '2px solid currentColor',
       borderRightColor: 'transparent',
       borderRadius: '50%',
     },
@@ -142,9 +145,7 @@ export function normalizeButtonVariant(value: unknown): OneButtonVariant {
 function normalizeButtonType(
   value: unknown
 ): NonNullable<OneButtonProps['type']> {
-  return ONE_BUTTON_TYPES.includes(
-    value as NonNullable<OneButtonProps['type']>
-  )
+  return ONE_BUTTON_TYPES.includes(value as NonNullable<OneButtonProps['type']>)
     ? (value as NonNullable<OneButtonProps['type']>)
     : 'button';
 }
@@ -163,7 +164,8 @@ export class OneButton extends Component<OneButtonProps> {
   protected render(): VNode {
     const variant = normalizeButtonVariant(this.props.variant);
     const size = normalizeOneSize(this.props.size);
-    const disabled = this.props.disabled === true || this.props.loading === true;
+    const disabled =
+      this.props.disabled === true || this.props.loading === true;
 
     return {
       tag: 'button',

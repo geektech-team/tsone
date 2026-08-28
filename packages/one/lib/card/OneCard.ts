@@ -1,5 +1,5 @@
 import { Component, slot, type VNode } from '@geektech/tsone';
-import type { OneNamedStyle } from '../styles/shared';
+import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
 
 export interface OneCardProps {
   title?: string;
@@ -12,41 +12,35 @@ export const ONE_CARD_STYLES: OneNamedStyle[] = [
     selector: '.one-card',
     properties: {
       overflow: 'hidden',
-      color: 'var(--one-card-color, var(--one-color-text, #1f2937))',
-      backgroundColor:
-        'var(--one-card-background, var(--one-color-surface, #ffffff))',
-      border:
-        '1px solid var(--one-card-border-color, var(--one-color-border, #e5e7eb))',
-      borderRadius: 'var(--one-card-radius, var(--one-radius-md, 0.375rem))',
-      boxShadow:
-        'var(--one-card-shadow, var(--one-shadow-sm, 0 1px 2px 0 rgb(0 0 0 / 0.05)))',
+      color: `var(--one-card-color, var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText}))`,
+      backgroundColor: `var(--one-card-background, var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface}))`,
+      border: `1px solid var(--one-card-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`,
+      borderRadius: `var(--one-card-radius, var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd}))`,
+      boxShadow: `var(--one-card-shadow, var(--one-shadow-card, ${ONE_THEME_DEFAULTS.shadowCard}))`,
     },
   },
   {
     name: 'one-card-header',
     selector: '.one-card__header',
     properties: {
-      padding: 'var(--one-card-header-padding, var(--one-spacing-md, 1rem))',
-      borderBottom:
-        '1px solid var(--one-card-border-color, var(--one-color-border, #e5e7eb))',
-      fontWeight:
-        'var(--one-card-header-font-weight, var(--one-font-weight-medium, 500))',
+      padding: `var(--one-card-header-padding, var(--one-space-lg, ${ONE_THEME_DEFAULTS.spaceLg}))`,
+      borderBottom: `1px solid var(--one-card-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`,
+      fontWeight: '500',
     },
   },
   {
     name: 'one-card-body',
     selector: '.one-card__body',
     properties: {
-      padding: 'var(--one-card-body-padding, var(--one-spacing-md, 1rem))',
+      padding: `var(--one-card-body-padding, var(--one-space-lg, ${ONE_THEME_DEFAULTS.spaceLg}))`,
     },
   },
   {
     name: 'one-card-footer',
     selector: '.one-card__footer',
     properties: {
-      padding: 'var(--one-card-footer-padding, var(--one-spacing-md, 1rem))',
-      borderTop:
-        '1px solid var(--one-card-border-color, var(--one-color-border, #e5e7eb))',
+      padding: `var(--one-card-footer-padding, var(--one-space-lg, ${ONE_THEME_DEFAULTS.spaceLg}))`,
+      borderTop: `1px solid var(--one-card-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`,
     },
   },
 ];

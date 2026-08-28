@@ -1,5 +1,9 @@
 import { Component, type VNode } from '@geektech/tsone';
-import { normalizeOneSize, type OneNamedStyle } from '../styles/shared';
+import {
+  normalizeOneSize,
+  ONE_THEME_DEFAULTS,
+  type OneNamedStyle,
+} from '../styles/shared';
 import type { OneComponentSize } from '../types';
 
 export interface OneInputValueEvent {
@@ -32,65 +36,65 @@ export const ONE_INPUT_STYLES: OneNamedStyle[] = [
     properties: {
       boxSizing: 'border-box',
       width: '100%',
-      border: '1px solid var(--one-input-border-color, #d1d5db)',
-      borderRadius: 'var(--one-radius-md, 0.375rem)',
-      color: 'var(--one-input-color, #1f2937)',
-      backgroundColor: 'var(--one-input-background, #ffffff)',
-      fontFamily: 'inherit',
-      lineHeight: 'var(--one-line-height-normal, 1.5)',
-      transition: 'var(--one-transition-fast, 150ms ease)',
+      border: `1px solid var(--one-input-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`,
+      borderRadius: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
+      color: `var(--one-input-color, var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText}))`,
+      backgroundColor: `var(--one-input-background, var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface}))`,
+      fontFamily: `var(--one-font-family, ${ONE_THEME_DEFAULTS.fontFamily})`,
+      lineHeight: '1.5',
+      transition: '150ms ease',
     },
   },
   {
     name: 'one-input-sm',
     selector: '.one-input--sm',
     properties: {
-      minHeight: 'var(--one-input-height-sm, 2rem)',
-      padding: 'var(--one-input-padding-sm, 0.25rem 0.5rem)',
-      fontSize: 'var(--one-font-size-sm, 0.875rem)',
+      minHeight: '32px',
+      padding: `var(--one-input-padding-sm, ${ONE_THEME_DEFAULTS.spaceXs} ${ONE_THEME_DEFAULTS.spaceSm})`,
+      fontSize: `var(--one-font-size-sm, ${ONE_THEME_DEFAULTS.fontSizeSm})`,
     },
   },
   {
     name: 'one-input-md',
     selector: '.one-input--md',
     properties: {
-      minHeight: 'var(--one-input-height-md, 2.5rem)',
-      padding: 'var(--one-input-padding-md, 0.5rem 0.75rem)',
-      fontSize: 'var(--one-font-size-md, 1rem)',
+      minHeight: '40px',
+      padding: `var(--one-input-padding-md, ${ONE_THEME_DEFAULTS.spaceSm} ${ONE_THEME_DEFAULTS.spaceMd})`,
+      fontSize: `var(--one-font-size-md, ${ONE_THEME_DEFAULTS.fontSizeMd})`,
     },
   },
   {
     name: 'one-input-lg',
     selector: '.one-input--lg',
     properties: {
-      minHeight: 'var(--one-input-height-lg, 3rem)',
-      padding: 'var(--one-input-padding-lg, 0.75rem 1rem)',
-      fontSize: 'var(--one-font-size-lg, 1.125rem)',
+      minHeight: '48px',
+      padding: `var(--one-input-padding-lg, ${ONE_THEME_DEFAULTS.spaceMd} ${ONE_THEME_DEFAULTS.spaceLg})`,
+      fontSize: `var(--one-font-size-lg, ${ONE_THEME_DEFAULTS.fontSizeLg})`,
     },
   },
   {
     name: 'one-input-invalid',
     selector: '.one-input--invalid',
     properties: {
-      borderColor: 'var(--one-color-danger, #dc2626)',
+      borderColor: `var(--one-color-danger, ${ONE_THEME_DEFAULTS.colorDanger})`,
     },
   },
   {
     name: 'one-input-disabled',
     selector: '.one-input:disabled',
     properties: {
-      opacity: 'var(--one-disabled-opacity, 0.5)',
+      opacity: '0.5',
       cursor: 'not-allowed',
-      backgroundColor: 'var(--one-input-disabled-background, #f3f4f6)',
+      backgroundColor: `var(--one-input-disabled-background, var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface}))`,
     },
   },
   {
     name: 'one-input-focus-visible',
     selector: '.one-input:focus-visible',
     properties: {
-      outline: 'var(--one-focus-outline, 2px solid #2563eb)',
-      outlineOffset: 'var(--one-focus-outline-offset, 2px)',
-      borderColor: 'var(--one-input-focus-border-color, #2563eb)',
+      outline: `2px solid var(--one-color-focus, ${ONE_THEME_DEFAULTS.colorFocus})`,
+      outlineOffset: '2px',
+      borderColor: `var(--one-input-focus-border-color, var(--one-color-focus, ${ONE_THEME_DEFAULTS.colorFocus}))`,
     },
   },
 ];
