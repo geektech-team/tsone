@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
+import { enApiPages } from '../docs/app/content/en/api';
 import { enGuidePages } from '../docs/app/content/en/guide';
 import { enHomePages } from '../docs/app/content/en/home';
+import { apiPages as zhApiPages } from '../docs/app/content/zh/api';
 import { guidePages as zhGuidePages } from '../docs/app/content/zh/guide';
 import { homePages } from '../docs/app/content/zh/home';
 import {
@@ -11,7 +13,108 @@ import {
   resolvePreferredDocLocale,
   switchDocLocale,
 } from '../docs/app/content/locales';
-import { docText, validateDocPages } from '../docs/app/content/types';
+import {
+  docText,
+  validateDocPages,
+  type DocInline,
+  type DocPage,
+} from '../docs/app/content/types';
+
+function collectDocLinks(pages: DocPage[]): string[] {
+  const collectInlineLinks = (content: DocInline[]): string[] =>
+    content.flatMap((item) =>
+      typeof item !== 'string' && item.type === 'link' ? [item.href] : []
+    );
+
+  return pages.flatMap((page) =>
+    page.body.flatMap((block) => {
+      if (block.type === 'paragraph') {
+        return collectInlineLinks(block.content);
+      }
+
+      if (block.type === 'callout') {
+        return collectInlineLinks(block.body);
+      }
+
+      if (block.type === 'list') {
+        return block.items.flatMap(collectInlineLinks);
+      }
+
+      return [];
+    })
+  );
+}
+
+function collectTypeScriptContractLines(pages: DocPage[]): string[] {
+  const contractLine =
+    /^(?:abstract class |class |interface |protected |(?:root|rootProps|rootElement|state|config|document|routes|mode|base|path|component|name|meta)\??:)/;
+
+  return pages.flatMap((page) =>
+    page.body.flatMap((block) =>
+      block.type === 'code' && block.language === 'ts'
+        ? block.code
+            .split('\n')
+            .map((line) => line.trim())
+            .filter((line) => contractLine.test(line))
+        : []
+    )
+  );
+}
+
+function apiPageStructure(pages: DocPage[]) {
+  return pages.map((page) => ({
+    path: page.path,
+    sectionOrder: page.sectionOrder,
+    order: page.order,
+    blocks: page.body.map((block) => {
+      switch (block.type) {
+        case 'heading':
+          return { type: block.type, level: block.level };
+        case 'paragraph':
+          return {
+            type: block.type,
+            inlineTypes: block.content.map((item) =>
+              typeof item === 'string' ? 'text' : item.type
+            ),
+          };
+        case 'list':
+          return {
+            type: block.type,
+            items: block.items.map((item) =>
+              item.map((part) =>
+                typeof part === 'string' ? 'text' : part.type
+              )
+            ),
+          };
+        case 'code':
+          return {
+            type: block.type,
+            language: block.language,
+            lineCount: block.code.split('\n').length,
+            imports: block.code
+              .split('\n')
+              .filter((line) => line.startsWith('import ')),
+          };
+        case 'callout':
+          return {
+            type: block.type,
+            kind: block.kind,
+            inlineTypes: block.body.map((item) =>
+              typeof item === 'string' ? 'text' : item.type
+            ),
+          };
+        case 'api-table':
+          return {
+            type: block.type,
+            rows: block.rows.map(({ name, signature }) => ({
+              name,
+              signature,
+            })),
+          };
+      }
+    }),
+  }));
+}
 
 describe('docs locales', () => {
   it('maps logical routes to Chinese and English public routes', () => {
@@ -75,6 +178,55 @@ describe('docs locales', () => {
     ).toBe('Getting Started');
   });
 
+  it('provides complete English API content', () => {
+    const pages = validateDocPages(enApiPages);
+    expect(pages.map((page) => page.path)).toEqual([
+      '/api/app/',
+      '/api/component/',
+      '/api/reactive/',
+      '/api/router/',
+      '/api/style/',
+    ]);
+    expect(pages.map((page) => page.title)).toEqual([
+      'App API',
+      'Component API',
+      'Reactive API',
+      'Router API',
+      'Style API',
+    ]);
+
+    const text = pages.map(docText).join('\n');
+    expect(text).not.toMatch(/[\u3400-\u9fff]/u);
+    for (const symbol of [
+      'createApp',
+      'Component<Props, State>',
+      'reactive',
+      'RouterView',
+      'StyleManager',
+      'VNode',
+    ]) {
+      expect(text).toContain(symbol);
+    }
+  });
+
+  it('preserves the Chinese API catalog structure and technical contracts', () => {
+    const chinesePages = validateDocPages(zhApiPages);
+    const englishPages = validateDocPages(enApiPages);
+
+    expect(apiPageStructure(englishPages)).toEqual(
+      apiPageStructure(chinesePages)
+    );
+    expect(collectDocLinks(englishPages)).toEqual(
+      collectDocLinks(chinesePages)
+    );
+    expect(collectTypeScriptContractLines(englishPages)).toEqual(
+      collectTypeScriptContractLines(chinesePages)
+    );
+    expect(englishPages.every((page) => !page.path.startsWith('/en/'))).toBe(
+      true
+    );
+  });
+
   it('preserves the Chinese catalog structure in English content', () => {
     const chinesePages = validateDocPages([...homePages, ...zhGuidePages]);
     const englishPages = validateDocPages([...enHomePages, ...enGuidePages]);
@@ -95,9 +247,9 @@ describe('docs locales', () => {
     expect(englishPages.map((page) => page.body.length)).toEqual(
       chinesePages.map((page) => page.body.length)
     );
-    expect(englishPages.map((page) => page.body.map((block) => block.type))).toEqual(
-      chinesePages.map((page) => page.body.map((block) => block.type))
-    );
+    expect(
+      englishPages.map((page) => page.body.map((block) => block.type))
+    ).toEqual(chinesePages.map((page) => page.body.map((block) => block.type)));
   });
 
   it('preserves logical links and executable examples in English content', () => {
