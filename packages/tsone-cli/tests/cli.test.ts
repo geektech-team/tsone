@@ -5,6 +5,7 @@ import {
   readFileSync,
   renameSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -79,6 +80,10 @@ afterEach(() => {
 });
 
 describe('TSone CLI arguments', () => {
+  it('marks the package bin executable for its owner', () => {
+    expect(statSync(cliBinPath).mode & 0o100).toBe(0o100);
+  });
+
   it('parses dev options in separated form', () => {
     expect(
       parseCliArgs(['dev', '--host', '0.0.0.0', '--port', '4300'])
