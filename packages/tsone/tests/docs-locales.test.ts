@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'bun:test';
 import { enApiPages } from '../docs/app/content/en/api';
+import { enContributingPages } from '../docs/app/content/en/contributing';
+import { enExamplePages } from '../docs/app/content/en/examples';
 import { enGuidePages } from '../docs/app/content/en/guide';
 import { enHomePages } from '../docs/app/content/en/home';
+import {
+  docCatalogs,
+  findLocalizedDocPage,
+  getDocCatalog,
+} from '../docs/app/content';
+import {
+  createDocCatalog,
+  validateDocCatalogParity,
+} from '../docs/app/content/catalog';
 import { apiPages as zhApiPages } from '../docs/app/content/zh/api';
 import { guidePages as zhGuidePages } from '../docs/app/content/zh/guide';
 import { homePages } from '../docs/app/content/zh/home';
@@ -207,6 +218,97 @@ describe('docs locales', () => {
     ]) {
       expect(text).toContain(symbol);
     }
+  });
+
+  it('provides complete English examples and contributing content', () => {
+    const pages = validateDocPages([...enExamplePages, ...enContributingPages]);
+
+    expect(pages.map((page) => page.path)).toEqual([
+      '/examples/basic/',
+      '/contributing/',
+    ]);
+    expect(pages.map((page) => page.title)).toEqual([
+      'Basic Examples',
+      'Contributing',
+    ]);
+
+    const text = pages.map(docText).join('\n');
+    expect(text).not.toMatch(/[\u3400-\u9fff]/u);
+    expect(text).toContain("props: { htmlFor: 'name' }");
+    expect(text).toContain("props: { htmlFor: 'email' }");
+    expect(text).toContain("props: { htmlFor: 'message' }");
+    expect(text).toContain("children: ['Submit']");
+    expect(text).toContain('this.state.items.map((item, index) => ({');
+    expect(text).toContain("children: ['Remove']");
+    expect(text).toContain("children: ['Add']");
+    expect(text).toContain('bun test');
+    expect(text).toContain('bun run docs:build');
+    expect(text).toContain('typed content registry');
+  });
+
+  it('keeps Chinese and English catalogs in strict route parity', () => {
+    expect(docCatalogs.zh.pages).toHaveLength(14);
+    expect(docCatalogs.en.pages).toHaveLength(14);
+    expect(docCatalogs.en.pages.map((page) => page.path)).toEqual(
+      docCatalogs.zh.pages.map((page) => page.path)
+    );
+    expect(findLocalizedDocPage('en', '/guide/getting-started/')?.title).toBe(
+      'Getting Started'
+    );
+    expect(findLocalizedDocPage('zh', '/guide/getting-started/')?.title).toBe(
+      '快速开始'
+    );
+    expect(findLocalizedDocPage('en', '/missing/')).toBeUndefined();
+    expect(getDocCatalog('zh')).toBe(docCatalogs.zh);
+    expect(getDocCatalog('en')).toBe(docCatalogs.en);
+  });
+
+  it('rejects missing and extra localized routes in both directions', () => {
+    const reference = createDocCatalog('zh', docCatalogs.zh.pages.slice(0, 2));
+    const missing = createDocCatalog('en', docCatalogs.en.pages.slice(0, 1));
+    const extra = createDocCatalog('en', docCatalogs.en.pages.slice(0, 3));
+
+    expect(() => validateDocCatalogParity(reference, missing)).toThrow(
+      'Locale en is missing documentation route: /guide/getting-started/'
+    );
+    expect(() => validateDocCatalogParity(reference, extra)).toThrow(
+      'Locale en has extra documentation route: /guide/core-concepts/'
+    );
+  });
+
+  it('keeps localized search entries isolated from logical page routes', () => {
+    expect(docCatalogs.zh.pages[0].path).toBe('/');
+    expect(docCatalogs.en.pages[0].path).toBe('/');
+    expect(docCatalogs.zh.searchEntries[0].path).toBe('/');
+    expect(docCatalogs.en.searchEntries[0].path).toBe('/en/');
+    expect(
+      docCatalogs.en.searchEntries.map((entry) => entry.text).join('\n')
+    ).not.toMatch(/[\u3400-\u9fff]/u);
+    expect(
+      docCatalogs.zh.searchEntries.map((entry) => entry.text).join('\n')
+    ).toMatch(/[\u3400-\u9fff]/u);
+  });
+
+  it('rejects Chinese content and preserves base page validation errors', () => {
+    const englishPage: DocPage = {
+      path: '/test/',
+      title: 'Test',
+      description: 'Test page',
+      section: 'Guide',
+      sectionOrder: 1,
+      order: 1,
+      body: [{ type: 'paragraph', content: ['English with 中文'] }],
+    };
+
+    expect(() => createDocCatalog('en', [englishPage])).toThrow(
+      'Locale en contains Chinese content: /test/'
+    );
+    expect(() => createDocCatalog('zh', [englishPage, englishPage])).toThrow(
+      'Duplicate documentation route: /test/'
+    );
+    expect(() =>
+      createDocCatalog('zh', [{ ...englishPage, body: [] }])
+    ).toThrow('Documentation page has no content: /test/');
   });
 
   it('preserves the Chinese API catalog structure and technical contracts', () => {

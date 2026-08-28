@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'bun:test';
 import {
+  docCatalogs,
   docPages,
   findDocPage,
+  getDocCatalog,
   searchEntries,
   zhDocPages,
 } from '../docs/app/content';
@@ -231,6 +233,9 @@ describe('docs content model', () => {
 describe('docs content registry', () => {
   it('keeps Chinese as the default compatibility catalog', () => {
     expect(zhDocPages).toBe(docPages);
+    expect(docPages).toBe(docCatalogs.zh.pages);
+    expect(searchEntries).toBe(docCatalogs.zh.searchEntries);
+    expect(getDocCatalog('zh')).toBe(docCatalogs.zh);
     expect(findDocPage('/guide/getting-started/')?.title).toBe('快速开始');
     expect(searchEntries.some((entry) => entry.text.includes('快速开始'))).toBe(
       true
