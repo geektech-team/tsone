@@ -190,6 +190,18 @@ describe('docs locales', () => {
     expect(resolvePreferredDocLocale('invalid', [])).toBe('zh');
   });
 
+  it('uses the first non-empty browser language', () => {
+    expect(resolvePreferredDocLocale(undefined, ['en-US', 'zh-CN'])).toBe(
+      'en'
+    );
+    expect(resolvePreferredDocLocale(undefined, ['zh-CN', 'en-US'])).toBe(
+      'zh'
+    );
+    expect(resolvePreferredDocLocale(undefined, ['fr-FR'])).toBe('en');
+    expect(resolvePreferredDocLocale(undefined, ['de-DE'])).toBe('en');
+    expect(resolvePreferredDocLocale(undefined, [])).toBe('zh');
+  });
+
   it('defines complete UI messages for both locales', () => {
     expect(Object.keys(DOC_LOCALE_CONFIGS)).toEqual(['zh', 'en']);
     for (const config of Object.values(DOC_LOCALE_CONFIGS)) {

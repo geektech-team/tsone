@@ -113,11 +113,14 @@ export function resolvePreferredDocLocale(
     return stored;
   }
 
-  if (languages.some((language) => language.toLowerCase().startsWith('zh'))) {
+  const preferredLanguage = languages.find(
+    (language) => language.trim().length > 0
+  );
+  if (preferredLanguage?.toLowerCase().startsWith('zh')) {
     return 'zh';
   }
 
-  if (languages.some((language) => language.toLowerCase().startsWith('en'))) {
+  if (preferredLanguage) {
     return 'en';
   }
 

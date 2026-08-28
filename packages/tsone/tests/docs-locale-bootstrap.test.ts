@@ -64,6 +64,18 @@ describe('docs locale bootstrap', () => {
     expect(test.replacements).toEqual(['/en/']);
   });
 
+  it('redirects for a preferred English browser language', () => {
+    const test = environment({ languages: ['en-US', 'zh-CN'] });
+    runDocsLocaleBootstrap(test.value);
+    expect(test.replacements).toEqual(['/en/']);
+  });
+
+  it('redirects for a non-Chinese browser language', () => {
+    const test = environment({ languages: ['fr-FR'] });
+    runDocsLocaleBootstrap(test.value);
+    expect(test.replacements).toEqual(['/en/']);
+  });
+
   it('does not rewrite explicit content paths', () => {
     const test = environment({
       pathname: '/guide/getting-started/',
