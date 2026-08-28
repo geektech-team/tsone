@@ -55,9 +55,12 @@ async function buildProjectBundle(config: ResolvedConfig): Promise<Response> {
   };
   const result = await Bun.build(buildOptions);
 
-  const output = result.outputs[0];
+  const output = result.outputs.find(isJavaScriptOutput);
   if (!result.success || !output) {
     result.logs.forEach((log) => console.error(log));
+    if (!output) {
+      console.error('Failed to build project bundle: no JavaScript output');
+    }
     return new Response('Failed to build project bundle', {
       status: 500,
       headers: { 'cache-control': 'no-store' },
@@ -70,4 +73,8 @@ async function buildProjectBundle(config: ResolvedConfig): Promise<Response> {
       'cache-control': 'no-store',
     },
   });
+}
+
+function isJavaScriptOutput(output: { path: string }): boolean {
+  return /\.(?:[cm]?js)$/i.test(output.path);
 }

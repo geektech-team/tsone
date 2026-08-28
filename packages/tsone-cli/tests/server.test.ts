@@ -6,6 +6,9 @@ import { startDevServer } from '../src/index';
 
 const roots: string[] = [];
 const servers: Array<ReturnType<typeof Bun.serve>> = [];
+const restorers: Array<() => void> = [];
+type BuildResult = Awaited<ReturnType<typeof Bun.build>>;
+type BuildOutput = BuildResult['outputs'][number];
 
 function makeRoot(title: string): string {
   const root = mkdtempSync(join(tmpdir(), 'tsone-cli-server-'));
@@ -29,8 +32,38 @@ function serverUrl(server: ReturnType<typeof Bun.serve>): string {
   return `http://127.0.0.1:${server.port}`;
 }
 
+function createBuildOutput(path: string, contents: string): BuildOutput {
+  return Object.assign(new Blob([contents]), {
+    path,
+  }) as unknown as BuildOutput;
+}
+
+function mockBuild(result: BuildResult): void {
+  const originalBuild = Bun.build;
+  Bun.build = (async () => result) as typeof Bun.build;
+  restorers.push(() => {
+    Bun.build = originalBuild;
+  });
+}
+
+function captureConsoleErrors(): unknown[][] {
+  const originalError = console.error;
+  const calls: unknown[][] = [];
+  console.error = (...values: unknown[]) => {
+    calls.push(values);
+  };
+  restorers.push(() => {
+    console.error = originalError;
+  });
+  return calls;
+}
+
 afterEach(() => {
   servers.splice(0).forEach((server) => server.stop(true));
+  restorers
+    .splice(0)
+    .reverse()
+    .forEach((restore) => restore());
   roots
     .splice(0)
     .forEach((root) => rmSync(root, { recursive: true, force: true }));
@@ -130,5 +163,59 @@ describe('TSone development server', () => {
 
     expect(response.status).toBe(200);
     expect(await response.text()).toBe('proxied bundle response');
+  });
+
+  it('selects the JavaScript bundle when Bun returns a stylesheet first', async () => {
+    const server = await startDevServer({
+      root: makeRoot('Multiple Build Outputs'),
+      port: 0,
+    });
+    servers.push(server);
+    mockBuild({
+      success: true,
+      logs: [],
+      outputs: [
+        createBuildOutput('/virtual/styles.css', 'body { color: red; }'),
+        createBuildOutput(
+          '/virtual/app.js',
+          'export const bundleTitle = "JavaScript bundle";'
+        ),
+      ],
+    } as unknown as BuildResult);
+
+    const response = await fetch(`${serverUrl(server)}/bundle.js`);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('javascript');
+    expect(await response.text()).toBe(
+      'export const bundleTitle = "JavaScript bundle";'
+    );
+  });
+
+  it('returns a generic 500 and logs an error when Bun emits no JavaScript bundle', async () => {
+    const server = await startDevServer({
+      root: makeRoot('No JavaScript Output'),
+      port: 0,
+    });
+    servers.push(server);
+    const errorCalls = captureConsoleErrors();
+    mockBuild({
+      success: true,
+      logs: [],
+      outputs: [
+        createBuildOutput('/virtual/styles.css', 'body { color: red; }'),
+      ],
+    } as unknown as BuildResult);
+
+    const response = await fetch(`${serverUrl(server)}/bundle.js`);
+
+    expect(response.status).toBe(500);
+    expect(await response.text()).toBe('Failed to build project bundle');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(
+      errorCalls.some((values) =>
+        values.join(' ').includes('no JavaScript output')
+      )
+    ).toBe(true);
   });
 });
