@@ -23,7 +23,8 @@ HTML 生成和 Bun bundle 配置没有形成公开契约。
 - 让开发服务支持 Vite 风格的 `server.proxy` HTTP/HTTPS 转发配置。
 - 让开发与构建共享项目根目录、入口解析和 HTML 生成规则。
 - 将现有两个 playground 迁移成真实的外部消费者示例。
-- 保持 TSone 浏览器运行时零外部依赖，工具链只依赖 Bun 和 Node 内置模块。
+- 保持 TSone 浏览器运行时零外部依赖；dev 的 Bun 产物内置打包现有
+  Happy DOM，外部项目不需要单独安装它。
 
 ## 非目标
 
@@ -91,9 +92,9 @@ export const app = createApp({
 app.mount();
 ```
 
-在 Bun 进程中加载入口时，`app.mount()` 因为没有浏览器 `document` 会安全跳过；
-服务端随后调用 `app.renderHtmlDocument()` 生成 HTML。浏览器 bundle 执行同一入口
-后会正常挂载应用。
+在 Bun 进程中加载入口前，工具链安装隔离的 Happy DOM 环境，使入口中的
+`app.mount()` 和后续 `app.renderHtmlDocument()` 使用与现有文档生成能力相同的 DOM
+契约。浏览器 bundle 执行同一入口后会在真实浏览器中正常挂载应用。
 
 ## 公共配置契约
 
@@ -174,7 +175,7 @@ export function build(options?: BuildOptions): Promise<BuildResult>;
 公开实现位于 `packages/tsone/lib/dev/`，按职责拆分：
 
 - 配置模块：定义类型、加载配置并解析默认值和相对路径。
-- 项目入口模块：加载入口、校验 `app` 导出并生成 HTML。
+- 项目入口模块：安装隔离的 DOM 环境、加载入口、校验 `app` 导出并生成 HTML。
 - 代理模块：匹配规则、构造上游请求并处理失败。
 - 开发服务模块：组合配置、入口渲染、bundle 和代理处理。
 - 构建模块：清理安全的输出目录、执行 Bun build、写入 HTML。
@@ -183,6 +184,10 @@ export function build(options?: BuildOptions): Promise<BuildResult>;
 `scripts/dev.ts` 只保留为仓库内可直接执行的薄入口，调用同一 CLI 模块；发布包的
 `bin` 指向 Bun 目标的 `dist/dev/cli.js`。框架浏览器入口继续以 browser 为目标
 构建，dev 与 CLI 入口单独以 Bun 为目标构建。
+
+dev Bun 产物把现有 Happy DOM 打包进产物，不把它暴露成外部项目必须安装的 peer
+dependency。DOM 环境的安装和清理由项目入口模块负责，避免配置加载、代理和 CLI
+依赖 DOM 全局对象。
 
 这些模块是依赖关系而不是继承关系：CLI 依赖配置、开发服务和构建服务；开发服务
 组合入口渲染与代理处理器；构建服务组合入口渲染与 Bun bundler。各模块通过窄接口
@@ -193,8 +198,9 @@ export function build(options?: BuildOptions): Promise<BuildResult>;
 1. 确定项目根目录并加载或接收配置。
 2. 合并默认值、配置和程序化/CLI 覆盖项。
 3. 校验配置、入口文件和代理规则。
-4. 加载入口模块，校验命名导出 `app` 及其 `renderHtmlDocument()` 能力。
-5. 生成引用 `/bundle.js` 的 HTML 文档。
+4. 安装隔离的 Happy DOM 环境，加载入口模块并校验命名导出 `app` 及其
+   `renderHtmlDocument()` 能力。
+5. 在该 DOM 环境中生成引用 `/bundle.js` 的 HTML 文档，随后清理临时全局对象。
 6. 成功完成以上步骤后才调用 `Bun.serve()` 绑定端口。
 7. 请求先经过代理匹配；未匹配代理时再处理 `/`、`/index.html` 和
    `/bundle.js`。
@@ -263,6 +269,7 @@ package scripts 使用同一安装后的 bin，不再引用仓库脚本路径或
 - 新增 `./dev` export，包含 Bun 运行时 JS 和声明文件。
 - 新增 `tsone` bin，指向构建后的 CLI。
 - 构建脚本分别生成 browser 目标的框架产物和 Bun 目标的 dev/CLI 产物。
+- dev/CLI Bun 产物内置 Happy DOM，安装发布包后无需额外安装 Happy DOM。
 - package smoke test 验证 tarball 中的 dev 文件、类型和 bin。
 
 两个 playground 分别新增 `tsone.config.ts`。它们保留自己的 `src/main.ts` 和
