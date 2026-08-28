@@ -103,3 +103,72 @@ unmodified `packages/tsone/docs/app/content/en/guide.ts` has 1,137
 `prettier/prettier` errors. Task-file lint, all tests, type checking, and the
 documentation build pass. This baseline formatting debt was intentionally left
 outside task 5's file boundary.
+
+## Fix Round 1/5: Complete Examples and Contributing Coverage
+
+### Important Finding
+
+The original English Examples/Contributing test sampled a few searchable
+tokens. Removing the complete Hello World or Counter example, or deleting
+unrelated Contributing sections and commands, could leave those assertions
+passing.
+
+### Fix
+
+Modified `packages/tsone/tests/docs-locales.test.ts` only:
+
+- Generalized the existing API structure helper into `docPageStructure`, which
+  compares page `path`, `sectionOrder`, and `order`, plus every block in order.
+- The block signature covers heading levels, paragraph inline structure, list
+  item counts and inline structure, code language/line count/imports/commands,
+  callout kind and inline structure, and API table row structure.
+- Added corresponding Chinese/English page comparisons for Examples and
+  Contributing, including logical links.
+- Fixed all six English Examples headings and all four TypeScript code block
+  specifications as independent literals: language, line counts
+  (`34`, `77`, `176`, `153`), and imports. The complete code blocks must also
+  equal their Chinese-page counterparts.
+- Fixed all 35 English Contributing headings and all 12 code blocks as
+  independent literals, including every Bun, Git, docs, commit-format, and
+  commit-example command block.
+- Retained English CJK rejection assertions for both pages.
+
+No production implementation remains changed in this fix round.
+
+### Mutation RED
+
+After adding the tests, temporarily removed the complete English Hello World
+heading and its 34-line code block from `en/examples.ts`, then ran:
+
+```bash
+bun test packages/tsone/tests/docs-locales.test.ts
+```
+
+Result: exit 1, `15 pass`, `1 fail`, `67 expect()` calls. The new
+`preserves the complete English examples page structure and code` test failed
+at the structural comparison and showed the missing level-2 heading and
+34-line TypeScript block. The temporary deletion was then restored exactly;
+`git diff -- packages/tsone/docs/app/content/en/examples.ts` is empty.
+
+### GREEN
+
+Required verification after restoring the correct content:
+
+```bash
+bun test packages/tsone/tests/docs-locales.test.ts packages/tsone/tests/docs-content.test.ts
+bunx tsc --noEmit
+```
+
+Results:
+
+- Locale/content tests: exit 0, `28 pass`, `0 fail`, `121 expect()` calls.
+- TypeScript check: exit 0.
+
+Additional focused checks:
+
+```bash
+bunx eslint packages/tsone/tests/docs-locales.test.ts
+git diff --check -- packages/tsone/tests/docs-locales.test.ts .superpowers/sdd/2026-08-28-docs-i18n/task-5-report.md
+```
+
+Both commands exited 0.

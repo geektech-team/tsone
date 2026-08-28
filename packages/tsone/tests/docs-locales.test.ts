@@ -14,6 +14,8 @@ import {
   validateDocCatalogParity,
 } from '../docs/app/content/catalog';
 import { apiPages as zhApiPages } from '../docs/app/content/zh/api';
+import { contributingPages as zhContributingPages } from '../docs/app/content/zh/contributing';
+import { examplePages as zhExamplePages } from '../docs/app/content/zh/examples';
 import { guidePages as zhGuidePages } from '../docs/app/content/zh/guide';
 import { homePages } from '../docs/app/content/zh/home';
 import {
@@ -72,7 +74,7 @@ function collectTypeScriptContractLines(pages: DocPage[]): string[] {
   );
 }
 
-function apiPageStructure(pages: DocPage[]) {
+function docPageStructure(pages: DocPage[]) {
   return pages.map((page) => ({
     path: page.path,
     sectionOrder: page.sectionOrder,
@@ -105,6 +107,15 @@ function apiPageStructure(pages: DocPage[]) {
             imports: block.code
               .split('\n')
               .filter((line) => line.startsWith('import ')),
+            commands: block.code
+              .split('\n')
+              .map((line) => line.trim())
+              .filter((line) => /^(?:bun|cd|git)\b/u.test(line))
+              .map((line) =>
+                line.startsWith('git commit -m ')
+                  ? 'git commit -m "<message>"'
+                  : line
+              ),
           };
         case 'callout':
           return {
@@ -125,6 +136,20 @@ function apiPageStructure(pages: DocPage[]) {
       }
     }),
   }));
+}
+
+function collectCodeBlocks(pages: DocPage[]) {
+  return pages.flatMap((page) =>
+    page.body.filter((block) => block.type === 'code')
+  );
+}
+
+function collectHeadings(pages: DocPage[]) {
+  return pages.flatMap((page) =>
+    page.body
+      .filter((block) => block.type === 'heading')
+      .map((block) => ({ level: block.level, text: block.text }))
+  );
 }
 
 describe('docs locales', () => {
@@ -220,30 +245,175 @@ describe('docs locales', () => {
     }
   });
 
-  it('provides complete English examples and contributing content', () => {
-    const pages = validateDocPages([...enExamplePages, ...enContributingPages]);
+  it('preserves the complete English examples page structure and code', () => {
+    const chinesePages = validateDocPages(zhExamplePages);
+    const englishPages = validateDocPages(enExamplePages);
+    const chineseCodeBlocks = collectCodeBlocks(chinesePages);
+    const englishCodeBlocks = collectCodeBlocks(englishPages);
 
-    expect(pages.map((page) => page.path)).toEqual([
-      '/examples/basic/',
-      '/contributing/',
+    expect(docPageStructure(englishPages)).toEqual(
+      docPageStructure(chinesePages)
+    );
+    expect(collectDocLinks(englishPages)).toEqual(
+      collectDocLinks(chinesePages)
+    );
+    expect(collectHeadings(englishPages)).toEqual([
+      { level: 1, text: 'Basic Examples' },
+      { level: 2, text: 'Hello World' },
+      { level: 2, text: 'Counter' },
+      { level: 2, text: 'Form Handling' },
+      { level: 2, text: 'List Rendering' },
+      { level: 2, text: 'Summary' },
     ]);
-    expect(pages.map((page) => page.title)).toEqual([
-      'Basic Examples',
-      'Contributing',
+    expect(
+      englishCodeBlocks.map((block) => ({
+        language: block.language,
+        lineCount: block.code.split('\n').length,
+        imports: block.code
+          .split('\n')
+          .filter((line) => line.startsWith('import ')),
+      }))
+    ).toEqual([
+      {
+        language: 'ts',
+        lineCount: 34,
+        imports: ["import { createApp, Component } from '@geektech/tsone';"],
+      },
+      {
+        language: 'ts',
+        lineCount: 77,
+        imports: ["import { createApp, Component } from '@geektech/tsone';"],
+      },
+      {
+        language: 'ts',
+        lineCount: 176,
+        imports: ["import { createApp, Component } from '@geektech/tsone';"],
+      },
+      {
+        language: 'ts',
+        lineCount: 153,
+        imports: ["import { createApp, Component } from '@geektech/tsone';"],
+      },
     ]);
+    expect(englishCodeBlocks.map((block) => block.code)).toEqual(
+      chineseCodeBlocks.map((block) => block.code)
+    );
+    expect(englishPages.map(docText).join('\n')).not.toMatch(
+      /[\u3400-\u9fff]/u
+    );
+  });
 
-    const text = pages.map(docText).join('\n');
-    expect(text).not.toMatch(/[\u3400-\u9fff]/u);
-    expect(text).toContain("props: { htmlFor: 'name' }");
-    expect(text).toContain("props: { htmlFor: 'email' }");
-    expect(text).toContain("props: { htmlFor: 'message' }");
-    expect(text).toContain("children: ['Submit']");
-    expect(text).toContain('this.state.items.map((item, index) => ({');
-    expect(text).toContain("children: ['Remove']");
-    expect(text).toContain("children: ['Add']");
-    expect(text).toContain('bun test');
-    expect(text).toContain('bun run docs:build');
-    expect(text).toContain('typed content registry');
+  it('preserves every English contributing section and command', () => {
+    const chinesePages = validateDocPages(zhContributingPages);
+    const englishPages = validateDocPages(enContributingPages);
+    const englishCodeBlocks = collectCodeBlocks(englishPages);
+
+    expect(docPageStructure(englishPages)).toEqual(
+      docPageStructure(chinesePages)
+    );
+    expect(collectDocLinks(englishPages)).toEqual(
+      collectDocLinks(chinesePages)
+    );
+    expect(collectHeadings(englishPages)).toEqual([
+      { level: 1, text: 'Contributing' },
+      { level: 2, text: 'Development Environment' },
+      { level: 3, text: 'Clone the Repository' },
+      { level: 3, text: 'Install Dependencies' },
+      { level: 3, text: 'Run the Development Server' },
+      { level: 3, text: 'Build the Project' },
+      { level: 3, text: 'Run Linting' },
+      { level: 2, text: 'Coding Standards' },
+      { level: 3, text: 'TypeScript' },
+      { level: 3, text: 'Code Style' },
+      { level: 3, text: 'Naming Conventions' },
+      { level: 2, text: 'Commit Conventions' },
+      { level: 3, text: 'Commit Message Format' },
+      { level: 3, text: 'Types' },
+      { level: 3, text: 'Examples' },
+      { level: 2, text: 'Development Workflow' },
+      { level: 3, text: '1. Create a Branch' },
+      { level: 3, text: '2. Develop the Feature' },
+      { level: 3, text: '3. Commit Your Changes' },
+      { level: 3, text: '4. Push the Branch' },
+      { level: 3, text: '5. Create a Pull Request' },
+      { level: 2, text: 'Testing' },
+      { level: 3, text: 'Write Tests' },
+      { level: 3, text: 'Test Coverage' },
+      { level: 2, text: 'Documentation' },
+      { level: 3, text: 'Update Documentation' },
+      { level: 3, text: 'Documentation Commands' },
+      { level: 3, text: 'Documentation Maintenance' },
+      { level: 2, text: 'Issue Reports' },
+      { level: 3, text: 'Bug Reports' },
+      { level: 3, text: 'Feature Requests' },
+      { level: 2, text: 'Code of Conduct' },
+      { level: 2, text: 'Communication Channels' },
+      { level: 2, text: 'License' },
+      { level: 2, text: 'Thank You' },
+    ]);
+    expect(
+      englishCodeBlocks.map((block) => ({
+        language: block.language,
+        lineCount: block.code.split('\n').length,
+        code: block.code,
+      }))
+    ).toEqual([
+      {
+        language: 'bash',
+        lineCount: 2,
+        code: 'git clone https://github.com/geektech/tsone.git\ncd tsone',
+      },
+      { language: 'bash', lineCount: 1, code: 'bun install' },
+      { language: 'bash', lineCount: 1, code: 'bun run dev' },
+      { language: 'bash', lineCount: 1, code: 'bun run build' },
+      { language: 'bash', lineCount: 1, code: 'bun run lint' },
+      {
+        language: 'text',
+        lineCount: 5,
+        code: [
+          '<type>[optional scope]: <description>',
+          '',
+          '[optional body]',
+          '',
+          '[optional footer(s)]',
+        ].join('\n'),
+      },
+      {
+        language: 'text',
+        lineCount: 5,
+        code: [
+          'feat(router): improve routing capabilities',
+          '',
+          'fix(core): fix a memory leak in the reactivity system',
+          '',
+          'docs: update the Component API documentation',
+        ].join('\n'),
+      },
+      {
+        language: 'bash',
+        lineCount: 1,
+        code: 'git checkout -b feature/your-feature-name',
+      },
+      {
+        language: 'bash',
+        lineCount: 2,
+        code: 'git add .\ngit commit -m "feat: describe your feature"',
+      },
+      {
+        language: 'bash',
+        lineCount: 1,
+        code: 'git push origin feature/your-feature-name',
+      },
+      { language: 'bash', lineCount: 1, code: 'bun test' },
+      {
+        language: 'bash',
+        lineCount: 2,
+        code: 'bun run docs\nbun run docs:build',
+      },
+    ]);
+    expect(englishPages.map(docText).join('\n')).not.toMatch(
+      /[\u3400-\u9fff]/u
+    );
   });
 
   it('keeps Chinese and English catalogs in strict route parity', () => {
@@ -315,8 +485,8 @@ describe('docs locales', () => {
     const chinesePages = validateDocPages(zhApiPages);
     const englishPages = validateDocPages(enApiPages);
 
-    expect(apiPageStructure(englishPages)).toEqual(
-      apiPageStructure(chinesePages)
+    expect(docPageStructure(englishPages)).toEqual(
+      docPageStructure(chinesePages)
     );
     expect(collectDocLinks(englishPages)).toEqual(
       collectDocLinks(chinesePages)
