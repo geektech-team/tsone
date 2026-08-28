@@ -111,6 +111,65 @@ describe('HTTP development proxy', () => {
     expect(await response?.text()).toBe('created upstream resource');
   });
 
+  it('removes request headers named by Connection before forwarding', async () => {
+    const upstream = startUpstream((request) =>
+      Response.json({
+        first: request.headers.get('x-request-only'),
+        second: request.headers.get('x-request-second'),
+        kept: request.headers.get('x-kept'),
+      })
+    );
+    const handler = createProxyHandler({
+      '/api': `http://127.0.0.1:${upstream.port}`,
+    });
+
+    const response = await handler(
+      new Request('http://client.test/api/headers', {
+        headers: {
+          connection: 'x-request-only, X-Request-Second',
+          'x-request-only': 'do-not-forward',
+          'x-request-second': 'also-do-not-forward',
+          'x-kept': 'forward-me',
+        },
+      })
+    );
+
+    expect(await response?.json()).toEqual({
+      first: null,
+      second: null,
+      kept: 'forward-me',
+    });
+  });
+
+  it('removes response headers named by Connection while preserving the response', async () => {
+    const upstream = startUpstream(
+      () =>
+        new Response('accepted upstream response', {
+          status: 202,
+          headers: {
+            connection: 'x-response-only, X-Response-Second',
+            'x-response-only': 'do-not-forward',
+            'x-response-second': 'also-do-not-forward',
+            'x-kept': 'forward-me',
+          },
+        })
+    );
+    const handler = createProxyHandler({
+      '/api': `http://127.0.0.1:${upstream.port}`,
+    });
+
+    const response = await handler(
+      new Request('http://client.test/api/headers')
+    );
+
+    expect(response?.status).toBe(202);
+    expect(response?.headers.get('connection')).toBeNull();
+    expect(response?.headers.get('x-response-only')).toBeNull();
+    expect(response?.headers.get('x-response-second')).toBeNull();
+    expect(response?.headers.get('x-kept')).toBe('forward-me');
+    expect(await response?.text()).toBe('accepted upstream response');
+  });
+
   it('joins a target base path with the proxied path', async () => {
     const upstream = startUpstream(
       (request) => new Response(new URL(request.url).pathname)

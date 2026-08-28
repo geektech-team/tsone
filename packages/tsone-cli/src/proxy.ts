@@ -103,6 +103,16 @@ function createRequestHeaders(
 
 function filterHeaders(source: Headers): Headers {
   const headers = new Headers(source);
+  const connection = headers.get('connection');
+
+  if (connection) {
+    connection.split(',').forEach((header) => {
+      const name = header.trim();
+      if (name) {
+        headers.delete(name);
+      }
+    });
+  }
 
   HOP_BY_HOP_HEADERS.forEach((header) => headers.delete(header));
   return headers;
