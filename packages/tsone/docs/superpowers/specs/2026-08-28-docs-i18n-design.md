@@ -99,6 +99,12 @@ export interface DocLocaleMessages {
   searchLabel: string;
   navigationLabel: string;
   languageLabel: string;
+  themeToggleLabel: string;
+  lightThemeLabel: string;
+  darkThemeLabel: string;
+  apiNameLabel: string;
+  apiSignatureLabel: string;
+  apiDescriptionLabel: string;
 }
 
 export interface DocLocaleConfig {
@@ -165,13 +171,19 @@ locale-aware catalog 与查找函数供多语言构建和客户端使用。
 
 ### `DocArticle`
 
-`DocArticle` 接收 locale，并通过 `localizeDocHref` 转换 structured content 中的
-站内链接。文章 block 渲染职责不变。
+`DocArticle` 接收 locale messages，并通过 `localizeDocHref` 转换 structured
+content 中的站内链接。API 表格的 Name、Signature、Description 表头从 messages
+读取，其他文章 block 渲染职责不变。
 
 ### `SearchBox`
 
 `SearchBox` 只接收当前 locale 的 `SearchEntry[]` 与搜索 UI 文案。搜索结果 URL
 已经本地化，不查询另一语言 catalog。
+
+### `ThemeToggle`
+
+`ThemeToggle` 接收当前 locale 的主题切换 aria-label 和浅色、深色显示文案。
+主题存储 key 与切换逻辑保持不变。
 
 ### `LocaleSwitcher`
 
@@ -186,7 +198,8 @@ locale-aware catalog 与查找函数供多语言构建和客户端使用。
 ### 类关系
 
 - `DocsPage` 组合 `DocsNav`、`DocArticle` 及三个客户端挂载区域。
-- `SearchBox`、`ThemeToggle`、`LocaleSwitcher` 分别作为独立 TSone 应用挂载。
+- `SearchBox`、`ThemeToggle`、`LocaleSwitcher` 分别作为独立 TSone 应用挂载，
+  并接收当前 locale messages。
 - 组件依赖 locale props 和纯路由函数，不依赖具体语言 catalog。
 - locale registry 聚合 `DocCatalog`，构建器依赖 registry 接口。
 - 除现有组件继承 `Component` 外不新增继承层级，保持单一职责和依赖倒置。
@@ -282,6 +295,7 @@ dist/assets/docs-locale.js
 
 - `DocsNav`、正文内部链接和搜索结果使用当前 locale URL。
 - `SearchBox` 使用当前语言 placeholder、aria-label 和索引。
+- `ThemeToggle` 和 API 表格表头使用当前语言文案。
 - `LocaleSwitcher` 保存有效偏好并跳转对应页面；存储失败仍能跳转。
 - header 同时容纳语言切换与主题切换，不破坏固定布局和移动端布局。
 
