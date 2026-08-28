@@ -28,6 +28,14 @@ export interface ResolveConfigOptions {
   outDir?: string;
 }
 
+export interface BuildOptions extends ResolveConfigOptions {}
+
+export interface BuildResult {
+  root: string;
+  outDir: string;
+  assetsBuilt: string[];
+}
+
 export interface ResolvedConfig {
   root: string;
   configFile?: string;
