@@ -94,6 +94,75 @@ describe('docs app', () => {
     expect(destination).toBe('/guide/core-concepts/');
   });
 
+  it('still navigates from the locale select when storage access fails', () => {
+    history.replaceState({}, '', '/en/api/app/');
+    document.body.innerHTML = '<div data-doc-locale-root></div>';
+    createDocsLocaleApp(
+      'en',
+      '/api/app/',
+      docCatalogs.en.config.messages
+    ).mount();
+
+    const select = document.querySelector<HTMLSelectElement>(
+      '.docs-locale-select'
+    );
+    if (!select) throw new Error('Missing locale select');
+
+    const globalDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'localStorage'
+    );
+    const windowDescriptor = Object.getOwnPropertyDescriptor(
+      window,
+      'localStorage'
+    );
+    const originalGlobalStorage = globalThis.localStorage;
+    const originalWindowStorage = window.localStorage;
+    const securityError = new Error('Storage access denied');
+    securityError.name = 'SecurityError';
+    let dispatchError: unknown;
+    let destination = '';
+
+    try {
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        get: () => {
+          throw securityError;
+        },
+      });
+      Object.defineProperty(window, 'localStorage', {
+        configurable: true,
+        get: () => {
+          throw securityError;
+        },
+      });
+
+      select.value = 'zh';
+      try {
+        select.dispatchEvent(new Event('change'));
+      } catch (error) {
+        dispatchError = error;
+      }
+      destination = location.pathname;
+    } finally {
+      if (windowDescriptor) {
+        Object.defineProperty(window, 'localStorage', windowDescriptor);
+      } else {
+        Reflect.deleteProperty(window, 'localStorage');
+      }
+      if (globalDescriptor) {
+        Object.defineProperty(globalThis, 'localStorage', globalDescriptor);
+      } else {
+        Reflect.deleteProperty(globalThis, 'localStorage');
+      }
+    }
+
+    expect(dispatchError).toBeUndefined();
+    expect(destination).toBe('/api/app/');
+    expect(globalThis.localStorage).toBe(originalGlobalStorage);
+    expect(window.localStorage).toBe(originalWindowStorage);
+  });
+
   it('mounts English search, theme, and locale controls', () => {
     history.replaceState({}, '', '/en/api/app/');
     document.body.innerHTML = [

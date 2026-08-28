@@ -13,6 +13,16 @@ export interface LocaleSwitcherProps {
   messages: DocLocaleMessages;
 }
 
+export function getDocLocaleStorage(
+  source: Pick<Window, 'localStorage'>
+): Pick<Storage, 'setItem'> | undefined {
+  try {
+    return source.localStorage;
+  } catch {
+    return undefined;
+  }
+}
+
 export function applyDocLocaleSelection(
   targetLocale: DocLocale,
   logicalPath: string,
@@ -53,7 +63,7 @@ export class LocaleSwitcher extends Component<LocaleSwitcherProps> {
           applyDocLocaleSelection(
             targetLocale,
             this.props.logicalPath,
-            localStorage,
+            getDocLocaleStorage(window),
             (href) => {
               window.location.href = href;
             }
