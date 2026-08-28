@@ -6,25 +6,26 @@
 ## 背景
 
 当前 `packages/tsone/scripts/dev.ts` 只认识仓库内置 playground，并通过
-`--app` 在固定应用之间切换。外部项目无法通过发布包启动同一套开发服务，
+`--app` 在固定应用之间切换。外部项目无法通过发布工具启动同一套开发服务，
 也没有类似 Vite `vite.config.ts` 的项目级配置入口。现有
 `scripts/playground-build.ts` 同样是仓库内部脚本，开发与构建之间的入口解析、
 HTML 生成和 Bun bundle 配置没有形成公开契约。
 
-本次改动把这些能力整理成 Bun 原生、可发布的 TSone 工具链。外部项目可以用
+本次改动新增独立的 `@geektech/tsone-cli` 包，把这些能力整理成 Bun 原生、可发布的
+TSone 工具链。外部项目可以用
 `tsone dev` 启动开发服务，用 `tsone build` 构建静态产物，并通过项目根目录下的
 `tsone.config.ts` 配置入口、HTTP 代理和输出目录。
 
 ## 目标
 
-- 发布 `@geektech/tsone/dev` 子路径，提供有类型的配置与程序化 API。
-- 发布 `tsone` CLI，首版支持 `tsone dev` 和 `tsone build`。
+- 发布 `@geektech/tsone-cli` 包，提供有类型的配置与程序化 API。
+- 由该包发布 `tsone` CLI，首版支持 `tsone dev` 和 `tsone build`。
 - 自动加载当前项目根目录中的 `tsone.config.ts`。
 - 让开发服务支持 Vite 风格的 `server.proxy` HTTP/HTTPS 转发配置。
 - 让开发与构建共享项目根目录、入口解析和 HTML 生成规则。
 - 将现有两个 playground 迁移成真实的外部消费者示例。
-- 保持 TSone 浏览器运行时零外部依赖；dev 的 Bun 产物内置打包现有
-  Happy DOM，外部项目不需要单独安装它。
+- 保持 `@geektech/tsone` 浏览器框架包零外部运行时依赖，不给它增加 dev export；
+  CLI 包的 Bun 产物内置打包现有 Happy DOM，外部项目不需要单独安装它。
 
 ## 非目标
 
@@ -57,7 +58,7 @@ HTML 生成和 Bun bundle 配置没有形成公开契约。
 项目根目录可以创建配置文件：
 
 ```ts
-import { defineConfig } from '@geektech/tsone/dev';
+import { defineConfig } from '@geektech/tsone-cli';
 
 export default defineConfig({
   entry: 'src/main.ts',
@@ -98,7 +99,7 @@ app.mount();
 
 ## 公共配置契约
 
-`@geektech/tsone/dev` 公开以下配置形状：
+`@geektech/tsone-cli` 公开以下配置形状：
 
 ```ts
 export interface UserConfig {
@@ -149,7 +150,7 @@ export interface BuildConfig {
 
 ## 程序化 API
 
-`@geektech/tsone/dev` 公开：
+`@geektech/tsone-cli` 公开：
 
 ```ts
 export function defineConfig(config: UserConfig): UserConfig;
@@ -172,7 +173,7 @@ export function build(options?: BuildOptions): Promise<BuildResult>;
 
 ## 模块边界
 
-公开实现位于 `packages/tsone/lib/dev/`，按职责拆分：
+公开实现位于 `packages/tsone-cli/src/`，按职责拆分：
 
 - 配置模块：定义类型、加载配置并解析默认值和相对路径。
 - 项目入口模块：安装隔离的 DOM 环境、加载入口、校验 `app` 导出并生成 HTML。
@@ -181,13 +182,14 @@ export function build(options?: BuildOptions): Promise<BuildResult>;
 - 构建模块：清理安全的输出目录、执行 Bun build、写入 HTML。
 - CLI 模块：解析命令和覆盖参数，调用公开服务。
 
-`scripts/dev.ts` 只保留为仓库内可直接执行的薄入口，调用同一 CLI 模块；发布包的
-`bin` 指向 Bun 目标的 `dist/dev/cli.js`。框架浏览器入口继续以 browser 为目标
-构建，dev 与 CLI 入口单独以 Bun 为目标构建。
+`packages/tsone-cli/bin/tsone.ts` 是唯一 bin 启动器：在 monorepo fresh clone 中
+尚无 `dist` 时调用 `src/cli.ts`，在发布包中调用已经构建的 `dist/cli.js`。因此仓库内
+playground 不需要先构建 CLI 包，安装后的外部项目仍执行固定的发布产物。
 
-dev Bun 产物把现有 Happy DOM 打包进产物，不把它暴露成外部项目必须安装的 peer
-dependency。DOM 环境的安装和清理由项目入口模块负责，避免配置加载、代理和 CLI
-依赖 DOM 全局对象。
+CLI 包单独以 Bun 为目标构建 `dist/index.js`、`dist/cli.js` 和声明文件，并把现有
+Happy DOM 打包进产物，不把它暴露成外部项目必须安装的 peer dependency。DOM 环境
+的安装和清理由项目入口模块负责，避免配置加载、代理和 CLI 依赖 DOM 全局对象。
+`@geektech/tsone` 继续沿用自己的 browser target 构建，两个包的发布面互不混合。
 
 这些模块是依赖关系而不是继承关系：CLI 依赖配置、开发服务和构建服务；开发服务
 组合入口渲染与代理处理器；构建服务组合入口渲染与 Bun bundler。各模块通过窄接口
@@ -264,17 +266,21 @@ package scripts 使用同一安装后的 bin，不再引用仓库脚本路径或
 
 ## 发布与迁移
 
-发布包需要：
+新增 `packages/tsone-cli` workspace，包名为 `@geektech/tsone-cli`。它需要：
 
-- 新增 `./dev` export，包含 Bun 运行时 JS 和声明文件。
-- 新增 `tsone` bin，指向构建后的 CLI。
-- 构建脚本分别生成 browser 目标的框架产物和 Bun 目标的 dev/CLI 产物。
-- dev/CLI Bun 产物内置 Happy DOM，安装发布包后无需额外安装 Happy DOM。
-- package smoke test 验证 tarball 中的 dev 文件、类型和 bin。
+- 依赖 workspace 中的 `@geektech/tsone`，发布时使用框架包的真实版本范围。
+- 根 export 指向 Bun 运行时 `dist/index.js` 和声明文件。
+- `tsone` bin 指向随包发布的 `bin/tsone.ts` 启动器。
+- 独立构建 Bun 目标的 public API 和 CLI 产物，并内置 Happy DOM。
+- 包含自己的 package manifest、TypeScript 配置、构建脚本、README 和 LICENSE。
+- package smoke test 验证 tarball 中的 public API、类型、bin 和已安装外部项目。
 
-两个 playground 分别新增 `tsone.config.ts`。它们保留自己的 `src/main.ts` 和
-`app` 导出，并把脚本改成 `tsone dev`、`tsone build`。原有按名称维护的
-`PLAYGROUND_APPS`、`--app` 解析和固定仓库路径不再属于开发服务。
+`@geektech/tsone` 的 exports、browser 构建和依赖边界保持不变，不新增 `./dev`。
+
+两个 playground 分别增加对 `@geektech/tsone-cli` 的 workspace dev dependency 和
+`tsone.config.ts`。它们保留自己的 `src/main.ts` 与 `app` 导出，并把脚本改成
+`tsone dev`、`tsone build`。原有按名称维护的 `PLAYGROUND_APPS`、`--app` 解析和
+固定仓库路径不再属于开发服务。
 
 英文 README、中文 README 和 typed docs 同步说明：安装、脚本、配置字段、代理示例、
 入口 `app` 导出约定、程序化 API 和首版限制。
@@ -283,17 +289,18 @@ package scripts 使用同一安装后的 bin，不再引用仓库脚本路径或
 
 实现采用 TDD，每个行为先由失败测试定义：
 
-- 配置单元测试：默认值、磁盘加载、直接配置、相对路径、覆盖优先级和非法输入。
+- CLI 包配置单元测试：默认值、磁盘加载、直接配置、相对路径、覆盖优先级和非法输入。
 - 代理集成测试：使用真实 `Bun.serve()` 上游验证最长前缀、rewrite、query、方法、
   body、`changeOrigin`、响应透传和 `502`。
 - dev 集成测试：临时外部项目通过程序化 API 和安装后的 `tsone dev` 提供 HTML 与
   bundle。
 - build 集成测试：临时项目执行 `tsone build`，验证安全清理和完整静态产物。
 - CLI 测试：命令分发、参数覆盖和错误退出状态。
-- package smoke test：打包安装后验证 `@geektech/tsone/dev` 的运行时导出、类型声明
-  以及 `tsone` bin 的 dev/build 能力。
+- CLI package smoke test：打包安装后验证 `@geektech/tsone-cli` 的运行时导出、
+  类型声明以及 `tsone` bin 的 dev/build 能力。
 - playground 测试：两个迁移后的项目仍能开发启动、构建和类型检查。
 
-完成前运行相关测试、全量 `bun test`、`bunx tsc --noEmit`、`bun run build` 和
-`bun pm pack --cwd packages/tsone --dry-run`。已存在且与本任务无关的基线失败会单独
-报告，不通过扩大修改范围来掩盖。
+完成前运行相关测试、全量 `bun test`、`bunx tsc --noEmit`、两个包的 build，以及
+`bun pm pack --cwd packages/tsone-cli --dry-run`。框架包的现有 build 和 package
+smoke test 也必须保持通过。已存在且与本任务无关的基线失败会单独报告，不通过扩大
+修改范围来掩盖。
