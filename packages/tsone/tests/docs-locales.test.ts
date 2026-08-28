@@ -250,7 +250,24 @@ describe('docs locales', () => {
     const englishPages = validateDocPages(enExamplePages);
     const chineseCodeBlocks = collectCodeBlocks(chinesePages);
     const englishCodeBlocks = collectCodeBlocks(englishPages);
+    const englishDescription = englishPages[0]?.description ?? '';
 
+    expect(
+      englishPages.map(({ title, description, section }) => ({
+        title,
+        description,
+        section,
+      }))
+    ).toEqual([
+      {
+        title: 'Basic Examples',
+        description:
+          'Basic examples covering Hello World, a counter, form handling, and list rendering.',
+        section: 'Examples',
+      },
+    ]);
+    expect(englishDescription.trim()).not.toBe('');
+    expect(englishDescription).not.toMatch(/[\u3400-\u9fff]/u);
     expect(docPageStructure(englishPages)).toEqual(
       docPageStructure(chinesePages)
     );
@@ -307,7 +324,24 @@ describe('docs locales', () => {
     const chinesePages = validateDocPages(zhContributingPages);
     const englishPages = validateDocPages(enContributingPages);
     const englishCodeBlocks = collectCodeBlocks(englishPages);
+    const englishDescription = englishPages[0]?.description ?? '';
 
+    expect(
+      englishPages.map(({ title, description, section }) => ({
+        title,
+        description,
+        section,
+      }))
+    ).toEqual([
+      {
+        title: 'Contributing',
+        description:
+          'Learn the Bun-first development workflow, coding standards, commit conventions, and documentation maintenance process.',
+        section: 'Contributing',
+      },
+    ]);
+    expect(englishDescription.trim()).not.toBe('');
+    expect(englishDescription).not.toMatch(/[\u3400-\u9fff]/u);
     expect(docPageStructure(englishPages)).toEqual(
       docPageStructure(chinesePages)
     );

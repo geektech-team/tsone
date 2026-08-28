@@ -172,3 +172,69 @@ git diff --check -- packages/tsone/tests/docs-locales.test.ts .superpowers/sdd/2
 ```
 
 Both commands exited 0.
+
+## Fix Round 2/5: Preserve English Page Metadata
+
+### Important Finding
+
+The round 1 structure comparison intentionally excluded localized page text,
+but the replacement tests did not independently restore the previous Examples
+and Contributing title checks. A non-empty but incorrect English title,
+description, or section could therefore pass while every block-level contract
+remained intact.
+
+### Fix
+
+Modified `packages/tsone/tests/docs-locales.test.ts` only:
+
+- The complete English Examples test now fixes `title` to `Basic Examples`,
+  `section` to `Examples`, and `description` to the full expected English
+  sentence.
+- The complete English Contributing test now fixes `title` to `Contributing`,
+  `section` to `Contributing`, and `description` to the full expected English
+  sentence.
+- Both descriptions are also explicitly checked after `trim()` for non-empty
+  content and against `/[\u3400-\u9fff]/u` for CJK leakage.
+- All round 1 block, code, list, heading, command, and logical-link assertions
+  remain unchanged.
+
+No production implementation remains changed in this fix round.
+
+### Metadata Mutation RED
+
+After adding the assertions, temporarily changed the English Examples page
+title from `Basic Examples` to the non-empty, CJK-free but incorrect value
+`Examples`, then ran:
+
+```bash
+bun test packages/tsone/tests/docs-locales.test.ts
+```
+
+Result: exit 1, `15 pass`, `1 fail`, `70 expect()` calls. The complete English
+Examples test showed the exact metadata mismatch: expected `Basic Examples`,
+received `Examples`. Existing round 1 structure tests and the Contributing
+test continued to pass. The title was then restored exactly; both English
+production content files have an empty diff.
+
+### GREEN
+
+Required verification after restoring the correct metadata:
+
+```bash
+bun test packages/tsone/tests/docs-locales.test.ts packages/tsone/tests/docs-content.test.ts
+bunx tsc --noEmit
+```
+
+Results:
+
+- Locale/content tests: exit 0, `28 pass`, `0 fail`, `127 expect()` calls.
+- TypeScript check: exit 0.
+
+Additional focused checks:
+
+```bash
+bunx eslint packages/tsone/tests/docs-locales.test.ts
+git diff --check -- packages/tsone/tests/docs-locales.test.ts .superpowers/sdd/2026-08-28-docs-i18n/task-5-report.md
+```
+
+Both commands exited 0.
