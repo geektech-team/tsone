@@ -67,4 +67,16 @@ describe('OneButton', () => {
       'one-button--primary one-button--md'
     );
   });
+
+  it('falls back to button for an invalid runtime type', () => {
+    component = new OneButton({
+      type: 'unexpected',
+      children: ['Safe'],
+    } as unknown as OneButtonProps);
+    component.mount(container);
+
+    expect(container.querySelector('button')?.getAttribute('type')).toBe(
+      'button'
+    );
+  });
 });

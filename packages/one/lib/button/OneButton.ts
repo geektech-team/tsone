@@ -20,6 +20,12 @@ const ONE_BUTTON_VARIANTS: readonly OneButtonVariant[] = [
   'danger',
 ];
 
+const ONE_BUTTON_TYPES: readonly NonNullable<OneButtonProps['type']>[] = [
+  'button',
+  'submit',
+  'reset',
+];
+
 export const ONE_BUTTON_STYLES: OneNamedStyle[] = [
   {
     name: 'one-button-base',
@@ -133,6 +139,16 @@ export function normalizeButtonVariant(value: unknown): OneButtonVariant {
     : 'primary';
 }
 
+function normalizeButtonType(
+  value: unknown
+): NonNullable<OneButtonProps['type']> {
+  return ONE_BUTTON_TYPES.includes(
+    value as NonNullable<OneButtonProps['type']>
+  )
+    ? (value as NonNullable<OneButtonProps['type']>)
+    : 'button';
+}
+
 export class OneButton extends Component<OneButtonProps> {
   protected initState(): object {
     return {};
@@ -153,7 +169,7 @@ export class OneButton extends Component<OneButtonProps> {
       tag: 'button',
       props: {
         className: `one-button one-button--${variant} one-button--${size}`,
-        type: this.props.type ?? 'button',
+        type: normalizeButtonType(this.props.type),
         disabled,
         'aria-busy': this.props.loading === true ? 'true' : undefined,
       },
