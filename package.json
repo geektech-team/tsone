@@ -8,9 +8,9 @@
   "scripts": {
     "dev": "bun run --cwd packages/tsone dev",
     "docs": "bun run --cwd packages/tsone docs",
-    "build": "bun run --cwd packages/tsone build",
-    "build:types": "bun run --cwd packages/tsone build:types",
-    "lint": "bun run --cwd packages/tsone lint",
+    "build": "bun run --cwd packages/tsone build && bun run --cwd packages/tsone-cli build",
+    "build:types": "bun run --cwd packages/tsone build:types && bun run --cwd packages/tsone-cli build:types",
+    "lint": "bun run --cwd packages/tsone lint && bun run --cwd packages/tsone-cli lint",
     "format": "prettier --write . --ignore-path .gitignore",
     "test": "bun test",
     "docs:build": "bun run --cwd packages/tsone docs:build",
