@@ -1,0 +1,40 @@
+{
+  "name": "@geektech/tsone-cli",
+  "version": "0.0.1",
+  "description": "Bun-native development and build CLI for TSone applications",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "tsone": "./bin/tsone.ts"
+  },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "build:types": "bunx tsc --project tsconfig.build.json",
+    "lint": "eslint . --ext .ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@geektech/tsone": "workspace:*"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.9.0"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  }
+}

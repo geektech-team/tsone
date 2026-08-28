@@ -6,6 +6,10 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
     "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@geektech/tsone-cli": ["packages/tsone-cli/src/index.ts"]
+    },
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -23,7 +27,9 @@
     "packages/tsone/lib",
     "packages/tsone/examples",
     "packages/tsone/docs/app",
-    "packages/tsone/scripts"
+    "packages/tsone/scripts",
+    "packages/tsone-cli/src",
+    "packages/tsone-cli/tests"
   ],
   "exclude": [
     "node_modules",
@@ -31,7 +37,6 @@
     "packages/*/dist",
     "packages/*/docs/dist",
     "packages/*/lib/**/__tests__/**",
-    "packages/*/tests",
     "coverage"
   ]
 }
