@@ -9,11 +9,15 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from 'bun:test';
 import { build } from '../src/build';
 
 const roots: string[] = [];
 const externalDirectories: string[] = [];
+const restorers: Array<() => void> = [];
+type BunBuildResult = Awaited<ReturnType<typeof Bun.build>>;
+type BunBuildOutput = BunBuildResult['outputs'][number];
 const frameworkEntryPath = join(
   import.meta.dir,
   '..',
@@ -53,6 +57,18 @@ function makeExternalDirectory(): string {
   return directory;
 }
 
+function createBuildOutput(path: string, contents: string): BunBuildOutput {
+  return Object.assign(new Blob([contents]), { path }) as BunBuildOutput;
+}
+
+function mockBuild(result: BunBuildResult): void {
+  const originalBuild = Bun.build;
+  Bun.build = (async () => result) as typeof Bun.build;
+  restorers.push(() => {
+    Bun.build = originalBuild;
+  });
+}
+
 function expectSentinelsToRemain(root: string, external?: string): void {
   expect(readFileSync(join(root, 'src', 'main.ts'), 'utf8')).toContain(
     "import './site.css';"
@@ -68,6 +84,10 @@ function expectSentinelsToRemain(root: string, external?: string): void {
 }
 
 afterEach(() => {
+  restorers
+    .splice(0)
+    .reverse()
+    .forEach((restore) => restore());
   roots
     .splice(0)
     .forEach((root) => rmSync(root, { recursive: true, force: true }));
@@ -88,6 +108,12 @@ describe('TSone production build', () => {
     const html = readFileSync(join(root, 'dist', 'index.html'), 'utf8');
 
     expect(existsSync(join(root, 'dist', 'stale.txt'))).toBe(false);
+    expect(existsSync(join(root, 'dist', 'main.js'))).toBe(true);
+    expect(readFileSync(join(root, 'dist', 'main.js'), 'utf8')).not.toBe('');
+    expect(existsSync(join(root, 'dist', 'main.css'))).toBe(true);
+    expect(readFileSync(join(root, 'dist', 'main.css'), 'utf8')).toContain(
+      'color:'
+    );
     expect(result).toEqual({
       root,
       outDir: join(root, 'dist'),
@@ -100,6 +126,88 @@ describe('TSone production build', () => {
     expect(html).toContain('<title>Built TSone App</title>');
     expect(html).toContain('<script type="module" src="./main.js"></script>');
     expect(html).toContain('<link rel="stylesheet" href="./main.css">');
+    const documentUrl = pathToFileURL(join(root, 'dist', 'index.html'));
+    const scriptSource = html.match(
+      /<script type="module" src="([^"]+)"><\/script>/
+    )?.[1];
+    const stylesheetHref = html.match(
+      /<link rel="stylesheet" href="([^"]+)">/
+    )?.[1];
+
+    if (!scriptSource || !stylesheetHref) {
+      throw new Error('Expected build document assets');
+    }
+
+    expect(fileURLToPath(new URL(scriptSource, documentUrl))).toBe(
+      join(root, 'dist', 'main.js')
+    );
+    expect(existsSync(fileURLToPath(new URL(scriptSource, documentUrl)))).toBe(
+      true
+    );
+    expect(fileURLToPath(new URL(stylesheetHref, documentUrl))).toBe(
+      join(root, 'dist', 'main.css')
+    );
+    expect(
+      existsSync(fileURLToPath(new URL(stylesheetHref, documentUrl)))
+    ).toBe(true);
+  });
+
+  it('reports a failed Bun build even when it emitted JavaScript without logs', async () => {
+    const root = makeRoot();
+    mockBuild({
+      success: false,
+      logs: [],
+      outputs: [
+        createBuildOutput(
+          join(root, 'dist', 'main.js'),
+          'export const failedBuild = true;'
+        ),
+      ],
+    } as BunBuildResult);
+
+    await expect(build({ root })).rejects.toThrow('Bun build reported failure');
+    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(false);
+  });
+
+  it('reports when Bun emits no output files', async () => {
+    const root = makeRoot();
+    mockBuild({ success: true, logs: [], outputs: [] } as BunBuildResult);
+
+    await expect(build({ root })).rejects.toThrow(
+      'Bun emitted no output files'
+    );
+    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(false);
+  });
+
+  it('reports when Bun emits CSS without JavaScript', async () => {
+    const root = makeRoot();
+    mockBuild({
+      success: true,
+      logs: [],
+      outputs: [
+        createBuildOutput(
+          join(root, 'dist', 'main.css'),
+          'body { color: rebeccapurple; }'
+        ),
+      ],
+    } as BunBuildResult);
+
+    await expect(build({ root })).rejects.toThrow(
+      'Bun emitted no JavaScript output'
+    );
+    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(false);
+  });
+
+  it('builds successfully through a project-root symlink', async () => {
+    const root = makeRoot();
+    const linkedRoot = `${root}-link`;
+    symlinkSync(root, linkedRoot);
+    roots.push(linkedRoot);
+
+    const result = await build({ root: linkedRoot });
+
+    expect(result.outDir).toBe(join(linkedRoot, 'dist'));
+    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(true);
   });
 
   it('rejects the project root as an output directory without deleting it', async () => {

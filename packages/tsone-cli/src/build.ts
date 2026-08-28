@@ -37,6 +37,7 @@ export async function build(options: BuildOptions = {}): Promise<BuildResult> {
     throw buildFailure(
       result.logs.map((log) => log.message),
       {
+        success: result.success,
         hasOutput: assetsBuilt.length > 0,
         hasJavaScript: javascriptAssets.length > 0,
       }
@@ -148,9 +149,10 @@ function toAssetUrl(outDir: string, asset: string): string {
 
 function buildFailure(
   logs: string[],
-  state: { hasOutput: boolean; hasJavaScript: boolean }
+  state: { success: boolean; hasOutput: boolean; hasJavaScript: boolean }
 ): Error {
   const reasons = [
+    !state.success ? 'Bun build reported failure' : '',
     !state.hasOutput ? 'Bun emitted no output files' : '',
     !state.hasJavaScript ? 'Bun emitted no JavaScript output' : '',
     ...logs,
