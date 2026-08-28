@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'bun:test';
+import { enGuidePages } from '../docs/app/content/en/guide';
+import { enHomePages } from '../docs/app/content/en/home';
 import {
   DOC_LOCALE_CONFIGS,
   localizeDocHref,
@@ -7,6 +9,7 @@ import {
   resolvePreferredDocLocale,
   switchDocLocale,
 } from '../docs/app/content/locales';
+import { docText, validateDocPages } from '../docs/app/content/types';
 
 describe('docs locales', () => {
   it('maps logical routes to Chinese and English public routes', () => {
@@ -51,5 +54,22 @@ describe('docs locales', () => {
     for (const config of Object.values(DOC_LOCALE_CONFIGS)) {
       expect(Object.values(config.messages).every(Boolean)).toBe(true);
     }
+  });
+
+  it('provides complete English home and guide content', () => {
+    const pages = validateDocPages([...enHomePages, ...enGuidePages]);
+    expect(pages.map((page) => page.path)).toEqual([
+      '/',
+      '/guide/getting-started/',
+      '/guide/core-concepts/',
+      '/guide/component-system/',
+      '/guide/reactive-system/',
+      '/guide/router-system/',
+      '/guide/style-management/',
+    ]);
+    expect(pages.map(docText).join('\n')).not.toMatch(/[\u3400-\u9fff]/u);
+    expect(
+      pages.find((page) => page.path === '/guide/getting-started/')?.title
+    ).toBe('Getting Started');
   });
 });
