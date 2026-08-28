@@ -1,9 +1,16 @@
 import { Component, type VNode } from '../../../lib';
-import type { DocPage } from '../content';
+import {
+  localizeDocPath,
+  type DocLocale,
+  type DocLocaleMessages,
+  type DocPage,
+} from '../content';
 
 export interface DocsNavProps {
+  locale: DocLocale;
   pages: DocPage[];
   currentPath: string;
+  messages: DocLocaleMessages;
 }
 
 export class DocsNav extends Component<DocsNavProps> {
@@ -18,7 +25,7 @@ export class DocsNav extends Component<DocsNavProps> {
       tag: 'nav',
       props: {
         className: 'docs-nav',
-        'aria-label': 'Documentation',
+        'aria-label': this.props.messages.navigationLabel,
       },
       children: this.groupPages().map(([section, pages]) => ({
         tag: 'section',
@@ -36,7 +43,7 @@ export class DocsNav extends Component<DocsNavProps> {
                 {
                   tag: 'a',
                   props: {
-                    href: page.path,
+                    href: localizeDocPath(this.props.locale, page.path),
                     className:
                       page.path === this.props.currentPath ? 'active' : '',
                     'aria-current':

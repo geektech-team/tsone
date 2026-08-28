@@ -1,4 +1,5 @@
 import { Component, type VNode } from '../../../lib';
+import type { DocLocaleMessages } from '../content';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -6,7 +7,11 @@ interface ThemeToggleState {
   mode: ThemeMode;
 }
 
-export class ThemeToggle extends Component<object, ThemeToggleState> {
+export interface ThemeToggleProps {
+  messages: DocLocaleMessages;
+}
+
+export class ThemeToggle extends Component<ThemeToggleProps, ThemeToggleState> {
   protected initState(): ThemeToggleState {
     return { mode: readTheme() };
   }
@@ -23,7 +28,7 @@ export class ThemeToggle extends Component<object, ThemeToggleState> {
       props: {
         type: 'button',
         className: 'docs-theme-toggle',
-        'aria-label': '切换文档主题',
+        'aria-label': this.props.messages.themeToggleLabel,
       },
       listeners: {
         click: () => {
@@ -32,7 +37,11 @@ export class ThemeToggle extends Component<object, ThemeToggleState> {
           applyTheme(this.state.mode);
         },
       },
-      children: [this.state.mode === 'dark' ? '浅色' : '深色'],
+      children: [
+        this.state.mode === 'dark'
+          ? this.props.messages.lightThemeLabel
+          : this.props.messages.darkThemeLabel,
+      ],
     };
   }
 }

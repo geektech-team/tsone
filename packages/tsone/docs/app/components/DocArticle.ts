@@ -1,8 +1,17 @@
 import { Component, type VNode } from '../../../lib';
-import type { DocBlock, DocInline, DocPage } from '../content';
+import {
+  localizeDocHref,
+  type DocBlock,
+  type DocInline,
+  type DocLocale,
+  type DocLocaleMessages,
+  type DocPage,
+} from '../content';
 
 export interface DocArticleProps {
+  locale: DocLocale;
   page: DocPage;
+  messages: DocLocaleMessages;
 }
 
 export class DocArticle extends Component<DocArticleProps> {
@@ -84,9 +93,18 @@ export class DocArticle extends Component<DocArticleProps> {
                 {
                   tag: 'tr',
                   children: [
-                    { tag: 'th', children: ['Name'] },
-                    { tag: 'th', children: ['Signature'] },
-                    { tag: 'th', children: ['Description'] },
+                    {
+                      tag: 'th',
+                      children: [this.props.messages.apiNameLabel],
+                    },
+                    {
+                      tag: 'th',
+                      children: [this.props.messages.apiSignatureLabel],
+                    },
+                    {
+                      tag: 'th',
+                      children: [this.props.messages.apiDescriptionLabel],
+                    },
                   ],
                 },
               ],
@@ -128,7 +146,7 @@ export class DocArticle extends Component<DocArticleProps> {
 
       return {
         tag: 'a',
-        props: { href: item.href },
+        props: { href: localizeDocHref(this.props.locale, item.href) },
         children: [item.text],
       };
     });

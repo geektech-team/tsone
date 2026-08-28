@@ -1,11 +1,18 @@
 import { Component, type VNode } from '../../../lib';
-import type { DocPage } from '../content';
+import {
+  localizeDocPath,
+  type DocLocale,
+  type DocLocaleMessages,
+  type DocPage,
+} from '../content';
 import { DocArticle } from './DocArticle';
 import { DocsNav } from './DocsNav';
 
 export interface DocsPageProps {
+  locale: DocLocale;
   page: DocPage;
   pages: DocPage[];
+  messages: DocLocaleMessages;
 }
 
 export class DocsPage extends Component<DocsPageProps> {
@@ -20,6 +27,7 @@ export class DocsPage extends Component<DocsPageProps> {
       tag: 'div',
       props: {
         className: 'docs-shell',
+        'data-tsone-docs-locale': this.props.locale,
         'data-tsone-docs-page': this.props.page.path,
       },
       children: [
@@ -29,16 +37,29 @@ export class DocsPage extends Component<DocsPageProps> {
           children: [
             {
               tag: 'a',
-              props: { href: '/', className: 'docs-brand' },
+              props: {
+                href: localizeDocPath(this.props.locale, '/'),
+                className: 'docs-brand',
+              },
               children: ['TSone'],
             },
             {
               tag: 'div',
               props: {
                 className: 'docs-tools',
-                'data-doc-theme-root': '',
               },
-              children: [],
+              children: [
+                {
+                  tag: 'div',
+                  props: { 'data-doc-locale-root': '' },
+                  children: [],
+                },
+                {
+                  tag: 'div',
+                  props: { 'data-doc-theme-root': '' },
+                  children: [],
+                },
+              ],
             },
           ],
         },
@@ -61,8 +82,10 @@ export class DocsPage extends Component<DocsPageProps> {
                 {
                   component: DocsNav,
                   props: {
+                    locale: this.props.locale,
                     pages: this.props.pages,
                     currentPath: this.props.page.path,
+                    messages: this.props.messages,
                   },
                 },
               ],
@@ -73,7 +96,11 @@ export class DocsPage extends Component<DocsPageProps> {
               children: [
                 {
                   component: DocArticle,
-                  props: { page: this.props.page },
+                  props: {
+                    locale: this.props.locale,
+                    page: this.props.page,
+                    messages: this.props.messages,
+                  },
                 },
               ],
             },

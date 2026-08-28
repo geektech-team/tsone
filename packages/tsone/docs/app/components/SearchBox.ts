@@ -1,8 +1,9 @@
 import { Component, type VNode } from '../../../lib';
-import type { SearchEntry } from '../content';
+import type { DocLocaleMessages, SearchEntry } from '../content';
 
 export interface SearchBoxProps {
   entries: SearchEntry[];
+  messages: DocLocaleMessages;
 }
 
 interface SearchBoxState {
@@ -39,8 +40,8 @@ export class SearchBox extends Component<SearchBoxProps, SearchBoxState> {
           props: {
             type: 'search',
             value: this.state.query,
-            placeholder: '搜索文档',
-            'aria-label': '搜索文档',
+            placeholder: this.props.messages.searchPlaceholder,
+            'aria-label': this.props.messages.searchLabel,
           },
           listeners: {
             input: (event: Event) => {
