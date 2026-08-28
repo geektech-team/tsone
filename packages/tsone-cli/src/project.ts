@@ -34,6 +34,8 @@ interface ProjectEntryModule {
   app?: unknown;
 }
 
+let projectDomQueue: Promise<void> = Promise.resolve();
+
 export async function renderProjectHtml(
   config: ResolvedConfig,
   options: AppDocumentRenderOptions
@@ -52,6 +54,18 @@ export async function renderProjectHtml(
 }
 
 async function withProjectDom<T>(callback: () => Promise<T>): Promise<T> {
+  const task = projectDomQueue.then(() => runWithProjectDom(callback));
+  projectDomQueue = task.then(
+    () => undefined,
+    () => undefined
+  );
+
+  return task;
+}
+
+async function runWithProjectDom<T>(
+  callback: () => Promise<T>
+): Promise<T> {
   const descriptors = captureGlobalDescriptors();
   const window = new Window({ url: 'http://127.0.0.1/' });
 

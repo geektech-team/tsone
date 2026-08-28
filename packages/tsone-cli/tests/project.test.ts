@@ -48,9 +48,42 @@ describe('TSone project rendering', () => {
 
   it('rejects an entry that does not export an app document renderer', async () => {
     const root = makeRoot('export const value = 1;');
+    const originalDocument = globalThis.document;
 
     await expect(
       renderProjectHtml(await resolveConfig({ root }), {})
     ).rejects.toThrow('must export an app with renderHtmlDocument()');
+    expect(globalThis.document).toBe(originalDocument);
+  });
+
+  it('serializes parallel renders and restores the caller DOM', async () => {
+    const firstRoot = makeRoot(`
+      import { createApp } from '${frameworkEntryUrl}';
+
+      export const app = createApp({
+        document: { title: 'First External App' },
+      });
+    `);
+    const secondRoot = makeRoot(`
+      import { createApp } from '${frameworkEntryUrl}';
+
+      export const app = createApp({
+        document: { title: 'Second External App' },
+      });
+    `);
+    const [firstConfig, secondConfig] = await Promise.all([
+      resolveConfig({ root: firstRoot }),
+      resolveConfig({ root: secondRoot }),
+    ]);
+    const originalDocument = globalThis.document;
+
+    const [firstHtml, secondHtml] = await Promise.all([
+      renderProjectHtml(firstConfig, {}),
+      renderProjectHtml(secondConfig, {}),
+    ]);
+
+    expect(firstHtml).toContain('<title>First External App</title>');
+    expect(secondHtml).toContain('<title>Second External App</title>');
+    expect(globalThis.document).toBe(originalDocument);
   });
 });
