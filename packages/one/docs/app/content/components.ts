@@ -58,13 +58,14 @@ export const componentPages: OneDocPage[] = [
       apiTable([
         {
           name: 'variant',
-          signature: "variant?: 'primary' | 'secondary' | 'danger'",
-          description: '视觉变体，默认 primary。',
+          signature: 'variant?: OneButtonVariant',
+          description:
+            "视觉变体：'primary' | 'secondary' | 'danger'，默认 primary。",
         },
         {
           name: 'size',
-          signature: "size?: 'sm' | 'md' | 'lg'",
-          description: '组件尺寸，默认 md。',
+          signature: 'size?: OneComponentSize',
+          description: "组件尺寸：'sm' | 'md' | 'lg'，默认 md。",
         },
         {
           name: 'type',
@@ -118,13 +119,13 @@ export const componentPages: OneDocPage[] = [
         [
           "import { OneInput, type OneInputValueEvent } from '@geektech/one';",
           '',
-          "const controlled = new OneInput({ value: 'one' });",
+          "const controlled = new OneInput({ value: 'one', ariaLabel: '项目名称' });",
           "controlled.on('input', (payload) => {",
           '  const event = payload as OneInputValueEvent;',
           '  controlled.setProps({ value: event.value });',
           '});',
           '',
-          "const uncontrolled = new OneInput({ defaultValue: 'draft' });",
+          "const uncontrolled = new OneInput({ defaultValue: 'draft', ariaLabel: '草稿名称' });",
           "uncontrolled.on('change', (payload) => {",
           '  const event = payload as OneInputValueEvent;',
           '  console.log(event.value, event.originalEvent);',
@@ -164,8 +165,8 @@ export const componentPages: OneDocPage[] = [
         },
         {
           name: 'size',
-          signature: "size?: 'sm' | 'md' | 'lg'",
-          description: '组件尺寸，默认 md。',
+          signature: 'size?: OneComponentSize',
+          description: "组件尺寸：'sm' | 'md' | 'lg'，默认 md。",
         },
         {
           name: 'disabled',
@@ -259,7 +260,7 @@ export const componentPages: OneDocPage[] = [
       apiTable([
         {
           name: 'header',
-          signature: 'Array<VNode | string>',
+          signature: "Array<VNode & { slot: 'header' }>",
           description: '标题区域，优先于 title。',
         },
         {
@@ -269,7 +270,7 @@ export const componentPages: OneDocPage[] = [
         },
         {
           name: 'footer',
-          signature: 'Array<VNode | string>',
+          signature: "Array<VNode & { slot: 'footer' }>",
           description: '可选底部操作区域。',
         },
       ]),

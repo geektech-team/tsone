@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { ONE_THEME_DEFAULTS } from '../lib';
 import {
   headingsForPage,
   normalizeOneDocPath,
@@ -17,50 +18,6 @@ const APPROVED_PATHS = [
   '/components/card/',
 ];
 
-const THEME_TOKEN_NAMES = [
-  '--one-color-primary',
-  '--one-color-primary-hover',
-  '--one-color-danger',
-  '--one-color-surface',
-  '--one-color-text',
-  '--one-color-muted',
-  '--one-color-border',
-  '--one-color-focus',
-  '--one-radius-sm',
-  '--one-radius-md',
-  '--one-space-xs',
-  '--one-space-sm',
-  '--one-space-md',
-  '--one-space-lg',
-  '--one-font-size-sm',
-  '--one-font-size-md',
-  '--one-font-size-lg',
-  '--one-shadow-card',
-  '--one-font-family',
-] as const;
-
-const THEME_DEFAULT_KEYS = [
-  'colorPrimary',
-  'colorPrimaryHover',
-  'colorDanger',
-  'colorSurface',
-  'colorText',
-  'colorMuted',
-  'colorBorder',
-  'colorFocus',
-  'radiusSm',
-  'radiusMd',
-  'spaceXs',
-  'spaceSm',
-  'spaceMd',
-  'spaceLg',
-  'fontSizeSm',
-  'fontSizeMd',
-  'fontSizeLg',
-  'shadowCard',
-  'fontFamily',
-] as const;
-
 function pageAt(path: string): OneDocPage {
   const page = oneDocPages.find((candidate) => candidate.path === path);
   if (!page) throw new Error(`Missing page: ${path}`);
@@ -69,6 +26,18 @@ function pageAt(path: string): OneDocPage {
 
 function pageText(path: string): string {
   return JSON.stringify(pageAt(path));
+}
+
+function apiRowAt(path: string, name: string) {
+  const row = pageAt(path)
+    .body.flatMap((block) => (block.type === 'api-table' ? block.rows : []))
+    .find((candidate) => candidate.name === name);
+  if (!row) throw new Error(`Missing API row: ${path} ${name}`);
+  return row;
+}
+
+function themeTokenFor(key: string): string {
+  return `--one-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
 }
 
 function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
@@ -177,20 +146,13 @@ describe('One UI docs content', () => {
 
   it('documents every immutable theme default and both override scopes', () => {
     const theming = pageText('/guide/theming/');
-    for (const token of THEME_TOKEN_NAMES) {
-      expect(theming).toContain(token);
-    }
-    for (const key of THEME_DEFAULT_KEYS) {
-      expect(theming).toContain(key);
+    for (const [key, value] of Object.entries(ONE_THEME_DEFAULTS)) {
+      const row = apiRowAt('/guide/theming/', themeTokenFor(key));
+      expect(row.signature).toContain(`${key}:`);
+      expect(row.signature).toContain(value);
     }
     expect(theming).toContain(
       "import { ONE_THEME_DEFAULTS } from '@geektech/one'"
-    );
-    const fontFamilyRow = pageAt('/guide/theming/')
-      .body.flatMap((block) => (block.type === 'api-table' ? block.rows : []))
-      .find((row) => row.name === '--one-font-family');
-    expect(fontFamilyRow?.signature).toBe(
-      'fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif"'
     );
     expect(theming).toContain(':root');
     expect(theming).toContain('.checkout-panel');
@@ -199,8 +161,6 @@ describe('One UI docs content', () => {
   it('documents every OneButton prop and click event signature', () => {
     const text = pageText('/components/button/');
     for (const fragment of [
-      "variant?: 'primary' | 'secondary' | 'danger'",
-      "size?: 'sm' | 'md' | 'lg'",
       "type?: 'button' | 'submit' | 'reset'",
       'disabled?: boolean',
       'loading?: boolean',
@@ -216,6 +176,18 @@ describe('One UI docs content', () => {
     ]) {
       expect(text).toContain(fragment);
     }
+    expect(apiRowAt('/components/button/', 'variant').signature).toBe(
+      'variant?: OneButtonVariant'
+    );
+    expect(apiRowAt('/components/button/', 'variant').description).toContain(
+      "'primary' | 'secondary' | 'danger'"
+    );
+    expect(apiRowAt('/components/button/', 'size').signature).toBe(
+      'size?: OneComponentSize'
+    );
+    expect(apiRowAt('/components/button/', 'size').description).toContain(
+      "'sm' | 'md' | 'lg'"
+    );
   });
 
   it('documents every OneInput prop, event, payload and state mode', () => {
@@ -226,7 +198,6 @@ describe('One UI docs content', () => {
       'type?: string',
       'name?: string',
       'placeholder?: string',
-      "size?: 'sm' | 'md' | 'lg'",
       'disabled?: boolean',
       'readonly?: boolean',
       'required?: boolean',
@@ -242,6 +213,12 @@ describe('One UI docs content', () => {
     ]) {
       expect(text).toContain(fragment);
     }
+    expect(apiRowAt('/components/input/', 'size').signature).toBe(
+      'size?: OneComponentSize'
+    );
+    expect(apiRowAt('/components/input/', 'size').description).toContain(
+      "'sm' | 'md' | 'lg'"
+    );
   });
 
   it('documents every OneCard prop, slot and header precedence rule', () => {
@@ -258,6 +235,28 @@ describe('One UI docs content', () => {
     ]) {
       expect(text).toContain(fragment);
     }
+    expect(apiRowAt('/components/card/', 'header').signature).toBe(
+      "Array<VNode & { slot: 'header' }>"
+    );
+    expect(apiRowAt('/components/card/', 'default').signature).toBe(
+      'Array<VNode | string>'
+    );
+    expect(apiRowAt('/components/card/', 'footer').signature).toBe(
+      "Array<VNode & { slot: 'footer' }>"
+    );
+  });
+
+  it('gives every copyable OneInput example an accessible name', () => {
+    expect(pageText('/guide/getting-started/')).toContain(
+      "createComponent(OneInput, { placeholder: '项目名称', ariaLabel: '项目名称' })"
+    );
+    const input = pageText('/components/input/');
+    expect(input).toContain(
+      "new OneInput({ value: 'one', ariaLabel: '项目名称' })"
+    );
+    expect(input).toContain(
+      "new OneInput({ defaultValue: 'draft', ariaLabel: '草稿名称' })"
+    );
   });
 
   it('gives every component page a real demo block', () => {

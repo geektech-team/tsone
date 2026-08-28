@@ -74,7 +74,7 @@ export const guidePages: OneDocPage[] = [
           "      tag: 'main',",
           '      children: [',
           "        createComponent(OneButton, { variant: 'primary' }, ['保存']),",
-          "        createComponent(OneInput, { placeholder: '项目名称' }),",
+          "        createComponent(OneInput, { placeholder: '项目名称', ariaLabel: '项目名称' }),",
           "        createComponent(OneCard, { title: 'One UI' }, [",
           "          '三个组件已经在同一个 TSone 应用中渲染。',",
           '        ]),',
