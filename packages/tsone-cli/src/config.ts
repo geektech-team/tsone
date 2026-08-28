@@ -22,6 +22,10 @@ interface MergedConfig {
   };
 }
 
+type ConfigFileLoadResult =
+  | { exists: false }
+  | { exists: true; config: unknown };
+
 const DEFAULT_CONFIG: MergedConfig = {
   entry: 'src/main.ts',
   server: {
@@ -44,20 +48,21 @@ export async function resolveConfig(
   const root = resolve(options.root ?? process.cwd());
   const configFile = resolve(root, 'tsone.config.ts');
   const hasInlineConfig = options.config !== undefined;
-  const fileConfig = hasInlineConfig
-    ? undefined
+  const loadedConfig: ConfigFileLoadResult = hasInlineConfig
+    ? { exists: false }
     : await loadConfigFile(configFile);
-  validateUserConfig(fileConfig ?? {});
+  let fileConfig: UserConfig = {};
+  if (loadedConfig.exists) {
+    const config = loadedConfig.config;
+    validateUserConfig(config);
+    fileConfig = config;
+  }
   if (hasInlineConfig) {
     validateUserConfig(options.config);
   }
   const inlineOverrides = toInlineOverrides(options);
   validateUserConfig(inlineOverrides);
-  const config = mergeConfig(
-    fileConfig ?? {},
-    options.config ?? {},
-    inlineOverrides
-  );
+  const config = mergeConfig(fileConfig, options.config ?? {}, inlineOverrides);
 
   const entry = resolve(root, config.entry);
   if (!existsSync(entry)) {
@@ -66,7 +71,7 @@ export async function resolveConfig(
 
   return {
     root,
-    ...(fileConfig ? { configFile } : {}),
+    ...(loadedConfig.exists ? { configFile } : {}),
     entry,
     server: {
       host: config.server.host,
@@ -81,15 +86,15 @@ export async function resolveConfig(
 
 async function loadConfigFile(
   configFile: string
-): Promise<UserConfig | undefined> {
+): Promise<ConfigFileLoadResult> {
   if (!existsSync(configFile)) {
-    return undefined;
+    return { exists: false };
   }
 
   const module = await import(
     `${pathToFileURL(configFile).href}?t=${Date.now()}`
   );
-  return module.default as UserConfig;
+  return { exists: true, config: module.default };
 }
 
 function toInlineOverrides(options: ResolveConfigOptions): UserConfig {

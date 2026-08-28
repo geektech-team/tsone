@@ -49,6 +49,24 @@ describe('TSone CLI config', () => {
     expect(result.build.outDir).toBe(join(root, 'output'));
   });
 
+  it('rejects a disk config with a null default export', async () => {
+    const root = makeRoot();
+    writeFileSync(join(root, 'tsone.config.ts'), 'export default null;');
+
+    await expect(resolveConfig({ root })).rejects.toThrow(
+      'Config must be an object'
+    );
+  });
+
+  it('rejects a disk config with an undefined default export', async () => {
+    const root = makeRoot();
+    writeFileSync(join(root, 'tsone.config.ts'), 'export default undefined;');
+
+    await expect(resolveConfig({ root })).rejects.toThrow(
+      'Config must be an object'
+    );
+  });
+
   it('rejects invalid proxy keys and protocols', async () => {
     const root = makeRoot();
     await expect(
