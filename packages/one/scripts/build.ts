@@ -13,6 +13,7 @@ async function run(command: string[]): Promise<void> {
 }
 
 await rm('dist', { recursive: true, force: true });
+await run(['bunx', 'tsc', '--project', '../tsone/tsconfig.build.json']);
 await run(['bunx', 'tsc', '--project', 'tsconfig.build.json']);
 
 const result = await Bun.build({
