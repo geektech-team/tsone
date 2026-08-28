@@ -15,44 +15,47 @@ import { describe, expect, it } from 'bun:test';
 const oneRoot = join(import.meta.dir, '..');
 const repositoryRoot = join(oneRoot, '..', '..');
 const tsoneRoot = join(repositoryRoot, 'packages', 'tsone');
-const bunTemp = '/private/tmp/one-bun-tmp';
-const bunCache = '/private/tmp/one-bun-cache';
 const require = createRequire(import.meta.url);
 const tscBin = require.resolve('typescript/bin/tsc');
 
-function run(command: string, args: string[], cwd = oneRoot): string {
-  try {
-    return execFileSync(command, args, {
-      cwd,
-      env: {
-        ...process.env,
-        TMPDIR: bunTemp,
-        BUN_INSTALL_CACHE_DIR: bunCache,
-      },
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-  } catch (error) {
-    const output = error as {
-      stdout?: Buffer | string;
-      stderr?: Buffer | string;
-      message?: string;
-    };
-    throw new Error(
-      [output.message, output.stdout?.toString(), output.stderr?.toString()]
-        .filter(Boolean)
-        .join('\n')
-    );
-  }
+function createRunner(bunTemp: string, bunCache: string) {
+  return function run(command: string, args: string[], cwd = oneRoot): string {
+    try {
+      return execFileSync(command, args, {
+        cwd,
+        env: {
+          ...process.env,
+          TMPDIR: bunTemp,
+          BUN_INSTALL_CACHE_DIR: bunCache,
+        },
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+    } catch (error) {
+      const output = error as {
+        stdout?: Buffer | string;
+        stderr?: Buffer | string;
+        message?: string;
+      };
+      throw new Error(
+        [output.message, output.stdout?.toString(), output.stderr?.toString()]
+          .filter(Boolean)
+          .join('\n')
+      );
+    }
+  };
 }
 
 describe('One UI package smoke', () => {
   it('packs an installable peer-based library with strict consumer types', () => {
-    mkdirSync(bunTemp, { recursive: true });
-    mkdirSync(bunCache, { recursive: true });
     const tempDir = mkdtempSync(join(tmpdir(), 'one-package-'));
+    const bunTemp = join(tempDir, 'bun-tmp');
+    const bunCache = join(tempDir, 'bun-cache');
+    const run = createRunner(bunTemp, bunCache);
 
     try {
+      mkdirSync(bunTemp, { recursive: true });
+      mkdirSync(bunCache, { recursive: true });
       run('bun', ['run', 'build']);
 
       const oneBundle = readFileSync(join(oneRoot, 'dist', 'index.js'), 'utf8');
