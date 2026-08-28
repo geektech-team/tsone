@@ -6,7 +6,7 @@ import {
   list,
   paragraph,
   type DocPage,
-} from './types';
+} from '../types';
 
 export const homePages: DocPage[] = [
   {
@@ -62,7 +62,7 @@ export const homePages: DocPage[] = [
           '  }',
           '}',
           '',
-          "createApp({ root: App, rootElement: '#app' }).mount();",
+          'createApp({ root: App }).mount();',
         ].join('\n')
       ),
       paragraph(

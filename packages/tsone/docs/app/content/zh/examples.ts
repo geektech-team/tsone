@@ -1,4 +1,4 @@
-import { codeBlock, heading, list, paragraph, type DocPage } from './types';
+import { codeBlock, heading, list, paragraph, type DocPage } from '../types';
 
 export const examplePages: DocPage[] = [
   {
@@ -45,7 +45,7 @@ export const examplePages: DocPage[] = [
           '}',
           '',
           'const app = createApp({',
-          "  rootElement: '#app',",
+          '  root: App,',
           '});',
           '',
           'app.mount();',
@@ -128,7 +128,7 @@ export const examplePages: DocPage[] = [
           '}',
           '',
           'const app = createApp({',
-          "  rootElement: '#app',",
+          '  root: Counter,',
           '});',
           '',
           'app.mount();',
@@ -310,7 +310,7 @@ export const examplePages: DocPage[] = [
           '}',
           '',
           'const app = createApp({',
-          "  rootElement: '#app',",
+          '  root: FormExample,',
           '});',
           '',
           'app.mount();',
@@ -469,7 +469,7 @@ export const examplePages: DocPage[] = [
           '}',
           '',
           'const app = createApp({',
-          "  rootElement: '#app',",
+          '  root: ListExample,',
           '});',
           '',
           'app.mount();',

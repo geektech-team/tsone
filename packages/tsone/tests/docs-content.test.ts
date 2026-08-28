@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { docPages, findDocPage, searchEntries } from '../docs/app/content';
+import {
+  docPages,
+  findDocPage,
+  searchEntries,
+  zhDocPages,
+} from '../docs/app/content';
 import {
   codeBlock,
   callout,
@@ -224,6 +229,14 @@ describe('docs content model', () => {
 });
 
 describe('docs content registry', () => {
+  it('keeps Chinese as the default compatibility catalog', () => {
+    expect(zhDocPages).toBe(docPages);
+    expect(findDocPage('/guide/getting-started/')?.title).toBe('快速开始');
+    expect(searchEntries.some((entry) => entry.text.includes('快速开始'))).toBe(
+      true
+    );
+  });
+
   it('contains every migrated documentation route in stable order', () => {
     expect(docPages.map((page) => page.path)).toEqual([
       '/',

@@ -5,7 +5,7 @@ import {
   list,
   paragraph,
   type DocPage,
-} from './types';
+} from '../types';
 
 export const contributingPages: DocPage[] = [
   {
@@ -31,6 +31,9 @@ export const contributingPages: DocPage[] = [
       codeBlock('bash', 'bun install'),
       heading(3, '运行开发服务器'),
       codeBlock('bash', 'bun run dev'),
+      paragraph(
+        '开发演练项目位于根目录 playground/，官网首页和后台管理页分别由独立 package.json 管理。'
+      ),
       heading(3, '构建项目'),
       codeBlock('bash', 'bun run build'),
       heading(3, '运行代码检查'),

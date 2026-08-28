@@ -1,8 +1,4 @@
-import { apiPages } from './api';
-import { contributingPages } from './contributing';
-import { examplePages } from './examples';
-import { guidePages } from './guide';
-import { homePages } from './home';
+import { zhSourcePages } from './zh';
 import {
   createSearchEntries,
   normalizeDocPath,
@@ -11,13 +7,9 @@ import {
   type SearchEntry,
 } from './types';
 
-export const docPages: DocPage[] = validateDocPages([
-  ...homePages,
-  ...guidePages,
-  ...apiPages,
-  ...examplePages,
-  ...contributingPages,
-]);
+export const zhDocPages = validateDocPages(zhSourcePages);
+
+export const docPages = zhDocPages;
 
 export const searchEntries: SearchEntry[] = createSearchEntries(docPages);
 

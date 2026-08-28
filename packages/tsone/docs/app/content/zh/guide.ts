@@ -6,7 +6,7 @@ import {
   list,
   paragraph,
   type DocPage,
-} from './types';
+} from '../types';
 
 const guideSection = 'Guide';
 const guideSectionOrder = 1;
@@ -77,7 +77,6 @@ export const guidePages: DocPage[] = [
         [
           'const app = createApp({',
           '  root: App,',
-          "  rootElement: '#app',",
           '  state: {',
           "    appName: 'TSone 示例',",
           '  },',
@@ -85,6 +84,9 @@ export const guidePages: DocPage[] = [
           '',
           'app.mount();',
         ].join('\n')
+      ),
+      paragraph(
+        '不需要为默认挂载点传入 rootElement。createApp 默认使用 #app，应用创建后直接调用 app.mount()；如果页面中暂时没有对应元素，本次挂载会安全跳过。'
       ),
       heading(3, '3. HTML 结构'),
       codeBlock(
@@ -107,7 +109,7 @@ export const guidePages: DocPage[] = [
       heading(2, '运行应用'),
       codeBlock('bash', 'bun run dev'),
       paragraph(
-        '现在，您应该能看到一个简单的计数器应用，点击按钮可以增加计数。'
+        '根目录的 bun run dev 会启动 playground/official-site 官网首页演练；也可以运行 bun run dev:admin 查看后台管理页演练。'
       ),
       heading(2, '下一步'),
       list([
@@ -143,7 +145,6 @@ export const guidePages: DocPage[] = [
           "import { createApp } from '@geektech/tsone';",
           '',
           'const app = createApp({',
-          "  rootElement: '#app',",
           '  state: {',
           "    appName: 'My App',",
           '  },',
@@ -988,7 +989,6 @@ export const guidePages: DocPage[] = [
           '      };',
           '    }',
           '  },',
-          "  rootElement: '#app',",
           '});',
           '',
           'app.use(router);',
@@ -1319,9 +1319,7 @@ export const guidePages: DocPage[] = [
         [
           "import { createApp } from '@geektech/tsone';",
           '',
-          'const app = createApp({',
-          "  rootElement: '#app',",
-          '});',
+          'const app = createApp();',
           '',
           "app.styleManager.addStyle('body', {",
           "  selector: 'body',",

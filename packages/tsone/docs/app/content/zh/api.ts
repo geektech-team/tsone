@@ -6,7 +6,7 @@ import {
   list,
   paragraph,
   type DocPage,
-} from './types';
+} from '../types';
 
 const apiSection = 'API';
 const apiSectionOrder = 2;
@@ -52,7 +52,6 @@ export const apiPages: DocPage[] = [
           '',
           'const app = createApp({',
           '  root: App,',
-          "  rootElement: '#app',",
           '  state: {',
           "    appName: 'TSone',",
           '  },',
@@ -69,23 +68,40 @@ export const apiPages: DocPage[] = [
         inlineCode('createApp({ root: App })'),
         '。'
       ),
+      paragraph(
+        '应用创建后直接调用 ',
+        inlineCode('app.mount()'),
+        ' 即可。未传 ',
+        inlineCode('rootElement'),
+        ' 时默认挂载到 #app；目标元素不存在时会安全跳过本次挂载。'
+      ),
       heading(2, 'AppOptions'),
       codeBlock(
         'ts',
         [
           'interface AppOptions<TState, TConfig> {',
           '  root?: ComponentConstructor;',
+          '  rootProps?: ComponentProps;',
           '  rootElement?: string | Element;',
           '  state?: TState;',
           '  config?: TConfig;',
+          '  document?: AppDocumentOptions;',
           '}',
         ].join('\n')
       ),
       list([
         [inlineCode('root'), ': 根组件类'],
-        [inlineCode('rootElement'), ': 挂载点选择器或 DOM 元素'],
+        [inlineCode('rootProps'), ': 传入根组件构造函数的 props'],
+        [
+          inlineCode('rootElement'),
+          ': 可选挂载点选择器或 DOM 元素，省略时使用 #app',
+        ],
         [inlineCode('state'), ': 应用级状态'],
         [inlineCode('config'), ': 应用级配置'],
+        [
+          inlineCode('document'),
+          ': HTML 文档壳配置，用于 dev/build 生成入口页',
+        ],
       ]),
       heading(2, 'OneApp 方法'),
       list([
@@ -102,17 +118,34 @@ export const apiPages: DocPage[] = [
         [inlineCode('onUnmounted(callback)'), ': 注册卸载后的回调'],
         [inlineCode('provide(key, value)'), ': 提供应用级依赖'],
         [inlineCode('inject(key, fallback?)'), ': 读取应用级依赖'],
+        [
+          inlineCode('renderHtmlDocument(options?)'),
+          ': 根据应用 document 配置生成完整 HTML 文档',
+        ],
       ]),
       heading(2, 'renderHtmlDocument'),
       apiTable([
         {
+          name: 'OneApp.renderHtmlDocument',
+          signature:
+            'app.renderHtmlDocument(options?: AppDocumentRenderOptions): string',
+          description:
+            '根据 createApp 的 document 配置生成完整 HTML 文档壳，默认输出 #app 挂载点，适合 playground、静态站和文档构建。',
+        },
+        {
           name: 'renderHtmlDocument',
           signature: 'renderHtmlDocument(options: HtmlDocumentOptions): string',
           description:
-            '从 TSone 组件或 VNode 生成完整 HTML 文档壳，适合静态站点和文档构建。',
+            '底层文档渲染函数，可直接从 TSone 组件或 VNode 生成完整 HTML 文档壳。',
         },
       ]),
       paragraph(
+        inlineCode('createApp'),
+        ' 的 ',
+        inlineCode('document'),
+        ' 配置默认输出 #app 挂载节点；传入 ',
+        inlineCode('rootElement'),
+        ' 可以覆盖默认挂载点。需要覆盖文档内容时，',
         inlineCode('body'),
         ' 接收 TSone 组件节点、VNode 或文本节点。文本会被当作文本内容转义，不会解析成 HTML。'
       ),
@@ -125,7 +158,7 @@ export const apiPages: DocPage[] = [
           'import {',
           '  Component,',
           '  VNode,',
-          '  renderHtmlDocument,',
+          '  createApp,',
           '  type StyleSheet,',
           "} from '@geektech/tsone';",
           '',
@@ -156,12 +189,17 @@ export const apiPages: DocPage[] = [
           '  },',
           '];',
           '',
-          'const html = renderHtmlDocument({',
-          "  lang: 'zh-CN',",
-          "  title: 'TSone Docs',",
-          "  description: '由 TSone 生成的静态文档',",
-          "  body: { component: App, props: { message: 'Hello TSone' } },",
-          '  styles,',
+          'const app = createApp({',
+          '  root: App,',
+          '  document: {',
+          "    lang: 'zh-CN',",
+          "    title: 'TSone Docs',",
+          "    description: '由 TSone 生成的静态文档',",
+          '    styles,',
+          '  },',
+          '});',
+          '',
+          'const html = app.renderHtmlDocument({',
           "  scripts: [{ type: 'module', src: '/assets/app.js' }],",
           '});',
         ].join('\n')
