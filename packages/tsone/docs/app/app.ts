@@ -5,6 +5,7 @@ import { SearchBox } from './components/SearchBox';
 import { ThemeToggle } from './components/ThemeToggle';
 import {
   docCatalogs,
+  localizeDocPath,
   parseLocalizedDocPath,
   type DocLocale,
   type DocLocaleMessages,
@@ -49,6 +50,28 @@ export function createDocsPageApp(
       lang: catalog.config.htmlLang,
       title: `${page.title} - TSone Docs`,
       description: page.description,
+      head: [
+        {
+          tag: 'link',
+          attributes: {
+            rel: 'alternate',
+            hreflang: 'zh-CN',
+            href: localizeDocPath('zh', page.path),
+          },
+        },
+        {
+          tag: 'link',
+          attributes: {
+            rel: 'alternate',
+            hreflang: 'en',
+            href: localizeDocPath('en', page.path),
+          },
+        },
+        {
+          tag: 'script',
+          attributes: { src: '/assets/docs-locale.js' },
+        },
+      ],
       body: {
         component: DocsPage,
         props: rootProps,

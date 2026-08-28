@@ -15,11 +15,16 @@ import {
   relative,
 } from 'node:path';
 import { Window } from 'happy-dom';
-import { renderHtmlDocument } from '../lib';
-import { DocsPage } from '../docs/app/components/DocsPage';
-import { docPages, type DocPage as ContentDocPage } from '../docs/app/content';
+import { createDocsPageApp } from '../docs/app/app';
+import {
+  createDocCatalog,
+  docCatalogs,
+  localizeDocPath,
+  validateDocCatalogParity,
+  type DocLocale,
+  type DocPage as ContentDocPage,
+} from '../docs/app/content';
 import { normalizeDocPath } from '../docs/app/content/types';
-import { docsStyles } from '../docs/app/styles';
 
 export interface DocsBuildOptions {
   outDir?: string;
@@ -39,6 +44,7 @@ export interface DocsServerOptions {
 
 const PACKAGE_ROOT = join(import.meta.dir, '..');
 const DEFAULT_OUT_DIR = join(PACKAGE_ROOT, 'docs/dist');
+const DOC_LOCALES = ['zh', 'en'] as const;
 
 export function routeToOutputPath(route: string, outDir: string): string {
   const normalizedRoute = normalizeDocPath(route);
@@ -55,23 +61,37 @@ export async function buildDocs(
 ): Promise<DocsBuildResult> {
   const outDir = options.outDir ?? DEFAULT_OUT_DIR;
 
+  validateBuildCatalogs();
   await rm(outDir, { recursive: true, force: true });
   await mkdir(join(outDir, 'assets'), { recursive: true });
 
-  const assetsBuilt = await buildClientBundle(outDir);
+  const assetsBuilt = await buildBrowserBundles(outDir);
+  let pagesBuilt = 0;
 
-  for (const page of docPages) {
-    const html = renderDocPage(page, docPages);
-    const outputPath = routeToOutputPath(page.path, outDir);
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(outputPath, html);
+  for (const locale of DOC_LOCALES) {
+    const catalog = docCatalogs[locale];
+
+    for (const page of catalog.pages) {
+      const publicPath = localizeDocPath(locale, page.path);
+      const html = renderDocPage(locale, page, catalog.pages);
+      const outputPath = routeToOutputPath(publicPath, outDir);
+      await mkdir(dirname(outputPath), { recursive: true });
+      await writeFile(outputPath, html);
+      pagesBuilt += 1;
+    }
   }
 
   return {
     outDir,
-    pagesBuilt: docPages.length,
+    pagesBuilt,
     assetsBuilt,
   };
+}
+
+function validateBuildCatalogs(): void {
+  const zhCatalog = createDocCatalog('zh', docCatalogs.zh.pages);
+  const enCatalog = createDocCatalog('en', docCatalogs.en.pages);
+  validateDocCatalogParity(zhCatalog, enCatalog);
 }
 
 function readOption(args: string[], name: string): string | undefined {
@@ -144,41 +164,48 @@ export async function startDocsServer(
 }
 
 export function renderDocPage(
+  locale: DocLocale,
   page: ContentDocPage,
   pages: ContentDocPage[]
 ): string {
-  installBuildDom(page.path);
+  installBuildDom(localizeDocPath(locale, page.path));
 
-  return renderHtmlDocument({
-    lang: 'zh-CN',
-    title: `${page.title} - TSone Docs`,
-    description: page.description,
-    body: {
-      component: DocsPage,
-      props: { page, pages },
-    },
-    styles: docsStyles,
-    scripts: [{ type: 'module', src: '/assets/docs-client.js' }],
-  });
+  return createDocsPageApp(locale, page, pages).renderHtmlDocument();
 }
 
-async function buildClientBundle(outDir: string): Promise<string[]> {
-  const buildConfig = {
-    entrypoints: [join(PACKAGE_ROOT, 'docs/app/client.ts')],
-    target: 'browser' as const,
-    format: 'esm' as const,
-    write: false,
-  };
-  const result = await Bun.build(buildConfig);
+async function buildBrowserBundles(outDir: string): Promise<string[]> {
+  const bundles = [
+    {
+      entrypoint: 'docs/app/client.ts',
+      fileName: 'docs-client.js',
+      format: 'esm' as const,
+    },
+    {
+      entrypoint: 'docs/app/locale-bootstrap-entry.ts',
+      fileName: 'docs-locale.js',
+      format: 'iife' as const,
+    },
+  ];
+  const outputPaths: string[] = [];
 
-  if (!result.success || result.outputs.length === 0) {
-    const messages = result.logs.map((log) => log.message).join('\n');
-    throw new Error(`Failed to build docs client bundle: ${messages}`);
+  for (const bundle of bundles) {
+    const result = await Bun.build({
+      entrypoints: [join(PACKAGE_ROOT, bundle.entrypoint)],
+      target: 'browser',
+      format: bundle.format,
+    });
+
+    if (!result.success || result.outputs.length === 0) {
+      const messages = result.logs.map((log) => log.message).join('\n');
+      throw new Error(`Failed to build ${bundle.fileName}: ${messages}`);
+    }
+
+    const outputPath = join(outDir, 'assets', bundle.fileName);
+    await writeFile(outputPath, await result.outputs[0].text());
+    outputPaths.push(outputPath);
   }
 
-  const outputPath = join(outDir, 'assets', 'docs-client.js');
-  await writeFile(outputPath, await result.outputs[0].text());
-  return [outputPath];
+  return outputPaths;
 }
 
 function installBuildDom(route: string): void {

@@ -90,6 +90,9 @@ describe('docs static build', () => {
     expect(routeToOutputPath('/api/component/', '/tmp/docs')).toBe(
       '/tmp/docs/api/component/index.html'
     );
+    expect(routeToOutputPath('/en/api/component/', '/tmp/docs')).toBe(
+      '/tmp/docs/en/api/component/index.html'
+    );
   });
 
   it('delegates base HTML document rendering to the TSone framework', () => {
@@ -97,23 +100,33 @@ describe('docs static build', () => {
       encoding: 'utf8',
     });
 
+    expect(docsScript).toContain('createDocsPageApp');
     expect(docsScript).toContain('renderHtmlDocument');
     expect(docsScript).not.toContain("'<!doctype html>'");
     expect(docsScript).not.toContain("'<html");
     expect(docsScript).not.toContain('mountRoot.innerHTML');
   });
 
-  it('builds static HTML pages and a client bundle', async () => {
+  it('builds localized static HTML pages and browser bundles', async () => {
     const outDir = mkdtempSync(join(tmpdir(), 'tsone-docs-'));
 
     try {
       const result = await buildDocs({ outDir });
 
-      expect(result.pagesBuilt).toBe(14);
-      expect(collectHtmlFiles(outDir)).toHaveLength(14);
+      expect(result.pagesBuilt).toBe(28);
+      expect(result.assetsBuilt).toEqual([
+        join(outDir, 'assets/docs-client.js'),
+        join(outDir, 'assets/docs-locale.js'),
+      ]);
+      expect(collectHtmlFiles(outDir)).toHaveLength(28);
       expect(existsSync(join(outDir, 'index.html'))).toBe(true);
       expect(existsSync(join(outDir, 'api/component/index.html'))).toBe(true);
+      expect(existsSync(join(outDir, 'en/index.html'))).toBe(true);
+      expect(existsSync(join(outDir, 'en/api/component/index.html'))).toBe(
+        true
+      );
       expect(existsSync(join(outDir, 'assets/docs-client.js'))).toBe(true);
+      expect(existsSync(join(outDir, 'assets/docs-locale.js'))).toBe(true);
 
       const clientBundle = readFileSync(
         join(outDir, 'assets/docs-client.js'),
@@ -124,13 +137,29 @@ describe('docs static build', () => {
       expect(clientBundle).toContain('data-doc-theme-root');
       expect(clientBundle).not.toContain('sourceMappingURL');
 
-      const home = readFileSync(join(outDir, 'index.html'), 'utf8');
-      expect(home).toContain('<!doctype html>');
-      expect(home).toContain('data-tsone-docs-page');
-      expect(home).toContain('TSone');
-      expect(home).toContain('.docs-shell {');
-      expect(home).toContain('--docs-bg: #ffffff;');
-      expect(home).toContain('/assets/docs-client.js');
+      const localeBundle = readFileSync(
+        join(outDir, 'assets/docs-locale.js'),
+        'utf8'
+      );
+      expect(localeBundle).toContain('runDocsLocaleBootstrap');
+      expect(localeBundle).not.toContain('sourceMappingURL');
+
+      const chineseHome = readFileSync(join(outDir, 'index.html'), 'utf8');
+      expect(chineseHome).toContain('<!doctype html>');
+      expect(chineseHome).toContain('<html lang="zh-CN">');
+      expect(chineseHome).toContain('data-tsone-docs-page');
+      expect(chineseHome).toContain('TSone');
+      expect(chineseHome).toContain('.docs-shell {');
+      expect(chineseHome).toContain('--docs-bg: #ffffff;');
+      expect(chineseHome).toContain('/assets/docs-client.js');
+      expect(chineseHome).toContain('/assets/docs-locale.js');
+
+      const englishHome = readFileSync(join(outDir, 'en/index.html'), 'utf8');
+      expect(englishHome).toContain('<html lang="en">');
+      expect(englishHome).toContain('hreflang="zh-CN"');
+      expect(englishHome).toContain('hreflang="en"');
+      expect(englishHome).toContain('href="/"');
+      expect(englishHome).toContain('href="/en/"');
 
       const componentApi = readFileSync(
         join(outDir, 'api/component/index.html'),

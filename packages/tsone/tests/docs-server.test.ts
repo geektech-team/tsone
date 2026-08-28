@@ -8,7 +8,11 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'bun:test';
-import { resolveDocsServerOptions, startDocsServer } from '../scripts/docs';
+import {
+  buildDocs,
+  resolveDocsServerOptions,
+  startDocsServer,
+} from '../scripts/docs';
 import { packageRoot } from './paths';
 
 let server: ReturnType<typeof Bun.serve> | undefined;
@@ -94,6 +98,34 @@ describe('TSone docs preview server', () => {
       expect(asset.ok).toBe(true);
       expect(asset.headers.get('content-type')).toContain('text/plain');
       expect(await asset.text()).toBe('asset');
+    } finally {
+      rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
+  it('serves English documentation routes from the localized build', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'tsone-docs-server-'));
+    const port = getAvailablePort();
+
+    try {
+      await buildDocs({ outDir });
+      server = await startDocsServer({
+        hostname: '127.0.0.1',
+        port,
+        outDir,
+      });
+
+      const home = await fetch(`http://127.0.0.1:${port}/en/`);
+      expect(home.status).toBe(200);
+      expect(await home.text()).toContain('<title>TSone - TSone Docs</title>');
+
+      const gettingStarted = await fetch(
+        `http://127.0.0.1:${port}/en/guide/getting-started/`
+      );
+      expect(gettingStarted.status).toBe(200);
+      expect(await gettingStarted.text()).toContain(
+        '<title>Getting Started - TSone Docs</title>'
+      );
     } finally {
       rmSync(outDir, { recursive: true, force: true });
     }
