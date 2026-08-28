@@ -1,0 +1,35 @@
+{
+  "name": "@geektech/one",
+  "version": "0.0.1",
+  "description": "One UI 是基于 TSone 的轻量级纯 TypeScript UI 组件库",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "build:types": "bunx tsc --project tsconfig.build.json",
+    "test": "bun test",
+    "docs": "bun scripts/docs.ts",
+    "docs:build": "bun scripts/docs.ts --build"
+  },
+  "peerDependencies": {
+    "@geektech/tsone": ">=0.0.2 <0.1.0"
+  },
+  "devDependencies": {
+    "@geektech/tsone": "workspace:*"
+  },
+  "files": ["dist", "README.md", "README-zh.md", "LICENSE"],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "license": "MIT",
+  "engines": { "bun": ">=1.3.0" }
+}
