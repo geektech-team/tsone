@@ -20,6 +20,8 @@ export { OneCheckbox } from './checkbox';
 export type { OneCheckboxProps } from './checkbox';
 export { OneSwitch } from './switch';
 export type { OneSwitchProps } from './switch';
+export { OneSelect } from './select';
+export type { OneSelectOption, OneSelectOptionGroup, OneSelectProps } from './select';
 export { OneCard } from './card';
 export type { OneCardProps } from './card';
 export { ONE_THEME_DEFAULTS } from './styles/shared';
