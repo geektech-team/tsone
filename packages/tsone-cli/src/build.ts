@@ -1,8 +1,9 @@
-import { lstat, mkdir, realpath, rm, writeFile } from 'node:fs/promises';
-import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { relative, resolve, sep } from 'node:path';
 import { isEntryJavaScriptOutput, isStylesheetOutput } from './build-output';
 import { resolveConfig } from './config';
 import { renderProjectHtml } from './project';
+import { assertSafeSubdirectory } from './safe-path';
 import type { BuildOptions, BuildResult } from './types';
 
 const INVALID_OUTPUT_DIRECTORY_MESSAGE =
@@ -12,7 +13,11 @@ export async function build(options: BuildOptions = {}): Promise<BuildResult> {
   const config = await resolveConfig(options);
 
   await renderProjectHtml(config, {});
-  await assertSafeOutputDirectory(config.root, config.build.outDir);
+  await assertSafeSubdirectory(
+    config.root,
+    config.build.outDir,
+    INVALID_OUTPUT_DIRECTORY_MESSAGE
+  );
 
   await rm(config.build.outDir, { recursive: true, force: true });
   await mkdir(config.build.outDir, { recursive: true });
@@ -74,67 +79,6 @@ export async function build(options: BuildOptions = {}): Promise<BuildResult> {
     outDir: config.build.outDir,
     assetsBuilt: [...assetsBuilt, indexHtml],
   };
-}
-
-async function assertSafeOutputDirectory(
-  root: string,
-  outDir: string
-): Promise<void> {
-  try {
-    const canonicalRoot = await realpath(root);
-    const canonicalOutDir = await canonicalizePotentialPath(outDir);
-
-    if (!isSubdirectory(canonicalRoot, canonicalOutDir)) {
-      throw new Error(INVALID_OUTPUT_DIRECTORY_MESSAGE);
-    }
-  } catch {
-    throw new Error(INVALID_OUTPUT_DIRECTORY_MESSAGE);
-  }
-}
-
-async function canonicalizePotentialPath(path: string): Promise<string> {
-  const ancestor = await findExistingAncestor(path);
-  const canonicalAncestor = await realpath(ancestor);
-  return resolve(canonicalAncestor, relative(ancestor, path));
-}
-
-async function findExistingAncestor(path: string): Promise<string> {
-  let candidate = path;
-
-  while (candidate !== dirname(candidate)) {
-    try {
-      await lstat(candidate);
-      return candidate;
-    } catch (error: unknown) {
-      if (!isMissingPathError(error)) {
-        throw error;
-      }
-    }
-
-    candidate = dirname(candidate);
-  }
-
-  await lstat(candidate);
-  return candidate;
-}
-
-function isMissingPathError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    error.code === 'ENOENT'
-  );
-}
-
-function isSubdirectory(root: string, path: string): boolean {
-  const pathFromRoot = relative(root, path);
-  return (
-    pathFromRoot !== '' &&
-    pathFromRoot !== '..' &&
-    !pathFromRoot.startsWith(`..${sep}`) &&
-    !isAbsolute(pathFromRoot)
-  );
 }
 
 function toAssetUrl(outDir: string, asset: string): string {

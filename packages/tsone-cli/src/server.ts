@@ -4,9 +4,12 @@ import { isEntryJavaScriptOutput, isStylesheetOutput } from './build-output';
 import { resolveConfig } from './config';
 import { renderProjectHtml } from './project';
 import { createProxyHandler } from './proxy';
+import { assertSafeSubdirectory } from './safe-path';
 import type { ResolveConfigOptions, ResolvedConfig } from './types';
 
 const DEVELOPMENT_URL_PREFIX = '/dev';
+const INVALID_DEVELOPMENT_DIRECTORY_MESSAGE =
+  'Development output must be a subdirectory of the project root';
 
 export type StartDevServerOptions = ResolveConfigOptions;
 
@@ -15,15 +18,20 @@ export async function startDevServer(
 ): Promise<ReturnType<typeof Bun.serve>> {
   const config = await resolveConfig(options);
   await renderProjectHtml(config, {});
+  const developmentOutDir = resolve(config.root, '.tsone', 'dev');
+  await assertSafeSubdirectory(
+    config.root,
+    developmentOutDir,
+    INVALID_DEVELOPMENT_DIRECTORY_MESSAGE
+  );
   const proxy = createProxyHandler(config.server.proxy);
   const sessionId = createGenerationId();
-  const sessionOutDir = resolve(config.root, '.tsone', 'dev', sessionId);
+  const sessionOutDir = resolve(developmentOutDir, sessionId);
   const artifacts = new Map<string, DevelopmentOutput>();
   const buildProject = createDevelopmentBuilder(
     config,
     sessionId,
-    sessionOutDir,
-    artifacts
+    sessionOutDir
   );
 
   return Bun.serve({
@@ -39,7 +47,7 @@ async function serveProjectRequest(
   request: Request,
   config: ResolvedConfig,
   buildProject: () => Promise<DevelopmentBundle | Response>,
-  artifacts: ReadonlyMap<string, DevelopmentOutput>
+  artifacts: Map<string, DevelopmentOutput>
 ): Promise<Response> {
   const pathname = new URL(request.url).pathname;
 
@@ -49,19 +57,25 @@ async function serveProjectRequest(
       return bundle;
     }
 
-    const html = await renderProjectHtml(config, {
-      head: bundle.stylesheets.map(({ pathname: href }) => ({
-        tag: 'link',
-        attributes: { rel: 'stylesheet', href },
-      })),
-      scripts: [{ type: 'module', src: bundle.entry.pathname }],
-    });
-    return new Response(html, {
-      headers: {
-        'content-type': 'text/html; charset=utf-8',
-        'cache-control': 'no-store',
-      },
-    });
+    try {
+      const html = await renderProjectHtml(config, {
+        head: bundle.stylesheets.map(({ pathname: href }) => ({
+          tag: 'link',
+          attributes: { rel: 'stylesheet', href },
+        })),
+        scripts: [{ type: 'module', src: bundle.entry.pathname }],
+      });
+      publishDevelopmentBundle(bundle, artifacts);
+      return new Response(html, {
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-store',
+        },
+      });
+    } catch (error: unknown) {
+      console.error(error);
+      return buildFailureResponse();
+    }
   }
 
   if (pathname === '/bundle.js') {
@@ -70,13 +84,19 @@ async function serveProjectRequest(
       return bundle;
     }
 
-    return new Response(null, {
-      status: 307,
-      headers: {
-        location: bundle.entry.pathname,
-        'cache-control': 'no-store',
-      },
-    });
+    try {
+      publishDevelopmentBundle(bundle, artifacts);
+      return new Response(null, {
+        status: 307,
+        headers: {
+          location: bundle.entry.pathname,
+          'cache-control': 'no-store',
+        },
+      });
+    } catch (error: unknown) {
+      console.error(error);
+      return buildFailureResponse();
+    }
   }
 
   const artifact = artifacts.get(pathname);
@@ -104,19 +124,19 @@ interface DevelopmentOutput {
 interface DevelopmentBundle {
   entry: DevelopmentOutput;
   stylesheets: DevelopmentOutput[];
+  artifacts: ReadonlyMap<string, DevelopmentOutput>;
 }
 
 function createDevelopmentBuilder(
   config: ResolvedConfig,
   sessionId: string,
-  sessionOutDir: string,
-  artifacts: Map<string, DevelopmentOutput>
+  sessionOutDir: string
 ): () => Promise<DevelopmentBundle | Response> {
   let queue = Promise.resolve();
 
   return () => {
     const result = queue.then(() =>
-      buildProjectBundle(config, sessionId, sessionOutDir, artifacts)
+      buildProjectBundle(config, sessionId, sessionOutDir)
     );
     queue = result.then(
       () => undefined,
@@ -129,11 +149,11 @@ function createDevelopmentBuilder(
 async function buildProjectBundle(
   config: ResolvedConfig,
   sessionId: string,
-  sessionOutDir: string,
-  artifacts: Map<string, DevelopmentOutput>
+  sessionOutDir: string
 ): Promise<DevelopmentBundle | Response> {
   const generationId = createGenerationId();
   const generationOutDir = resolve(sessionOutDir, generationId);
+  const generationUrl = `${DEVELOPMENT_URL_PREFIX}/${sessionId}/${generationId}`;
   const buildOptions = {
     entrypoints: [config.entry],
     outdir: generationOutDir,
@@ -142,6 +162,7 @@ async function buildProjectBundle(
     sourcemap: 'inline' as const,
     write: true,
     throw: false,
+    publicPath: `${generationUrl}/`,
     naming: {
       entry: '[name]-[hash].[ext]',
       chunk: '[name]-[hash].[ext]',
@@ -160,7 +181,6 @@ async function buildProjectBundle(
       return buildFailureResponse();
     }
 
-    const generationUrl = `${DEVELOPMENT_URL_PREFIX}/${sessionId}/${generationId}`;
     const pendingArtifacts = new Map<string, DevelopmentOutput>();
     const outputs = new Map<
       Awaited<ReturnType<typeof Bun.build>>['outputs'][number],
@@ -173,10 +193,7 @@ async function buildProjectBundle(
         generationUrl,
         output
       );
-      if (
-        pendingArtifacts.has(developmentOutput.pathname) ||
-        artifacts.has(developmentOutput.pathname)
-      ) {
+      if (pendingArtifacts.has(developmentOutput.pathname)) {
         throw new Error(
           `Development output URL collision: ${developmentOutput.pathname}`
         );
@@ -190,20 +207,32 @@ async function buildProjectBundle(
       throw new Error('Development entry output was not indexed');
     }
 
-    for (const [pathname, output] of pendingArtifacts) {
-      artifacts.set(pathname, output);
-    }
-
     return {
       entry,
       stylesheets: result.outputs
         .filter(isStylesheetOutput)
         .map((output) => outputs.get(output))
         .filter((output): output is DevelopmentOutput => output !== undefined),
+      artifacts: pendingArtifacts,
     };
   } catch (error: unknown) {
     console.error(error);
     return buildFailureResponse();
+  }
+}
+
+function publishDevelopmentBundle(
+  bundle: DevelopmentBundle,
+  artifacts: Map<string, DevelopmentOutput>
+): void {
+  for (const pathname of bundle.artifacts.keys()) {
+    if (artifacts.has(pathname)) {
+      throw new Error(`Development output URL collision: ${pathname}`);
+    }
+  }
+
+  for (const [pathname, output] of bundle.artifacts) {
+    artifacts.set(pathname, output);
   }
 }
 

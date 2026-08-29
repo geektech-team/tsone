@@ -2,11 +2,13 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'bun:test';
 import { startDevServer } from '../src/index';
 
@@ -236,11 +238,109 @@ describe('TSone development server', () => {
     }
 
     const fileAssetResponse = await fetch(
-      new URL(fileAssetHref, scriptResponse.url)
+      new URL(fileAssetHref, documentResponse.url)
     );
+    expect(fileAssetHref).toMatch(/^\/dev\/[^/]+\/[^/]+\/assets\//);
     expect(fileAssetResponse.status).toBe(200);
     expect(fileAssetResponse.headers.get('cache-control')).toBe('no-store');
     expect(await fileAssetResponse.text()).toBe('test-file-asset');
+  });
+
+  it('rejects a development directory that resolves outside the project root', async () => {
+    const root = makeRoot('Escaping Development Directory');
+    const externalDirectory = mkdtempSync(
+      join(tmpdir(), 'tsone-cli-external-dev-')
+    );
+    roots.push(externalDirectory);
+    const sentinelPath = join(externalDirectory, 'sentinel.txt');
+    writeFileSync(sentinelPath, 'outside must remain unchanged');
+    symlinkSync(externalDirectory, join(root, '.tsone'));
+
+    const outcome = await startDevServer({ root, port: 0 }).then(
+      (server) => {
+        servers.push(server);
+        return server;
+      },
+      (error: unknown) => error
+    );
+
+    expect(outcome).toBeInstanceOf(Error);
+    expect(String(outcome)).toContain(
+      'Development output must be a subdirectory of the project root'
+    );
+    expect(readFileSync(sentinelPath, 'utf8')).toBe(
+      'outside must remain unchanged'
+    );
+    expect(existsSync(join(externalDirectory, 'dev'))).toBe(false);
+  });
+
+  it('does not publish a generation when document rendering fails', async () => {
+    const root = makeRoot('Render Failure');
+    const renderCounterKey = '__tsoneRenderFailureCount';
+    delete (globalThis as Record<string, unknown>)[renderCounterKey];
+    restorers.push(() => {
+      delete (globalThis as Record<string, unknown>)[renderCounterKey];
+    });
+    writeFileSync(
+      join(root, 'src/main.ts'),
+      `
+        const renderState = globalThis as typeof globalThis & {
+          ${renderCounterKey}?: number;
+        };
+        export const app = {
+          renderHtmlDocument() {
+            renderState.${renderCounterKey} =
+              (renderState.${renderCounterKey} ?? 0) + 1;
+            if (renderState.${renderCounterKey} > 1) {
+              throw new Error('private document render diagnostic');
+            }
+            return '<!doctype html><html><body></body></html>';
+          },
+        };
+      `
+    );
+    let emittedEntryUrl = '';
+    mockBuildImplementation((async (options) => {
+      if (!('outdir' in options) || typeof options.outdir !== 'string') {
+        throw new Error('Expected development output directory');
+      }
+      const sessionId = basename(dirname(options.outdir));
+      const generationId = basename(options.outdir);
+      emittedEntryUrl = `/dev/${sessionId}/${generationId}/main-render.js`;
+      const entryPath = join(options.outdir, 'main-render.js');
+      mkdirSync(options.outdir, { recursive: true });
+      writeFileSync(entryPath, 'export const rendered = false;');
+      return {
+        success: true,
+        logs: [],
+        outputs: [
+          createBuildOutput(
+            entryPath,
+            'export const rendered = false;',
+            'entry-point',
+            'text/javascript;charset=utf-8'
+          ),
+        ],
+      } as BuildResult;
+    }) as typeof Bun.build);
+    const server = await startDevServer({ root, port: 0 });
+    servers.push(server);
+    const errorCalls = captureConsoleErrors();
+
+    const response = await fetch(`${serverUrl(server)}/`);
+
+    expect(response.status).toBe(500);
+    expect(await response.text()).toBe('Failed to build project bundle');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(emittedEntryUrl).not.toBe('');
+    expect(
+      (await fetch(new URL(emittedEntryUrl, serverUrl(server)))).status
+    ).toBe(404);
+    expect(
+      errorCalls.some((values) =>
+        values.join(' ').includes('private document render diagnostic')
+      )
+    ).toBe(true);
   });
 
   it('builds an independent exact generation for / and /index.html', async () => {

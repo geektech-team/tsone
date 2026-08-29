@@ -106,12 +106,14 @@ example `--port 3000`, `--port=3000`, `--out-dir output`, and
 `tsone dev` serves the generated HTML at `/` and `/index.html`. Each document
 build writes an immutable browser ESM generation beneath the internal
 `.tsone/dev/` directory and references exact `/dev/<session>/<generation>/...`
-JavaScript and stylesheet URLs. Emitted file assets are served from the same
-generation, so relative imports remain stable across concurrent pages.
+JavaScript and stylesheet URLs. Bun uses that exact generation URL as its
+public path, so emitted file-asset strings are absolute URLs under the same
+generation and resolve correctly from the document URL across concurrent pages.
 `/bundle.js` remains a compatibility alias that rebuilds and redirects to the
 latest exact entry URL. Other unmatched paths return 404. The `.tsone/`
 directory is generated tooling output and can be removed while the development
-server is stopped.
+server is stopped. A `.tsone` path that resolves outside the project through a
+symlink is rejected before the development server starts.
 
 `tsone build` writes a Bun browser bundle and `index.html` to the safe output
 directory.
