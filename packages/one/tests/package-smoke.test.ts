@@ -56,6 +56,7 @@ describe('One UI package smoke', () => {
     try {
       mkdirSync(bunTemp, { recursive: true });
       mkdirSync(bunCache, { recursive: true });
+      run('bun', ['run', 'build'], tsoneRoot);
       run('bun', ['run', 'build']);
 
       const oneBundle = readFileSync(join(oneRoot, 'dist', 'index.js'), 'utf8');
