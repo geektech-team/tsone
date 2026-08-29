@@ -44,4 +44,24 @@ describe('OneSwitch', () => {
       container.querySelector('[role="switch"]')?.getAttribute('aria-checked')
     ).toBe('true');
   });
+
+  it('renders a left-to-right thumb while preserving a native checkbox', () => {
+    const standalone = new OneSwitch({
+      defaultChecked: false,
+      ariaLabel: '通知',
+    });
+    standalone.mount(container);
+
+    const input = container.querySelector('input');
+    const thumb = container.querySelector('.one-switch__thumb');
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    expect(thumb).toBeTruthy();
+    expect(container.querySelector('.one-switch--checked')).toBeNull();
+
+    (input as HTMLInputElement).checked = true;
+    (input as HTMLInputElement).dispatchEvent(new Event('change'));
+
+    expect(container.querySelector('.one-switch--checked')).toBeTruthy();
+    standalone.unmount();
+  });
 });

@@ -23,11 +23,46 @@ export const ONE_SWITCH_STYLES: OneNamedStyle[] = [
     properties: {
       display: 'inline-flex',
       alignItems: 'center',
-      minWidth: '40px',
-      minHeight: '24px',
+      position: 'relative',
+      width: '44px',
+      height: '24px',
       borderRadius: '999px',
       backgroundColor: `var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      cursor: 'pointer',
+      transition: '150ms ease',
     },
+  },
+  {
+    name: 'one-switch-input',
+    selector: '.one-switch__input',
+    properties: {
+      position: 'absolute',
+      inset: '0',
+      width: '100%',
+      height: '100%',
+      margin: '0',
+      opacity: '0',
+      cursor: 'inherit',
+    },
+  },
+  {
+    name: 'one-switch-thumb',
+    selector: '.one-switch__thumb',
+    properties: {
+      width: '18px',
+      height: '18px',
+      marginLeft: '3px',
+      borderRadius: '50%',
+      backgroundColor: `var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface})`,
+      boxShadow: '0 1px 3px rgba(22, 32, 24, 0.28)',
+      pointerEvents: 'none',
+      transition: '150ms ease',
+    },
+  },
+  {
+    name: 'one-switch-thumb-checked',
+    selector: '.one-switch--checked .one-switch__thumb',
+    properties: { transform: 'translateX(20px)' },
   },
   {
     name: 'one-switch-checked',
@@ -47,6 +82,14 @@ export const ONE_SWITCH_STYLES: OneNamedStyle[] = [
     name: 'one-switch-disabled',
     selector: '.one-switch--disabled',
     properties: { opacity: '0.5', cursor: 'not-allowed' },
+  },
+  {
+    name: 'one-switch-focus-visible',
+    selector: '.one-switch:has(.one-switch__input:focus-visible)',
+    properties: {
+      outline: `2px solid var(--one-color-focus, ${ONE_THEME_DEFAULTS.colorFocus})`,
+      outlineOffset: '2px',
+    },
   },
 ];
 export class OneSwitch extends Component<OneSwitchProps, OneSwitchState> {
@@ -106,6 +149,7 @@ export class OneSwitch extends Component<OneSwitchProps, OneSwitchState> {
         {
           tag: 'input',
           props: {
+            className: 'one-switch__input',
             type: 'checkbox',
             checked,
             name: this.fieldContext?.name ?? this.props.name,
@@ -120,6 +164,10 @@ export class OneSwitch extends Component<OneSwitchProps, OneSwitchState> {
             input: (event) => this.emitChecked('input', event),
             change: (event) => this.emitChecked('change', event),
           },
+        },
+        {
+          tag: 'span',
+          props: { className: 'one-switch__thumb', 'aria-hidden': 'true' },
         },
       ],
     };
