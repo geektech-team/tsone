@@ -10,7 +10,7 @@
     }
   },
   "bin": {
-    "tsone": "./bin/tsone.ts"
+    "tsone": "bin/tsone.ts"
   },
   "scripts": {
     "build": "bun scripts/build.ts",
