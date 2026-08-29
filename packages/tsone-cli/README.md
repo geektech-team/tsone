@@ -103,8 +103,16 @@ Options override `tsone.config.ts`. Both separated and equals forms work, for
 example `--port 3000`, `--port=3000`, `--out-dir output`, and
 `--out-dir=output`.
 
-`tsone dev` serves the generated HTML at `/` and `/index.html`, rebuilds the
-browser ESM bundle at `/bundle.js`, and returns 404 for other unmatched paths.
+`tsone dev` serves the generated HTML at `/` and `/index.html`. Each document
+build writes an immutable browser ESM generation beneath the internal
+`.tsone/dev/` directory and references exact `/dev/<session>/<generation>/...`
+JavaScript and stylesheet URLs. Emitted file assets are served from the same
+generation, so relative imports remain stable across concurrent pages.
+`/bundle.js` remains a compatibility alias that rebuilds and redirects to the
+latest exact entry URL. Other unmatched paths return 404. The `.tsone/`
+directory is generated tooling output and can be removed while the development
+server is stopped.
+
 `tsone build` writes a Bun browser bundle and `index.html` to the safe output
 directory.
 

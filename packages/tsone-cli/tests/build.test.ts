@@ -79,6 +79,16 @@ function mockBuild(result: BunBuildResult): void {
   });
 }
 
+function mockRejectedBuild(error: Error): void {
+  const originalBuild = Bun.build;
+  Bun.build = (async () => {
+    throw error;
+  }) as typeof Bun.build;
+  restorers.push(() => {
+    Bun.build = originalBuild;
+  });
+}
+
 function expectSentinelsToRemain(root: string, external?: string): void {
   expect(readFileSync(join(root, 'src', 'main.ts'), 'utf8')).toContain(
     "import './site.css';"
@@ -178,6 +188,16 @@ describe('TSone production build', () => {
     } as BunBuildResult);
 
     await expect(build({ root })).rejects.toThrow('Bun build reported failure');
+    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(false);
+  });
+
+  it('adds TSone build context when Bun rejects unexpectedly', async () => {
+    const root = makeRoot();
+    mockRejectedBuild(new Error('unexpected bundler rejection'));
+
+    await expect(build({ root })).rejects.toThrow(
+      'Failed to build TSone application: unexpected bundler rejection'
+    );
     expect(existsSync(join(root, 'dist', 'index.html'))).toBe(false);
   });
 

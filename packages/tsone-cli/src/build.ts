@@ -17,13 +17,19 @@ export async function build(options: BuildOptions = {}): Promise<BuildResult> {
   await rm(config.build.outDir, { recursive: true, force: true });
   await mkdir(config.build.outDir, { recursive: true });
 
-  const result = await Bun.build({
-    entrypoints: [config.entry],
-    outdir: config.build.outDir,
-    target: 'browser',
-    format: 'esm',
-    naming: { entry: '[name].[ext]', chunk: '[name]-[hash].[ext]' },
-  });
+  let result: Awaited<ReturnType<typeof Bun.build>>;
+  try {
+    result = await Bun.build({
+      entrypoints: [config.entry],
+      outdir: config.build.outDir,
+      target: 'browser',
+      format: 'esm',
+      naming: { entry: '[name].[ext]', chunk: '[name]-[hash].[ext]' },
+      throw: false,
+    });
+  } catch (error: unknown) {
+    throw buildFailure([errorMessage(error)]);
+  }
   const assetsBuilt = result.outputs.map((output) => resolve(output.path));
   const javascriptAssets = result.outputs
     .filter(isEntryJavaScriptOutput)
@@ -142,14 +148,18 @@ function toAssetUrl(outDir: string, asset: string): string {
   return `./${assetPath}`;
 }
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function buildFailure(
   logs: string[],
-  state: { success: boolean; hasOutput: boolean; hasJavaScript: boolean }
+  state?: { success: boolean; hasOutput: boolean; hasJavaScript: boolean }
 ): Error {
   const reasons = [
-    !state.success ? 'Bun build reported failure' : '',
-    !state.hasOutput ? 'Bun emitted no output files' : '',
-    !state.hasJavaScript ? 'Bun emitted no JavaScript output' : '',
+    state && !state.success ? 'Bun build reported failure' : '',
+    state && !state.hasOutput ? 'Bun emitted no output files' : '',
+    state && !state.hasJavaScript ? 'Bun emitted no JavaScript output' : '',
     ...logs,
   ].filter((reason) => reason !== '');
 

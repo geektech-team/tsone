@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'bun:test';
@@ -14,18 +20,29 @@ function makeRoot(title: string): string {
   const root = mkdtempSync(join(tmpdir(), 'tsone-cli-server-'));
   roots.push(root);
   mkdirSync(join(root, 'src'));
-  writeFileSync(
-    join(root, 'src/main.ts'),
-    `
+  writeFileSync(join(root, 'src/main.ts'), projectEntry(title));
+  return root;
+}
+
+function projectEntry(title: string, imports = ''): string {
+  return `
+      ${imports}
+
       export const app = {
-        renderHtmlDocument() {
-          return '<!doctype html><html><head><title>${title}</title></head>' +
-            '<body><div id="app"></div></body></html>';
+        renderHtmlDocument(options = {}) {
+          const head = (options.head ?? []).map((element) =>
+            '<' + element.tag + ' ' + Object.entries(element.attributes)
+              .map(([key, value]) => key + '="' + value + '"')
+              .join(' ') + '>'
+          ).join('');
+          const scripts = (options.scripts ?? []).map((script) =>
+            '<script type="' + script.type + '" src="' + script.src + '"></script>'
+          ).join('');
+          return '<!doctype html><html><head><title>${title}</title>' + head +
+            '</head><body><div id="app"></div>' + scripts + '</body></html>';
         },
       };
-    `
-  );
-  return root;
+    `;
 }
 
 function serverUrl(server: ReturnType<typeof Bun.serve>): string {
@@ -49,6 +66,14 @@ function createBuildOutput(
 function mockBuild(result: BuildResult): void {
   const originalBuild = Bun.build;
   Bun.build = (async () => result) as typeof Bun.build;
+  restorers.push(() => {
+    Bun.build = originalBuild;
+  });
+}
+
+function mockBuildImplementation(implementation: typeof Bun.build): void {
+  const originalBuild = Bun.build;
+  Bun.build = implementation;
   restorers.push(() => {
     Bun.build = originalBuild;
   });
@@ -162,27 +187,12 @@ describe('TSone development server', () => {
     const root = makeRoot('Development Assets App');
     writeFileSync(
       join(root, 'src/main.ts'),
-      `
-        import './site.css';
-        import assetUrl from './test.png' with { type: 'file' };
-
-        export const developmentAssetUrl = assetUrl;
-
-        export const app = {
-          renderHtmlDocument(options = {}) {
-            const head = (options.head ?? []).map((element) =>
-              '<' + element.tag + ' ' + Object.entries(element.attributes)
-                .map(([key, value]) => key + '="' + value + '"')
-                .join(' ') + '>'
-            ).join('');
-            const scripts = (options.scripts ?? []).map((script) =>
-              '<script type="' + script.type + '" src="' + script.src + '"></script>'
-            ).join('');
-            return '<!doctype html><html><head><title>Development Assets App</title>' +
-              head + '</head><body><div id="app"></div>' + scripts + '</body></html>';
-          },
-        };
-      `
+      projectEntry(
+        'Development Assets App',
+        `import './site.css';
+         import assetUrl from './test.png' with { type: 'file' };
+         export const developmentAssetUrl = assetUrl;`
+      )
     );
     writeFileSync(join(root, 'src/site.css'), 'body { color: rebeccapurple; }');
     writeFileSync(join(root, 'src/test.png'), 'test-file-asset');
@@ -200,6 +210,7 @@ describe('TSone development server', () => {
 
     expect(documentResponse.status).toBe(200);
     expect(documentResponse.headers.get('cache-control')).toBe('no-store');
+    expect(existsSync(join(root, '.tsone', 'dev'))).toBe(true);
     expect(scriptSource).toMatch(/^\/.*\.js$/);
     expect(stylesheetHref).toMatch(/^\/.*\.css$/);
     if (!scriptSource || !stylesheetHref) {
@@ -230,6 +241,224 @@ describe('TSone development server', () => {
     expect(fileAssetResponse.status).toBe(200);
     expect(fileAssetResponse.headers.get('cache-control')).toBe('no-store');
     expect(await fileAssetResponse.text()).toBe('test-file-asset');
+  });
+
+  it('builds an independent exact generation for / and /index.html', async () => {
+    const root = makeRoot('Document Generation A');
+    const server = await startDevServer({ root, port: 0 });
+    servers.push(server);
+
+    const firstDocument = await fetch(`${serverUrl(server)}/`);
+    const firstHtml = await firstDocument.text();
+    writeFileSync(
+      join(root, 'src/main.ts'),
+      projectEntry('Document Generation B')
+    );
+    const secondDocument = await fetch(`${serverUrl(server)}/index.html`);
+    const secondHtml = await secondDocument.text();
+    const firstScript = firstHtml.match(
+      /<script type="module" src="([^"]+)"><\/script>/
+    )?.[1];
+    const secondScript = secondHtml.match(
+      /<script type="module" src="([^"]+)"><\/script>/
+    )?.[1];
+
+    expect(firstScript).toMatch(/^\/dev\/[^/]+\/[^/]+\/.*\.js$/);
+    expect(secondScript).toMatch(/^\/dev\/[^/]+\/[^/]+\/.*\.js$/);
+    expect(secondScript).not.toBe(firstScript);
+    if (!firstScript || !secondScript) {
+      throw new Error('Expected exact development generation scripts');
+    }
+
+    expect(
+      await (await fetch(new URL(firstScript, serverUrl(server)))).text()
+    ).toContain('Document Generation A');
+    expect(
+      await (await fetch(new URL(secondScript, serverUrl(server)))).text()
+    ).toContain('Document Generation B');
+  });
+
+  it('keeps concurrent document generations independently addressable', async () => {
+    const root = makeRoot('Concurrent Documents');
+    const labels = ['generation-a', 'generation-b'];
+    mockBuildImplementation((async (options) => {
+      const label = labels.shift();
+      if (!label) {
+        throw new Error('Unexpected extra development build');
+      }
+      const outDir =
+        'outdir' in options && typeof options.outdir === 'string'
+          ? options.outdir
+          : join(root, 'virtual', label);
+      mkdirSync(outDir, { recursive: true });
+      const entryPath = join(outDir, `main-${label}.js`);
+      writeFileSync(entryPath, `export const label = '${label}';`);
+      return {
+        success: true,
+        logs: [],
+        outputs: [
+          createBuildOutput(
+            entryPath,
+            `export const label = '${label}';`,
+            'entry-point',
+            'text/javascript;charset=utf-8'
+          ),
+        ],
+      } as BuildResult;
+    }) as typeof Bun.build);
+
+    const server = await startDevServer({ root, port: 0 });
+    servers.push(server);
+    const [rootResponse, indexResponse] = await Promise.all([
+      fetch(`${serverUrl(server)}/`),
+      fetch(`${serverUrl(server)}/index.html`),
+    ]);
+    const documents = await Promise.all([
+      rootResponse.text(),
+      indexResponse.text(),
+    ]);
+    const scripts = documents.map(
+      (html) =>
+        html.match(/<script type="module" src="([^"]+)"><\/script>/)?.[1]
+    );
+    const [firstScript, secondScript] = scripts;
+
+    expect(firstScript).toMatch(/^\/dev\/[^/]+\/[^/]+\/.*\.js$/);
+    expect(secondScript).toMatch(/^\/dev\/[^/]+\/[^/]+\/.*\.js$/);
+    expect(firstScript).not.toBe(secondScript);
+    if (!firstScript || !secondScript) {
+      throw new Error('Expected concurrent development scripts');
+    }
+
+    const scriptBodies = await Promise.all(
+      [firstScript, secondScript].map(async (script) =>
+        (await fetch(new URL(script, serverUrl(server)))).text()
+      )
+    );
+    expect(new Set(scriptBodies)).toEqual(
+      new Set([
+        "export const label = 'generation-a';",
+        "export const label = 'generation-b';",
+      ])
+    );
+  });
+
+  it('preserves nested emitted paths with duplicate asset basenames', async () => {
+    const root = makeRoot('Nested Development Assets');
+    mockBuildImplementation((async (options) => {
+      const outDir =
+        'outdir' in options && typeof options.outdir === 'string'
+          ? options.outdir
+          : join(root, 'virtual');
+      const entryPath = join(outDir, 'main-hash.js');
+      const firstLogo = join(outDir, 'a', 'logo.png');
+      const secondLogo = join(outDir, 'b', 'logo.png');
+      mkdirSync(join(outDir, 'a'), { recursive: true });
+      mkdirSync(join(outDir, 'b'), { recursive: true });
+      writeFileSync(
+        entryPath,
+        'export const logos = ["./a/logo.png", "./b/logo.png"];'
+      );
+      writeFileSync(firstLogo, 'logo-a');
+      writeFileSync(secondLogo, 'logo-b');
+      return {
+        success: true,
+        logs: [],
+        outputs: [
+          createBuildOutput(
+            entryPath,
+            'export const logos = ["./a/logo.png", "./b/logo.png"];',
+            'entry-point',
+            'text/javascript;charset=utf-8'
+          ),
+          createBuildOutput(firstLogo, 'logo-a', 'asset', 'image/png'),
+          createBuildOutput(secondLogo, 'logo-b', 'asset', 'image/png'),
+        ],
+      } as BuildResult;
+    }) as typeof Bun.build);
+
+    const server = await startDevServer({ root, port: 0 });
+    servers.push(server);
+    const html = await (await fetch(`${serverUrl(server)}/`)).text();
+    const scriptSource = html.match(
+      /<script type="module" src="([^"]+)"><\/script>/
+    )?.[1];
+    if (!scriptSource) {
+      throw new Error('Expected nested-asset entry script');
+    }
+
+    const firstLogo = await fetch(
+      new URL('./a/logo.png', new URL(scriptSource, serverUrl(server)))
+    );
+    const secondLogo = await fetch(
+      new URL('./b/logo.png', new URL(scriptSource, serverUrl(server)))
+    );
+
+    expect(firstLogo.status).toBe(200);
+    expect(await firstLogo.text()).toBe('logo-a');
+    expect(secondLogo.status).toBe(200);
+    expect(await secondLogo.text()).toBe('logo-b');
+  });
+
+  it('rejects emitted output paths that escape the generation directory', async () => {
+    const root = makeRoot('Escaping Development Output');
+    const errorCalls = captureConsoleErrors();
+    mockBuildImplementation((async (options) => {
+      const outDir =
+        'outdir' in options && typeof options.outdir === 'string'
+          ? options.outdir
+          : join(root, 'virtual');
+      const entryPath = join(outDir, 'main-hash.js');
+      const escapedPath = join(outDir, '..', 'escaped.js');
+      mkdirSync(outDir, { recursive: true });
+      writeFileSync(entryPath, 'export const entry = true;');
+      writeFileSync(escapedPath, 'export const escaped = true;');
+      return {
+        success: true,
+        logs: [],
+        outputs: [
+          createBuildOutput(
+            entryPath,
+            'export const entry = true;',
+            'entry-point',
+            'text/javascript;charset=utf-8'
+          ),
+          createBuildOutput(
+            escapedPath,
+            'export const escaped = true;',
+            'asset',
+            'text/javascript;charset=utf-8'
+          ),
+        ],
+      } as BuildResult;
+    }) as typeof Bun.build);
+
+    const server = await startDevServer({ root, port: 0 });
+    servers.push(server);
+    const response = await fetch(`${serverUrl(server)}/`);
+
+    expect(response.status).toBe(500);
+    expect(await response.text()).toBe('Failed to build project bundle');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(
+      errorCalls.some((values) => values.join(' ').includes('outside'))
+    ).toBe(true);
+  });
+
+  it('returns an unknown route without starting a development build', async () => {
+    const server = await startDevServer({
+      root: makeRoot('Unknown Route'),
+      port: 0,
+    });
+    servers.push(server);
+    const errorCalls = captureConsoleErrors();
+    mockRejectedBuild(new Error('unknown route must not build'));
+
+    const response = await fetch(`${serverUrl(server)}/missing`);
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(errorCalls).toEqual([]);
   });
 
   it('gives a matching proxy rule priority over the framework bundle', async () => {
@@ -264,24 +493,34 @@ describe('TSone development server', () => {
       port: 0,
     });
     servers.push(server);
-    mockBuild({
-      success: true,
-      logs: [],
-      outputs: [
-        createBuildOutput(
-          '/virtual/styles.css',
-          'body { color: red; }',
-          'asset',
-          'text/css;charset=utf-8'
-        ),
-        createBuildOutput(
-          '/virtual/app.js',
-          'export const bundleTitle = "JavaScript bundle";',
-          'entry-point',
-          'text/javascript;charset=utf-8'
-        ),
-      ],
-    } as unknown as BuildResult);
+    mockBuildImplementation((async (options) => {
+      if (!('outdir' in options) || typeof options.outdir !== 'string') {
+        throw new Error('Expected development output directory');
+      }
+      mkdirSync(options.outdir, { recursive: true });
+      const stylesheet = join(options.outdir, 'styles.css');
+      const entry = join(options.outdir, 'app.js');
+      writeFileSync(stylesheet, 'body { color: red; }');
+      writeFileSync(entry, 'export const bundleTitle = "JavaScript bundle";');
+      return {
+        success: true,
+        logs: [],
+        outputs: [
+          createBuildOutput(
+            stylesheet,
+            'body { color: red; }',
+            'asset',
+            'text/css;charset=utf-8'
+          ),
+          createBuildOutput(
+            entry,
+            'export const bundleTitle = "JavaScript bundle";',
+            'entry-point',
+            'text/javascript;charset=utf-8'
+          ),
+        ],
+      } as BuildResult;
+    }) as typeof Bun.build);
 
     const response = await fetch(`${serverUrl(server)}/bundle.js`);
 

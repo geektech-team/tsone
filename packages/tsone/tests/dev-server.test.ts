@@ -3,11 +3,12 @@ import { repoPath } from './paths';
 
 type DevProcess = ReturnType<typeof Bun.spawn>;
 
+const DEV_REQUEST_TIMEOUT_MS = 1000;
 let devProcess: DevProcess | undefined;
 
 async function fetchWithTimeout(url: string): Promise<Response> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 1000);
+  const timer = setTimeout(() => controller.abort(), DEV_REQUEST_TIMEOUT_MS);
 
   try {
     return await fetch(url, { signal: controller.signal });
@@ -203,14 +204,32 @@ describe('TSone CLI playground dev server', () => {
         const text = await html.text();
         expect(text).toContain(`<title>${project.title}</title>`);
         expect(text).toContain('<div id="app"></div>');
-        expect(text).toContain(
-          '<script type="module" src="/bundle.js"></script>'
+        const scriptSource = text.match(
+          /<script type="module" src="([^"]+)"><\/script>/
+        )?.[1];
+        expect(scriptSource).toMatch(
+          /^\/dev\/[^/]+\/[^/]+\/[^/]+-[a-z0-9]+\.js$/
         );
+        if (!scriptSource) {
+          throw new Error('Expected exact development entry script');
+        }
 
-        const bundle = await fetchWithTimeout(`${baseUrl}/bundle.js`);
+        const bundle = await fetchWithTimeout(`${baseUrl}${scriptSource}`);
         expect(bundle.status).toBe(200);
         expect(bundle.headers.get('content-type')).toContain('text/javascript');
         expect(await bundle.text()).toContain(project.bundleText);
+
+        const compatibilityAlias = await fetch(`${baseUrl}/bundle.js`, {
+          redirect: 'manual',
+          signal: AbortSignal.timeout(DEV_REQUEST_TIMEOUT_MS),
+        });
+        expect(compatibilityAlias.status).toBe(307);
+        expect(compatibilityAlias.headers.get('location')).toMatch(
+          /^\/dev\/[^/]+\/[^/]+\/[^/]+-[a-z0-9]+\.js$/
+        );
+        expect(compatibilityAlias.headers.get('cache-control')).toBe(
+          'no-store'
+        );
       } finally {
         await stopDevProcess();
       }
