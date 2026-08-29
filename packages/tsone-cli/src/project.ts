@@ -26,9 +26,14 @@ const DOM_GLOBAL_KEYS = [
   'navigator',
   'localStorage',
 ] as const;
+const PROJECT_GLOBAL_KEYS = [...DOM_GLOBAL_KEYS, '__APP__'] as const;
 
 type DomGlobalKey = (typeof DOM_GLOBAL_KEYS)[number];
-type GlobalDescriptorMap = Map<DomGlobalKey, PropertyDescriptor | undefined>;
+type ProjectGlobalKey = (typeof PROJECT_GLOBAL_KEYS)[number];
+type GlobalDescriptorMap = Map<
+  ProjectGlobalKey,
+  PropertyDescriptor | undefined
+>;
 
 interface ProjectEntryModule {
   app?: unknown;
@@ -88,7 +93,7 @@ async function importProjectEntry(entry: string): Promise<ProjectEntryModule> {
 
 function captureGlobalDescriptors(): GlobalDescriptorMap {
   return new Map(
-    DOM_GLOBAL_KEYS.map((key) => [
+    PROJECT_GLOBAL_KEYS.map((key) => [
       key,
       Object.getOwnPropertyDescriptor(globalThis, key),
     ])
@@ -117,7 +122,7 @@ function installProjectDom(window: Window): void {
 }
 
 function restoreGlobalDescriptors(descriptors: GlobalDescriptorMap): void {
-  DOM_GLOBAL_KEYS.forEach((key) => {
+  PROJECT_GLOBAL_KEYS.forEach((key) => {
     const descriptor = descriptors.get(key);
     if (descriptor) {
       Object.defineProperty(globalThis, key, descriptor);

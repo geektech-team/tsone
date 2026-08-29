@@ -3,7 +3,7 @@ import { relative, resolve, sep } from 'node:path';
 import { isEntryJavaScriptOutput, isStylesheetOutput } from './build-output';
 import { resolveConfig } from './config';
 import { renderProjectHtml } from './project';
-import { assertSafeSubdirectory } from './safe-path';
+import { assertSafeSubdirectoryDoesNotContain } from './safe-path';
 import type { BuildOptions, BuildResult } from './types';
 
 const INVALID_OUTPUT_DIRECTORY_MESSAGE =
@@ -12,12 +12,13 @@ const INVALID_OUTPUT_DIRECTORY_MESSAGE =
 export async function build(options: BuildOptions = {}): Promise<BuildResult> {
   const config = await resolveConfig(options);
 
-  await renderProjectHtml(config, {});
-  await assertSafeSubdirectory(
+  await assertSafeSubdirectoryDoesNotContain(
     config.root,
     config.build.outDir,
+    config.entry,
     INVALID_OUTPUT_DIRECTORY_MESSAGE
   );
+  await renderProjectHtml(config, {});
 
   await rm(config.build.outDir, { recursive: true, force: true });
   await mkdir(config.build.outDir, { recursive: true });

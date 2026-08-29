@@ -36,6 +36,8 @@ export const app = createApp({
   root: App,
   document: { title: 'TSone App' },
 });
+
+app.mount();
 ```
 
 The export must be written as `export const app`; a default export or another

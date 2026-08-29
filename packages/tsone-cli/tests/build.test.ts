@@ -291,6 +291,43 @@ describe('TSone production build', () => {
     expectSentinelsToRemain(root);
   });
 
+  it('rejects an output directory that contains the entry without deleting source files', async () => {
+    const root = makeRoot();
+    const sourceSentinel = join(root, 'src', 'source-sentinel.txt');
+    writeFileSync(sourceSentinel, 'source remains');
+
+    await expect(build({ root, outDir: 'src' })).rejects.toThrow(
+      'Build output must be a subdirectory of the project root'
+    );
+
+    expectSentinelsToRemain(root);
+    expect(readFileSync(sourceSentinel, 'utf8')).toBe('source remains');
+  });
+
+  it('canonically rejects an output routed through a symlink to the entry directory', async () => {
+    const root = makeRoot();
+    const sourceSentinel = join(root, 'src', 'source-sentinel.txt');
+    writeFileSync(sourceSentinel, 'source remains');
+    symlinkSync(root, join(root, 'linked-root'));
+
+    await expect(build({ root, outDir: 'linked-root/src' })).rejects.toThrow(
+      'Build output must be a subdirectory of the project root'
+    );
+
+    expectSentinelsToRemain(root);
+    expect(readFileSync(sourceSentinel, 'utf8')).toBe('source remains');
+  });
+
+  it('allows a child output directory that does not contain the entry', async () => {
+    const root = makeRoot();
+
+    const result = await build({ root, outDir: 'src/dist' });
+
+    expect(result.outDir).toBe(join(root, 'src', 'dist'));
+    expect(existsSync(join(root, 'src', 'dist', 'index.html'))).toBe(true);
+    expectSentinelsToRemain(root);
+  });
+
   it('rejects an output directory outside the project without deleting sentinels', async () => {
     const root = makeRoot();
     const external = makeExternalDirectory();

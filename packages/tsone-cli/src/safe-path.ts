@@ -10,7 +10,29 @@ export async function assertSafeSubdirectory(
     const canonicalRoot = await realpath(root);
     const canonicalPath = await canonicalizePotentialPath(path);
 
-    if (!isSubdirectory(canonicalRoot, canonicalPath)) {
+    if (!isStrictSubdirectory(canonicalRoot, canonicalPath)) {
+      throw new Error(errorMessage);
+    }
+  } catch {
+    throw new Error(errorMessage);
+  }
+}
+
+export async function assertSafeSubdirectoryDoesNotContain(
+  root: string,
+  path: string,
+  protectedPath: string,
+  errorMessage: string
+): Promise<void> {
+  try {
+    const canonicalRoot = await realpath(root);
+    const canonicalPath = await canonicalizePotentialPath(path);
+    const canonicalProtectedPath = await realpath(protectedPath);
+
+    if (
+      !isStrictSubdirectory(canonicalRoot, canonicalPath) ||
+      isPathWithinOrEqual(canonicalPath, canonicalProtectedPath)
+    ) {
       throw new Error(errorMessage);
     }
   } catch {
@@ -53,12 +75,22 @@ function isMissingPathError(error: unknown): boolean {
   );
 }
 
-function isSubdirectory(root: string, path: string): boolean {
+function isStrictSubdirectory(root: string, path: string): boolean {
   const pathFromRoot = relative(root, path);
   return (
     pathFromRoot !== '' &&
     pathFromRoot !== '..' &&
     !pathFromRoot.startsWith(`..${sep}`) &&
     !isAbsolute(pathFromRoot)
+  );
+}
+
+function isPathWithinOrEqual(parent: string, candidate: string): boolean {
+  const pathFromParent = relative(parent, candidate);
+  return (
+    pathFromParent === '' ||
+    (pathFromParent !== '..' &&
+      !pathFromParent.startsWith(`..${sep}`) &&
+      !isAbsolute(pathFromParent))
   );
 }

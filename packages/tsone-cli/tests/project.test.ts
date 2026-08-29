@@ -86,4 +86,77 @@ describe('TSone project rendering', () => {
     expect(secondHtml).toContain('<title>Second External App</title>');
     expect(globalThis.document).toBe(originalDocument);
   });
+
+  it('restores the caller __APP__ descriptor after an entry mounts', async () => {
+    const root = makeRoot(`
+      import { createApp } from '${frameworkEntryUrl}';
+
+      export const app = createApp({
+        rootElement: document.body,
+        document: { title: 'Mounted External App' },
+      });
+
+      app.mount();
+    `);
+    const originalDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      '__APP__'
+    );
+    const callerApp = { owner: 'caller' };
+    const callerDescriptor: PropertyDescriptor = {
+      configurable: true,
+      enumerable: false,
+      writable: true,
+      value: callerApp,
+    };
+
+    Object.defineProperty(globalThis, '__APP__', callerDescriptor);
+    try {
+      const html = await renderProjectHtml(await resolveConfig({ root }), {});
+
+      expect(html).toContain('<title>Mounted External App</title>');
+      expect(Object.getOwnPropertyDescriptor(globalThis, '__APP__')).toEqual(
+        callerDescriptor
+      );
+    } finally {
+      restoreAppDescriptor(originalDescriptor);
+    }
+  });
+
+  it('removes an entry-created __APP__ global when the caller had none', async () => {
+    const root = makeRoot(`
+      import { createApp } from '${frameworkEntryUrl}';
+
+      export const app = createApp({
+        rootElement: document.body,
+        document: { title: 'Mounted External App' },
+      });
+
+      app.mount();
+    `);
+    const originalDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      '__APP__'
+    );
+
+    delete (globalThis as { __APP__?: unknown }).__APP__;
+    try {
+      await renderProjectHtml(await resolveConfig({ root }), {});
+
+      expect(Object.getOwnPropertyDescriptor(globalThis, '__APP__')).toBe(
+        undefined
+      );
+    } finally {
+      restoreAppDescriptor(originalDescriptor);
+    }
+  });
 });
+
+function restoreAppDescriptor(descriptor: PropertyDescriptor | undefined) {
+  if (descriptor) {
+    Object.defineProperty(globalThis, '__APP__', descriptor);
+    return;
+  }
+
+  delete (globalThis as { __APP__?: unknown }).__APP__;
+}

@@ -398,4 +398,18 @@ describe('public API documentation', () => {
       'CLI v1 has no config plugins, WebSocket, HMR, SSR'
     );
   });
+
+  it('mounts the exported app in the canonical CLI README entry', () => {
+    const readme = readFileSync(packagePath('../tsone-cli/README.md'), 'utf8');
+    const applicationEntry = readme.match(
+      /## Application Entry\n([\s\S]*?)\n## Configuration/
+    )?.[1];
+    const entrySource = applicationEntry?.match(
+      /```typescript\n([\s\S]*?)\n```/
+    )?.[1];
+
+    expect(entrySource).toBeDefined();
+    expect(entrySource).toContain('export const app = createApp({');
+    expect(entrySource?.trimEnd().endsWith('app.mount();')).toBe(true);
+  });
 });
