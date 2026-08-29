@@ -25,12 +25,15 @@ export async function assertSafeSubdirectoryDoesNotContain(
   errorMessage: string
 ): Promise<void> {
   try {
+    const lexicalPath = resolve(path);
+    const lexicalProtectedPath = resolve(protectedPath);
     const canonicalRoot = await realpath(root);
     const canonicalPath = await canonicalizePotentialPath(path);
     const canonicalProtectedPath = await realpath(protectedPath);
 
     if (
       !isStrictSubdirectory(canonicalRoot, canonicalPath) ||
+      isPathWithinOrEqual(lexicalPath, lexicalProtectedPath) ||
       isPathWithinOrEqual(canonicalPath, canonicalProtectedPath)
     ) {
       throw new Error(errorMessage);

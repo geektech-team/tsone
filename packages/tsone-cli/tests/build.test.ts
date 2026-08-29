@@ -1,5 +1,6 @@
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -316,6 +317,50 @@ describe('TSone production build', () => {
 
     expectSentinelsToRemain(root);
     expect(readFileSync(sourceSentinel, 'utf8')).toBe('source remains');
+  });
+
+  it('rejects a configured entry symlink inside the output even when its target is outside', async () => {
+    const root = makeRoot();
+    const entry = join(root, 'src', 'main.ts');
+    const sourceSentinel = join(root, 'src', 'source-sentinel.txt');
+    const targetDirectory = join(root, 'actual');
+    const target = join(targetDirectory, 'main.ts');
+    const entrySource = readFileSync(entry, 'utf8');
+    mkdirSync(targetDirectory);
+    writeFileSync(target, entrySource);
+    writeFileSync(
+      join(targetDirectory, 'site.css'),
+      readFileSync(join(root, 'src', 'site.css'), 'utf8')
+    );
+    writeFileSync(sourceSentinel, 'source remains');
+    rmSync(entry);
+    symlinkSync('../actual/main.ts', entry);
+    let buildError: unknown;
+
+    try {
+      await build({ root, outDir: 'src' });
+    } catch (error: unknown) {
+      buildError = error;
+    }
+
+    expect({
+      error:
+        buildError instanceof Error
+          ? buildError.message
+          : String(buildError ?? ''),
+      entryIsSymlink: existsSync(entry) && lstatSync(entry).isSymbolicLink(),
+      sourceSentinel: existsSync(sourceSentinel)
+        ? readFileSync(sourceSentinel, 'utf8')
+        : undefined,
+      targetRemains:
+        existsSync(target) &&
+        readFileSync(target, 'utf8').includes('Built TSone App'),
+    }).toEqual({
+      error: 'Build output must be a subdirectory of the project root',
+      entryIsSymlink: true,
+      sourceSentinel: 'source remains',
+      targetRemains: true,
+    });
   });
 
   it('allows a child output directory that does not contain the entry', async () => {
