@@ -20,6 +20,11 @@ const APPROVED_PATHS = [
   '/components/button/',
   '/components/input/',
   '/components/card/',
+  '/components/form/',
+  '/components/form/form/',
+  '/components/form/select/',
+  '/components/form/checkbox/',
+  '/components/form/switch/',
 ];
 const packageRoot = join(import.meta.dir, '..');
 
@@ -68,7 +73,7 @@ function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
 }
 
 describe('One UI docs content', () => {
-  it('defines exactly the seven approved routes in stable order', () => {
+  it('defines exactly the twelve approved routes in stable order', () => {
     expect(oneDocPages.map((page) => page.path)).toEqual(APPROVED_PATHS);
   });
 
