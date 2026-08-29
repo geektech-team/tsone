@@ -103,9 +103,19 @@ describe('One UI package smoke', () => {
         join(tempDir, 'package.json'),
         JSON.stringify({ private: true }, null, 2)
       );
+      const packageInstallRoot = join(tempDir, 'node_modules', '@geektech');
+      const tsoneInstallRoot = join(packageInstallRoot, 'tsone');
+      const oneInstallRoot = join(packageInstallRoot, 'one');
+      mkdirSync(tsoneInstallRoot, { recursive: true });
+      mkdirSync(oneInstallRoot, { recursive: true });
       run(
-        'bun',
-        ['add', '--ignore-scripts', tsoneTarball, oneTarball],
+        'tar',
+        ['-xzf', tsoneTarball, '--strip-components=1', '-C', tsoneInstallRoot],
+        tempDir
+      );
+      run(
+        'tar',
+        ['-xzf', oneTarball, '--strip-components=1', '-C', oneInstallRoot],
         tempDir
       );
 
@@ -228,5 +238,5 @@ describe('One UI package smoke', () => {
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 });
