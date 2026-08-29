@@ -77,15 +77,28 @@ export class DocArticle extends Component<DocArticleProps> {
               tag: 'table',
               props: { className: 'one-docs-api-table' },
               children: [
+                { tag: 'caption', children: [block.caption] },
                 {
                   tag: 'thead',
                   children: [
                     {
                       tag: 'tr',
                       children: [
-                        { tag: 'th', children: ['名称'] },
-                        { tag: 'th', children: ['签名'] },
-                        { tag: 'th', children: ['说明'] },
+                        {
+                          tag: 'th',
+                          props: { scope: 'col' },
+                          children: ['名称'],
+                        },
+                        {
+                          tag: 'th',
+                          props: { scope: 'col' },
+                          children: ['签名'],
+                        },
+                        {
+                          tag: 'th',
+                          props: { scope: 'col' },
+                          children: ['说明'],
+                        },
                       ],
                     },
                   ],

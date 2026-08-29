@@ -8,6 +8,7 @@ import {
   paragraph,
   type OneDocPage,
 } from './types';
+import { oneThemeTokens } from './theme-tokens';
 
 export const guidePages: OneDocPage[] = [
   {
@@ -113,104 +114,14 @@ export const guidePages: OneDocPage[] = [
         ].join('\n')
       ),
       heading(2, 'tokens', '主题 token'),
-      apiTable([
-        {
-          name: '--one-color-primary',
-          signature: "colorPrimary: '#5fd956'",
-          description: '主操作色。',
-        },
-        {
-          name: '--one-color-primary-hover',
-          signature: "colorPrimaryHover: '#4bc944'",
-          description: '主操作悬停色。',
-        },
-        {
-          name: '--one-color-danger',
-          signature: "colorDanger: '#d64545'",
-          description: '危险操作色。',
-        },
-        {
-          name: '--one-color-surface',
-          signature: "colorSurface: '#ffffff'",
-          description: '组件表面色。',
-        },
-        {
-          name: '--one-color-text',
-          signature: "colorText: '#162018'",
-          description: '主要文本色。',
-        },
-        {
-          name: '--one-color-muted',
-          signature: "colorMuted: '#647268'",
-          description: '弱化文本色。',
-        },
-        {
-          name: '--one-color-border',
-          signature: "colorBorder: '#d9e8d6'",
-          description: '边框色。',
-        },
-        {
-          name: '--one-color-focus',
-          signature: "colorFocus: '#2f7c39'",
-          description: '焦点轮廓色。',
-        },
-        {
-          name: '--one-radius-sm',
-          signature: "radiusSm: '4px'",
-          description: '小圆角。',
-        },
-        {
-          name: '--one-radius-md',
-          signature: "radiusMd: '8px'",
-          description: '默认圆角。',
-        },
-        {
-          name: '--one-space-xs',
-          signature: "spaceXs: '4px'",
-          description: '超小间距。',
-        },
-        {
-          name: '--one-space-sm',
-          signature: "spaceSm: '8px'",
-          description: '小间距。',
-        },
-        {
-          name: '--one-space-md',
-          signature: "spaceMd: '12px'",
-          description: '中间距。',
-        },
-        {
-          name: '--one-space-lg',
-          signature: "spaceLg: '16px'",
-          description: '大间距。',
-        },
-        {
-          name: '--one-font-size-sm',
-          signature: "fontSizeSm: '12px'",
-          description: '小字号。',
-        },
-        {
-          name: '--one-font-size-md',
-          signature: "fontSizeMd: '14px'",
-          description: '默认字号。',
-        },
-        {
-          name: '--one-font-size-lg',
-          signature: "fontSizeLg: '16px'",
-          description: '大字号。',
-        },
-        {
-          name: '--one-shadow-card',
-          signature: "shadowCard: '0 12px 30px rgba(32, 74, 38, 0.1)'",
-          description: '卡片阴影。',
-        },
-        {
-          name: '--one-font-family',
-          signature:
-            'fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif"',
-          description: '组件字体族。',
-        },
-      ]),
+      apiTable(
+        'One UI 运行时 CSS 变量',
+        oneThemeTokens.map((token) => ({
+          name: token.name,
+          signature: `Fallback: ${token.fallback}`,
+          description: token.description,
+        }))
+      ),
       heading(2, 'global-override', '全局覆盖'),
       codeBlock(
         'css',

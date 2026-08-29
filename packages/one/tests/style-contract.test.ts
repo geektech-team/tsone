@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { ONE_BUTTON_STYLES } from '../lib/button/OneButton';
 import { ONE_THEME_DEFAULTS, OneButton, OneCard, OneInput } from '../lib';
 
 const EXPECTED_THEME_DEFAULTS = {
   colorPrimary: '#5fd956',
   colorPrimaryHover: '#4bc944',
-  colorDanger: '#d64545',
+  colorDanger: '#b83232',
+  colorDangerHover: '#9f2d2d',
   colorSurface: '#ffffff',
   colorText: '#162018',
   colorMuted: '#647268',
@@ -23,6 +25,42 @@ const EXPECTED_THEME_DEFAULTS = {
   fontFamily:
     "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 } as const;
+
+function hexFallback(value: string | number | undefined): string {
+  if (typeof value !== 'string') {
+    throw new Error(`Expected a CSS string, received ${String(value)}`);
+  }
+
+  const matches = value.match(/#[0-9a-f]{6}/gi);
+  const fallback = matches?.[matches.length - 1];
+  if (!fallback) {
+    throw new Error(`Missing hex fallback in ${value}`);
+  }
+  return fallback.toLowerCase();
+}
+
+function relativeLuminance(hex: string): number {
+  const channels = hex
+    .slice(1)
+    .match(/.{2}/g)
+    ?.map((channel) => Number.parseInt(channel, 16) / 255);
+  if (!channels || channels.length !== 3) {
+    throw new Error(`Invalid RGB hex color: ${hex}`);
+  }
+
+  const [red, green, blue] = channels.map((channel) =>
+    channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+  );
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+function contrastRatio(foreground: string, background: string): number {
+  const luminances = [
+    relativeLuminance(foreground),
+    relativeLuminance(background),
+  ].sort((left, right) => right - left);
+  return (luminances[0] + 0.05) / (luminances[1] + 0.05);
+}
 
 describe('One UI style contract', () => {
   let container: HTMLElement;
@@ -71,5 +109,44 @@ describe('One UI style contract', () => {
     expect(css).toContain('var(--one-color-primary, #5fd956)');
     expect(css).toContain('var(--one-radius-md, 8px)');
     expect(css).not.toMatch(/(^|[}\s,])(body|html)(?=[\s,{])/m);
+  });
+
+  it('keeps primary and danger fallback text contrast at WCAG AA', () => {
+    const combinations = [
+      {
+        styleName: 'one-button-primary',
+        foreground: '#162018',
+        background: '#5fd956',
+        hoverBackground: '#4bc944',
+      },
+      {
+        styleName: 'one-button-danger',
+        foreground: '#ffffff',
+        background: '#b83232',
+        hoverBackground: '#9f2d2d',
+      },
+    ];
+
+    combinations.forEach((combination) => {
+      const style = ONE_BUTTON_STYLES.find(
+        (candidate) => candidate.name === combination.styleName
+      );
+      if (!style) {
+        throw new Error(`Missing style: ${combination.styleName}`);
+      }
+
+      const foreground = hexFallback(style.properties.color);
+      const background = hexFallback(style.properties.backgroundColor);
+      const hoverBackground = hexFallback(style.hover?.backgroundColor);
+      expect({ foreground, background, hoverBackground }).toEqual({
+        foreground: combination.foreground,
+        background: combination.background,
+        hoverBackground: combination.hoverBackground,
+      });
+      expect(contrastRatio(foreground, background)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(foreground, hoverBackground)).toBeGreaterThanOrEqual(
+        4.5
+      );
+    });
   });
 });

@@ -1,18 +1,24 @@
 import {
   access,
+  lstat,
   mkdir,
   readFile,
+  readdir,
   realpath,
   rm,
   writeFile,
 } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import {
   dirname,
   extname,
   isAbsolute,
   join,
   normalize,
+  parse,
   relative,
+  resolve,
+  sep,
 } from 'node:path';
 import { Window } from 'happy-dom';
 import { createOneDocsPageApp } from '../docs/app/app';
@@ -35,8 +41,13 @@ export interface OneDocsServerOptions {
 }
 
 const PACKAGE_ROOT = join(import.meta.dir, '..');
+const REPOSITORY_ROOT = resolve(PACKAGE_ROOT, '../..');
 const DEFAULT_OUT_DIR = join(PACKAGE_ROOT, 'docs/dist');
 const CLIENT_ASSET_NAME = 'one-docs-client.js';
+const ONE_DOCS_BUILD_MARKER = '.one-docs-build';
+const ONE_DOCS_BUILD_MARKER_CONTENT = '@geektech/one docs build output\n';
+const UNSAFE_OUTPUT_DIRECTORY_MESSAGE = 'Unsafe One UI docs output directory';
+const TRUSTED_SYMLINK_ANCESTORS = [resolve(tmpdir())];
 let clientBundlePromise: Promise<string> | undefined;
 
 export function routeToOneDocsOutputPath(
@@ -54,8 +65,15 @@ export function routeToOneDocsOutputPath(
 export async function buildOneDocs(
   options: OneDocsBuildOptions = {}
 ): Promise<OneDocsBuildResult> {
-  const outDir = options.outDir ?? DEFAULT_OUT_DIR;
+  const outDir = await assertSafeOneDocsOutputDirectory(
+    options.outDir ?? DEFAULT_OUT_DIR
+  );
   await rm(outDir, { recursive: true, force: true });
+  await mkdir(outDir, { recursive: true });
+  await writeFile(
+    join(outDir, ONE_DOCS_BUILD_MARKER),
+    ONE_DOCS_BUILD_MARKER_CONTENT
+  );
   await mkdir(join(outDir, 'assets'), { recursive: true });
 
   const assetsBuilt = await buildClientAsset(outDir);
@@ -73,6 +91,176 @@ export async function buildOneDocs(
     pagesBuilt: oneDocPages.length,
     assetsBuilt,
   };
+}
+
+export async function assertSafeOneDocsOutputDirectory(
+  outDir: string
+): Promise<string> {
+  try {
+    if (!outDir || outDir.includes('\0')) {
+      throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
+    }
+
+    const resolvedOutDir = resolve(outDir);
+    if (resolvedOutDir === parse(resolvedOutDir).root) {
+      throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
+    }
+
+    await assertNoUnexpectedSymlinkComponents(resolvedOutDir);
+    const outputStat = await lstatIfExists(resolvedOutDir);
+    if (outputStat?.isSymbolicLink()) {
+      throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
+    }
+
+    const existingAncestor = await findExistingAncestor(resolvedOutDir);
+    const ancestorStat = await lstat(existingAncestor);
+    if (!ancestorStat.isDirectory() || ancestorStat.isSymbolicLink()) {
+      throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
+    }
+
+    const canonicalAncestor = await realpath(existingAncestor);
+    const canonicalOutDir = resolve(
+      canonicalAncestor,
+      relative(existingAncestor, resolvedOutDir)
+    );
+    const canonicalPackageRoot = await realpath(PACKAGE_ROOT);
+    const canonicalRepositoryRoot = await realpath(REPOSITORY_ROOT);
+
+    if (
+      isSameOrAncestor(resolvedOutDir, PACKAGE_ROOT) ||
+      isSameOrAncestor(resolvedOutDir, REPOSITORY_ROOT) ||
+      isSameOrAncestor(canonicalOutDir, canonicalPackageRoot) ||
+      isSameOrAncestor(canonicalOutDir, canonicalRepositoryRoot)
+    ) {
+      throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
+    }
+
+    if (
+      isPathInsideOrSame(REPOSITORY_ROOT, resolvedOutDir) &&
+      !isPathInsideOrSame(canonicalRepositoryRoot, canonicalOutDir)
+    ) {
+      throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
+    }
+
+    if (outputStat) {
+      if (!outputStat.isDirectory()) {
+        throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
+      }
+
+      const canonicalDefaultOutDir =
+        await canonicalizePotentialPath(DEFAULT_OUT_DIR);
+      const entries = await readdir(resolvedOutDir);
+      if (
+        canonicalOutDir !== canonicalDefaultOutDir &&
+        entries.length > 0 &&
+        !(await hasOneDocsBuildMarker(resolvedOutDir))
+      ) {
+        throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
+      }
+    }
+
+    return resolvedOutDir;
+  } catch {
+    throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
+  }
+}
+
+async function assertNoUnexpectedSymlinkComponents(
+  path: string
+): Promise<void> {
+  const { root } = parse(path);
+  const components = path.slice(root.length).split(sep).filter(Boolean);
+  let candidate = root;
+
+  for (const component of components) {
+    candidate = join(candidate, component);
+    const stat = await lstatIfExists(candidate);
+    if (!stat) {
+      return;
+    }
+    if (
+      stat.isSymbolicLink() &&
+      !TRUSTED_SYMLINK_ANCESTORS.some((trustedPath) =>
+        isPathInsideOrSame(candidate, trustedPath)
+      )
+    ) {
+      throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
+    }
+  }
+}
+
+async function canonicalizePotentialPath(path: string): Promise<string> {
+  const resolvedPath = resolve(path);
+  const ancestor = await findExistingAncestor(resolvedPath);
+  const canonicalAncestor = await realpath(ancestor);
+  return resolve(canonicalAncestor, relative(ancestor, resolvedPath));
+}
+
+async function findExistingAncestor(path: string): Promise<string> {
+  let candidate = path;
+
+  while (true) {
+    try {
+      await lstat(candidate);
+      return candidate;
+    } catch (error: unknown) {
+      if (!isMissingPathError(error)) {
+        throw error;
+      }
+    }
+
+    const parent = parse(candidate).dir;
+    if (parent === candidate) {
+      throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
+    }
+    candidate = parent;
+  }
+}
+
+async function lstatIfExists(
+  path: string
+): Promise<Awaited<ReturnType<typeof lstat>> | undefined> {
+  try {
+    return await lstat(path);
+  } catch (error: unknown) {
+    if (isMissingPathError(error)) {
+      return undefined;
+    }
+    throw error;
+  }
+}
+
+function isMissingPathError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'ENOENT'
+  );
+}
+
+function isSameOrAncestor(candidate: string, protectedPath: string): boolean {
+  return isPathInsideOrSame(candidate, protectedPath);
+}
+
+function isPathInsideOrSame(rootPath: string, candidatePath: string): boolean {
+  const relativePath = relative(rootPath, candidatePath);
+  return (
+    relativePath === '' ||
+    (relativePath !== '..' &&
+      !relativePath.startsWith(`..${sep}`) &&
+      !isAbsolute(relativePath))
+  );
+}
+
+async function hasOneDocsBuildMarker(outDir: string): Promise<boolean> {
+  const markerPath = join(outDir, ONE_DOCS_BUILD_MARKER);
+  const markerStat = await lstatIfExists(markerPath);
+  if (!markerStat?.isFile() || markerStat.isSymbolicLink()) {
+    return false;
+  }
+
+  return (await readFile(markerPath, 'utf8')) === ONE_DOCS_BUILD_MARKER_CONTENT;
 }
 
 export async function startOneDocsServer(

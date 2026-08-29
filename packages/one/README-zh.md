@@ -33,7 +33,10 @@ class App extends Component {
       tag: 'main',
       children: [
         createComponent(OneButton, {}, ['保存']),
-        createComponent(OneInput, { placeholder: '项目名称' }),
+        createComponent(OneInput, {
+          placeholder: '项目名称',
+          ariaLabel: '项目名称',
+        }),
         createComponent(OneCard, { title: 'One UI' }, [
           '为 TSone 提供轻量级组件。',
         ]),
@@ -75,13 +78,19 @@ button.mount(document.querySelector('#actions') as HTMLElement);
 ```ts
 import { OneInput, type OneInputValueEvent } from '@geektech/one';
 
-const controlled = new OneInput({ value: 'one' });
+const controlled = new OneInput({
+  value: 'one',
+  ariaLabel: '受控项目名称',
+});
 controlled.on('input', (payload) => {
   const event = payload as OneInputValueEvent;
   controlled.setProps({ value: event.value });
 });
 
-const uncontrolled = new OneInput({ defaultValue: '草稿' });
+const uncontrolled = new OneInput({
+  defaultValue: '草稿',
+  ariaLabel: '草稿名称',
+});
 uncontrolled.on('change', (payload) => {
   const event = payload as OneInputValueEvent;
   console.log(event.value, event.originalEvent);

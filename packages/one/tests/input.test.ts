@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
-import { OneInput, type OneInputValueEvent } from '../lib';
+import { OneInput, type OneInputProps, type OneInputValueEvent } from '../lib';
 
 describe('OneInput', () => {
   let container: HTMLElement;
@@ -80,5 +80,21 @@ describe('OneInput', () => {
     expect(input.hasAttribute('readonly')).toBe(true);
     expect(input.getAttribute('aria-invalid')).toBe('true');
     expect(input.className).toContain('one-input--invalid one-input--lg');
+  });
+
+  it('maps disabled, placeholder, ariaLabel and invalid runtime size safely', () => {
+    component = new OneInput({
+      size: 'oversized',
+      disabled: true,
+      placeholder: 'Project name',
+      ariaLabel: 'Project name',
+    } as unknown as OneInputProps);
+    component.mount(container);
+
+    const input = container.querySelector('input') as HTMLInputElement;
+    expect(input.className).toContain('one-input--md');
+    expect(input.disabled).toBe(true);
+    expect(input.placeholder).toBe('Project name');
+    expect(input.getAttribute('aria-label')).toBe('Project name');
   });
 });

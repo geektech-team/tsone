@@ -7,7 +7,8 @@ export type OneNamedStyle = StyleOptions & { name: string };
 export const ONE_THEME_DEFAULTS = {
   colorPrimary: '#5fd956',
   colorPrimaryHover: '#4bc944',
-  colorDanger: '#d64545',
+  colorDanger: '#b83232',
+  colorDangerHover: '#9f2d2d',
   colorSurface: '#ffffff',
   colorText: '#162018',
   colorMuted: '#647268',

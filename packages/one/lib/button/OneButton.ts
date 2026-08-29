@@ -51,7 +51,7 @@ export const ONE_BUTTON_STYLES: OneNamedStyle[] = [
     name: 'one-button-primary',
     selector: '.one-button--primary',
     properties: {
-      color: `var(--one-color-primary-contrast, ${ONE_THEME_DEFAULTS.colorSurface})`,
+      color: `var(--one-color-primary-contrast, ${ONE_THEME_DEFAULTS.colorText})`,
       backgroundColor: `var(--one-color-primary, ${ONE_THEME_DEFAULTS.colorPrimary})`,
     },
     hover: {
@@ -77,7 +77,7 @@ export const ONE_BUTTON_STYLES: OneNamedStyle[] = [
       backgroundColor: `var(--one-color-danger, ${ONE_THEME_DEFAULTS.colorDanger})`,
     },
     hover: {
-      backgroundColor: `var(--one-color-danger-hover, ${ONE_THEME_DEFAULTS.colorDanger})`,
+      backgroundColor: `var(--one-color-danger-hover, ${ONE_THEME_DEFAULTS.colorDangerHover})`,
     },
   },
   {

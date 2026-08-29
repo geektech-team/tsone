@@ -58,6 +58,15 @@ describe('One UI docs app', () => {
     );
   });
 
+  it('associates API columns and distinguishes Card props from slots', () => {
+    const card = render('/components/card/');
+    expect(card).toContain('<caption>OneCard 属性</caption>');
+    expect(card).toContain('<caption>OneCard 插槽</caption>');
+    expect(card).toContain('<th scope="col">名称</th>');
+    expect(card).toContain('<th scope="col">签名</th>');
+    expect(card).toContain('<th scope="col">说明</th>');
+  });
+
   it('renders real static One component previews and hydration roots', () => {
     const button = render('/components/button/');
     expect(button).toContain('one-button one-button--primary one-button--md');

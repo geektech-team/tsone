@@ -356,6 +356,16 @@ const documentStyles: StyleSheet = [
     },
   },
   {
+    selector: '.one-docs-api-table caption',
+    properties: {
+      color: 'var(--one-docs-text)',
+      fontSize: '14px',
+      fontWeight: 700,
+      padding: '16px 10px 8px',
+      textAlign: 'left',
+    },
+  },
+  {
     selector: '.one-docs-api-table th,\n.one-docs-api-table td',
     properties: {
       borderBottom: '1px solid var(--one-docs-border)',

@@ -1,10 +1,30 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, parse } from 'node:path';
 import { afterEach, describe, expect, it } from 'bun:test';
-import { buildOneDocs, routeToOneDocsOutputPath } from '../scripts/docs';
+import {
+  assertSafeOneDocsOutputDirectory,
+  buildOneDocs,
+  routeToOneDocsOutputPath,
+} from '../scripts/docs';
 
 const temporaryDirectories: string[] = [];
+const packageRoot = join(import.meta.dir, '..');
+const repositoryRoot = join(packageRoot, '..', '..');
+
+function makeTemporaryDirectory(prefix: string): string {
+  const directory = mkdtempSync(join(tmpdir(), prefix));
+  temporaryDirectories.push(directory);
+  return directory;
+}
 
 afterEach(() => {
   temporaryDirectories.splice(0).forEach((directory) => {
@@ -25,8 +45,7 @@ describe('One UI docs build', () => {
   });
 
   it('builds all seven pages and the interactive client asset', async () => {
-    const outDir = mkdtempSync(join(tmpdir(), 'one-docs-build-'));
-    temporaryDirectories.push(outDir);
+    const outDir = makeTemporaryDirectory('one-docs-build-');
 
     const result = await buildOneDocs({ outDir });
 
@@ -53,5 +72,129 @@ describe('One UI docs build', () => {
     expect(buttonHtml).toContain('class="one-docs-main"');
     expect(buttonHtml).toContain('class="one-docs-toc"');
     expect(buttonHtml).toContain('/assets/one-docs-client.js');
+  });
+
+  it('allows new and empty custom directories and marks them as One-owned', async () => {
+    const parentDir = makeTemporaryDirectory('one-docs-new-output-');
+    const newOutDir = join(parentDir, 'new');
+
+    await buildOneDocs({ outDir: newOutDir });
+
+    expect(existsSync(join(newOutDir, 'index.html'))).toBe(true);
+    expect(readFileSync(join(newOutDir, '.one-docs-build'), 'utf8')).toBe(
+      '@geektech/one docs build output\n'
+    );
+
+    const emptyOutDir = makeTemporaryDirectory('one-docs-empty-output-');
+    await buildOneDocs({ outDir: emptyOutDir });
+    expect(existsSync(join(emptyOutDir, 'index.html'))).toBe(true);
+  });
+
+  it('rebuilds a marked custom directory and removes stale owned output', async () => {
+    const outDir = makeTemporaryDirectory('one-docs-owned-output-');
+    await buildOneDocs({ outDir });
+    const stalePath = join(outDir, 'stale.txt');
+    writeFileSync(stalePath, 'stale');
+
+    await buildOneDocs({ outDir });
+
+    expect(existsSync(stalePath)).toBe(false);
+    expect(existsSync(join(outDir, '.one-docs-build'))).toBe(true);
+  });
+
+  it('rejects the filesystem root before attempting deletion', async () => {
+    await expect(
+      assertSafeOneDocsOutputDirectory(parse(packageRoot).root)
+    ).rejects.toThrow('Unsafe One UI docs output directory');
+  });
+
+  it('rejects the package root without deleting its sentinel', async () => {
+    const sentinel = join(packageRoot, '.one-docs-package-root-sentinel');
+    writeFileSync(sentinel, 'package root');
+
+    try {
+      await expect(buildOneDocs({ outDir: packageRoot })).rejects.toThrow(
+        'Unsafe One UI docs output directory'
+      );
+      expect(readFileSync(sentinel, 'utf8')).toBe('package root');
+    } finally {
+      rmSync(sentinel, { force: true });
+    }
+  });
+
+  it('rejects the repository root without deleting its sentinel', async () => {
+    const sentinel = join(repositoryRoot, '.one-docs-repository-root-sentinel');
+    writeFileSync(sentinel, 'repository root');
+
+    try {
+      await expect(buildOneDocs({ outDir: repositoryRoot })).rejects.toThrow(
+        'Unsafe One UI docs output directory'
+      );
+      expect(readFileSync(sentinel, 'utf8')).toBe('repository root');
+    } finally {
+      rmSync(sentinel, { force: true });
+    }
+  });
+
+  it('rejects an unmarked non-empty custom directory without deleting it', async () => {
+    const outDir = makeTemporaryDirectory('one-docs-external-output-');
+    const sentinel = join(outDir, 'KEEP_ME');
+    writeFileSync(sentinel, 'external data');
+
+    await expect(buildOneDocs({ outDir })).rejects.toThrow(
+      'Unsafe One UI docs output directory'
+    );
+
+    expect(readFileSync(sentinel, 'utf8')).toBe('external data');
+    expect(existsSync(join(outDir, 'assets'))).toBe(false);
+  });
+
+  it('rejects an output-directory symlink without deleting its target', async () => {
+    const parentDir = makeTemporaryDirectory('one-docs-symlink-parent-');
+    const targetDir = makeTemporaryDirectory('one-docs-symlink-target-');
+    const sentinel = join(targetDir, 'KEEP_ME');
+    const outDir = join(parentDir, 'linked-output');
+    writeFileSync(sentinel, 'symlink target');
+    symlinkSync(targetDir, outDir, 'dir');
+
+    await expect(buildOneDocs({ outDir })).rejects.toThrow(
+      'Unsafe One UI docs output directory'
+    );
+
+    expect(readFileSync(sentinel, 'utf8')).toBe('symlink target');
+  });
+
+  it('rejects a parent symlink escape without deleting external data', async () => {
+    const parentDir = makeTemporaryDirectory('one-docs-parent-link-');
+    const targetDir = makeTemporaryDirectory('one-docs-parent-target-');
+    const linkedParent = join(parentDir, 'linked-parent');
+    const outDir = join(linkedParent, 'docs');
+    const sentinel = join(targetDir, 'docs', 'KEEP_ME');
+    symlinkSync(targetDir, linkedParent, 'dir');
+    mkdirSync(join(targetDir, 'docs'));
+    writeFileSync(join(targetDir, 'KEEP_PARENT'), 'parent target');
+    writeFileSync(
+      join(targetDir, 'docs', '.one-docs-build'),
+      '@geektech/one docs build output\n'
+    );
+    writeFileSync(sentinel, 'nested target', { flag: 'wx' });
+
+    await expect(buildOneDocs({ outDir })).rejects.toThrow(
+      'Unsafe One UI docs output directory'
+    );
+
+    expect(readFileSync(sentinel, 'utf8')).toBe('nested target');
+  });
+
+  it('rejects NUL in an output path without touching its existing ancestor', async () => {
+    const parentDir = makeTemporaryDirectory('one-docs-nul-output-');
+    const sentinel = join(parentDir, 'KEEP_ME');
+    writeFileSync(sentinel, 'nul ancestor');
+
+    await expect(
+      buildOneDocs({ outDir: `${parentDir}\0escaped` })
+    ).rejects.toThrow('Unsafe One UI docs output directory');
+
+    expect(readFileSync(sentinel, 'utf8')).toBe('nul ancestor');
   });
 });

@@ -47,7 +47,7 @@ function createRunner(bunTemp: string, bunCache: string) {
 }
 
 describe('One UI package smoke', () => {
-  it('packs an installable peer-based library with strict consumer types', () => {
+  it('packs an installable peer-based library with real ESM runtime and strict consumer types', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'one-package-'));
     const bunTemp = join(tempDir, 'bun-tmp');
     const bunCache = join(tempDir, 'bun-cache');
@@ -167,7 +167,59 @@ describe('One UI package smoke', () => {
         )
       );
 
+      writeFileSync(
+        join(tempDir, 'runtime-consumer.mjs'),
+        [
+          'import {',
+          '  ONE_NAME,',
+          '  ONE_THEME_DEFAULTS,',
+          '  ONE_VERSION,',
+          '  OneButton,',
+          '  OneCard,',
+          '  OneInput,',
+          "} from '@geektech/one';",
+          '',
+          'console.log(JSON.stringify({',
+          '  name: ONE_NAME,',
+          '  version: ONE_VERSION,',
+          '  theme: {',
+          '    primary: ONE_THEME_DEFAULTS.colorPrimary,',
+          '    danger: ONE_THEME_DEFAULTS.colorDanger,',
+          '    dangerHover: ONE_THEME_DEFAULTS.colorDangerHover,',
+          '  },',
+          '  constructors: {',
+          '    OneButton: typeof OneButton,',
+          '    OneInput: typeof OneInput,',
+          '    OneCard: typeof OneCard,',
+          '  },',
+          '}));',
+        ].join('\n')
+      );
+
       run(process.execPath, [tscBin, '--project', 'tsconfig.json'], tempDir);
+      const runtimeResult = JSON.parse(
+        run('bun', ['runtime-consumer.mjs'], tempDir)
+      ) as {
+        name: string;
+        version: string;
+        theme: { primary: string; danger: string; dangerHover: string };
+        constructors: Record<'OneButton' | 'OneInput' | 'OneCard', string>;
+      };
+
+      expect(runtimeResult).toEqual({
+        name: '@geektech/one',
+        version: '0.0.1',
+        theme: {
+          primary: '#5fd956',
+          danger: '#b83232',
+          dangerHover: '#9f2d2d',
+        },
+        constructors: {
+          OneButton: 'function',
+          OneInput: 'function',
+          OneCard: 'function',
+        },
+      });
 
       expect(readdirSync(join(tempDir, 'node_modules', '@geektech'))).toEqual(
         expect.arrayContaining(['one', 'tsone'])

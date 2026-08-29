@@ -55,7 +55,7 @@ export const componentPages: OneDocPage[] = [
         ].join('\n')
       ),
       heading(2, 'api', 'API'),
-      apiTable([
+      apiTable('OneButton 属性与事件', [
         {
           name: 'variant',
           signature: 'variant?: OneButtonVariant',
@@ -137,7 +137,7 @@ export const componentPages: OneDocPage[] = [
         'type、name、placeholder、disabled、readonly 和 required 直接映射到原生 input；invalid 同时添加状态类并设置 aria-invalid。'
       ),
       heading(2, 'api', 'API'),
-      apiTable([
+      apiTable('OneInput 属性与事件', [
         {
           name: 'value',
           signature: 'value?: string',
@@ -245,7 +245,7 @@ export const componentPages: OneDocPage[] = [
         ].join('\n')
       ),
       heading(2, 'api', 'API'),
-      apiTable([
+      apiTable('OneCard 属性', [
         {
           name: 'title',
           signature: 'title?: string',
@@ -257,7 +257,7 @@ export const componentPages: OneDocPage[] = [
           description: '默认内容和命名插槽节点。',
         },
       ]),
-      apiTable([
+      apiTable('OneCard 插槽', [
         {
           name: 'header',
           signature: "Array<VNode & { slot: 'header' }>",

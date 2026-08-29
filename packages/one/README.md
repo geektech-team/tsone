@@ -33,7 +33,10 @@ class App extends Component {
       tag: 'main',
       children: [
         createComponent(OneButton, {}, ['Save']),
-        createComponent(OneInput, { placeholder: 'Project name' }),
+        createComponent(OneInput, {
+          placeholder: 'Project name',
+          ariaLabel: 'Project name',
+        }),
         createComponent(OneCard, { title: 'One UI' }, [
           'Lightweight components for TSone.',
         ]),
@@ -75,13 +78,19 @@ Pass `value` for a controlled input and accept emitted values through
 ```ts
 import { OneInput, type OneInputValueEvent } from '@geektech/one';
 
-const controlled = new OneInput({ value: 'one' });
+const controlled = new OneInput({
+  value: 'one',
+  ariaLabel: 'Controlled project name',
+});
 controlled.on('input', (payload) => {
   const event = payload as OneInputValueEvent;
   controlled.setProps({ value: event.value });
 });
 
-const uncontrolled = new OneInput({ defaultValue: 'draft' });
+const uncontrolled = new OneInput({
+  defaultValue: 'draft',
+  ariaLabel: 'Draft project name',
+});
 uncontrolled.on('change', (payload) => {
   const event = payload as OneInputValueEvent;
   console.log(event.value, event.originalEvent);

@@ -1,5 +1,9 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'bun:test';
-import { ONE_THEME_DEFAULTS } from '../lib';
+import { ONE_BUTTON_STYLES } from '../lib/button/OneButton';
+import { ONE_CARD_STYLES } from '../lib/card/OneCard';
+import { ONE_INPUT_STYLES } from '../lib/input/OneInput';
 import {
   headingsForPage,
   normalizeOneDocPath,
@@ -17,6 +21,7 @@ const APPROVED_PATHS = [
   '/components/input/',
   '/components/card/',
 ];
+const packageRoot = join(import.meta.dir, '..');
 
 function pageAt(path: string): OneDocPage {
   const page = oneDocPages.find((candidate) => candidate.path === path);
@@ -36,8 +41,17 @@ function apiRowAt(path: string, name: string) {
   return row;
 }
 
-function themeTokenFor(key: string): string {
-  return `--one-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
+function copyableOneInputProps(markdown: string): string[] {
+  const code = [...markdown.matchAll(/```ts\n([\s\S]*?)```/g)]
+    .map((match) => match[1])
+    .join('\n');
+  const patterns = [
+    /createComponent\(\s*OneInput\s*,\s*\{([\s\S]*?)\}\s*\)/g,
+    /new OneInput\(\s*\{([\s\S]*?)\}\s*\)/g,
+  ];
+  return patterns.flatMap((pattern) =>
+    [...code.matchAll(pattern)].map((match) => match[1])
+  );
 }
 
 function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
@@ -144,13 +158,39 @@ describe('One UI docs content', () => {
     }
   });
 
-  it('documents every immutable theme default and both override scopes', () => {
+  it('documents exactly every runtime component token and fallback', () => {
     const theming = pageText('/guide/theming/');
-    for (const [key, value] of Object.entries(ONE_THEME_DEFAULTS)) {
-      const row = apiRowAt('/guide/theming/', themeTokenFor(key));
-      expect(row.signature).toContain(`${key}:`);
-      expect(row.signature).toContain(value);
-    }
+    const styleText = JSON.stringify([
+      ONE_BUTTON_STYLES,
+      ONE_INPUT_STYLES,
+      ONE_CARD_STYLES,
+    ]);
+    const runtimeTokens = [
+      ...new Set(styleText.match(/--one-[a-z0-9-]+/g) ?? []),
+    ].sort();
+    const tokenRows = pageAt('/guide/theming/').body.flatMap((block) =>
+      block.type === 'api-table' ? block.rows : []
+    );
+
+    expect(tokenRows.map((row) => row.name).sort()).toEqual(runtimeTokens);
+    tokenRows.forEach((row) => {
+      expect(row.signature.startsWith('Fallback: ')).toBe(true);
+      const fallback = row.signature.slice('Fallback: '.length);
+      expect(styleText).toContain(`var(${row.name}, ${fallback})`);
+      expect(row.description.trim().length).toBeGreaterThan(4);
+    });
+    expect(
+      apiRowAt('/guide/theming/', '--one-color-primary-contrast').description
+    ).toContain('对比');
+    expect(
+      apiRowAt('/guide/theming/', '--one-button-padding-md').description
+    ).toContain('按钮');
+    expect(
+      apiRowAt('/guide/theming/', '--one-card-shadow').description
+    ).toContain('卡片');
+    expect(
+      apiRowAt('/guide/theming/', '--one-input-focus-border-color').description
+    ).toContain('输入框');
     expect(theming).toContain(
       "import { ONE_THEME_DEFAULTS } from '@geektech/one'"
     );
@@ -257,6 +297,17 @@ describe('One UI docs content', () => {
     expect(input).toContain(
       "new OneInput({ defaultValue: 'draft', ariaLabel: '草稿名称' })"
     );
+  });
+
+  it('gives every published README OneInput example a meaningful accessible name', () => {
+    for (const readme of ['README.md', 'README-zh.md']) {
+      const markdown = readFileSync(join(packageRoot, readme), 'utf8');
+      const examples = copyableOneInputProps(markdown);
+      expect(examples).toHaveLength(3);
+      examples.forEach((props) => {
+        expect(props).toMatch(/ariaLabel\s*:\s*(['"])[^'"]{2,}\1/);
+      });
+    }
   });
 
   it('gives every component page a real demo block', () => {

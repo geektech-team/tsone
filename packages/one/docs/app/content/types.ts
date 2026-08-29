@@ -16,6 +16,7 @@ export type OneDocBlock =
     }
   | {
       type: 'api-table';
+      caption: string;
       rows: Array<{
         name: string;
         signature: string;
@@ -151,9 +152,10 @@ export function callout(
 }
 
 export function apiTable(
+  caption: string,
   rows: Extract<OneDocBlock, { type: 'api-table' }>['rows']
 ): OneDocBlock {
-  return { type: 'api-table', rows };
+  return { type: 'api-table', caption, rows };
 }
 
 export function demo(

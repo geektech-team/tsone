@@ -9,4 +9,5 @@ export const oneDocPages = validateOneDocPages([
   ...componentPages,
 ]);
 
+export { oneThemeTokens } from './theme-tokens';
 export * from './types';
