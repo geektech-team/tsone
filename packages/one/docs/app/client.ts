@@ -11,18 +11,30 @@ const DEMOS: Record<DemoName, DemoConstructor> = {
   input: InputDemo,
   card: CardDemo,
 };
+const mountedDemoRoots = new WeakSet<HTMLElement>();
 
 export function mountOneDocsClient(): void {
   const roots = document.querySelectorAll<HTMLElement>('[data-one-demo]');
 
   roots.forEach((root, index) => {
+    if (mountedDemoRoots.has(root)) {
+      return;
+    }
+
     const demoName = root.dataset.oneDemo;
     if (!isDemoName(demoName)) {
       return;
     }
 
     const id = ensureUniqueRootId(root, index);
-    createApp({ root: DEMOS[demoName], rootElement: `#${id}` }).mount();
+    const app = createApp({
+      root: DEMOS[demoName],
+      rootElement: `#${id}`,
+    });
+    app.mount();
+    if (app.isRunning()) {
+      mountedDemoRoots.add(root);
+    }
   });
 }
 

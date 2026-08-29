@@ -33,6 +33,24 @@ describe('One UI docs client', () => {
     );
   });
 
+  it('mounts the same demo root only once across repeated calls', () => {
+    document.body.innerHTML = '<div data-one-demo="button"></div>';
+
+    mountOneDocsClient();
+    mountOneDocsClient();
+
+    expect(document.querySelectorAll('.one-button')).toHaveLength(3);
+    expect(document.querySelectorAll('[data-one-click-count]')).toHaveLength(1);
+
+    const button = document.querySelector('.one-button--primary');
+    expect(button).toBeInstanceOf(HTMLButtonElement);
+    button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(document.querySelector('[data-one-click-count]')?.textContent).toBe(
+      '点击次数：1'
+    );
+  });
+
   it('keeps the controlled input value in parent state', () => {
     document.body.innerHTML = '<div data-one-demo="input"></div>';
     mountOneDocsClient();
