@@ -57,8 +57,18 @@ function makeExternalDirectory(): string {
   return directory;
 }
 
-function createBuildOutput(path: string, contents: string): BunBuildOutput {
-  return Object.assign(new Blob([contents]), { path }) as BunBuildOutput;
+function createBuildOutput(
+  path: string,
+  contents: string,
+  kind: BunBuildOutput['kind'],
+  type: string
+): BunBuildOutput {
+  return Object.assign(new Blob([contents], { type }), {
+    path,
+    kind,
+    hash: 'test-output-hash',
+    sourcemap: null,
+  }) as BunBuildOutput;
 }
 
 function mockBuild(result: BunBuildResult): void {
@@ -160,7 +170,9 @@ describe('TSone production build', () => {
       outputs: [
         createBuildOutput(
           join(root, 'dist', 'main.js'),
-          'export const failedBuild = true;'
+          'export const failedBuild = true;',
+          'entry-point',
+          'text/javascript;charset=utf-8'
         ),
       ],
     } as BunBuildResult);
@@ -187,7 +199,9 @@ describe('TSone production build', () => {
       outputs: [
         createBuildOutput(
           join(root, 'dist', 'main.css'),
-          'body { color: rebeccapurple; }'
+          'body { color: rebeccapurple; }',
+          'asset',
+          'text/css;charset=utf-8'
         ),
       ],
     } as BunBuildResult);
@@ -196,6 +210,43 @@ describe('TSone production build', () => {
       'Bun emitted no JavaScript output'
     );
     expect(existsSync(join(root, 'dist', 'index.html'))).toBe(false);
+  });
+
+  it('does not execute JavaScript outputs classified as assets', async () => {
+    const root = makeRoot();
+    const entryPoint = join(root, 'dist', 'main.js');
+    const javascriptAsset = join(root, 'dist', 'worker.js');
+    mockBuild({
+      success: true,
+      logs: [],
+      outputs: [
+        createBuildOutput(
+          entryPoint,
+          'export const appEntry = true;',
+          'entry-point',
+          'text/javascript;charset=utf-8'
+        ),
+        createBuildOutput(
+          javascriptAsset,
+          'self.postMessage("asset");',
+          'asset',
+          'text/javascript;charset=utf-8'
+        ),
+      ],
+    } as BunBuildResult);
+
+    const result = await build({ root });
+    const html = readFileSync(join(root, 'dist', 'index.html'), 'utf8');
+
+    expect(result.assetsBuilt).toEqual(
+      expect.arrayContaining([
+        entryPoint,
+        javascriptAsset,
+        join(root, 'dist', 'index.html'),
+      ])
+    );
+    expect(html).toContain('<script type="module" src="./main.js"></script>');
+    expect(html).not.toContain('src="./worker.js"');
   });
 
   it('builds successfully through a project-root symlink', async () => {

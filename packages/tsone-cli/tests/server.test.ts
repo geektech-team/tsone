@@ -32,15 +32,33 @@ function serverUrl(server: ReturnType<typeof Bun.serve>): string {
   return `http://127.0.0.1:${server.port}`;
 }
 
-function createBuildOutput(path: string, contents: string): BuildOutput {
-  return Object.assign(new Blob([contents]), {
+function createBuildOutput(
+  path: string,
+  contents: string,
+  kind: BuildOutput['kind'],
+  type: string
+): BuildOutput {
+  return Object.assign(new Blob([contents], { type }), {
     path,
+    kind,
+    hash: 'test-output-hash',
+    sourcemap: null,
   }) as unknown as BuildOutput;
 }
 
 function mockBuild(result: BuildResult): void {
   const originalBuild = Bun.build;
   Bun.build = (async () => result) as typeof Bun.build;
+  restorers.push(() => {
+    Bun.build = originalBuild;
+  });
+}
+
+function mockRejectedBuild(error: Error): void {
+  const originalBuild = Bun.build;
+  Bun.build = (async () => {
+    throw error;
+  }) as typeof Bun.build;
   restorers.push(() => {
     Bun.build = originalBuild;
   });
@@ -137,6 +155,81 @@ describe('TSone development server', () => {
     const response = await fetch(`${serverUrl(server)}/missing`);
 
     expect(response.status).toBe(404);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+  });
+
+  it('serves real CSS and file-loader outputs from their emitted URLs', async () => {
+    const root = makeRoot('Development Assets App');
+    writeFileSync(
+      join(root, 'src/main.ts'),
+      `
+        import './site.css';
+        import assetUrl from './test.png' with { type: 'file' };
+
+        export const developmentAssetUrl = assetUrl;
+
+        export const app = {
+          renderHtmlDocument(options = {}) {
+            const head = (options.head ?? []).map((element) =>
+              '<' + element.tag + ' ' + Object.entries(element.attributes)
+                .map(([key, value]) => key + '="' + value + '"')
+                .join(' ') + '>'
+            ).join('');
+            const scripts = (options.scripts ?? []).map((script) =>
+              '<script type="' + script.type + '" src="' + script.src + '"></script>'
+            ).join('');
+            return '<!doctype html><html><head><title>Development Assets App</title>' +
+              head + '</head><body><div id="app"></div>' + scripts + '</body></html>';
+          },
+        };
+      `
+    );
+    writeFileSync(join(root, 'src/site.css'), 'body { color: rebeccapurple; }');
+    writeFileSync(join(root, 'src/test.png'), 'test-file-asset');
+    const server = await startDevServer({ root, port: 0 });
+    servers.push(server);
+
+    const documentResponse = await fetch(`${serverUrl(server)}/`);
+    const documentHtml = await documentResponse.text();
+    const scriptSource = documentHtml.match(
+      /<script type="module" src="([^"]+)"><\/script>/
+    )?.[1];
+    const stylesheetHref = documentHtml.match(
+      /<link rel="stylesheet" href="([^"]+)">/
+    )?.[1];
+
+    expect(documentResponse.status).toBe(200);
+    expect(documentResponse.headers.get('cache-control')).toBe('no-store');
+    expect(scriptSource).toMatch(/^\/.*\.js$/);
+    expect(stylesheetHref).toMatch(/^\/.*\.css$/);
+    if (!scriptSource || !stylesheetHref) {
+      throw new Error('Expected development document assets');
+    }
+
+    const scriptResponse = await fetch(
+      new URL(scriptSource, serverUrl(server))
+    );
+    const script = await scriptResponse.text();
+    const stylesheetResponse = await fetch(
+      new URL(stylesheetHref, serverUrl(server))
+    );
+    const fileAssetHref = script.match(/["']([^"']+\.png)["']/)?.[1];
+
+    expect(scriptResponse.status).toBe(200);
+    expect(scriptResponse.headers.get('cache-control')).toBe('no-store');
+    expect(stylesheetResponse.status).toBe(200);
+    expect(stylesheetResponse.headers.get('cache-control')).toBe('no-store');
+    expect(fileAssetHref).toBeDefined();
+    if (!fileAssetHref) {
+      throw new Error('Expected emitted file asset URL in development bundle');
+    }
+
+    const fileAssetResponse = await fetch(
+      new URL(fileAssetHref, scriptResponse.url)
+    );
+    expect(fileAssetResponse.status).toBe(200);
+    expect(fileAssetResponse.headers.get('cache-control')).toBe('no-store');
+    expect(await fileAssetResponse.text()).toBe('test-file-asset');
   });
 
   it('gives a matching proxy rule priority over the framework bundle', async () => {
@@ -175,10 +268,17 @@ describe('TSone development server', () => {
       success: true,
       logs: [],
       outputs: [
-        createBuildOutput('/virtual/styles.css', 'body { color: red; }'),
+        createBuildOutput(
+          '/virtual/styles.css',
+          'body { color: red; }',
+          'asset',
+          'text/css;charset=utf-8'
+        ),
         createBuildOutput(
           '/virtual/app.js',
-          'export const bundleTitle = "JavaScript bundle";'
+          'export const bundleTitle = "JavaScript bundle";',
+          'entry-point',
+          'text/javascript;charset=utf-8'
         ),
       ],
     } as unknown as BuildResult);
@@ -203,7 +303,12 @@ describe('TSone development server', () => {
       success: true,
       logs: [],
       outputs: [
-        createBuildOutput('/virtual/styles.css', 'body { color: red; }'),
+        createBuildOutput(
+          '/virtual/styles.css',
+          'body { color: red; }',
+          'asset',
+          'text/css;charset=utf-8'
+        ),
       ],
     } as unknown as BuildResult);
 
@@ -215,6 +320,27 @@ describe('TSone development server', () => {
     expect(
       errorCalls.some((values) =>
         values.join(' ').includes('no JavaScript output')
+      )
+    ).toBe(true);
+  });
+
+  it('normalizes rejected Bun builds to a generic 500 with diagnostics', async () => {
+    const server = await startDevServer({
+      root: makeRoot('Rejected Build'),
+      port: 0,
+    });
+    servers.push(server);
+    const errorCalls = captureConsoleErrors();
+    mockRejectedBuild(new Error('private compiler diagnostic'));
+
+    const response = await fetch(`${serverUrl(server)}/bundle.js`);
+
+    expect(response.status).toBe(500);
+    expect(await response.text()).toBe('Failed to build project bundle');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(
+      errorCalls.some((values) =>
+        values.join(' ').includes('private compiler diagnostic')
       )
     ).toBe(true);
   });

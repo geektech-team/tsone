@@ -1,5 +1,6 @@
 import { lstat, mkdir, realpath, rm, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
+import { isEntryJavaScriptOutput, isStylesheetOutput } from './build-output';
 import { resolveConfig } from './config';
 import { renderProjectHtml } from './project';
 import type { BuildOptions, BuildResult } from './types';
@@ -10,9 +11,7 @@ const INVALID_OUTPUT_DIRECTORY_MESSAGE =
 export async function build(options: BuildOptions = {}): Promise<BuildResult> {
   const config = await resolveConfig(options);
 
-  await renderProjectHtml(config, {
-    scripts: [{ type: 'module', src: './main.js' }],
-  });
+  await renderProjectHtml(config, {});
   await assertSafeOutputDirectory(config.root, config.build.outDir);
 
   await rm(config.build.outDir, { recursive: true, force: true });
@@ -26,8 +25,12 @@ export async function build(options: BuildOptions = {}): Promise<BuildResult> {
     naming: { entry: '[name].[ext]', chunk: '[name]-[hash].[ext]' },
   });
   const assetsBuilt = result.outputs.map((output) => resolve(output.path));
-  const javascriptAssets = assetsBuilt.filter(isJavaScriptAsset);
-  const stylesheetAssets = assetsBuilt.filter(isStylesheetAsset);
+  const javascriptAssets = result.outputs
+    .filter(isEntryJavaScriptOutput)
+    .map((output) => resolve(output.path));
+  const stylesheetAssets = result.outputs
+    .filter(isStylesheetOutput)
+    .map((output) => resolve(output.path));
 
   if (
     !result.success ||
@@ -126,14 +129,6 @@ function isSubdirectory(root: string, path: string): boolean {
     !pathFromRoot.startsWith(`..${sep}`) &&
     !isAbsolute(pathFromRoot)
   );
-}
-
-function isJavaScriptAsset(path: string): boolean {
-  return /\.(?:[cm]?js)$/i.test(path);
-}
-
-function isStylesheetAsset(path: string): boolean {
-  return /\.css$/i.test(path);
 }
 
 function toAssetUrl(outDir: string, asset: string): string {
