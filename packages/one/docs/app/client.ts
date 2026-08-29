@@ -2,14 +2,16 @@ import { createApp, type ComponentConstructor } from '@geektech/tsone';
 import { ButtonDemo } from './demos/ButtonDemo';
 import { CardDemo } from './demos/CardDemo';
 import { InputDemo } from './demos/InputDemo';
+import { SwitchDemo } from './demos/SwitchDemo';
 
-type DemoName = 'button' | 'input' | 'card';
+type DemoName = 'button' | 'input' | 'card' | 'switch';
 type DemoConstructor = ComponentConstructor<Record<string, never>, object>;
 
 const DEMOS: Record<DemoName, DemoConstructor> = {
   button: ButtonDemo,
   input: InputDemo,
   card: CardDemo,
+  switch: SwitchDemo,
 };
 const mountedDemoRoots = new WeakSet<HTMLElement>();
 
@@ -39,7 +41,12 @@ export function mountOneDocsClient(): void {
 }
 
 function isDemoName(value: string | undefined): value is DemoName {
-  return value === 'button' || value === 'input' || value === 'card';
+  return (
+    value === 'button' ||
+    value === 'input' ||
+    value === 'card' ||
+    value === 'switch'
+  );
 }
 
 function ensureUniqueRootId(root: HTMLElement, index: number): string {

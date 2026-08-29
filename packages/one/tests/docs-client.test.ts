@@ -70,6 +70,36 @@ describe('One UI docs client', () => {
     ).toBe('受控值：父组件状态');
   });
 
+  it('mounts an interactive switch demo that toggles in both directions', () => {
+    document.body.innerHTML = '<div data-one-demo="switch"></div>';
+    mountOneDocsClient();
+
+    const initialSwitch = document.querySelector('[role="switch"]');
+    const initialInput = document.querySelector(
+      '.one-switch__input'
+    ) as HTMLInputElement | null;
+    expect(initialSwitch?.getAttribute('aria-checked')).toBe('false');
+    expect(initialInput).toBeInstanceOf(HTMLInputElement);
+    if (!initialInput) {
+      throw new Error('Interactive switch input did not mount');
+    }
+
+    initialInput.checked = true;
+    initialInput.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(
+      document.querySelector('[role="switch"]')?.getAttribute('aria-checked')
+    ).toBe('true');
+
+    const checkedInput = document.querySelector(
+      '.one-switch__input'
+    ) as HTMLInputElement;
+    checkedInput.checked = false;
+    checkedInput.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(
+      document.querySelector('[role="switch"]')?.getAttribute('aria-checked')
+    ).toBe('false');
+  });
+
   it('is safe when a docs page has no demo roots', () => {
     expect(() => mountOneDocsClient()).not.toThrow();
   });
