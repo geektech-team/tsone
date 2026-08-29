@@ -63,9 +63,7 @@ async function withProjectDom<T>(callback: () => Promise<T>): Promise<T> {
   return task;
 }
 
-async function runWithProjectDom<T>(
-  callback: () => Promise<T>
-): Promise<T> {
+async function runWithProjectDom<T>(callback: () => Promise<T>): Promise<T> {
   const descriptors = captureGlobalDescriptors();
   const window = new Window({ url: 'http://127.0.0.1/' });
 
