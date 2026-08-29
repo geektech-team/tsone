@@ -1,10 +1,14 @@
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
+  renameSync,
   rmSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -24,6 +28,24 @@ function makeTemporaryDirectory(prefix: string): string {
   const directory = mkdtempSync(join(tmpdir(), prefix));
   temporaryDirectories.push(directory);
   return directory;
+}
+
+function lstatIfExistsSync(
+  path: string
+): ReturnType<typeof lstatSync> | undefined {
+  try {
+    return lstatSync(path);
+  } catch (error: unknown) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    ) {
+      return undefined;
+    }
+    throw error;
+  }
 }
 
 afterEach(() => {
@@ -147,6 +169,59 @@ describe('One UI docs build', () => {
 
     expect(readFileSync(sentinel, 'utf8')).toBe('external data');
     expect(existsSync(join(outDir, 'assets'))).toBe(false);
+  });
+
+  it('does not trust a custom directory through a symlinked default output', async () => {
+    const targetDir = realpathSync(
+      makeTemporaryDirectory('one-docs-default-target-')
+    );
+    const sentinel = join(targetDir, 'KEEP_ME');
+    const defaultOutDir = join(packageRoot, 'docs', 'dist');
+    const originalDefaultStat = lstatIfExistsSync(defaultOutDir);
+    const backupRoot = mkdtempSync(
+      join(packageRoot, 'docs', '.one-docs-default-backup-')
+    );
+    const backupOutDir = join(backupRoot, 'dist');
+    let movedDefaultOutDir = false;
+    let createdDefaultSymlink = false;
+    writeFileSync(sentinel, 'external data');
+
+    try {
+      if (lstatIfExistsSync(defaultOutDir)) {
+        renameSync(defaultOutDir, backupOutDir);
+        movedDefaultOutDir = true;
+      }
+      symlinkSync(targetDir, defaultOutDir, 'dir');
+      createdDefaultSymlink = true;
+
+      await expect(buildOneDocs({ outDir: targetDir })).rejects.toThrow(
+        'Unsafe One UI docs output directory'
+      );
+      expect(readFileSync(sentinel, 'utf8')).toBe('external data');
+    } finally {
+      let restoredDefaultOutDir = !movedDefaultOutDir;
+      try {
+        const defaultStat = lstatIfExistsSync(defaultOutDir);
+        if (createdDefaultSymlink && defaultStat) {
+          if (!defaultStat.isSymbolicLink()) {
+            throw new Error('One docs default output changed during the test');
+          }
+          unlinkSync(defaultOutDir);
+        }
+        if (movedDefaultOutDir) {
+          renameSync(backupOutDir, defaultOutDir);
+          restoredDefaultOutDir = true;
+        }
+      } finally {
+        if (restoredDefaultOutDir) {
+          rmSync(backupRoot, { recursive: true, force: true });
+        }
+      }
+    }
+
+    expect(lstatIfExistsSync(defaultOutDir)?.ino).toBe(
+      originalDefaultStat?.ino
+    );
   });
 
   it('rejects an output-directory symlink without deleting its target', async () => {

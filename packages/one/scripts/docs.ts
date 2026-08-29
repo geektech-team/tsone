@@ -147,11 +147,9 @@ export async function assertSafeOneDocsOutputDirectory(
         throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
       }
 
-      const canonicalDefaultOutDir =
-        await canonicalizePotentialPath(DEFAULT_OUT_DIR);
       const entries = await readdir(resolvedOutDir);
       if (
-        canonicalOutDir !== canonicalDefaultOutDir &&
+        resolvedOutDir !== resolve(DEFAULT_OUT_DIR) &&
         entries.length > 0 &&
         !(await hasOneDocsBuildMarker(resolvedOutDir))
       ) {
@@ -187,13 +185,6 @@ async function assertNoUnexpectedSymlinkComponents(
       throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
     }
   }
-}
-
-async function canonicalizePotentialPath(path: string): Promise<string> {
-  const resolvedPath = resolve(path);
-  const ancestor = await findExistingAncestor(resolvedPath);
-  const canonicalAncestor = await realpath(ancestor);
-  return resolve(canonicalAncestor, relative(ancestor, resolvedPath));
 }
 
 async function findExistingAncestor(path: string): Promise<string> {
