@@ -364,6 +364,7 @@ describe('docs locales', () => {
       { level: 3, text: 'Run the Development Server' },
       { level: 3, text: 'Build the Project' },
       { level: 3, text: 'Run Linting' },
+      { level: 2, text: 'Package Boundaries' },
       { level: 2, text: 'Coding Standards' },
       { level: 3, text: 'TypeScript' },
       { level: 3, text: 'Code Style' },
@@ -446,7 +447,18 @@ describe('docs locales', () => {
         lineCount: 1,
         code: 'git push origin feature/your-feature-name',
       },
-      { language: 'bash', lineCount: 1, code: 'bun test' },
+      {
+        language: 'bash',
+        lineCount: 6,
+        code: [
+          'bun test',
+          'bun test packages/tsone-cli/tests',
+          'bunx tsc --noEmit',
+          'bun run build',
+          'bun pm pack --cwd packages/tsone --dry-run',
+          'bun pm pack --cwd packages/tsone-cli --dry-run',
+        ].join('\n'),
+      },
       {
         language: 'bash',
         lineCount: 2,
