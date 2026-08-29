@@ -53,7 +53,10 @@ export const enContributingPages: DocPage[] = [
           'The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.',
         ],
         [
-          'CLI v1 has no config plugins, WebSocket, HMR, SSR, public/ copying, or public minify/sourcemap settings',
+          'The config file supports only a plain-object default export; functional or function-valued config is not supported.',
+        ],
+        [
+          'CLI v1 has no config plugins, WebSocket, HMR, SSR, functional config, public/ copying, or public minify/sourcemap settings',
         ],
       ]),
       heading(2, 'Coding Standards'),

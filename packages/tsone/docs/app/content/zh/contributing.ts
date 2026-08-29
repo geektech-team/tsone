@@ -48,8 +48,9 @@ export const contributingPages: DocPage[] = [
           '不要为 @geektech/tsone 添加 ./dev 导出；应用应单独安装 @geektech/tsone-cli',
         ],
         ['开发服务器仅提供 HTTP。代理目标可以使用 HTTP 或 HTTPS。'],
+        ['配置文件只支持普通对象默认导出；不支持函数式配置或函数值配置。'],
         [
-          'CLI 首版配置不提供 plugins、WebSocket、HMR、SSR、public/ 复制以及公开的 minify/sourcemap 设置',
+          'CLI 首版配置不提供 plugins、WebSocket、HMR、SSR、函数式配置、public/ 复制以及公开的 minify/sourcemap 设置',
         ],
       ]),
       heading(2, '代码规范'),

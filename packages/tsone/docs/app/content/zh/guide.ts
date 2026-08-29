@@ -113,7 +113,7 @@ export const guidePages: DocPage[] = [
       ),
       heading(2, '配置开发与构建'),
       paragraph(
-        '在 tsone.config.ts 中提供可选的普通对象默认导出。默认值为入口 src/main.ts、主机 127.0.0.1、端口 52211、空的 server.proxy，以及 build.outDir dist。'
+        '配置文件只支持普通对象默认导出；不支持函数式配置或函数值配置。默认值为入口 src/main.ts、主机 127.0.0.1、端口 52211、空的 server.proxy，以及 build.outDir dist。'
       ),
       codeBlock(
         'ts',
@@ -146,7 +146,7 @@ export const guidePages: DocPage[] = [
         'dev 只接受 host/port 覆盖，build 只接受 out-dir；支持 --port 3000 与 --port=3000 两种形式。build.outDir 必须是项目根目录内部的子目录。'
       ),
       paragraph(
-        'CLI 首版配置不提供 plugins、WebSocket、HMR、SSR、public/ 复制以及公开的 minify/sourcemap 配置。'
+        'CLI 首版配置不提供 plugins、WebSocket、HMR、SSR、函数式配置、public/ 复制以及公开的 minify/sourcemap 配置。'
       ),
       heading(2, '下一步'),
       list([

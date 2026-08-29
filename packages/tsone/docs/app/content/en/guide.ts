@@ -88,7 +88,7 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'paragraph',
         content: [
-          'Add an optional plain-object default export in tsone.config.ts. The defaults are entry src/main.ts, host 127.0.0.1, port 52211, an empty server.proxy, and build.outDir dist.',
+          'The config file supports only a plain-object default export; functional or function-valued config is not supported. The defaults are entry src/main.ts, host 127.0.0.1, port 52211, an empty server.proxy, and build.outDir dist.',
         ],
       },
       {
@@ -121,7 +121,7 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'paragraph',
         content: [
-          'CLI v1 has no config plugins, WebSocket, HMR, SSR, public/ copying, or public minify/sourcemap settings.',
+          'CLI v1 has no config plugins, WebSocket, HMR, SSR, functional config, public/ copying, or public minify/sourcemap settings.',
         ],
       },
       {

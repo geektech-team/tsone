@@ -305,13 +305,13 @@ export const enApiPages: DocPage[] = [
         ].join('\n')
       ),
       paragraph(
-        'Configuration defaults are entry src/main.ts, server host 127.0.0.1, port 52211, an empty server.proxy, and build.outDir dist. The entry must use export const app and provide renderHtmlDocument().'
+        'The config file supports only a plain-object default export; functional or function-valued config is not supported. Configuration defaults are entry src/main.ts, server host 127.0.0.1, port 52211, an empty server.proxy, and build.outDir dist. The entry must use export const app and provide renderHtmlDocument().'
       ),
       paragraph(
         'The development server serves HTTP only. Proxy targets may use HTTP or HTTPS. server.proxy accepts string or { target, changeOrigin, rewrite } rules. Literal prefixes use the longest match first; query strings, bodies, and end-to-end headers are forwarded, and failed upstream connections return 502 Bad Gateway.'
       ),
       paragraph(
-        'build.outDir must be a safe child directory of the project root. CLI v1 has no config plugins, WebSocket, HMR, SSR, public/ copying, or public minify/sourcemap configuration.'
+        'build.outDir must be a safe child directory of the project root. CLI v1 has no config plugins, WebSocket, HMR, SSR, functional config, public/ copying, or public minify/sourcemap configuration.'
       ),
     ],
   },

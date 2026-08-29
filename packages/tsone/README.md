@@ -108,6 +108,9 @@ application as `export const app`, and the value must provide
 
 Create an optional `tsone.config.ts` at the project root:
 
+The config file supports only a plain-object default export; functional or
+function-valued config is not supported.
+
 ```typescript
 import { defineConfig } from '@geektech/tsone-cli';
 
@@ -148,8 +151,8 @@ The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.
 Rules use literal prefix matching with the longest match first, retain
 query/body/end-to-end headers, optionally apply `changeOrigin` and `rewrite`,
 and return `502 Bad Gateway` when the upstream is unreachable. CLI v1 has no
-config plugins, WebSocket, HMR, SSR, `public/` copying, or public
-minify/sourcemap settings.
+config plugins, WebSocket, HMR, SSR, functional config, `public/` copying, or
+public minify/sourcemap settings.
 
 ## Routing
 

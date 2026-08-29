@@ -51,17 +51,19 @@ function normalizeProse(text: string): string {
 const ENGLISH_INVERSE_SCOPE_PATTERNS = [
   /development server[^.]{0,80}\b(?:serves?|supports?|provides?)\s+(?:HTTP\s+(?:and|or)\s+|HTTP\/)?HTTPS\b/iu,
   /proxy targets?[^.]{0,50}\b(?:are|(?:may\s+)?use|supports?|accepts?)\s+HTTP only\b/iu,
-  /\b(?:CLI(?: v1)?|config(?:uration)?)[^.]{0,50}(?<!not )\b(?:supports?|provides?|enables?|allows?)\s+(?:config\s+)?(?:plugins?|WebSocket|HMR|SSR)\b/iu,
-  /\b(?:CLI(?: v1)?|config(?:uration)?)[^.]{0,60}\b(?:copies|will copy)\s+(?:the\s+)?public\/?/iu,
-  /\b(?:CLI(?: v1)?|config(?:uration)?)[^.]{0,60}\b(?:allows?|configures?|supports?|provides?)\s+(?:public\s+)?(?:minify|sourcemap)/iu,
+  /\b(?:the )?(?:CLI(?: v1)?|config(?:uration)?|development server|dev server|build)[^.]{0,50}(?<!not )\b(?:supports?|provides?|enables?|allows?)\s+(?:config\s+)?(?:plugins?|WebSocket|HMR|SSR)\b/iu,
+  /\b(?:the )?(?:CLI(?: v1)?|config(?:uration)?|development server|dev server|build)[^.]{0,50}(?<!not )\b(?:supports?|provides?|enables?|allows?)\s+(?:a\s+)?(?:functional|function-valued) config\b/iu,
+  /\b(?:the )?(?:CLI(?: v1)?|config(?:uration)?|development server|dev server|build)[^.]{0,60}\b(?:copies|will copy)\s+(?:the\s+)?public\/?/iu,
+  /\b(?:the )?(?:CLI(?: v1)?|config(?:uration)?|development server|dev server|build)[^.]{0,60}\b(?:allows?|configures?|supports?|provides?)\s+(?:public\s+)?(?:minify|sourcemap)/iu,
 ] as const;
 
 const CHINESE_INVERSE_SCOPE_PATTERNS = [
   /开发服务器[^。；]{0,50}(?<!不)(?:支持|提供|使用)\s*HTTPS/iu,
   /代理目标[^。；]{0,50}(?:仅|只)(?:支持|允许|使用)?\s*HTTP/iu,
-  /(?:CLI|配置|config)[^。；]{0,50}(?<!不)(?<!未)(?:支持|提供|启用|允许)\s*(?:plugins?|插件|WebSocket|HMR|SSR)/iu,
-  /(?:CLI|配置|config)[^。；]{0,50}(?<!不)(?<!未)(?:复制|拷贝)\s*public\/?/iu,
-  /(?:CLI|配置|config)[^。；]{0,50}(?<!不)(?<!未)(?:允许|配置|支持|提供)\s*(?:minify|sourcemap)/iu,
+  /(?:CLI|配置|config|开发服务器|构建|build)[^。；]{0,50}(?<!不)(?<!未)(?:支持|提供|启用|允许)\s*(?:plugins?|插件|WebSocket|HMR|SSR)/iu,
+  /(?:CLI|配置|config|开发服务器|构建|build)[^。；]{0,50}(?<!不)(?<!未)(?:支持|提供|启用|允许)\s*(?:函数式配置|函数值配置|functional config)/iu,
+  /(?:CLI|配置|config|开发服务器|构建|build)[^。；]{0,50}(?<!不)(?<!未)(?:复制|拷贝)\s*public\/?/iu,
+  /(?:CLI|配置|config|开发服务器|构建|build)[^。；]{0,50}(?<!不)(?<!未)(?:允许|配置|支持|提供)\s*(?:minify|sourcemap)/iu,
 ] as const;
 
 function matchingPatterns(text: string, patterns: readonly RegExp[]): string[] {
@@ -71,14 +73,28 @@ function matchingPatterns(text: string, patterns: readonly RegExp[]): string[] {
     .map((pattern) => pattern.source);
 }
 
+function patternMatchCounts(
+  statements: string[],
+  patterns: readonly RegExp[]
+): number[] {
+  return patterns.map(
+    (pattern) =>
+      statements.filter((statement) => pattern.test(normalizeProse(statement)))
+        .length
+  );
+}
+
 function expectEnglishCliScope(text: string): void {
   const prose = normalizeProse(text);
 
   expect(prose).toContain(
     'The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.'
   );
+  expect(prose).toContain(
+    'The config file supports only a plain-object default export; functional or function-valued config is not supported.'
+  );
   expect(prose).toMatch(
-    /CLI v1 has no config plugins, WebSocket, HMR, SSR[^.]*public\/(?: directory)? copying[^.]*minify(?:\/| and )sourcemap (?:configuration|settings)/iu
+    /CLI v1 has no config plugins, WebSocket, HMR, SSR[^.]*functional config[^.]*public\/(?: directory)? copying[^.]*minify(?:\/| and )sourcemap (?:configuration|settings)/iu
   );
   expect(matchingPatterns(prose, ENGLISH_INVERSE_SCOPE_PATTERNS)).toEqual([]);
 }
@@ -89,8 +105,11 @@ function expectChineseCliScope(text: string): void {
   expect(prose).toContain(
     '开发服务器仅提供 HTTP。代理目标可以使用 HTTP 或 HTTPS。'
   );
+  expect(prose).toContain(
+    '配置文件只支持普通对象默认导出；不支持函数式配置或函数值配置。'
+  );
   expect(prose).toMatch(
-    /CLI 首版配置不提供 plugins、WebSocket、HMR、SSR[^。]*public\/ 复制[^。]*minify\/sourcemap (?:配置|设置)/u
+    /CLI 首版配置不提供 plugins、WebSocket、HMR、SSR[^。]*函数式配置[^。]*public\/ 复制[^。]*minify\/sourcemap (?:配置|设置)/u
   );
   expect(matchingPatterns(prose, CHINESE_INVERSE_SCOPE_PATTERNS)).toEqual([]);
 }
@@ -314,24 +333,28 @@ describe('public API documentation', () => {
     const englishFixture = [
       'The development server supports HTTPS.',
       'Proxy targets may use HTTP only.',
-      'CLI v1 supports plugins, WebSocket, HMR, and SSR.',
-      'CLI copies public/.',
-      'CLI allows minify and sourcemap configuration.',
-    ].join(' ');
+      'The development server supports HMR, WebSocket, and SSR.',
+      'The build copies public/.',
+      'The build configures minify and sourcemap.',
+      'The configuration supports plugins.',
+      'The CLI supports functional config.',
+    ];
     const chineseFixture = [
       '开发服务器支持 HTTPS。',
       '代理目标仅支持 HTTP。',
-      'CLI 支持 plugins、WebSocket、HMR、SSR。',
-      'CLI 复制 public/。',
-      'CLI 允许 minify/sourcemap 配置。',
-    ].join('');
+      '开发服务器支持 HMR、WebSocket 和 SSR。',
+      '构建复制 public/。',
+      '构建配置 minify 和 sourcemap。',
+      '配置支持 plugins。',
+      'CLI 支持函数式配置。',
+    ];
 
     expect(
-      matchingPatterns(englishFixture, ENGLISH_INVERSE_SCOPE_PATTERNS)
-    ).toHaveLength(ENGLISH_INVERSE_SCOPE_PATTERNS.length);
+      patternMatchCounts(englishFixture, ENGLISH_INVERSE_SCOPE_PATTERNS)
+    ).toEqual([1, 1, 2, 1, 1, 1]);
     expect(
-      matchingPatterns(chineseFixture, CHINESE_INVERSE_SCOPE_PATTERNS)
-    ).toHaveLength(CHINESE_INVERSE_SCOPE_PATTERNS.length);
+      patternMatchCounts(chineseFixture, CHINESE_INVERSE_SCOPE_PATTERNS)
+    ).toEqual([1, 1, 2, 1, 1, 1]);
   });
 
   it('documents the complete CLI consumer contract in the CLI README', () => {

@@ -101,6 +101,8 @@ console.log(status.value);
 
 可以在项目根目录创建可选的 `tsone.config.ts`：
 
+配置文件只支持普通对象默认导出；不支持函数式配置或函数值配置。
+
 ```typescript
 import { defineConfig } from '@geektech/tsone-cli';
 
@@ -138,8 +140,8 @@ tsone build [--out-dir <path>]
 开发服务器仅提供 HTTP。代理目标可以使用 HTTP 或 HTTPS。规则按字面路径前缀
 匹配，优先最长前缀，保留查询参数、请求体和端到端请求头，可选应用
 `changeOrigin` 与 `rewrite`；上游不可达时固定返回 `502 Bad Gateway`。CLI 首版
-配置不提供 plugins、WebSocket、HMR、SSR、`public/` 复制以及公开的
-minify/sourcemap 配置。
+配置不提供 plugins、WebSocket、HMR、SSR、函数式配置、`public/` 复制以及
+公开的 minify/sourcemap 配置。
 
 ## 路由
 

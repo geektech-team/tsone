@@ -43,8 +43,9 @@ name is not used by the CLI.
 
 ## Configuration
 
-Create an optional `tsone.config.ts` in the project root. Version 1 accepts a
-plain-object default export; `defineConfig()` supplies type checking without
+Create an optional `tsone.config.ts` in the project root. The config file
+supports only a plain-object default export; functional or function-valued
+config is not supported. `defineConfig()` supplies type checking without
 changing the object.
 
 ```typescript
@@ -156,7 +157,7 @@ console.log(result.root, result.outDir, result.assetsBuilt);
 ## Version 1 Scope
 
 The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.
-CLI v1 has no config plugins, WebSocket, HMR, SSR, `public/` directory copying,
-or public `minify` and `sourcemap` configuration. Development bundles use an
-internal inline source map, while production build minification and source-map
-controls are intentionally not configurable.
+CLI v1 has no config plugins, WebSocket, HMR, SSR, functional config, `public/`
+directory copying, or public `minify` and `sourcemap` configuration.
+Development bundles use an internal inline source map, while production build
+minification and source-map controls are intentionally not configurable.
