@@ -16,6 +16,10 @@ export type {
   OneFormValues,
   OneValidationRule,
 } from './form';
+export { OneCheckbox } from './checkbox';
+export type { OneCheckboxProps } from './checkbox';
+export { OneSwitch } from './switch';
+export type { OneSwitchProps } from './switch';
 export { OneCard } from './card';
 export type { OneCardProps } from './card';
 export { ONE_THEME_DEFAULTS } from './styles/shared';
