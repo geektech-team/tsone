@@ -42,13 +42,19 @@ export const ONE_FORM_ITEM_STYLES: OneNamedStyle[] = [
 ];
 
 function normalizeName(name: string): string {
-  return name.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'field';
+  return (
+    name
+      .trim()
+      .replace(/[^a-zA-Z0-9_-]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'field'
+  );
 }
 
 export class OneFormItem extends Component<OneFormItemProps, OneFormItemState> {
   private model: OneFormModel | undefined;
   private unsubscribe: (() => void) | undefined;
   private unregister: (() => void) | undefined;
+  private fieldSignature = '';
 
   protected initState(): OneFormItemState {
     return { revision: 0 };
@@ -67,6 +73,7 @@ export class OneFormItem extends Component<OneFormItemProps, OneFormItemState> {
     }
 
     this.model = model;
+    this.fieldSignature = this.getFieldSignature(model);
     this.provide(ONE_FORM_FIELD_KEY, this.getFieldContext(model));
     this.unregister = model.registerField(this.props.name, () => {
       const element = this.getElement();
@@ -79,6 +86,14 @@ export class OneFormItem extends Component<OneFormItemProps, OneFormItemState> {
 
   protected onMounted(): void {
     this.unsubscribe = this.model?.subscribe(() => {
+      if (!this.model) {
+        return;
+      }
+      const fieldSignature = this.getFieldSignature(this.model);
+      if (fieldSignature === this.fieldSignature) {
+        return;
+      }
+      this.fieldSignature = fieldSignature;
       this.state.revision += 1;
     });
   }
@@ -159,5 +174,12 @@ export class OneFormItem extends Component<OneFormItemProps, OneFormItemState> {
       description: `one-form-${name}-description`,
       error: `one-form-${name}-error`,
     };
+  }
+
+  private getFieldSignature(model: OneFormModel): string {
+    return JSON.stringify([
+      model.getValue(this.props.name),
+      model.getErrors(this.props.name),
+    ]);
   }
 }

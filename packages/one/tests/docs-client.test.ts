@@ -11,6 +11,10 @@ describe('One UI docs client', () => {
       '<div data-one-demo="button"></div>',
       '<div data-one-demo="input"></div>',
       '<div data-one-demo="card"></div>',
+      '<div data-one-demo="form"></div>',
+      '<div data-one-demo="select"></div>',
+      '<div data-one-demo="checkbox"></div>',
+      '<div data-one-demo="switch"></div>',
     ].join('');
 
     mountOneDocsClient();
@@ -18,6 +22,10 @@ describe('One UI docs client', () => {
     expect(document.querySelector('.one-button')).toBeTruthy();
     expect(document.querySelector('.one-input')).toBeTruthy();
     expect(document.querySelector('.one-card')).toBeTruthy();
+    expect(document.querySelector('.one-form')).toBeTruthy();
+    expect(document.querySelector('.one-select')).toBeTruthy();
+    expect(document.querySelector('.one-checkbox-group')).toBeTruthy();
+    expect(document.querySelector('.one-switch')).toBeTruthy();
   });
 
   it('updates the button click count', () => {
@@ -98,6 +106,92 @@ describe('One UI docs client', () => {
     expect(
       document.querySelector('[role="switch"]')?.getAttribute('aria-checked')
     ).toBe('false');
+  });
+
+  it('validates and submits values in the interactive form demo', () => {
+    document.body.innerHTML = '<div data-one-demo="form"></div>';
+    mountOneDocsClient();
+
+    const form = document.querySelector('form') as HTMLFormElement | null;
+    expect(form?.tagName).toBe('FORM');
+    form?.dispatchEvent(
+      new Event('submit', { bubbles: true, cancelable: true })
+    );
+    expect(document.querySelector('[role="alert"]')?.textContent).toContain(
+      '请输入项目名称'
+    );
+
+    const input = document.querySelector(
+      '[aria-label="项目名称"]'
+    ) as HTMLInputElement;
+    input.value = 'one-ui';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    form?.dispatchEvent(
+      new Event('submit', { bubbles: true, cancelable: true })
+    );
+
+    expect(
+      [...document.querySelectorAll('[role="alert"]')].map(
+        (alert) => alert.textContent
+      )
+    ).toEqual([]);
+
+    expect(
+      document.querySelector('[data-one-form-result]')?.textContent
+    ).toContain('one-ui');
+
+    const resetButton = document.querySelector(
+      '.one-button[type="reset"]'
+    ) as HTMLButtonElement | null;
+    expect(resetButton).toBeInstanceOf(HTMLButtonElement);
+    resetButton?.click();
+    expect(document.querySelector('form')).toBeTruthy();
+    expect(document.querySelector('.one-form-item')).toBeTruthy();
+    expect(document.querySelectorAll('input').length).toBeGreaterThan(0);
+    expect(
+      (document.querySelector('[aria-label="项目名称"]') as HTMLInputElement)
+        .value
+    ).toBe('');
+  });
+
+  it('shows selected values in the interactive select demo', () => {
+    document.body.innerHTML = '<div data-one-demo="select"></div>';
+    mountOneDocsClient();
+
+    document
+      .querySelector('[role="combobox"]')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    document
+      .querySelector('[role="option"]')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(
+      document.querySelector('[data-one-select-value]')?.textContent
+    ).toContain('beijing');
+  });
+
+  it('shows checkbox and group values in the interactive checkbox demo', () => {
+    document.body.innerHTML = '<div data-one-demo="checkbox"></div>';
+    mountOneDocsClient();
+
+    const agreement = document.querySelector(
+      '[aria-label="同意协议"]'
+    ) as HTMLInputElement;
+    agreement.checked = true;
+    agreement.dispatchEvent(new Event('change', { bubbles: true }));
+
+    const firstGroupOption = document.querySelector(
+      '.one-checkbox-group input'
+    ) as HTMLInputElement;
+    firstGroupOption.checked = true;
+    firstGroupOption.dispatchEvent(new Event('change', { bubbles: true }));
+
+    expect(
+      document.querySelector('[data-one-checkbox-value]')?.textContent
+    ).toContain('true');
+    expect(
+      document.querySelector('[data-one-checkbox-group-value]')?.textContent
+    ).toContain('design');
   });
 
   it('is safe when a docs page has no demo roots', () => {

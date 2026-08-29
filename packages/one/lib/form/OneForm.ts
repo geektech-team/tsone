@@ -72,6 +72,7 @@ export class OneForm extends Component<OneFormProps, OneFormState> {
       children: [slot('default')],
       listeners: {
         submit: (event) => this.handleSubmit(event),
+        reset: (event) => this.handleReset(event),
       },
     };
   }
@@ -85,5 +86,10 @@ export class OneForm extends Component<OneFormProps, OneFormState> {
     }
 
     this.emit('submit', { values: this.model.getValues() });
+  }
+
+  private handleReset(event: Event): void {
+    event.preventDefault();
+    this.model.reset();
   }
 }

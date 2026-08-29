@@ -1,16 +1,29 @@
 import { createApp, type ComponentConstructor } from '@geektech/tsone';
 import { ButtonDemo } from './demos/ButtonDemo';
 import { CardDemo } from './demos/CardDemo';
+import { CheckboxDemo } from './demos/CheckboxDemo';
+import { FormDemo } from './demos/FormDemo';
 import { InputDemo } from './demos/InputDemo';
+import { SelectDemo } from './demos/SelectDemo';
 import { SwitchDemo } from './demos/SwitchDemo';
 
-type DemoName = 'button' | 'input' | 'card' | 'switch';
+type DemoName =
+  | 'button'
+  | 'input'
+  | 'card'
+  | 'form'
+  | 'select'
+  | 'checkbox'
+  | 'switch';
 type DemoConstructor = ComponentConstructor<Record<string, never>, object>;
 
 const DEMOS: Record<DemoName, DemoConstructor> = {
   button: ButtonDemo,
   input: InputDemo,
   card: CardDemo,
+  form: FormDemo,
+  select: SelectDemo,
+  checkbox: CheckboxDemo,
   switch: SwitchDemo,
 };
 const mountedDemoRoots = new WeakSet<HTMLElement>();
@@ -45,6 +58,9 @@ function isDemoName(value: string | undefined): value is DemoName {
     value === 'button' ||
     value === 'input' ||
     value === 'card' ||
+    value === 'form' ||
+    value === 'select' ||
+    value === 'checkbox' ||
     value === 'switch'
   );
 }
