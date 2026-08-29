@@ -204,6 +204,6 @@ export class OneFormModel {
   }
 
   private notify(): void {
-    this.subscribers.forEach((listener) => listener());
+    [...this.subscribers].forEach((listener) => listener());
   }
 }

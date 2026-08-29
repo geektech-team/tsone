@@ -5,6 +5,8 @@ import {
   type OneNamedStyle,
 } from '../styles/shared';
 import type { OneComponentSize } from '../types';
+import { ONE_FORM_FIELD_KEY } from '../form/context';
+import type { OneFormFieldContext } from '../form/context';
 
 export interface OneInputValueEvent {
   value: string;
@@ -27,6 +29,7 @@ export interface OneInputProps {
 
 interface OneInputState {
   internalValue: string;
+  revision: number;
 }
 
 export const ONE_INPUT_STYLES: OneNamedStyle[] = [
@@ -100,8 +103,11 @@ export const ONE_INPUT_STYLES: OneNamedStyle[] = [
 ];
 
 export class OneInput extends Component<OneInputProps, OneInputState> {
+  private fieldContext: OneFormFieldContext | undefined;
+  private unsubscribe: (() => void) | undefined;
+
   protected initState(): OneInputState {
-    return { internalValue: this.props.defaultValue ?? '' };
+    return { internalValue: this.props.defaultValue ?? '', revision: 0 };
   }
 
   protected initStyles(): void {
@@ -111,10 +117,16 @@ export class OneInput extends Component<OneInputProps, OneInputState> {
   }
 
   protected render(): VNode {
+    void this.state.revision;
     const size = normalizeOneSize(this.props.size);
+    const fieldContext = this.fieldContext;
+    const fieldErrors = fieldContext?.model.getErrors(fieldContext.name) ?? [];
+    const value = fieldContext
+      ? fieldContext.model.getValue(fieldContext.name)
+      : this.props.value ?? this.state.internalValue;
     const classNames = [
       'one-input',
-      ...(this.props.invalid ? ['one-input--invalid'] : []),
+      ...(this.props.invalid || fieldErrors.length > 0 ? ['one-input--invalid'] : []),
       `one-input--${size}`,
     ];
 
@@ -122,14 +134,16 @@ export class OneInput extends Component<OneInputProps, OneInputState> {
       tag: 'input',
       props: {
         className: classNames.join(' '),
-        value: this.props.value ?? this.state.internalValue,
+        value: typeof value === 'string' ? value : '',
         type: this.props.type,
-        name: this.props.name,
+        name: fieldContext?.name ?? this.props.name,
+        id: fieldContext?.controlId,
         placeholder: this.props.placeholder,
         disabled: this.props.disabled === true,
         readonly: this.props.readonly === true,
         required: this.props.required === true,
-        'aria-invalid': this.props.invalid === true ? 'true' : undefined,
+        'aria-invalid': this.props.invalid || fieldErrors.length > 0 ? 'true' : undefined,
+        'aria-describedby': fieldContext?.describedBy,
         'aria-label': this.props.ariaLabel,
       },
       listeners: {
@@ -141,9 +155,31 @@ export class OneInput extends Component<OneInputProps, OneInputState> {
 
   protected onUpdated(): void {
     const input = this.getElement();
-    if (this.props.value !== undefined && input instanceof HTMLInputElement) {
+    if (!this.fieldContext && this.props.value !== undefined && input instanceof HTMLInputElement) {
       input.value = this.props.value;
     }
+  }
+
+  protected beforeMount(): void {
+    this.fieldContext = this.inject(ONE_FORM_FIELD_KEY);
+    if (this.fieldContext) {
+      this.fieldContext.model.ensureValue(
+        this.fieldContext.name,
+        this.props.value ?? this.props.defaultValue ?? ''
+      );
+    }
+  }
+
+  protected onMounted(): void {
+    this.unsubscribe = this.fieldContext?.model.subscribe(() => {
+      this.state.revision += 1;
+    });
+  }
+
+  protected onUnmounted(): void {
+    this.unsubscribe?.();
+    this.unsubscribe = undefined;
+    this.fieldContext = undefined;
   }
 
   private emitValue(eventName: 'input' | 'change', event: Event): void {
@@ -153,13 +189,15 @@ export class OneInput extends Component<OneInputProps, OneInputState> {
     }
 
     const nextValue = input.value;
-    if (this.props.value === undefined) {
+    if (this.fieldContext) {
+      this.fieldContext.model.setValue(this.fieldContext.name, nextValue);
+    } else if (this.props.value === undefined) {
       this.state.internalValue = nextValue;
     }
 
     this.emit(eventName, { value: nextValue, originalEvent: event });
 
-    if (this.props.value !== undefined) {
+    if (!this.fieldContext && this.props.value !== undefined) {
       input.value = this.props.value;
     }
   }
