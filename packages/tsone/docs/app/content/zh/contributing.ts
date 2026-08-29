@@ -126,7 +126,7 @@ export const contributingPages: DocPage[] = [
         inlineCode('packages/tsone/docs/app/content/zh/'),
         '，英文内容维护在 ',
         inlineCode('packages/tsone/docs/app/content/en/'),
-        '。两边都使用 typed content registry 和结构化 block helper；中英文逻辑路由必须一致。'
+        '。两边都使用 typed content registry 和结构化 block helper；中英文逻辑路由必须一致。中英文 catalog 当前各包含 14 条逻辑路由；新增或删除路由时必须同步修改两边。'
       ),
       list([
         ['内容链接保持 locale-neutral，不要手写 /en/'],

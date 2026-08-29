@@ -169,6 +169,9 @@ content lives in `packages/tsone/docs/app/content/zh/`, while English content
 lives in `packages/tsone/docs/app/content/en/`. Every logical route must exist
 in both directories.
 
+Chinese and English catalogs each contain exactly 14 logical routes. Add or
+remove a route in both catalogs in the same change.
+
 Content links stay locale-neutral: never write `/en/` manually. Chinese public
 routes are unprefixed, while English routes use `/en/`. Browser-language
 detection runs only at `/`; manual selection takes precedence and persists for
