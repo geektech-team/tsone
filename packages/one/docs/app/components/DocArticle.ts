@@ -1,5 +1,14 @@
 import { Component, type VNode } from '@geektech/tsone';
-import { OneButton, OneCard, OneInput } from '../../../lib';
+import {
+  OneButton,
+  OneCard,
+  OneCheckbox,
+  OneForm,
+  OneFormItem,
+  OneInput,
+  OneSelect,
+  OneSwitch,
+} from '../../../lib';
 import type { OneDocBlock, OneDocInline, OneDocPage } from '../content';
 
 export interface DocArticleProps {
@@ -255,6 +264,55 @@ export class DocArticle extends Component<DocArticleProps> {
             ],
           },
         ];
+      case 'form':
+        return [
+          {
+            component: OneForm,
+            props: {
+              initialValues: { name: '' },
+              rules: { name: [{ required: true, message: '请输入名称' }] },
+            },
+            children: [
+              {
+                component: OneFormItem,
+                props: { name: 'name', label: '名称' },
+                children: [
+                  { component: OneInput, props: { ariaLabel: '名称' } },
+                ],
+              },
+              {
+                component: OneButton,
+                props: { type: 'submit' },
+                children: ['提交'],
+              },
+            ],
+          },
+        ];
+      case 'select':
+        return [
+          {
+            component: OneSelect,
+            props: {
+              multiple: true,
+              searchable: true,
+              ariaLabel: '城市',
+              options: [
+                { value: 'beijing', label: '北京' },
+                { label: '海外', options: [{ value: 'tokyo', label: '东京' }] },
+              ],
+            },
+          },
+        ];
+      case 'checkbox':
+        return [
+          {
+            component: OneCheckbox,
+            props: { ariaLabel: '同意协议' },
+            children: ['同意协议'],
+          },
+        ];
+      case 'switch':
+        return [{ component: OneSwitch, props: { ariaLabel: '启用通知' } }];
       default:
         return assertNever(component);
     }

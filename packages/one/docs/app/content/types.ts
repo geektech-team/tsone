@@ -25,7 +25,14 @@ export type OneDocBlock =
     }
   | {
       type: 'demo';
-      component: 'button' | 'input' | 'card';
+      component:
+        | 'button'
+        | 'input'
+        | 'card'
+        | 'form'
+        | 'select'
+        | 'checkbox'
+        | 'switch';
       interactive?: boolean;
     };
 
@@ -159,7 +166,14 @@ export function apiTable(
 }
 
 export function demo(
-  component: 'button' | 'input' | 'card',
+  component:
+    | 'button'
+    | 'input'
+    | 'card'
+    | 'form'
+    | 'select'
+    | 'checkbox'
+    | 'switch',
   interactive = true
 ): OneDocBlock {
   return { type: 'demo', component, interactive };

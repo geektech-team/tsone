@@ -2,6 +2,11 @@ import type { StyleSheet } from '@geektech/tsone';
 import { ONE_BUTTON_STYLES } from '../../lib/button/OneButton';
 import { ONE_CARD_STYLES } from '../../lib/card/OneCard';
 import { ONE_INPUT_STYLES } from '../../lib/input/OneInput';
+import { ONE_CHECKBOX_STYLES } from '../../lib/checkbox/OneCheckbox';
+import { ONE_FORM_ITEM_STYLES } from '../../lib/form/OneFormItem';
+import { ONE_FORM_STYLES } from '../../lib/form/OneForm';
+import { ONE_SELECT_STYLES } from '../../lib/select/OneSelect';
+import { ONE_SWITCH_STYLES } from '../../lib/switch/OneSwitch';
 import { oneStylesToSheet } from '../../lib/styles/shared';
 
 const documentStyles: StyleSheet = [
@@ -478,5 +483,10 @@ export const oneDocsStyles: StyleSheet = [
   ...oneStylesToSheet(ONE_BUTTON_STYLES),
   ...oneStylesToSheet(ONE_INPUT_STYLES),
   ...oneStylesToSheet(ONE_CARD_STYLES),
+  ...oneStylesToSheet(ONE_FORM_STYLES),
+  ...oneStylesToSheet(ONE_FORM_ITEM_STYLES),
+  ...oneStylesToSheet(ONE_SELECT_STYLES),
+  ...oneStylesToSheet(ONE_CHECKBOX_STYLES),
+  ...oneStylesToSheet(ONE_SWITCH_STYLES),
   ...documentStyles,
 ];
