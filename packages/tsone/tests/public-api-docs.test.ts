@@ -43,8 +43,56 @@ function localizedDocsTextFor(locale: 'en' | 'zh', paths: string[]): string {
 function normalizeProse(text: string): string {
   return text
     .replace(/([\u3400-\u9fff])\s+(?=[\u3400-\u9fff])/gu, '$1')
+    .replace(/`/gu, '')
     .replace(/\s+/gu, ' ')
     .trim();
+}
+
+const ENGLISH_INVERSE_SCOPE_PATTERNS = [
+  /development server[^.]{0,80}\b(?:serves?|supports?|provides?)\s+(?:HTTP\s+(?:and|or)\s+|HTTP\/)?HTTPS\b/iu,
+  /proxy targets?[^.]{0,50}\b(?:are|(?:may\s+)?use|supports?|accepts?)\s+HTTP only\b/iu,
+  /\b(?:CLI(?: v1)?|config(?:uration)?)[^.]{0,50}(?<!not )\b(?:supports?|provides?|enables?|allows?)\s+(?:config\s+)?(?:plugins?|WebSocket|HMR|SSR)\b/iu,
+  /\b(?:CLI(?: v1)?|config(?:uration)?)[^.]{0,60}\b(?:copies|will copy)\s+(?:the\s+)?public\/?/iu,
+  /\b(?:CLI(?: v1)?|config(?:uration)?)[^.]{0,60}\b(?:allows?|configures?|supports?|provides?)\s+(?:public\s+)?(?:minify|sourcemap)/iu,
+] as const;
+
+const CHINESE_INVERSE_SCOPE_PATTERNS = [
+  /开发服务器[^。；]{0,50}(?<!不)(?:支持|提供|使用)\s*HTTPS/iu,
+  /代理目标[^。；]{0,50}(?:仅|只)(?:支持|允许|使用)?\s*HTTP/iu,
+  /(?:CLI|配置|config)[^。；]{0,50}(?<!不)(?<!未)(?:支持|提供|启用|允许)\s*(?:plugins?|插件|WebSocket|HMR|SSR)/iu,
+  /(?:CLI|配置|config)[^。；]{0,50}(?<!不)(?<!未)(?:复制|拷贝)\s*public\/?/iu,
+  /(?:CLI|配置|config)[^。；]{0,50}(?<!不)(?<!未)(?:允许|配置|支持|提供)\s*(?:minify|sourcemap)/iu,
+] as const;
+
+function matchingPatterns(text: string, patterns: readonly RegExp[]): string[] {
+  const prose = normalizeProse(text);
+  return patterns
+    .filter((pattern) => pattern.test(prose))
+    .map((pattern) => pattern.source);
+}
+
+function expectEnglishCliScope(text: string): void {
+  const prose = normalizeProse(text);
+
+  expect(prose).toContain(
+    'The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.'
+  );
+  expect(prose).toMatch(
+    /CLI v1 has no config plugins, WebSocket, HMR, SSR[^.]*public\/(?: directory)? copying[^.]*minify(?:\/| and )sourcemap (?:configuration|settings)/iu
+  );
+  expect(matchingPatterns(prose, ENGLISH_INVERSE_SCOPE_PATTERNS)).toEqual([]);
+}
+
+function expectChineseCliScope(text: string): void {
+  const prose = normalizeProse(text);
+
+  expect(prose).toContain(
+    '开发服务器仅提供 HTTP。代理目标可以使用 HTTP 或 HTTPS。'
+  );
+  expect(prose).toMatch(
+    /CLI 首版配置不提供 plugins、WebSocket、HMR、SSR[^。]*public\/ 复制[^。]*minify\/sourcemap (?:配置|设置)/u
+  );
+  expect(matchingPatterns(prose, CHINESE_INVERSE_SCOPE_PATTERNS)).toEqual([]);
 }
 
 describe('public API documentation', () => {
@@ -244,6 +292,7 @@ describe('public API documentation', () => {
       '/contributing/',
     ];
     const englishSurfaces = [
+      readFileSync(packagePath('../tsone-cli/README.md'), 'utf8'),
       readText('README.md'),
       ...typedPaths.map((path) => localizedDocsTextFor('en', [path])),
     ];
@@ -253,24 +302,36 @@ describe('public API documentation', () => {
     ];
 
     for (const text of englishSurfaces) {
-      const prose = normalizeProse(text);
-      expect(prose).toContain(
-        'The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.'
-      );
-      expect(prose).toContain(
-        'CLI v1 has no config plugins, WebSocket, HMR, SSR'
-      );
+      expectEnglishCliScope(text);
     }
 
     for (const text of chineseSurfaces) {
-      const prose = normalizeProse(text);
-      expect(prose).toContain(
-        '开发服务器仅提供 HTTP。代理目标可以使用 HTTP 或 HTTPS。'
-      );
-      expect(prose).toContain(
-        'CLI 首版配置不提供 plugins、WebSocket、HMR、SSR'
-      );
+      expectChineseCliScope(text);
     }
+  });
+
+  it('detects inverse tooling-scope claims in review fixtures', () => {
+    const englishFixture = [
+      'The development server supports HTTPS.',
+      'Proxy targets may use HTTP only.',
+      'CLI v1 supports plugins, WebSocket, HMR, and SSR.',
+      'CLI copies public/.',
+      'CLI allows minify and sourcemap configuration.',
+    ].join(' ');
+    const chineseFixture = [
+      '开发服务器支持 HTTPS。',
+      '代理目标仅支持 HTTP。',
+      'CLI 支持 plugins、WebSocket、HMR、SSR。',
+      'CLI 复制 public/。',
+      'CLI 允许 minify/sourcemap 配置。',
+    ].join('');
+
+    expect(
+      matchingPatterns(englishFixture, ENGLISH_INVERSE_SCOPE_PATTERNS)
+    ).toHaveLength(ENGLISH_INVERSE_SCOPE_PATTERNS.length);
+    expect(
+      matchingPatterns(chineseFixture, CHINESE_INVERSE_SCOPE_PATTERNS)
+    ).toHaveLength(CHINESE_INVERSE_SCOPE_PATTERNS.length);
   });
 
   it('documents the complete CLI consumer contract in the CLI README', () => {
