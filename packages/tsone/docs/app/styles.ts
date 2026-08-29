@@ -69,9 +69,11 @@ export const docsStyles: StyleSheet = [
     selector: '.docs-brand',
     properties: {
       color: 'var(--docs-text)',
+      flexShrink: 0,
       fontSize: '18px',
       fontWeight: 700,
       textDecoration: 'none',
+      whiteSpace: 'nowrap',
     },
   },
   {
@@ -79,6 +81,8 @@ export const docsStyles: StyleSheet = [
     properties: {
       alignItems: 'center',
       display: 'flex',
+      flexShrink: 0,
+      gap: '8px',
       minHeight: '38px',
     },
   },
@@ -296,20 +300,50 @@ export const docsStyles: StyleSheet = [
     },
   },
   {
-    selector: '.docs-theme-toggle',
+    selector: '.docs-locale-select',
     properties: {
+      background: 'var(--docs-surface)',
       border: '1px solid var(--docs-border)',
       borderRadius: '6px',
-      background: 'var(--docs-surface)',
+      boxSizing: 'border-box',
       color: 'var(--docs-text)',
       cursor: 'pointer',
       font: 'inherit',
-      padding: '7px 10px',
+      height: '36px',
+      padding: '0 10px',
+      width: '104px',
+    },
+  },
+  {
+    selector: '.docs-theme-toggle',
+    properties: {
+      background: 'var(--docs-surface)',
+      border: '1px solid var(--docs-border)',
+      borderRadius: '6px',
+      boxSizing: 'border-box',
+      color: 'var(--docs-text)',
+      cursor: 'pointer',
+      font: 'inherit',
+      height: '36px',
+      padding: '0 10px',
     },
   },
   {
     atRule: '@media (max-width: 820px)',
     rules: [
+      {
+        selector: '.docs-topbar',
+        properties: {
+          gap: '12px',
+          padding: '0 16px',
+        },
+      },
+      {
+        selector: '.docs-brand',
+        properties: {
+          whiteSpace: 'nowrap',
+        },
+      },
       {
         selector: '.docs-layout',
         properties: {

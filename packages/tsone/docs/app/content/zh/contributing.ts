@@ -122,14 +122,19 @@ export const contributingPages: DocPage[] = [
       codeBlock('bash', ['bun run docs', 'bun run docs:build'].join('\n')),
       heading(3, '文档维护'),
       paragraph(
-        '文档内容维护在 ',
-        inlineCode('packages/tsone/docs/app/content/*.ts'),
-        ' 的 typed content registry 中，并使用结构化 block helper 组织页面内容。'
+        '中文内容维护在 ',
+        inlineCode('packages/tsone/docs/app/content/zh/'),
+        '，英文内容维护在 ',
+        inlineCode('packages/tsone/docs/app/content/en/'),
+        '。两边都使用 typed content registry 和结构化 block helper；中英文逻辑路由必须一致。'
       ),
       list([
-        ['直接编辑 TypeScript 内容注册表，而不是 Markdown 源文件'],
-        ['使用结构化 block helper 组合标题、段落、列表和代码块'],
-        ['保持页面内容与可搜索文本一致'],
+        ['内容链接保持 locale-neutral，不要手写 /en/'],
+        ['中文公开路由不带前缀，英文公开路由使用 /en/'],
+        ['浏览器语言检测仅在 / 生效；手动选择优先并持久化'],
+        [
+          'bun run docs:build 遇到缺失、多余、重复、空内容或混用语言的页面时严格失败',
+        ],
       ]),
       heading(2, '问题报告'),
       heading(3, 'Bug 报告'),

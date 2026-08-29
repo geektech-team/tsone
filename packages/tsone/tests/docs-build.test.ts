@@ -8,6 +8,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'bun:test';
+import { docCatalogs } from '../docs/app/content';
 import { docsStyles } from '../docs/app/styles';
 import { renderStyleSheet } from '../lib';
 import { buildDocs, routeToOutputPath } from '../scripts/docs';
@@ -55,6 +56,26 @@ describe('docs static build', () => {
     expect(css).toContain('.docs-layout {');
     expect(css).toContain('min-height: calc(100vh - 57px);');
     expect(css).toContain('@media (max-width: 820px) {');
+
+    const toolsRule = cssRule(css, '.docs-tools');
+    const localeSelectRule = cssRule(css, '.docs-locale-select');
+
+    expect(toolsRule).toContain('gap: 8px;');
+    expect(toolsRule).toContain('flex-shrink: 0;');
+    expect(localeSelectRule).toContain('border: 1px solid var(--docs-border);');
+    expect(localeSelectRule).toContain('border-radius: 6px;');
+    expect(localeSelectRule).toContain('background: var(--docs-surface);');
+    expect(localeSelectRule).toContain('color: var(--docs-text);');
+    expect(localeSelectRule).toContain('font: inherit;');
+    expect(localeSelectRule).toContain('height: 36px;');
+    expect(localeSelectRule).toContain('width: 104px;');
+
+    const mobileCss = css.slice(css.indexOf('@media (max-width: 820px) {'));
+    expect(mobileCss).toContain('.docs-topbar {');
+    expect(mobileCss).toContain('gap: 12px;');
+    expect(mobileCss).toContain('padding: 0 16px;');
+    expect(mobileCss).toContain('.docs-brand {');
+    expect(mobileCss).toContain('white-space: nowrap;');
   });
 
   it('keeps the docs header fixed above the document content', () => {
@@ -143,6 +164,66 @@ describe('docs static build', () => {
       );
       expect(localeBundle).toContain('runDocsLocaleBootstrap');
       expect(localeBundle).not.toContain('sourceMappingURL');
+
+      const localizedRoutes = [
+        ['/', '/en/'],
+        ['/guide/getting-started/', '/en/guide/getting-started/'],
+        ['/guide/core-concepts/', '/en/guide/core-concepts/'],
+        ['/guide/component-system/', '/en/guide/component-system/'],
+        ['/guide/reactive-system/', '/en/guide/reactive-system/'],
+        ['/guide/router-system/', '/en/guide/router-system/'],
+        ['/guide/style-management/', '/en/guide/style-management/'],
+        ['/api/app/', '/en/api/app/'],
+        ['/api/component/', '/en/api/component/'],
+        ['/api/reactive/', '/en/api/reactive/'],
+        ['/api/router/', '/en/api/router/'],
+        ['/api/style/', '/en/api/style/'],
+        ['/examples/basic/', '/en/examples/basic/'],
+        ['/contributing/', '/en/contributing/'],
+      ] as const;
+
+      expect(docCatalogs.zh.pages.map((page) => page.path)).toEqual(
+        localizedRoutes.map(([logicalPath]) => logicalPath)
+      );
+      expect(docCatalogs.en.pages.map((page) => page.path)).toEqual(
+        localizedRoutes.map(([logicalPath]) => logicalPath)
+      );
+
+      for (const [chinesePath, englishPath] of localizedRoutes) {
+        for (const [publicPath, htmlLang] of [
+          [chinesePath, 'zh-CN'],
+          [englishPath, 'en'],
+        ] as const) {
+          const html = readFileSync(
+            routeToOutputPath(publicPath, outDir),
+            'utf8'
+          );
+          const head = html.slice(
+            html.indexOf('<head>'),
+            html.indexOf('</head>')
+          );
+          const body = html.slice(
+            html.indexOf('<body>'),
+            html.indexOf('</body>')
+          );
+
+          expect(html).toContain(`<html lang="${htmlLang}">`);
+          expect(head).toContain(
+            `<link rel="alternate" hreflang="zh-CN" href="${chinesePath}">`
+          );
+          expect(head).toContain(
+            `<link rel="alternate" hreflang="en" href="${englishPath}">`
+          );
+          expect(head).toContain(
+            '<script src="/assets/docs-locale.js"></script>'
+          );
+          expect(body).toContain(
+            '<script type="module" src="/assets/docs-client.js"></script>'
+          );
+          expect(body).not.toContain('/assets/docs-locale.js');
+          expect(head).not.toContain('/assets/docs-client.js');
+        }
+      }
 
       const chineseHome = readFileSync(join(outDir, 'index.html'), 'utf8');
       expect(chineseHome).toContain('<!doctype html>');

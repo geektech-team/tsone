@@ -191,12 +191,8 @@ describe('docs locales', () => {
   });
 
   it('uses the first non-empty browser language', () => {
-    expect(resolvePreferredDocLocale(undefined, ['en-US', 'zh-CN'])).toBe(
-      'en'
-    );
-    expect(resolvePreferredDocLocale(undefined, ['zh-CN', 'en-US'])).toBe(
-      'zh'
-    );
+    expect(resolvePreferredDocLocale(undefined, ['en-US', 'zh-CN'])).toBe('en');
+    expect(resolvePreferredDocLocale(undefined, ['zh-CN', 'en-US'])).toBe('zh');
     expect(resolvePreferredDocLocale(undefined, ['fr-FR'])).toBe('en');
     expect(resolvePreferredDocLocale(undefined, ['de-DE'])).toBe('en');
     expect(resolvePreferredDocLocale(undefined, [])).toBe('zh');

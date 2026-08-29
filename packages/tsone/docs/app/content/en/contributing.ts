@@ -130,16 +130,21 @@ export const enContributingPages: DocPage[] = [
       codeBlock('bash', ['bun run docs', 'bun run docs:build'].join('\n')),
       heading(3, 'Documentation Maintenance'),
       paragraph(
-        'Documentation content is maintained in the ',
-        inlineCode('packages/tsone/docs/app/content/*.ts'),
-        ' typed content registry and organized with structured block helpers.'
+        'Chinese content lives in ',
+        inlineCode('packages/tsone/docs/app/content/zh/'),
+        ', while English content lives in ',
+        inlineCode('packages/tsone/docs/app/content/en/'),
+        '. Both use the typed content registry and structured block helpers, and every page must have the same logical route in both directories.'
       ),
       list([
-        ['Edit the TypeScript content registry instead of Markdown sources'],
+        ['Keep content links locale-neutral and never write /en/ manually'],
+        ['Chinese public routes are unprefixed; English routes use /en/'],
         [
-          'Use structured block helpers to compose headings, paragraphs, lists, and code blocks',
+          'Browser-language detection runs only at /; manual selection takes precedence and persists',
         ],
-        ['Keep page content and searchable text consistent'],
+        [
+          'bun run docs:build fails strictly for missing, extra, duplicate, empty, or mixed-language pages',
+        ],
       ]),
       heading(2, 'Issue Reports'),
       heading(3, 'Bug Reports'),

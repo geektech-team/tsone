@@ -40,6 +40,28 @@ describe('public API documentation', () => {
     expect(readme).toContain('bun test');
   });
 
+  it('documents the bilingual documentation workflow in both READMEs', () => {
+    const englishReadme = readText('README.md');
+    const chineseReadme = readText('README-zh.md');
+
+    expect(englishReadme).toContain('content/en');
+    expect(englishReadme).toContain('content/zh');
+    expect(englishReadme).toContain('/en/');
+    expect(englishReadme).toContain('never write `/en/` manually');
+    expect(englishReadme).toContain('only at `/`');
+    expect(englishReadme).toContain('manual selection takes precedence');
+    expect(englishReadme).toMatch(
+      /missing, extra, duplicate, empty, or\s+mixed-language pages/u
+    );
+    expect(chineseReadme).toContain('content/zh');
+    expect(chineseReadme).toContain('content/en');
+    expect(chineseReadme).toContain('中英文逻辑路由必须一致');
+    expect(chineseReadme).toContain('不要手写 `/en/`');
+    expect(chineseReadme).toContain('仅在 `/`');
+    expect(chineseReadme).toContain('手动选择优先');
+    expect(chineseReadme).toContain('缺失、多余、重复、空内容或混用语言');
+  });
+
   it('documents the public root exports used by framework consumers', () => {
     const readme = readText('README.md');
     const appApi = docsTextFor('/api/app/');
@@ -72,9 +94,11 @@ describe('public API documentation', () => {
     }
 
     expect(appApi).toContain('root');
+    expect(appApi).toContain('rootProps');
     expect(appApi).toContain('createApp({ root: App');
     expect(appApi).toContain('renderHtmlDocument');
-    expect(appApi).toContain('body: { component: App');
+    expect(appApi).toContain('document?: AppDocumentOptions');
+    expect(appApi).toContain('app.renderHtmlDocument');
     expect(appApi).toContain('StyleSheet');
     expect(appApi).toContain('DOM-like document');
     expect(readme).toContain('DOM-like document');

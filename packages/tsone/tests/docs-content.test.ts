@@ -3,6 +3,7 @@ import {
   docCatalogs,
   docPages,
   findDocPage,
+  findLocalizedDocPage,
   getDocCatalog,
   searchEntries,
   zhDocPages,
@@ -286,21 +287,32 @@ describe('docs content registry', () => {
   });
 
   it('keeps contributing guidance aligned with the typed content registry', () => {
-    const contributing = findDocPage('/contributing/');
+    const contributing = findLocalizedDocPage('zh', '/contributing/');
+    const englishContributing = findLocalizedDocPage('en', '/contributing/');
 
-    if (!contributing) {
-      throw new Error('Missing contributing documentation page');
+    if (!contributing || !englishContributing) {
+      throw new Error('Missing bilingual contributing documentation page');
     }
 
-    expect(docText(contributing)).not.toContain('Markdown 格式');
-    expect(docText(contributing)).not.toContain(
+    const chineseText = docText(contributing);
+    const englishText = docText(englishContributing);
+
+    expect(chineseText).not.toContain('Markdown 格式');
+    expect(chineseText).not.toContain(
       'https://github.com/yourusername/tsone.git'
     );
-    expect(docText(contributing)).toContain(
-      'packages/tsone/docs/app/content/*.ts'
+    expect(chineseText).toContain('packages/tsone/docs/app/content/zh/');
+    expect(chineseText).toContain('packages/tsone/docs/app/content/en/');
+    expect(chineseText).toContain('中英文逻辑路由必须一致');
+    expect(chineseText).toContain('不要手写 /en/');
+    expect(chineseText).toContain('缺失、多余、重复、空内容或混用语言');
+    expect(englishText).toContain('packages/tsone/docs/app/content/en/');
+    expect(englishText).toContain('packages/tsone/docs/app/content/zh/');
+    expect(englishText).toContain('same logical route');
+    expect(englishText).toContain('never write /en/ manually');
+    expect(englishText).toContain(
+      'missing, extra, duplicate, empty, or mixed-language pages'
     );
-    expect(docText(contributing)).toContain('typed content registry');
-    expect(docText(contributing)).toContain('结构化 block helper');
   });
 
   it('includes complete form and list examples without truncation', () => {
