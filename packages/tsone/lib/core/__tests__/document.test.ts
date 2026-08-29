@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import {
   Component,
+  Div,
+  createApp,
   renderHtmlDocument,
   type StyleSheet,
   type VNode,
@@ -105,5 +107,42 @@ describe('HTML document rendering', () => {
 
     expect(html).toContain('&lt;main&gt;raw html&lt;/main&gt;');
     expect(html).not.toContain('<main>raw html</main>');
+  });
+
+  it('builds the default mount document from createApp options', () => {
+    const app = createApp({
+      root: IntroComponent,
+      document: {
+        title: 'TSone App Shell',
+        lang: 'zh-CN',
+        description: 'Generated from TypeScript app options',
+      },
+    });
+
+    const html = app.renderHtmlDocument({
+      scripts: [{ src: '/bundle.js', type: 'module' }],
+    });
+
+    expect(html).toContain('<html lang="zh-CN">');
+    expect(html).toContain('<title>TSone App Shell</title>');
+    expect(html).toContain(
+      '<meta name="description" content="Generated from TypeScript app options">'
+    );
+    expect(html).toContain('<div id="app"></div>');
+    expect(html).toContain('<script type="module" src="/bundle.js"></script>');
+  });
+
+  it('lets createApp document options override the generated mount node', () => {
+    const app = createApp({
+      document: {
+        title: 'Custom shell',
+        body: Div({ props: { id: 'root', className: 'custom-root' } }),
+      },
+    });
+
+    const html = app.renderHtmlDocument();
+
+    expect(html).toContain('<div id="root" class="custom-root"></div>');
+    expect(html).not.toContain('<div id="app"></div>');
   });
 });

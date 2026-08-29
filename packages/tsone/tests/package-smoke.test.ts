@@ -53,10 +53,16 @@ function run(command: string, args: string[], cwd = packageRoot): string {
 
 describe('package smoke', () => {
   it('packs an installable library with matching exports and types', () => {
+    const packageJson = JSON.parse(
+      readFileSync(join(packageRoot, 'package.json'), 'utf8')
+    ) as { files?: string[] };
     const rootPackageJson = JSON.parse(
       readFileSync(join(repoRoot, 'package.json'), 'utf8')
     ) as { private?: boolean; workspaces?: string[] };
 
+    expect(packageJson.files).toEqual(
+      expect.arrayContaining(['README.md', 'README-zh.md'])
+    );
     expect(rootPackageJson.private).toBe(true);
     expect(rootPackageJson.workspaces).toEqual(['packages/*']);
 
@@ -96,6 +102,7 @@ describe('package smoke', () => {
           'dist/style/index.js',
           'dist/style/index.d.ts',
           'README.md',
+          'README-zh.md',
           'LICENSE',
           'package.json',
         ])

@@ -1,4 +1,5 @@
 import { OneApp, AppOptions } from './core/app';
+import type { ComponentProps } from './core/component';
 
 // 导出核心功能
 export * from './core';
@@ -7,7 +8,13 @@ export * from './core';
 export * from './router';
 
 // 创建应用实例的主函数
-export function createApp(options: AppOptions = {}): OneApp {
+export function createApp<
+  TState extends object = Record<string, unknown>,
+  TConfig extends object = Record<string, unknown>,
+  TRootProps extends ComponentProps = ComponentProps,
+>(
+  options: AppOptions<TState, TConfig, TRootProps> = {}
+): OneApp<TState, TConfig, TRootProps> {
   return new OneApp(options);
 }
 

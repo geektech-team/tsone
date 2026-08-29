@@ -232,6 +232,21 @@ describe('docs content model', () => {
 });
 
 describe('docs content registry', () => {
+  it('keeps complete HTML document shells out of typed guide code blocks', () => {
+    const completeHtmlDocument =
+      /<!doctype html>[\s\S]*<html(?:\s[^>]*)?>[\s\S]*<\/html>/iu;
+
+    for (const catalog of Object.values(docCatalogs)) {
+      for (const page of catalog.pages) {
+        for (const block of page.body) {
+          if (block.type === 'code') {
+            expect(block.code).not.toMatch(completeHtmlDocument);
+          }
+        }
+      }
+    }
+  });
+
   it('keeps Chinese as the default compatibility catalog', () => {
     expect(zhDocPages).toBe(docPages);
     expect(docPages).toBe(docCatalogs.zh.pages);

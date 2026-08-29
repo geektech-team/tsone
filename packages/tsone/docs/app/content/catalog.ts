@@ -28,7 +28,7 @@ export function createDocCatalog(
 
   if (locale === 'en') {
     const chinesePage = pages.find((page) =>
-      /[\u3400-\u9fff]/u.test(docText(page))
+      /[\u3400-\u9fff]/u.test([page.section, docText(page)].join(' '))
     );
     if (chinesePage) {
       throw new Error(

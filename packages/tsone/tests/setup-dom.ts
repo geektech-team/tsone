@@ -31,6 +31,7 @@ const domGlobals = [
   'history',
   'location',
   'navigator',
+  'localStorage',
 ] as const;
 
 domGlobals.forEach((key) => {

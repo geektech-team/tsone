@@ -3,6 +3,7 @@ import {
   runDocsLocaleBootstrap,
   type LocaleBootstrapEnvironment,
 } from '../docs/app/locale-bootstrap';
+import { readNavigatorLanguages } from '../docs/app/locale-bootstrap-entry';
 
 function environment(overrides: Partial<LocaleBootstrapEnvironment> = {}): {
   replacements: string[];
@@ -92,5 +93,47 @@ describe('docs locale bootstrap', () => {
     runDocsLocaleBootstrap(missing.value);
     expect(chinese.replacements).toEqual([]);
     expect(missing.replacements).toEqual([]);
+  });
+});
+
+describe('docs locale bootstrap browser entry', () => {
+  it('prefers a non-empty navigator.languages list', () => {
+    expect(
+      readNavigatorLanguages({
+        languages: ['zh-CN', 'en-US'],
+        language: 'en-US',
+      })
+    ).toEqual(['zh-CN', 'en-US']);
+  });
+
+  it('falls back to navigator.language when languages is empty', () => {
+    expect(
+      readNavigatorLanguages({ languages: [], language: 'en-US' })
+    ).toEqual(['en-US']);
+  });
+
+  it('falls back when the languages getter throws', () => {
+    const source = {
+      get languages(): readonly string[] {
+        throw new Error('languages blocked');
+      },
+      language: 'en-US',
+    };
+
+    expect(readNavigatorLanguages(source)).toEqual(['en-US']);
+  });
+
+  it('returns no languages when both navigator getters throw', () => {
+    const source = {
+      get languages(): readonly string[] {
+        throw new Error('languages blocked');
+      },
+      get language(): string {
+        throw new Error('language blocked');
+      },
+    };
+
+    expect(() => readNavigatorLanguages(source)).not.toThrow();
+    expect(readNavigatorLanguages(source)).toEqual([]);
   });
 });

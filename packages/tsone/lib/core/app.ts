@@ -1,12 +1,22 @@
 import {
   Component,
   ComponentConstructor,
+  ComponentProps,
   InjectionKey,
   InjectionResult,
 } from './component';
+import {
+  renderHtmlDocument as renderDocumentShell,
+  type HtmlDocumentBody,
+  type HtmlDocumentOptions,
+  type HtmlScript,
+} from './document';
+import { Div } from './vnode';
 import type { Router } from '../router';
 
 import { TemplateEngine } from './template';
+
+const DEFAULT_ROOT_ELEMENT = '#app';
 
 // 插件接口定义
 export interface Plugin {
@@ -16,19 +26,30 @@ export interface Plugin {
   onBeforeUnmount?: (app: OneApp) => void;
 }
 
+export type AppDocumentOptions = Partial<Omit<HtmlDocumentOptions, 'body'>> & {
+  body?: HtmlDocumentBody;
+};
+
+export type AppDocumentRenderOptions = AppDocumentOptions;
+
 // 泛型化AppOptions接口
 export interface AppOptions<
   TState = Record<string, unknown>,
   TConfig = Record<string, unknown>,
+  TRootProps extends ComponentProps = ComponentProps,
 > {
   /** 根组件构造函数 */
-  root?: ComponentConstructor;
-  /** 应用挂载点 */
+  root?: ComponentConstructor<TRootProps>;
+  /** 根组件 props */
+  rootProps?: TRootProps;
+  /** 应用挂载点，默认 #app */
   rootElement?: string | Element;
   /** 全局状态 */
   state?: TState;
   /** 全局配置 */
   config?: TConfig;
+  /** HTML 文档壳配置，用于 dev/build 生成入口页面 */
+  document?: AppDocumentOptions;
 }
 
 // 泛型化AppContext接口
@@ -43,8 +64,9 @@ export interface AppContext<TConfig = Record<string, unknown>> {
 export class OneApp<
   TState extends object = Record<string, unknown>,
   TConfig extends object = Record<string, unknown>,
+  TRootProps extends ComponentProps = ComponentProps,
 > {
-  private container: HTMLElement;
+  private container: HTMLElement | null = null;
   private rootInstance: Component | null = null;
   private mounted: boolean = false;
   private templateEngine: TemplateEngine | null = null;
@@ -54,10 +76,7 @@ export class OneApp<
   private unmountedCallback?: () => void;
   public router?: Router;
 
-  constructor(private options: AppOptions<TState, TConfig> = {}) {
-    // 默认使用 body 作为容器
-    this.container = document.body;
-
+  constructor(private options: AppOptions<TState, TConfig, TRootProps> = {}) {
     this.appContext = {
       app: this as unknown as OneApp,
       version: '0.0.2',
@@ -76,6 +95,10 @@ export class OneApp<
    * 渲染错误UI
    */
   private renderErrorUI(error: Error): void {
+    if (!this.container) {
+      return;
+    }
+
     this.container.innerHTML = `
       <div style="padding: 20px; background-color: #ffebee; color: #c62828; font-family: Arial, sans-serif;">
         <h3>应用错误</h3>
@@ -106,23 +129,20 @@ export class OneApp<
       return;
     }
 
+    const mountContainer = this.resolveMountContainer();
+    if (!mountContainer) {
+      return;
+    }
+
     try {
+      this.container = mountContainer;
+
       // 添加全局应用实例
       (globalThis as { __APP__?: unknown }).__APP__ = this;
 
-      // 确定挂载点
-      if (this.options.rootElement) {
-        const rootElement = this.resolveRootElement(this.options.rootElement);
-        if (rootElement) {
-          this.container = rootElement as HTMLElement;
-        } else {
-          throw new Error(`无法找到挂载点: ${this.options.rootElement}`);
-        }
-      }
-
       // 只有在有根组件时才创建实例
       if (this.options.root) {
-        this.rootInstance = new this.options.root();
+        this.rootInstance = new this.options.root(this.options.rootProps);
 
         // 设置应用上下文
         if ('setAppContext' in this.rootInstance) {
@@ -180,7 +200,9 @@ export class OneApp<
       }
 
       // 清空容器
-      this.container.innerHTML = '';
+      if (this.container) {
+        this.container.innerHTML = '';
+      }
 
       // 触发卸载后钩子
       if (this.unmountedCallback) {
@@ -201,7 +223,9 @@ export class OneApp<
   /**
    * 更新根组件
    */
-  public updateRootComponent(component: ComponentConstructor): void {
+  public updateRootComponent(
+    component: ComponentConstructor<TRootProps>
+  ): void {
     if (this.mounted) {
       this.unmount();
     }
@@ -298,6 +322,25 @@ export class OneApp<
   }
 
   /**
+   * 生成应用入口 HTML 文档
+   */
+  public renderHtmlDocument(options: AppDocumentRenderOptions = {}): string {
+    const appDocument = this.options.document ?? {};
+    const scripts = this.mergeDocumentScripts(
+      appDocument.scripts,
+      options.scripts
+    );
+
+    return renderDocumentShell({
+      ...appDocument,
+      ...options,
+      title: options.title ?? appDocument.title ?? 'TSone App',
+      body: options.body ?? appDocument.body ?? this.createMountDocumentBody(),
+      scripts,
+    });
+  }
+
+  /**
    * 解析根元素
    */
   private resolveRootElement(selector?: string | Element): Element | null {
@@ -306,10 +349,72 @@ export class OneApp<
     }
 
     if (typeof selector === 'string') {
+      if (typeof document === 'undefined') {
+        return null;
+      }
+
       return document.querySelector(selector);
     }
 
-    return selector instanceof Element ? selector : null;
+    return typeof Element !== 'undefined' && selector instanceof Element
+      ? selector
+      : null;
+  }
+
+  private resolveMountContainer(): HTMLElement | null {
+    if (typeof document === 'undefined') {
+      return null;
+    }
+
+    const rootElement = this.resolveRootElement(
+      this.options.rootElement ?? DEFAULT_ROOT_ELEMENT
+    );
+    return rootElement instanceof HTMLElement ? rootElement : null;
+  }
+
+  private createMountDocumentBody(): HtmlDocumentBody {
+    const rootElement = this.options.rootElement ?? DEFAULT_ROOT_ELEMENT;
+
+    if (typeof rootElement === 'string') {
+      return this.createMountElementFromSelector(rootElement);
+    }
+
+    if (typeof Element !== 'undefined' && rootElement instanceof Element) {
+      const props: Record<string, string> = {};
+      if (rootElement.id) {
+        props.id = rootElement.id;
+      }
+      if (rootElement.className) {
+        props.className = rootElement.className;
+      }
+
+      return { tag: rootElement.tagName.toLowerCase(), props };
+    }
+
+    return Div({ props: { id: 'app' } });
+  }
+
+  private createMountElementFromSelector(selector: string): HtmlDocumentBody {
+    if (selector.startsWith('#') && selector.length > 1) {
+      return Div({ props: { id: selector.slice(1) } });
+    }
+
+    if (selector.startsWith('.') && selector.length > 1) {
+      return Div({ props: { className: selector.slice(1) } });
+    }
+
+    return Div({ props: { 'data-tsone-root': selector } });
+  }
+
+  private mergeDocumentScripts(
+    baseScripts?: HtmlScript[],
+    extraScripts?: HtmlScript[]
+  ): HtmlScript[] | undefined {
+    if (!baseScripts && !extraScripts) {
+      return undefined;
+    }
+
+    return [...(baseScripts ?? []), ...(extraScripts ?? [])];
   }
 
   // 生命周期钩子
@@ -347,6 +452,9 @@ export class OneApp<
 export function createApp<
   TState extends object = Record<string, unknown>,
   TConfig extends object = Record<string, unknown>,
->(options: AppOptions<TState, TConfig> = {}): OneApp<TState, TConfig> {
-  return new OneApp<TState, TConfig>(options);
+  TRootProps extends ComponentProps = ComponentProps,
+>(
+  options: AppOptions<TState, TConfig, TRootProps> = {}
+): OneApp<TState, TConfig, TRootProps> {
+  return new OneApp<TState, TConfig, TRootProps>(options);
 }

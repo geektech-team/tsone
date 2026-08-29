@@ -515,6 +515,15 @@ describe('docs locales', () => {
     expect(() => createDocCatalog('en', [englishPage])).toThrow(
       'Locale en contains Chinese content: /test/'
     );
+    expect(() =>
+      createDocCatalog('en', [
+        {
+          ...englishPage,
+          section: '指南',
+          body: [{ type: 'paragraph', content: ['English body'] }],
+        },
+      ])
+    ).toThrow('Locale en contains Chinese content: /test/');
     expect(() => createDocCatalog('zh', [englishPage, englishPage])).toThrow(
       'Duplicate documentation route: /test/'
     );
@@ -616,7 +625,7 @@ describe('docs locales', () => {
       collectBunCommands(chinesePages)
     );
     const englishExamples = collectCode(englishPages).join('\n');
-    expect(englishExamples).not.toContain('lang="zh-CN"');
-    expect(englishExamples).toContain('lang="en"');
+    expect(englishExamples).not.toContain("lang: 'zh-CN'");
+    expect(englishExamples).toContain("lang: 'en'");
   });
 });

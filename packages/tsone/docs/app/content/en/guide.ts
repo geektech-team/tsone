@@ -69,12 +69,12 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'heading',
         level: 3,
-        text: '3. HTML Structure',
+        text: '3. Generate the Document Shell from TypeScript',
       },
       {
         type: 'code',
-        language: 'html',
-        code: '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n    <title>TSone Example</title>\n  </head>\n  <body>\n    <div id="app"></div>\n    <script type="module" src="./index.ts"></script>\n  </body>\n</html>',
+        language: 'ts',
+        code: "const app = createApp({\n  root: App,\n  document: {\n    lang: 'en',\n    title: 'TSone Example',\n    description: 'A TSone counter application',\n    body: { tag: 'div', props: { id: 'app' } },\n    scripts: [{ type: 'module', src: './index.ts' }],\n  },\n});\n\nconst html = app.renderHtmlDocument();\napp.mount();",
       },
       {
         type: 'heading',

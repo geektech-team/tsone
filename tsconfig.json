@@ -8,6 +8,7 @@
     "moduleResolution": "Bundler",
     "baseUrl": ".",
     "paths": {
+      "@geektech/tsone": ["packages/tsone/lib/index.ts"],
       "@geektech/tsone-cli": ["packages/tsone-cli/src/index.ts"]
     },
     "allowImportingTsExtensions": true,
