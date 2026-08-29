@@ -1,23 +1,22 @@
 import { execFileSync } from 'node:child_process';
-import { createHash, randomUUID } from 'node:crypto';
 import {
-  closeSync,
+  copyFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
-  openSync,
   readFileSync,
   readdirSync,
   realpathSync,
   rmSync,
   statSync,
   symlinkSync,
-  unlinkSync,
+  type Dirent,
   writeFileSync,
 } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { join, resolve, sep } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'bun:test';
 
@@ -26,26 +25,21 @@ const cliRoot = resolve(import.meta.dir, '..');
 const frameworkRoot = resolve(cliRoot, '..', 'tsone');
 const require = createRequire(import.meta.url);
 const tscBin = require.resolve('typescript/bin/tsc');
-const buildLockPath = join(
-  tmpdir(),
-  `tsone-package-build-${createHash('sha256')
-    .update(realpathSync(repoRoot))
-    .digest('hex')
-    .slice(0, 16)}.lock`
-);
-const BUILD_LOCK_TIMEOUT_MS = 30_000;
-const BUILD_LOCK_POLL_MS = 50;
-const INVALID_LOCK_STALE_MS = 5_000;
+const COPY_EXCLUDED_SEGMENTS = new Set([
+  '.git',
+  '.DS_Store',
+  'coverage',
+  'dist',
+  'node_modules',
+]);
 type DevProcess = Bun.Subprocess<'ignore', 'pipe', 'inherit'>;
 
-interface BuildLock {
-  release: () => void;
-}
-
-interface BuildLockOptions {
-  timeoutMs?: number;
-  pollMs?: number;
-  invalidOwnerStaleMs?: number;
+interface PackedPackages {
+  workspaceRoot: string;
+  frameworkPackageRoot: string;
+  cliPackageRoot: string;
+  frameworkTarball: string;
+  cliTarball: string;
 }
 
 function run(
@@ -98,162 +92,93 @@ function pack(
   return join(destination, tarball);
 }
 
-async function buildAndPackPackages(
+function buildAndPackPackages(
+  tempRoot: string,
   frameworkPackDirectory: string,
   cliPackDirectory: string,
   env: Record<string, string | undefined>
-): Promise<{ frameworkTarball: string; cliTarball: string }> {
-  const lock = await acquireBuildLock(buildLockPath);
+): PackedPackages {
+  const workspaceRoot = join(tempRoot, 'workspace');
+  const frameworkPackageRoot = join(workspaceRoot, 'packages', 'tsone');
+  const cliPackageRoot = join(workspaceRoot, 'packages', 'tsone-cli');
 
-  try {
-    run('bun', ['run', 'build'], frameworkRoot, env);
-    run('bun', ['run', 'build'], cliRoot, env);
-
-    return {
-      frameworkTarball: pack(frameworkRoot, frameworkPackDirectory, env),
-      cliTarball: pack(cliRoot, cliPackDirectory, env),
-    };
-  } finally {
-    lock.release();
-  }
-}
-
-async function acquireBuildLock(
-  lockPath: string,
-  options: BuildLockOptions = {}
-): Promise<BuildLock> {
-  const timeoutMs = options.timeoutMs ?? BUILD_LOCK_TIMEOUT_MS;
-  const pollMs = options.pollMs ?? BUILD_LOCK_POLL_MS;
-  const invalidOwnerStaleMs =
-    options.invalidOwnerStaleMs ?? INVALID_LOCK_STALE_MS;
-  const deadline = Date.now() + timeoutMs;
-  const token = `${process.pid}:${Date.now()}:${randomUUID()}`;
-
-  while (Date.now() <= deadline) {
-    const lock = tryCreateBuildLock(lockPath, token);
-    if (lock) {
-      return lock;
-    }
-
-    const owner = readLockOwner(lockPath);
-    if (
-      owner !== undefined &&
-      isStaleLock(lockPath, owner, invalidOwnerStaleMs)
-    ) {
-      removeObservedLock(lockPath, owner);
-      continue;
-    }
-
-    const remainingMs = deadline - Date.now();
-    if (remainingMs <= 0) {
-      break;
-    }
-
-    await delay(Math.min(pollMs, remainingMs));
+  createIsolatedWorkspace(workspaceRoot, frameworkPackageRoot, cliPackageRoot);
+  if (
+    existsSync(join(frameworkPackageRoot, 'dist')) ||
+    existsSync(join(cliPackageRoot, 'dist'))
+  ) {
+    throw new Error('Isolated package copies must not include source dist');
   }
 
-  throw new Error(`Timed out waiting for package build lock: ${lockPath}`);
-}
+  run('bun', ['run', 'build'], frameworkPackageRoot, env);
+  run('bun', ['run', 'build'], cliPackageRoot, env);
 
-function tryCreateBuildLock(
-  lockPath: string,
-  token: string
-): BuildLock | undefined {
-  let descriptor: number;
-
-  try {
-    descriptor = openSync(lockPath, 'wx', 0o600);
-  } catch (error: unknown) {
-    if (hasErrorCode(error, 'EEXIST')) {
-      return undefined;
-    }
-    throw error;
-  }
-
-  try {
-    writeFileSync(descriptor, token);
-  } catch (error: unknown) {
-    try {
-      unlinkSync(lockPath);
-    } catch (cleanupError: unknown) {
-      if (!hasErrorCode(cleanupError, 'ENOENT')) {
-        throw cleanupError;
-      }
-    }
-    throw error;
-  } finally {
-    closeSync(descriptor);
-  }
-
-  let released = false;
   return {
-    release: () => {
-      if (released) {
-        return;
-      }
-      released = true;
-
-      const currentOwner = readLockOwner(lockPath);
-      if (currentOwner === token) {
-        unlinkSync(lockPath);
-      }
-    },
+    workspaceRoot,
+    frameworkPackageRoot,
+    cliPackageRoot,
+    frameworkTarball: pack(frameworkPackageRoot, frameworkPackDirectory, env),
+    cliTarball: pack(cliPackageRoot, cliPackDirectory, env),
   };
 }
 
-function readLockOwner(lockPath: string): string | undefined {
-  try {
-    return readFileSync(lockPath, 'utf8');
-  } catch (error: unknown) {
-    if (hasErrorCode(error, 'ENOENT')) {
-      return undefined;
-    }
-    throw error;
-  }
+function createIsolatedWorkspace(
+  workspaceRoot: string,
+  frameworkPackageRoot: string,
+  cliPackageRoot: string
+): void {
+  mkdirSync(join(workspaceRoot, 'packages'), { recursive: true });
+  copyPackage(frameworkRoot, frameworkPackageRoot);
+  copyPackage(cliRoot, cliPackageRoot);
+  copyFileSync(
+    join(repoRoot, 'tsconfig.json'),
+    join(workspaceRoot, 'tsconfig.json')
+  );
+  copyFileSync(join(repoRoot, 'bun.lock'), join(workspaceRoot, 'bun.lock'));
+  writeFileSync(
+    join(workspaceRoot, 'package.json'),
+    JSON.stringify(
+      {
+        name: 'tsone-package-smoke-workspace',
+        private: true,
+        type: 'module',
+        workspaces: ['packages/*'],
+      },
+      null,
+      2
+    )
+  );
+
+  symlinkSync(
+    join(repoRoot, 'node_modules'),
+    join(workspaceRoot, 'node_modules'),
+    'dir'
+  );
+  const cliNodeModules = join(cliPackageRoot, 'node_modules');
+  mkdirSync(join(cliNodeModules, '@geektech'), { recursive: true });
+  symlinkSync(
+    frameworkPackageRoot,
+    join(cliNodeModules, '@geektech', 'tsone'),
+    'dir'
+  );
+  symlinkSync(
+    realpathSync(join(repoRoot, 'node_modules', 'happy-dom')),
+    join(cliNodeModules, 'happy-dom'),
+    'dir'
+  );
 }
 
-function isStaleLock(
-  lockPath: string,
-  owner: string,
-  invalidOwnerStaleMs: number
-): boolean {
-  const ownerPid = Number(owner.split(':', 1)[0]);
-  if (Number.isSafeInteger(ownerPid) && ownerPid > 0) {
-    try {
-      process.kill(ownerPid, 0);
-      return false;
-    } catch (error: unknown) {
-      return hasErrorCode(error, 'ESRCH');
-    }
-  }
-
-  try {
-    return Date.now() - statSync(lockPath).mtimeMs >= invalidOwnerStaleMs;
-  } catch (error: unknown) {
-    if (hasErrorCode(error, 'ENOENT')) {
-      return false;
-    }
-    throw error;
-  }
-}
-
-function removeObservedLock(lockPath: string, observedOwner: string): void {
-  if (readLockOwner(lockPath) !== observedOwner) {
-    return;
-  }
-
-  try {
-    unlinkSync(lockPath);
-  } catch (error: unknown) {
-    if (!hasErrorCode(error, 'ENOENT')) {
-      throw error;
-    }
-  }
-}
-
-function delay(milliseconds: number): Promise<void> {
-  return new Promise((resolveDelay) => {
-    setTimeout(resolveDelay, milliseconds);
+function copyPackage(sourceRoot: string, destinationRoot: string): void {
+  cpSync(sourceRoot, destinationRoot, {
+    recursive: true,
+    preserveTimestamps: true,
+    filter: (sourcePath) => {
+      const path = relative(sourceRoot, sourcePath);
+      return (
+        path === '' ||
+        !path.split(sep).some((segment) => COPY_EXCLUDED_SEGMENTS.has(segment))
+      );
+    },
   });
 }
 
@@ -278,20 +203,31 @@ function findInstalledPackage(root: string, packageName: string): string[] {
       continue;
     }
 
-    const canonicalDirectory = realpathSync(directory);
+    const canonicalDirectory = resolveDirectory(directory);
+    if (!canonicalDirectory) {
+      continue;
+    }
     if (visited.has(canonicalDirectory)) {
       continue;
     }
     visited.add(canonicalDirectory);
 
-    for (const entry of readdirSync(canonicalDirectory, {
-      withFileTypes: true,
-    })) {
+    let entries: Dirent[];
+    try {
+      entries = readdirSync(canonicalDirectory, { withFileTypes: true });
+    } catch (error: unknown) {
+      if (hasErrorCode(error, 'ENOENT') || hasErrorCode(error, 'ELOOP')) {
+        continue;
+      }
+      throw error;
+    }
+
+    for (const entry of entries) {
       if (!entry.isDirectory() && !entry.isSymbolicLink()) {
         continue;
       }
-      const path = realpathSync(join(canonicalDirectory, entry.name));
-      if (!statSync(path).isDirectory()) {
+      const path = resolveDirectory(join(canonicalDirectory, entry.name));
+      if (!path) {
         continue;
       }
       if (
@@ -305,6 +241,18 @@ function findInstalledPackage(root: string, packageName: string): string[] {
   }
 
   return [...matches];
+}
+
+function resolveDirectory(path: string): string | undefined {
+  try {
+    const canonicalPath = realpathSync(path);
+    return statSync(canonicalPath).isDirectory() ? canonicalPath : undefined;
+  } catch (error: unknown) {
+    if (hasErrorCode(error, 'ENOENT') || hasErrorCode(error, 'ELOOP')) {
+      return undefined;
+    }
+    throw error;
+  }
 }
 
 function hasErrorCode(error: unknown, code: string): boolean {
@@ -378,44 +326,8 @@ async function stopProcess(process: DevProcess): Promise<void> {
   }
 }
 
-describe('package build lock', () => {
-  it('recovers a lock owned by a dead process and releases it', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'tsone-build-lock-'));
-    const lockPath = join(root, 'build.lock');
-
-    try {
-      writeFileSync(lockPath, '2147483647:stale');
-      const lock = await acquireBuildLock(lockPath, {
-        timeoutMs: 200,
-        pollMs: 5,
-      });
-
-      expect(readFileSync(lockPath, 'utf8')).toStartWith(`${process.pid}:`);
-      lock.release();
-      expect(existsSync(lockPath)).toBe(false);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-
-  it('waits only to a bounded deadline while a live owner holds it', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'tsone-build-lock-'));
-    const lockPath = join(root, 'build.lock');
-    const lock = await acquireBuildLock(lockPath);
-
-    try {
-      await expect(
-        acquireBuildLock(lockPath, { timeoutMs: 30, pollMs: 5 })
-      ).rejects.toThrow('Timed out waiting for package build lock');
-    } finally {
-      lock.release();
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-});
-
 describe('installed package inspection', () => {
-  it('finds packages behind symlinks without following directory cycles', () => {
+  it('finds symlinked packages while skipping cycles and broken links', () => {
     const root = mkdtempSync(join(tmpdir(), 'tsone-package-inspection-'));
     const nodeModules = join(root, 'node_modules');
     const packageRoot = join(root, 'store', 'happy-dom');
@@ -429,6 +341,11 @@ describe('installed package inspection', () => {
       );
       symlinkSync(packageRoot, join(nodeModules, 'happy-dom'), 'dir');
       symlinkSync(nodeModules, join(packageRoot, 'cycle'), 'dir');
+      symlinkSync(
+        join(root, 'missing-package'),
+        join(nodeModules, 'dangling'),
+        'dir'
+      );
 
       expect(findInstalledPackage(nodeModules, 'happy-dom')).toEqual([
         realpathSync(packageRoot),
@@ -460,12 +377,42 @@ describe('CLI package smoke', () => {
     mkdirSync(join(consumerRoot, 'src'), { recursive: true });
 
     try {
-      const { frameworkTarball, cliTarball } = await buildAndPackPackages(
+      const {
+        workspaceRoot,
+        frameworkPackageRoot,
+        cliPackageRoot,
+        frameworkTarball,
+        cliTarball,
+      } = buildAndPackPackages(
+        tempRoot,
         frameworkPackDirectory,
         cliPackDirectory,
         env
       );
       const cliFiles = listTarball(cliTarball, env);
+
+      const canonicalWorkspaceRoot = realpathSync(workspaceRoot);
+      expect(realpathSync(frameworkPackageRoot)).toStartWith(
+        `${canonicalWorkspaceRoot}${sep}`
+      );
+      expect(realpathSync(cliPackageRoot)).toStartWith(
+        `${canonicalWorkspaceRoot}${sep}`
+      );
+      expect(realpathSync(cliPackageRoot)).not.toBe(realpathSync(cliRoot));
+      expect(realpathSync(join(cliPackageRoot, 'dist'))).toStartWith(
+        `${canonicalWorkspaceRoot}${sep}`
+      );
+      if (existsSync(join(cliRoot, 'dist'))) {
+        expect(realpathSync(join(cliPackageRoot, 'dist'))).not.toBe(
+          realpathSync(join(cliRoot, 'dist'))
+        );
+      }
+      expect(realpathSync(frameworkTarball)).toStartWith(
+        `${realpathSync(tempRoot)}${sep}`
+      );
+      expect(realpathSync(cliTarball)).toStartWith(
+        `${realpathSync(tempRoot)}${sep}`
+      );
 
       expect(cliFiles).toEqual(
         expect.arrayContaining([
@@ -478,9 +425,9 @@ describe('CLI package smoke', () => {
           'package.json',
         ])
       );
-      expect(statSync(join(cliRoot, 'dist', 'cli.js')).mode & 0o111).not.toBe(
-        0
-      );
+      expect(
+        statSync(join(cliPackageRoot, 'dist', 'cli.js')).mode & 0o111
+      ).not.toBe(0);
 
       run(
         'tar',
@@ -491,7 +438,13 @@ describe('CLI package smoke', () => {
       const extractedPackageRoot = join(extractedCliDirectory, 'package');
       const extractedManifest = JSON.parse(
         readFileSync(join(extractedPackageRoot, 'package.json'), 'utf8')
-      ) as { bin?: Record<string, string> };
+      ) as {
+        bin?: Record<string, string>;
+        dependencies?: Record<string, string>;
+      };
+      expect(extractedManifest.dependencies).toEqual({
+        '@geektech/tsone': '0.0.2',
+      });
       const binTarget = extractedManifest.bin?.tsone;
       expect(binTarget).toBeTruthy();
       if (!binTarget) {
