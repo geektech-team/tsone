@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { beforeEach, describe, expect, it } from 'bun:test';
@@ -125,11 +125,11 @@ describe('playground entries', () => {
 
     for (const project of projects) {
       const root = repoPath('playground', project.name);
-      rmSync(join(root, 'dist'), { recursive: true, force: true });
+      const outDir = mkdtempSync(join(root, '.tsone-build-smoke-'));
 
       try {
         const build = Bun.spawnSync({
-          cmd: ['bun', 'run', 'build'],
+          cmd: ['bun', 'run', 'tsone', 'build', '--out-dir', outDir],
           cwd: root,
           env: {
             ...process.env,
@@ -144,18 +144,18 @@ describe('playground entries', () => {
 
         expect(build.exitCode).toBe(0);
 
-        const html = readFileSync(join(root, 'dist', 'index.html'), 'utf8');
+        const html = readFileSync(join(outDir, 'index.html'), 'utf8');
         expect(html).toContain(`<title>${project.title}</title>`);
         expect(html).toContain('<div id="app"></div>');
         expect(html).toContain(
           `<script type="module" src="${project.bundle}"></script>`
         );
 
-        const mainBundle = join(root, 'dist', 'main.js');
+        const mainBundle = join(outDir, 'main.js');
         expect(existsSync(mainBundle)).toBe(true);
         expect(readFileSync(mainBundle, 'utf8')).toContain(project.bundleText);
       } finally {
-        rmSync(join(root, 'dist'), { recursive: true, force: true });
+        rmSync(outDir, { recursive: true, force: true });
       }
     }
   });

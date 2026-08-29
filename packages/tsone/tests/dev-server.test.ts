@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { repoPath } from './paths';
 
-let devProcess: ReturnType<typeof Bun.spawn> | undefined;
+type DevProcess = ReturnType<typeof Bun.spawn>;
+
+let devProcess: DevProcess | undefined;
 
 async function fetchWithTimeout(url: string): Promise<Response> {
   const controller = new AbortController();
@@ -40,8 +42,11 @@ async function waitForServer(url: string): Promise<Response> {
   throw new Error(`dev server did not respond at ${url}`);
 }
 
-async function waitForDevServerUrl(): Promise<string> {
-  const stdout = devProcess?.stdout;
+async function waitForDevServerUrl(
+  process: DevProcess,
+  timeoutMs = 10000
+): Promise<string> {
+  const stdout = process.stdout;
   if (!stdout) {
     throw new Error('dev server stdout is not available');
   }
@@ -49,16 +54,16 @@ async function waitForDevServerUrl(): Promise<string> {
   const reader = stdout.getReader();
   const decoder = new TextDecoder();
   let output = '';
-  const deadline = Date.now() + 10000;
+  const timedOut = Symbol('timed-out');
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<typeof timedOut>((resolve) => {
+    timer = setTimeout(() => resolve(timedOut), timeoutMs);
+  });
 
   try {
-    while (Date.now() < deadline) {
-      const remaining = deadline - Date.now();
-      const result = await Promise.race([
-        reader.read(),
-        Bun.sleep(remaining).then(() => undefined),
-      ]);
-      if (!result) {
+    for (;;) {
+      const result = await Promise.race([reader.read(), timeout]);
+      if (result === timedOut) {
         break;
       }
 
@@ -74,15 +79,39 @@ async function waitForDevServerUrl(): Promise<string> {
       }
     }
   } finally {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+    }
+    await reader.cancel().catch(() => undefined);
     reader.releaseLock();
   }
 
-  const stderr = devProcess?.stderr
-    ? await new Response(devProcess.stderr).text()
-    : '';
-  throw new Error(
-    `dev server did not report its URL: ${output}${stderr}`.trim()
-  );
+  const stderr =
+    process.exitCode !== null && process.stderr
+      ? await new Response(process.stderr).text()
+      : '';
+  const details = [output.trim(), stderr.trim()].filter(Boolean).join('\n');
+  throw new Error(`dev server did not report its URL: ${details}`.trim());
+}
+
+async function waitForProcessExit(
+  process: DevProcess,
+  timeoutMs: number
+): Promise<boolean> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    return await Promise.race([
+      process.exited.then(() => true),
+      new Promise<false>((resolve) => {
+        timer = setTimeout(() => resolve(false), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+    }
+  }
 }
 
 async function stopDevProcess(): Promise<void> {
@@ -94,13 +123,12 @@ async function stopDevProcess(): Promise<void> {
   }
 
   process.kill();
-  const exited = await Promise.race([
-    process.exited.then(() => true),
-    Bun.sleep(2000).then(() => false),
-  ]);
+  const exited = await waitForProcessExit(process, 2000);
   if (!exited && process.exitCode === null) {
     process.kill('SIGKILL');
-    await process.exited;
+    if (!(await waitForProcessExit(process, 2000))) {
+      throw new Error('dev server did not exit after SIGKILL');
+    }
   }
 }
 
@@ -109,6 +137,26 @@ afterEach(async () => {
 });
 
 describe('TSone CLI playground dev server', () => {
+  it('times out without waiting for stderr from a running process', async () => {
+    devProcess = Bun.spawn({
+      cmd: [
+        'bun',
+        '-e',
+        "console.log('starting'); console.error('still running'); await Bun.sleep(60000);",
+      ],
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+
+    try {
+      await expect(waitForDevServerUrl(devProcess, 200)).rejects.toThrow(
+        'dev server did not report its URL: starting'
+      );
+    } finally {
+      await stopDevProcess();
+    }
+  }, 2000);
+
   it('serves every playground through its workspace CLI dependency', async () => {
     const projects = [
       {
@@ -147,7 +195,7 @@ describe('TSone CLI playground dev server', () => {
       });
 
       try {
-        const baseUrl = await waitForDevServerUrl();
+        const baseUrl = await waitForDevServerUrl(devProcess);
         const html = await waitForServer(`${baseUrl}/`);
         expect(html.status).toBe(200);
         expect(html.headers.get('content-type')).toContain('text/html');
@@ -167,5 +215,5 @@ describe('TSone CLI playground dev server', () => {
         await stopDevProcess();
       }
     }
-  });
+  }, 45000);
 });
