@@ -12,6 +12,38 @@ import { describe, expect, it } from 'bun:test';
 import { buildOneDocs, startOneDocsServer } from '../scripts/docs';
 
 describe('One UI docs server', () => {
+  it('rebuilds managed output before serving so component previews are current', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'one-docs-server-refresh-'));
+    await buildOneDocs({ outDir });
+    const switchPage = join(
+      outDir,
+      'components',
+      'form',
+      'switch',
+      'index.html'
+    );
+    writeFileSync(switchPage, '<!doctype html><p>stale switch page</p>');
+
+    const server = await startOneDocsServer({
+      hostname: '127.0.0.1',
+      port: 0,
+      outDir,
+    });
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:${server.port}/components/form/switch/`
+      );
+      const html = await response.text();
+      expect(response.status).toBe(200);
+      expect(html).toContain('class="one-switch__thumb"');
+      expect(html).not.toContain('stale switch page');
+    } finally {
+      server.stop(true);
+      rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
   it('serves built pages and assets with explicit content types', async () => {
     const outDir = mkdtempSync(join(tmpdir(), 'one-docs-server-'));
     await buildOneDocs({ outDir });

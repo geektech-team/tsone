@@ -257,7 +257,9 @@ async function hasOneDocsBuildMarker(outDir: string): Promise<boolean> {
 export async function startOneDocsServer(
   options: OneDocsServerOptions = resolveOneDocsServerOptions()
 ): Promise<ReturnType<typeof Bun.serve>> {
-  if (!(await fileExists(join(options.outDir, 'index.html')))) {
+  const hasIndex = await fileExists(join(options.outDir, 'index.html'));
+  const isManagedBuild = await hasOneDocsBuildMarker(options.outDir);
+  if (!hasIndex || isManagedBuild) {
     await buildOneDocs({ outDir: options.outDir });
   }
 
