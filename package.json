@@ -3,10 +3,13 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "playground/*"
   ],
   "scripts": {
-    "dev": "bun run --cwd packages/tsone dev",
+    "dev": "bun run --cwd playground/official-site dev",
+    "dev:site": "bun run --cwd playground/official-site dev",
+    "dev:admin": "bun run --cwd playground/admin-dashboard dev",
     "docs": "bun run --cwd packages/tsone docs",
     "build": "bun run --cwd packages/tsone build && bun run --cwd packages/tsone-cli build",
     "build:types": "bun run --cwd packages/tsone build:types && bun run --cwd packages/tsone-cli build:types",

@@ -21,7 +21,6 @@
     }
   },
   "scripts": {
-    "dev": "bun scripts/dev.ts",
     "docs": "bun scripts/docs.ts",
     "build": "bun scripts/build.ts",
     "build:types": "bunx tsc --project tsconfig.build.json",

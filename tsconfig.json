@@ -9,6 +9,8 @@
     "baseUrl": ".",
     "paths": {
       "@geektech/tsone": ["packages/tsone/lib/index.ts"],
+      "@geektech/tsone/router": ["packages/tsone/lib/router/index.ts"],
+      "@geektech/tsone/style": ["packages/tsone/lib/style/index.ts"],
       "@geektech/tsone-cli": ["packages/tsone-cli/src/index.ts"]
     },
     "allowImportingTsExtensions": true,
@@ -26,7 +28,8 @@
   },
   "include": [
     "packages/tsone/lib",
-    "packages/tsone/examples",
+    "playground/*/src",
+    "playground/*/tsone.config.ts",
     "packages/tsone/docs/app",
     "packages/tsone/scripts",
     "packages/tsone-cli/src",

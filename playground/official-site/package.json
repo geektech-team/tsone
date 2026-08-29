@@ -1,0 +1,16 @@
+{
+  "name": "@tsone-playground/official-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsone dev",
+    "build": "tsone build",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "dependencies": {
+    "@geektech/tsone": "workspace:*"
+  },
+  "devDependencies": {
+    "@geektech/tsone-cli": "workspace:*"
+  }
+}
