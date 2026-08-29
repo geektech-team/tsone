@@ -275,10 +275,10 @@ export const apiPages: DocPage[] = [
         '配置默认值为入口 src/main.ts、server host 127.0.0.1、端口 52211、空的 server.proxy，以及 build.outDir dist。入口必须使用 export const app，并提供 renderHtmlDocument()。'
       ),
       paragraph(
-        'server.proxy 接受 HTTP/HTTPS 字符串规则或 { target, changeOrigin, rewrite } 对象规则。字面前缀按最长匹配优先；查询参数、请求体和端到端请求头会转发，上游连接失败时返回 502 Bad Gateway。'
+        '开发服务器仅提供 HTTP。代理目标可以使用 HTTP 或 HTTPS。server.proxy 接受字符串规则或 { target, changeOrigin, rewrite } 对象规则。字面前缀按最长匹配优先；查询参数、请求体和端到端请求头会转发，上游连接失败时返回 502 Bad Gateway。'
       ),
       paragraph(
-        'build.outDir 必须是项目根目录内部的安全子目录。CLI 首版不提供 config plugins、WebSocket、HMR、SSR、public/ 复制以及公开的 minify/sourcemap 配置。'
+        'build.outDir 必须是项目根目录内部的安全子目录。CLI 首版配置不提供 plugins、WebSocket、HMR、SSR、public/ 复制以及公开的 minify/sourcemap 配置。'
       ),
     ],
   },

@@ -109,13 +109,14 @@ directory.
 
 ## Development Proxy
 
-`server.proxy` accepts HTTP/HTTPS targets only. A rule is matched as a literal
-pathname prefix, and the longest matching prefix wins. The proxy preserves the
-query string, request method, request body, and end-to-end headers while
-removing hop-by-hop headers. `changeOrigin: true` changes the upstream `Host`
-header; otherwise the incoming host is retained. `rewrite` synchronously
-changes the pathname before it is joined to the target base path. An upstream
-connection failure returns the fixed response `502 Bad Gateway`.
+The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.
+A rule is matched as a literal pathname prefix, and the longest matching prefix
+wins. The proxy preserves the query string, request method, request body, and
+end-to-end headers while removing hop-by-hop headers. `changeOrigin: true`
+changes the upstream `Host` header; otherwise the incoming host is retained.
+`rewrite` synchronously changes the pathname before it is joined to the target
+base path. An upstream connection failure returns the fixed response
+`502 Bad Gateway`.
 
 ## Programmatic API
 
@@ -154,8 +155,8 @@ console.log(result.root, result.outDir, result.assetsBuilt);
 
 ## Version 1 Scope
 
-The CLI supports HTTP/HTTPS serving and proxying only. Its v1 config has no
-plugins, WebSocket support, HMR, SSR, `public/` directory copying, or public
-`minify` and `sourcemap` configuration. Development bundles use an internal
-inline source map, while production build minification and source-map controls
-are intentionally not configurable.
+The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.
+CLI v1 has no config plugins, WebSocket, HMR, SSR, `public/` directory copying,
+or public `minify` and `sourcemap` configuration. Development bundles use an
+internal inline source map, while production build minification and source-map
+controls are intentionally not configurable.

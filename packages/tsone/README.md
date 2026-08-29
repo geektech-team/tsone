@@ -144,11 +144,12 @@ and `build`. The dev server is owned by the caller, which must call
 `server.stop()`; `build()` returns absolute `root` and `outDir` values plus
 `assetsBuilt`.
 
-Proxy targets are HTTP/HTTPS only. Rules use literal prefix matching with the
-longest match first, retain query/body/end-to-end headers, optionally apply
-`changeOrigin` and `rewrite`, and return `502 Bad Gateway` when the upstream is
-unreachable. Version 1 has no CLI config plugins, WebSocket, HMR, SSR,
-`public/` copying, or public minify/sourcemap settings.
+The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.
+Rules use literal prefix matching with the longest match first, retain
+query/body/end-to-end headers, optionally apply `changeOrigin` and `rewrite`,
+and return `502 Bad Gateway` when the upstream is unreachable. CLI v1 has no
+config plugins, WebSocket, HMR, SSR, `public/` copying, or public
+minify/sourcemap settings.
 
 ## Routing
 

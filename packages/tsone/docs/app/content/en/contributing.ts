@@ -50,7 +50,10 @@ export const enContributingPages: DocPage[] = [
           'Do not add a @geektech/tsone ./dev export; applications install @geektech/tsone-cli separately',
         ],
         [
-          'CLI v1 config remains a plain-object default export with no plugins, WebSocket, HMR, SSR, public/ copying, or public minify/sourcemap settings',
+          'The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.',
+        ],
+        [
+          'CLI v1 has no config plugins, WebSocket, HMR, SSR, public/ copying, or public minify/sourcemap settings',
         ],
       ]),
       heading(2, 'Coding Standards'),

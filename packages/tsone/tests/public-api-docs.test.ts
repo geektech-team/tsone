@@ -40,6 +40,13 @@ function localizedDocsTextFor(locale: 'en' | 'zh', paths: string[]): string {
     .join('\n');
 }
 
+function normalizeProse(text: string): string {
+  return text
+    .replace(/([\u3400-\u9fff])\s+(?=[\u3400-\u9fff])/gu, '$1')
+    .replace(/\s+/gu, ' ')
+    .trim();
+}
+
 describe('public API documentation', () => {
   it('keeps README examples aligned with current package metadata and Bun commands', () => {
     const readme = readText('README.md');
@@ -198,6 +205,10 @@ describe('public API documentation', () => {
     }
 
     const paths = ['/guide/getting-started/', '/api/app/'];
+    const localizedApiText = {
+      en: localizedDocsTextFor('en', ['/api/app/']),
+      zh: localizedDocsTextFor('zh', ['/api/app/']),
+    };
     const localizedText = {
       en: [readText('README.md'), localizedDocsTextFor('en', paths)].join('\n'),
       zh: [readText('README-zh.md'), localizedDocsTextFor('zh', paths)].join(
@@ -214,10 +225,51 @@ describe('public API documentation', () => {
         'tsone build',
         'defineConfig',
         'startDevServer',
-        'build',
       ]) {
         expect(text).toContain(term);
       }
+    }
+
+    for (const text of Object.values(localizedApiText)) {
+      expect(text).toContain(
+        'build(options?: BuildOptions): Promise<BuildResult>'
+      );
+    }
+  });
+
+  it('keeps development transport and v1 exclusions explicit in every docs surface', () => {
+    const typedPaths = [
+      '/guide/getting-started/',
+      '/api/app/',
+      '/contributing/',
+    ];
+    const englishSurfaces = [
+      readText('README.md'),
+      ...typedPaths.map((path) => localizedDocsTextFor('en', [path])),
+    ];
+    const chineseSurfaces = [
+      readText('README-zh.md'),
+      ...typedPaths.map((path) => localizedDocsTextFor('zh', [path])),
+    ];
+
+    for (const text of englishSurfaces) {
+      const prose = normalizeProse(text);
+      expect(prose).toContain(
+        'The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.'
+      );
+      expect(prose).toContain(
+        'CLI v1 has no config plugins, WebSocket, HMR, SSR'
+      );
+    }
+
+    for (const text of chineseSurfaces) {
+      const prose = normalizeProse(text);
+      expect(prose).toContain(
+        '开发服务器仅提供 HTTP。代理目标可以使用 HTTP 或 HTTPS。'
+      );
+      expect(prose).toContain(
+        'CLI 首版配置不提供 plugins、WebSocket、HMR、SSR'
+      );
     }
   });
 
@@ -241,15 +293,10 @@ describe('public API documentation', () => {
       'startDevServer',
       'server.stop()',
       'assetsBuilt',
-      'HTTP/HTTPS',
       'longest',
       'changeOrigin',
       'rewrite',
       '502 Bad Gateway',
-      'plugins',
-      'WebSocket',
-      'HMR',
-      'SSR',
       'public/',
       'minify',
       'sourcemap',
@@ -260,5 +307,11 @@ describe('public API documentation', () => {
     expect(readme).toContain("'/backend': 'http://localhost:4000'");
     expect(readme).toContain("target: 'http://localhost:3000'");
     expect(readme).toContain("build: { outDir: 'dist' }");
+    expect(readme).toContain(
+      'The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.'
+    );
+    expect(readme).toContain(
+      'CLI v1 has no config plugins, WebSocket, HMR, SSR'
+    );
   });
 });

@@ -135,7 +135,7 @@ export const guidePages: DocPage[] = [
         ].join('\n')
       ),
       paragraph(
-        "代理也可以使用字符串简写 '/backend': 'http://localhost:4000'。目标仅支持 HTTP/HTTPS，字面前缀按最长匹配优先；查询参数、请求体与端到端请求头会转发，changeOrigin 更新 Host，rewrite 修改路径，上游不可达时返回 502 Bad Gateway。"
+        "代理也可以使用字符串简写 '/backend': 'http://localhost:4000'。开发服务器仅提供 HTTP。代理目标可以使用 HTTP 或 HTTPS。字面前缀按最长匹配优先；查询参数、请求体与端到端请求头会转发，changeOrigin 更新 Host，rewrite 修改路径，上游不可达时返回 502 Bad Gateway。"
       ),
       heading(2, '运行应用'),
       codeBlock(
@@ -146,7 +146,7 @@ export const guidePages: DocPage[] = [
         'dev 只接受 host/port 覆盖，build 只接受 out-dir；支持 --port 3000 与 --port=3000 两种形式。build.outDir 必须是项目根目录内部的子目录。'
       ),
       paragraph(
-        'CLI 首版不提供 config plugins、WebSocket、HMR、SSR、public/ 复制以及公开的 minify/sourcemap 配置。'
+        'CLI 首版配置不提供 plugins、WebSocket、HMR、SSR、public/ 复制以及公开的 minify/sourcemap 配置。'
       ),
       heading(2, '下一步'),
       list([

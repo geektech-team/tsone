@@ -99,7 +99,7 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'paragraph',
         content: [
-          "A proxy may use the string shorthand '/backend': 'http://localhost:4000'. Proxy targets are HTTP/HTTPS only; literal prefixes use the longest match first. Query strings, bodies, and end-to-end headers are forwarded, changeOrigin updates Host, rewrite changes the pathname, and an unreachable upstream returns 502 Bad Gateway.",
+          "A proxy may use the string shorthand '/backend': 'http://localhost:4000'. The development server serves HTTP only. Proxy targets may use HTTP or HTTPS. Literal prefixes use the longest match first. Query strings, bodies, and end-to-end headers are forwarded, changeOrigin updates Host, rewrite changes the pathname, and an unreachable upstream returns 502 Bad Gateway.",
         ],
       },
       {

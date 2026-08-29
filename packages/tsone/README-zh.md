@@ -135,10 +135,11 @@ tsone build [--out-dir <path>]
 服务器生命周期，结束时必须调用 `server.stop()`；`build()` 返回绝对的 `root`、
 `outDir` 以及 `assetsBuilt`。
 
-代理目标仅支持 HTTP/HTTPS。规则按字面路径前缀匹配，优先最长前缀，保留查询
-参数、请求体和端到端请求头，可选应用 `changeOrigin` 与 `rewrite`；上游不可达时
-固定返回 `502 Bad Gateway`。首版不提供 CLI config plugins、WebSocket、HMR、
-SSR、`public/` 复制以及公开的 minify/sourcemap 配置。
+开发服务器仅提供 HTTP。代理目标可以使用 HTTP 或 HTTPS。规则按字面路径前缀
+匹配，优先最长前缀，保留查询参数、请求体和端到端请求头，可选应用
+`changeOrigin` 与 `rewrite`；上游不可达时固定返回 `502 Bad Gateway`。CLI 首版
+配置不提供 plugins、WebSocket、HMR、SSR、`public/` 复制以及公开的
+minify/sourcemap 配置。
 
 ## 路由
 
