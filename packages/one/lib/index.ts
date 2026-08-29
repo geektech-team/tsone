@@ -17,11 +17,14 @@ export type {
   OneValidationRule,
 } from './form';
 export { OneCheckbox } from './checkbox';
-export type { OneCheckboxProps } from './checkbox';
+export type { OneCheckboxGroupProps, OneCheckboxProps } from './checkbox';
+export { OneCheckboxGroup } from './checkbox';
 export { OneSwitch } from './switch';
 export type { OneSwitchProps } from './switch';
 export { OneSelect } from './select';
 export type { OneSelectOption, OneSelectOptionGroup, OneSelectProps } from './select';
+export { ONE_COMPONENT_CATEGORIES } from './categories';
+export type { OneComponentCategory } from './categories';
 export { OneCard } from './card';
 export type { OneCardProps } from './card';
 export { ONE_THEME_DEFAULTS } from './styles/shared';

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
-import { OneCheckbox, type OneFieldValueEvent } from '../lib';
+import { OneCheckbox, OneCheckboxGroup, type OneFieldValueEvent } from '../lib';
 
 describe('OneCheckbox', () => {
   let container: HTMLElement;
@@ -40,5 +40,27 @@ describe('OneCheckbox', () => {
     input.dispatchEvent(new Event('change'));
 
     expect(input.checked).toBe(false);
+  });
+
+  it('orders uncontrolled group values by option order', () => {
+    component = new OneCheckboxGroup({
+      defaultValue: ['tokyo'],
+      options: [
+        { value: 'beijing', label: '北京' },
+        { value: 'tokyo', label: '东京' },
+      ],
+    }) as unknown as OneCheckbox;
+    const changes: Array<OneFieldValueEvent<string[]>> = [];
+    (component as unknown as OneCheckboxGroup).on('change', (payload) => {
+      changes.push(payload as OneFieldValueEvent<string[]>);
+    });
+    component.mount(container);
+
+    (container.querySelector('input') as HTMLInputElement).checked = true;
+    (container.querySelector('input') as HTMLInputElement).dispatchEvent(
+      new Event('change')
+    );
+
+    expect(changes[0].value).toEqual(['beijing', 'tokyo']);
   });
 });
