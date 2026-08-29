@@ -28,7 +28,7 @@
     },
     "packages/tsone": {
       "name": "@geektech/tsone",
-      "version": "0.0.1",
+      "version": "0.0.2",
     },
     "packages/tsone-cli": {
       "name": "@geektech/tsone-cli",

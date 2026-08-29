@@ -20,8 +20,9 @@ describe('One UI workspace integration', () => {
     expect(rootPackage.scripts['docs:one:build']).toBe(
       'bun run --cwd packages/one docs:build'
     );
-    expect(rootPackage.scripts.build).toContain('packages/tsone');
-    expect(rootPackage.scripts.build).toContain('packages/one');
+    expect(rootPackage.scripts.build).toBe(
+      'bun run --cwd packages/tsone build && bun run --cwd packages/one build && bun run --cwd packages/tsone-cli build'
+    );
   });
 
   it('maps the public source package for strict workspace typechecking', () => {
