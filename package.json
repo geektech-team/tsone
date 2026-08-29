@@ -11,12 +11,15 @@
     "dev:site": "bun run --cwd playground/official-site dev",
     "dev:admin": "bun run --cwd playground/admin-dashboard dev",
     "docs": "bun run --cwd packages/tsone docs",
-    "build": "bun run --cwd packages/tsone build && bun run --cwd packages/tsone-cli build",
+    "build": "bun run --cwd packages/tsone build && bun run --cwd packages/one build && bun run --cwd packages/tsone-cli build",
+    "build:one": "bun run --cwd packages/one build",
     "build:types": "bun run --cwd packages/tsone build:types && bun run --cwd packages/tsone-cli build:types",
     "lint": "bun run --cwd packages/tsone lint && bun run --cwd packages/tsone-cli lint",
     "format": "prettier --write . --ignore-path .gitignore",
     "test": "bun test",
     "docs:build": "bun run --cwd packages/tsone docs:build",
+    "docs:one": "bun run --cwd packages/one docs",
+    "docs:one:build": "bun run --cwd packages/one docs:build",
     "preview": "bun run --cwd packages/tsone preview"
   },
   "devDependencies": {

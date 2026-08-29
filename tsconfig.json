@@ -8,6 +8,7 @@
     "moduleResolution": "Bundler",
     "baseUrl": ".",
     "paths": {
+      "@geektech/one": ["packages/one/lib/index.ts"],
       "@geektech/tsone": ["packages/tsone/lib/index.ts"],
       "@geektech/tsone/router": ["packages/tsone/lib/router/index.ts"],
       "@geektech/tsone/style": ["packages/tsone/lib/style/index.ts"],
@@ -27,6 +28,9 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
+    "packages/one/lib",
+    "packages/one/docs/app",
+    "packages/one/scripts",
     "packages/tsone/lib",
     "playground/*/src",
     "playground/*/tsone.config.ts",
