@@ -37,6 +37,7 @@ export interface OneDocsServerOptions {
 const PACKAGE_ROOT = join(import.meta.dir, '..');
 const DEFAULT_OUT_DIR = join(PACKAGE_ROOT, 'docs/dist');
 const CLIENT_ASSET_NAME = 'one-docs-client.js';
+let clientBundlePromise: Promise<string> | undefined;
 
 export function routeToOneDocsOutputPath(
   route: string,
@@ -93,6 +94,21 @@ export async function startOneDocsServer(
 }
 
 async function buildClientAsset(outDir: string): Promise<string[]> {
+  const clientBundle = await getClientBundle();
+  const outputPath = join(outDir, 'assets', CLIENT_ASSET_NAME);
+  await writeFile(outputPath, clientBundle);
+  return [outputPath];
+}
+
+function getClientBundle(): Promise<string> {
+  clientBundlePromise ??= createClientBundle().catch((error: unknown) => {
+    clientBundlePromise = undefined;
+    throw error;
+  });
+  return clientBundlePromise;
+}
+
+async function createClientBundle(): Promise<string> {
   const buildOptions: Bun.BuildConfig & { write: false } = {
     entrypoints: [join(PACKAGE_ROOT, 'docs/app/client.ts')],
     target: 'browser',
@@ -106,9 +122,7 @@ async function buildClientAsset(outDir: string): Promise<string[]> {
     throw new Error(`Failed to build ${CLIENT_ASSET_NAME}: ${messages}`);
   }
 
-  const outputPath = join(outDir, 'assets', CLIENT_ASSET_NAME);
-  await writeFile(outputPath, await result.outputs[0].text());
-  return [outputPath];
+  return result.outputs[0].text();
 }
 
 function installBuildDom(route: string): void {

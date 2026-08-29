@@ -28,7 +28,7 @@ export function mountOneDocsClient(): void {
 
     const id = ensureUniqueRootId(root, index);
     const app = createApp({
-      root: DEMOS[demoName],
+      root: DEMOS[demoName] as unknown as ComponentConstructor,
       rootElement: `#${id}`,
     });
     app.mount();

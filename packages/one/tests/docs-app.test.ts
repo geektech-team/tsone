@@ -9,6 +9,14 @@ function render(path: string): string {
 }
 
 describe('One UI docs app', () => {
+  it('creates a standalone document renderer instead of a runtime app', () => {
+    const page = oneDocPages[0];
+    const renderer = createOneDocsPageApp(page, oneDocPages);
+
+    expect(Object.keys(renderer)).toEqual(['renderHtmlDocument']);
+    expect('mount' in renderer).toBe(false);
+  });
+
   it('renders the classic documentation shell and document metadata', () => {
     const html = render('/components/button/');
     expect(html).toContain('<!doctype html>');
