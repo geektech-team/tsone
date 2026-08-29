@@ -15,7 +15,6 @@
     "dist",
     "coverage",
     "tests",
-    "examples",
     "lib/**/__tests__/**",
     "**/*.test.ts"
   ]

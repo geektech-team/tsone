@@ -26,14 +26,12 @@ export const enGuidePages: DocPage[] = [
       },
       {
         type: 'paragraph',
-        content: [
-          'First, install the TSone package. Projects use Bun by default:',
-        ],
+        content: ['Install the TSone framework and CLI with Bun >=1.3.0:'],
       },
       {
         type: 'code',
         language: 'bash',
-        code: 'bun add @geektech/tsone',
+        code: 'bun add @geektech/tsone @geektech/tsone-cli',
       },
       {
         type: 'heading',
@@ -58,12 +56,18 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'code',
         language: 'ts',
-        code: "const app = createApp({\n  root: App,\n  state: {\n    appName: 'TSone Example',\n  },\n});\n\napp.mount();",
+        code: "export const app = createApp({\n  root: App,\n  state: {\n    appName: 'TSone Example',\n  },\n  document: { title: 'TSone Example' },\n});\n\napp.mount();",
       },
       {
         type: 'paragraph',
         content: [
           'You do not need to pass rootElement for the default mount point. createApp uses #app by default, so call app.mount() after creating the application; mounting safely does nothing when the element is not present.',
+        ],
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'Save the entry as src/main.ts. The CLI requires the named export form export const app, and the exported value must provide renderHtmlDocument().',
         ],
       },
       {
@@ -79,17 +83,45 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'heading',
         level: 2,
+        text: 'Configure Development and Builds',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'Add an optional plain-object default export in tsone.config.ts. The defaults are entry src/main.ts, host 127.0.0.1, port 52211, an empty server.proxy, and build.outDir dist.',
+        ],
+      },
+      {
+        type: 'code',
+        language: 'ts',
+        code: "import { defineConfig } from '@geektech/tsone-cli';\n\nexport default defineConfig({\n  server: {\n    proxy: {\n      '/api': {\n        target: 'http://localhost:3000',\n        changeOrigin: true,\n        rewrite: (path) => path.replace(/^\\/api/, ''),\n      },\n    },\n  },\n  build: { outDir: 'dist' },\n});",
+      },
+      {
+        type: 'paragraph',
+        content: [
+          "A proxy may use the string shorthand '/backend': 'http://localhost:4000'. Proxy targets are HTTP/HTTPS only; literal prefixes use the longest match first. Query strings, bodies, and end-to-end headers are forwarded, changeOrigin updates Host, rewrite changes the pathname, and an unreachable upstream returns 502 Bad Gateway.",
+        ],
+      },
+      {
+        type: 'heading',
+        level: 2,
         text: 'Run the Application',
       },
       {
         type: 'code',
         language: 'bash',
-        code: 'bun run dev',
+        code: 'tsone dev [--host <host>] [--port <port>]\ntsone build [--out-dir <path>]',
       },
       {
         type: 'paragraph',
         content: [
-          'bun run dev at the repository root starts the playground/official-site home-page demo. You can also run bun run dev:admin to view the admin dashboard demo.',
+          'dev accepts only host/port overrides and build accepts only out-dir. Separated and equals forms such as --port 3000 and --port=3000 are supported. build.outDir must stay a child of the project root.',
+        ],
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'CLI v1 has no config plugins, WebSocket, HMR, SSR, public/ copying, or public minify/sourcemap settings.',
         ],
       },
       {

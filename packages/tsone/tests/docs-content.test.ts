@@ -279,19 +279,31 @@ describe('docs content registry', () => {
 
   it('keeps public API terms searchable from typed docs content', () => {
     const allText = searchEntries.map((entry) => entry.text).join('\n');
+    const englishText = docCatalogs.en.searchEntries
+      .map((entry) => entry.text)
+      .join('\n');
 
     for (const term of [
       '@geektech/tsone',
+      '@geektech/tsone-cli',
       'createapp',
       'component<props, state>',
       'protected render(): vnode',
       'routerview',
       'routerlink',
       'stylemanager',
+      'tsone.config.ts',
+      'server.proxy',
+      'tsone dev',
+      'tsone build',
+      'defineconfig',
+      'resolveconfig',
+      'startdevserver',
       'bun run docs',
       'bun run docs:build',
     ]) {
       expect(allText).toContain(term);
+      expect(englishText).toContain(term);
     }
   });
 

@@ -32,12 +32,27 @@ export const enContributingPages: DocPage[] = [
       heading(3, 'Run the Development Server'),
       codeBlock('bash', 'bun run dev'),
       paragraph(
-        'Development playgrounds live in the root playground/ directory. The official site home page and admin dashboard are managed by separate package.json files.'
+        'Development playgrounds live in the root playground/ directory. The official site home page and admin dashboard are managed by separate package.json files. The repository publishes the framework from packages/tsone/ and the development CLI from packages/tsone-cli/.'
       ),
       heading(3, 'Build the Project'),
       codeBlock('bash', 'bun run build'),
       heading(3, 'Run Linting'),
       codeBlock('bash', 'bun run lint'),
+      heading(2, 'Package Boundaries'),
+      list([
+        [
+          '@geektech/tsone is the browser framework and must keep zero external runtime dependencies',
+        ],
+        [
+          '@geektech/tsone-cli owns defineConfig, resolveConfig, startDevServer, build, tsone dev, and tsone build',
+        ],
+        [
+          'Do not add a @geektech/tsone ./dev export; applications install @geektech/tsone-cli separately',
+        ],
+        [
+          'CLI v1 config remains a plain-object default export with no plugins, WebSocket, HMR, SSR, public/ copying, or public minify/sourcemap settings',
+        ],
+      ]),
       heading(2, 'Coding Standards'),
       heading(3, 'TypeScript'),
       list([
@@ -116,7 +131,17 @@ export const enContributingPages: DocPage[] = [
       ]),
       heading(2, 'Testing'),
       heading(3, 'Write Tests'),
-      codeBlock('bash', 'bun test'),
+      codeBlock(
+        'bash',
+        [
+          'bun test',
+          'bun test packages/tsone-cli/tests',
+          'bunx tsc --noEmit',
+          'bun run build',
+          'bun pm pack --cwd packages/tsone --dry-run',
+          'bun pm pack --cwd packages/tsone-cli --dry-run',
+        ].join('\n')
+      ),
       heading(3, 'Test Coverage'),
       paragraph('Aim for high test coverage to maintain code quality.'),
       heading(2, 'Documentation'),

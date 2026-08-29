@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'bun:test';
+import * as cliApi from '../../tsone-cli/src';
 import * as publicApi from '../lib';
 import * as routerApi from '../lib/router';
-import { docPages, docText } from '../docs/app/content';
+import { docPages, docText, findLocalizedDocPage } from '../docs/app/content';
 import { packagePath } from './paths';
 
 function readText(path: string): string {
@@ -24,6 +25,19 @@ function docsTextFor(path: string): string {
   }
 
   return docText(page);
+}
+
+function localizedDocsTextFor(locale: 'en' | 'zh', paths: string[]): string {
+  return paths
+    .map((path) => {
+      const page = findLocalizedDocPage(locale, path);
+      if (!page) {
+        throw new Error(`Missing ${locale} docs page: ${path}`);
+      }
+
+      return docText(page);
+    })
+    .join('\n');
 }
 
 describe('public API documentation', () => {
@@ -171,5 +185,80 @@ describe('public API documentation', () => {
     ]) {
       expect(routerApi).toHaveProperty(symbol);
     }
+  });
+
+  it('makes CLI tooling discoverable from both localized framework docs', () => {
+    for (const symbol of [
+      'defineConfig',
+      'resolveConfig',
+      'startDevServer',
+      'build',
+    ]) {
+      expect(cliApi).toHaveProperty(symbol);
+    }
+
+    const paths = ['/guide/getting-started/', '/api/app/'];
+    const localizedText = {
+      en: [readText('README.md'), localizedDocsTextFor('en', paths)].join('\n'),
+      zh: [readText('README-zh.md'), localizedDocsTextFor('zh', paths)].join(
+        '\n'
+      ),
+    };
+
+    for (const text of Object.values(localizedText)) {
+      for (const term of [
+        '@geektech/tsone-cli',
+        'tsone.config.ts',
+        'server.proxy',
+        'tsone dev',
+        'tsone build',
+        'defineConfig',
+        'startDevServer',
+        'build',
+      ]) {
+        expect(text).toContain(term);
+      }
+    }
+  });
+
+  it('documents the complete CLI consumer contract in the CLI README', () => {
+    const readme = readFileSync(packagePath('../tsone-cli/README.md'), 'utf8');
+
+    for (const term of [
+      'bun add @geektech/tsone @geektech/tsone-cli',
+      'Bun `>=1.3.0`',
+      'export const app',
+      'renderHtmlDocument',
+      'src/main.ts',
+      '127.0.0.1',
+      '52211',
+      'dist',
+      'tsone dev [--host <host>] [--port <port>]',
+      'tsone build [--out-dir <path>]',
+      '--port=3000',
+      'defineConfig',
+      'resolveConfig',
+      'startDevServer',
+      'server.stop()',
+      'assetsBuilt',
+      'HTTP/HTTPS',
+      'longest',
+      'changeOrigin',
+      'rewrite',
+      '502 Bad Gateway',
+      'plugins',
+      'WebSocket',
+      'HMR',
+      'SSR',
+      'public/',
+      'minify',
+      'sourcemap',
+    ]) {
+      expect(readme).toContain(term);
+    }
+
+    expect(readme).toContain("'/backend': 'http://localhost:4000'");
+    expect(readme).toContain("target: 'http://localhost:3000'");
+    expect(readme).toContain("build: { outDir: 'dist' }");
   });
 });

@@ -17,19 +17,21 @@
 
 ## 仓库结构
 
-本仓库是 Bun workspace monorepo，当前发布包位于 `packages/tsone/`。
-根目录命令会代理到该包，包内保留源码、测试、文档和发布配置，独立演练项目位于
-根目录的 `playground/`。
+本仓库是 Bun workspace monorepo，包含两个发布包：`packages/tsone/`
+提供浏览器框架 `@geektech/tsone`，`packages/tsone-cli/` 提供 Bun 原生开发工具
+`@geektech/tsone-cli`。独立演练项目位于根目录的 `playground/`。
 
 ## 安装
 
 ```bash
-bun add @geektech/tsone
+bun add @geektech/tsone @geektech/tsone-cli
 ```
 
 ```bash
-pnpm add @geektech/tsone
+pnpm add @geektech/tsone @geektech/tsone-cli
 ```
+
+本文档中的框架与 CLI 工作流要求 Bun `>=1.3.0`。
 
 ## 快速开始
 
@@ -90,6 +92,53 @@ console.log(status.value);
 `createApp` 默认使用 `#app` 作为挂载点，创建应用后直接调用 `app.mount()`
 即可。页面中暂时不存在挂载点时，`mount()` 会安全跳过；只有需要覆盖默认挂载点
 时才传入 `rootElement`。
+
+## 开发工具
+
+独立的 `@geektech/tsone-cli` 包提供 `tsone dev` 与 `tsone build`。默认入口为
+`src/main.ts`；入口模块必须通过 `export const app` 导出应用，并且该值必须提供
+`renderHtmlDocument()`。
+
+可以在项目根目录创建可选的 `tsone.config.ts`：
+
+```typescript
+import { defineConfig } from '@geektech/tsone-cli';
+
+export default defineConfig({
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
+  build: { outDir: 'dist' },
+});
+```
+
+代理也支持字符串简写，例如 `{ '/backend': 'http://localhost:4000' }`。默认值为
+入口 `src/main.ts`、主机 `127.0.0.1`、端口 `52211`、空的 `server.proxy` 和
+输出目录 `dist`。
+
+```text
+tsone dev [--host <host>] [--port <port>]
+tsone build [--out-dir <path>]
+```
+
+`dev` 只接受主机和端口覆盖，`build` 只接受输出目录覆盖；`--port 3000` 和
+`--port=3000` 两种形式均可。构建输出必须是项目根目录内部的安全子目录。
+
+编程式工具 API 来自 `@geektech/tsone-cli`，而不是框架主入口。该包导出
+`defineConfig`、`resolveConfig`、`startDevServer` 与 `build`。调用方负责开发
+服务器生命周期，结束时必须调用 `server.stop()`；`build()` 返回绝对的 `root`、
+`outDir` 以及 `assetsBuilt`。
+
+代理目标仅支持 HTTP/HTTPS。规则按字面路径前缀匹配，优先最长前缀，保留查询
+参数、请求体和端到端请求头，可选应用 `changeOrigin` 与 `rewrite`；上游不可达时
+固定返回 `502 Bad Gateway`。首版不提供 CLI config plugins、WebSocket、HMR、
+SSR、`public/` 复制以及公开的 minify/sourcemap 配置。
 
 ## 路由
 

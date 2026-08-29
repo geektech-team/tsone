@@ -247,6 +247,72 @@ export const enApiPages: DocPage[] = [
           ': external script configuration, such as a module client bundle',
         ],
       ]),
+      heading(2, 'Development Tooling API'),
+      paragraph(
+        'Development and build APIs are exported by the separate ',
+        inlineCode('@geektech/tsone-cli'),
+        ' package, not by the @geektech/tsone framework root.'
+      ),
+      apiTable([
+        {
+          name: 'defineConfig',
+          signature: 'defineConfig(config: UserConfig): UserConfig',
+          description: 'Returns the same typed plain-object configuration.',
+        },
+        {
+          name: 'resolveConfig',
+          signature:
+            'resolveConfig(options?: ResolveConfigOptions): Promise<ResolvedConfig>',
+          description:
+            'Validates and merges defaults, tsone.config.ts, direct config, and host/port/outDir overrides. Resolved root, entry, and outDir paths are absolute.',
+        },
+        {
+          name: 'startDevServer',
+          signature:
+            'startDevServer(options?: StartDevServerOptions): Promise<Bun.Server>',
+          description:
+            'Starts the Bun HTTP development server. The caller owns the returned server and must call server.stop().',
+        },
+        {
+          name: 'build',
+          signature: 'build(options?: BuildOptions): Promise<BuildResult>',
+          description:
+            'Emits browser assets and index.html, then returns absolute root/outDir values and assetsBuilt.',
+        },
+      ]),
+      codeBlock(
+        'ts',
+        [
+          'import {',
+          '  build,',
+          '  defineConfig,',
+          '  resolveConfig,',
+          '  startDevServer,',
+          "} from '@geektech/tsone-cli';",
+          '',
+          "const config = defineConfig({ build: { outDir: 'dist' } });",
+          'const resolved = await resolveConfig({ config });',
+          'const server = await startDevServer({ port: 0 });',
+          '',
+          'try {',
+          '  console.log(server.url);',
+          '} finally {',
+          '  server.stop();',
+          '}',
+          '',
+          "const result = await build({ outDir: 'release' });",
+          'console.log(result.root, result.outDir, result.assetsBuilt);',
+        ].join('\n')
+      ),
+      paragraph(
+        'Configuration defaults are entry src/main.ts, server host 127.0.0.1, port 52211, an empty server.proxy, and build.outDir dist. The entry must use export const app and provide renderHtmlDocument().'
+      ),
+      paragraph(
+        'server.proxy accepts HTTP/HTTPS string or { target, changeOrigin, rewrite } rules. Literal prefixes use the longest match first; query strings, bodies, and end-to-end headers are forwarded, and failed upstream connections return 502 Bad Gateway.'
+      ),
+      paragraph(
+        'build.outDir must be a safe child directory of the project root. CLI v1 has no config plugins, WebSocket, HMR, SSR, public/ copying, or public minify/sourcemap configuration.'
+      ),
     ],
   },
   {

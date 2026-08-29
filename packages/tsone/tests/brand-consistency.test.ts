@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'bun:test';
 import { name } from '../lib';
@@ -17,6 +17,7 @@ function trackedTextFiles(): string[] {
   })
     .split('\n')
     .filter(Boolean)
+    .filter((file) => existsSync(join(repoRoot, file)))
     .filter((file) => {
       if (file.endsWith('tests/brand-consistency.test.ts')) {
         return false;

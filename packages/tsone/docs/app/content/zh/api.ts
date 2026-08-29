@@ -214,6 +214,72 @@ export const apiPages: DocPage[] = [
         ],
         [inlineCode('scripts'), ': 外部脚本配置，例如 module client bundle'],
       ]),
+      heading(2, '开发工具 API'),
+      paragraph(
+        '开发与构建 API 由独立的 ',
+        inlineCode('@geektech/tsone-cli'),
+        ' 包导出，不属于 @geektech/tsone 框架主入口。'
+      ),
+      apiTable([
+        {
+          name: 'defineConfig',
+          signature: 'defineConfig(config: UserConfig): UserConfig',
+          description: '返回同一个带类型的普通对象配置。',
+        },
+        {
+          name: 'resolveConfig',
+          signature:
+            'resolveConfig(options?: ResolveConfigOptions): Promise<ResolvedConfig>',
+          description:
+            '校验并合并默认值、tsone.config.ts、直接配置以及 host/port/outDir 覆盖；返回的 root、entry 与 outDir 路径为绝对路径。',
+        },
+        {
+          name: 'startDevServer',
+          signature:
+            'startDevServer(options?: StartDevServerOptions): Promise<Bun.Server>',
+          description:
+            '启动 Bun HTTP 开发服务器；调用方拥有返回的服务器，并负责调用 server.stop()。',
+        },
+        {
+          name: 'build',
+          signature: 'build(options?: BuildOptions): Promise<BuildResult>',
+          description:
+            '输出浏览器资源和 index.html，返回绝对的 root/outDir 以及 assetsBuilt。',
+        },
+      ]),
+      codeBlock(
+        'ts',
+        [
+          'import {',
+          '  build,',
+          '  defineConfig,',
+          '  resolveConfig,',
+          '  startDevServer,',
+          "} from '@geektech/tsone-cli';",
+          '',
+          "const config = defineConfig({ build: { outDir: 'dist' } });",
+          'const resolved = await resolveConfig({ config });',
+          'const server = await startDevServer({ port: 0 });',
+          '',
+          'try {',
+          '  console.log(server.url);',
+          '} finally {',
+          '  server.stop();',
+          '}',
+          '',
+          "const result = await build({ outDir: 'release' });",
+          'console.log(result.root, result.outDir, result.assetsBuilt);',
+        ].join('\n')
+      ),
+      paragraph(
+        '配置默认值为入口 src/main.ts、server host 127.0.0.1、端口 52211、空的 server.proxy，以及 build.outDir dist。入口必须使用 export const app，并提供 renderHtmlDocument()。'
+      ),
+      paragraph(
+        'server.proxy 接受 HTTP/HTTPS 字符串规则或 { target, changeOrigin, rewrite } 对象规则。字面前缀按最长匹配优先；查询参数、请求体和端到端请求头会转发，上游连接失败时返回 502 Bad Gateway。'
+      ),
+      paragraph(
+        'build.outDir 必须是项目根目录内部的安全子目录。CLI 首版不提供 config plugins、WebSocket、HMR、SSR、public/ 复制以及公开的 minify/sourcemap 配置。'
+      ),
     ],
   },
   {

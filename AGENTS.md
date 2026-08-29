@@ -4,9 +4,10 @@
 
 ## 项目定位
 
-本仓库是 Bun workspace monorepo。当前唯一发布包位于
-`packages/tsone/`，包名为 `@geektech/tsone`。TSone 是一个轻量级、
-纯 TypeScript 前端框架。当前公开能力包括：
+本仓库是 Bun workspace monorepo。TSone 发布面包含两个包：
+`packages/tsone/` 的 `@geektech/tsone` 是轻量级纯 TypeScript 前端框架，
+`packages/tsone-cli/` 的 `@geektech/tsone-cli` 是 Bun 原生开发和构建工具。
+框架当前公开能力包括：
 
 - 响应式系统：`reactive`、`readonly`、`effect`、`stop`、`computed`、`ref`
 - 面向对象组件：`Component<Props, State>`、生命周期、事件、插槽
@@ -15,7 +16,11 @@
 - 样式管理：`StyleManager`
 - Bun 原生开发、测试、构建、示例和文档服务
 
-保持项目的小型、依赖少、浏览器运行时无外部依赖。不要引入 React/Vue、JSX 编译器、SSR、路由守卫、devtools 或构建系统替换，除非任务明确要求。
+保持项目的小型、依赖少、浏览器运行时无外部依赖。不要向框架包增加
+`./dev` 导出或 Happy DOM/browser 运行时依赖。不要引入 React/Vue、JSX
+编译器、SSR、路由守卫、devtools 或构建系统替换，除非任务明确要求。CLI
+首版配置保持普通对象默认导出，不增加 plugins、WebSocket、HMR、SSR、
+`public/` 复制或公开的 minify/sourcemap 配置。
 
 ## 技术栈和命令
 
@@ -24,12 +29,16 @@
 - 安装依赖：`bun install`
 - 全量测试：`bun test`
 - 指定测试：`bun test packages/tsone/tests/component-types.test.ts`
+- CLI 全量测试：`bun test packages/tsone-cli/tests`
+- CLI 指定测试：`bun test packages/tsone-cli/tests/config.test.ts`
 - 类型检查：`bunx tsc --noEmit`
 - 构建发布产物：`bun run build`
 - 代码检查：`bun run lint`
-- 示例服务：`bun run dev`
+- CLI 开发服务：在应用目录运行 `bun run tsone dev`
+- CLI 应用构建：在应用目录运行 `bun run tsone build`
+- 演练服务：`bun run dev`
 - 文档服务：`bun run docs`
-- 发布前建议检查：`bun test && bunx tsc --noEmit && bun run build && bun pm pack --cwd packages/tsone --dry-run`
+- 发布前建议检查：`bun test && bunx tsc --noEmit && bun run build && bun pm pack --cwd packages/tsone --dry-run && bun pm pack --cwd packages/tsone-cli --dry-run`
 
 测试使用 `bun:test`。从仓库根运行时，DOM 测试通过根 `bunfig.toml`
 preload `packages/tsone/tests/setup-dom.ts` 注入 Happy DOM 全局对象；从包目录
@@ -37,10 +46,17 @@ preload `packages/tsone/tests/setup-dom.ts` 注入 Happy DOM 全局对象；从�
 
 ## 代码地图
 
-- 根 `package.json` 是私有 workspace manifest，根脚本代理到
-  `packages/tsone`。
+- 根 `package.json` 是私有 workspace manifest，根脚本协调各 workspace。
 - `packages/tsone/package.json` 是发布包 manifest，保留 exports、files 和
   publishConfig。
+- `packages/tsone-cli/package.json` 是独立 CLI 发布 manifest，保留根导出、
+  `tsone` bin、files 和 publishConfig。
+- `packages/tsone-cli/src/config.ts` 管理 `defineConfig`、配置加载、默认值、
+  CLI 覆盖和校验；`types.ts` 定义公开配置类型。
+- `packages/tsone-cli/src/server.ts` 与 `build.ts` 分别实现开发服务和生产构建，
+  `proxy.ts` 实现 HTTP/HTTPS 开发代理，`project.ts` 隔离入口文档渲染。
+- `packages/tsone-cli/src/index.ts` 是编程式 API 入口，`src/cli.ts` 与
+  `bin/tsone.ts` 是命令行入口。
 - `packages/tsone/lib/index.ts` 是包入口，导出核心、路由、`createApp`、
   `version` 和 `name`。
 - `packages/tsone/lib/core/` 存放框架核心：
@@ -58,7 +74,7 @@ preload `packages/tsone/tests/setup-dom.ts` 注入 Happy DOM 全局对象；从�
   - `instance.ts` 管理当前路由实例。
 - `packages/tsone/lib/style/StyleManager.ts` 是样式管理实现，
   `packages/tsone/lib/style/index.ts` 是公开入口。
-- `packages/tsone/examples/` 是本地示例应用。
+- 根 `playground/` 存放本地演练应用，每个子项目有独立 `package.json`。
 - `packages/tsone/docs/app/content/` 是 typed content 文档源，
   `packages/tsone/scripts/docs.ts` 是 Bun 文档服务器。
 - `packages/tsone/docs/superpowers/` 记录历史设计和实施计划，可作为架构意图参考。
@@ -83,13 +99,15 @@ preload `packages/tsone/tests/setup-dom.ts` 注入 Happy DOM 全局对象；从�
 - `packages/tsone/lib/index.ts` 的 `version` 和 `name`
 - `packages/tsone/lib/core/app.ts` 中 app context 的 `version`
 - `packages/tsone/README.md` 快速开始、公开 API、开发命令、发布前检查
-- `packages/tsone/docs/app/content/*.ts` 和相关 guide/example 文档
+- `packages/tsone-cli/package.json`、`README.md`、`src/index.ts` 与相关类型
+- `packages/tsone/docs/app/content/en/*.ts`、`zh/*.ts` 和相关 guide/example 文档
 - `packages/tsone/tests/public-api-docs.test.ts`
 - `packages/tsone/tests/component-types.test.ts`
 - `packages/tsone/tests/package-smoke.test.ts`
 - `packages/tsone/tests/brand-consistency.test.ts`
 
 品牌统一为显示名 `TSone`、包名 `@geektech/tsone`。不要引入旧项目名或占位版本。
+CLI 品牌包名固定为 `@geektech/tsone-cli`，bin 名固定为 `tsone`。
 
 ## 测试策略
 
@@ -106,16 +124,24 @@ preload `packages/tsone/tests/setup-dom.ts` 注入 Happy DOM 全局对象；从�
 - 示例入口：`bun test packages/tsone/tests/example-entry.test.ts`
 - 仓库卫生：`bun test packages/tsone/tests/repository-hygiene.test.ts`
 - 发布包：`bun test packages/tsone/tests/package-smoke.test.ts`
+- CLI 配置：`bun test packages/tsone-cli/tests/config.test.ts`
+- CLI 代理：`bun test packages/tsone-cli/tests/proxy.test.ts`
+- CLI 开发服务：`bun test packages/tsone-cli/tests/server.test.ts`
+- CLI 构建和命令行：`bun test packages/tsone-cli/tests/build.test.ts packages/tsone-cli/tests/cli.test.ts`
+- CLI 发布包：`bun test packages/tsone-cli/tests/package-smoke.test.ts`
 
-对行为修复和新功能，先补或调整能复现问题的测试，再实现。改动发布面、构建脚本或 exports 时必须跑 `bun run build`，必要时跑 `bun pm pack --cwd packages/tsone --dry-run` 或 `bun test packages/tsone/tests/package-smoke.test.ts`。
+对行为修复和新功能，先补或调整能复现问题的测试，再实现。改动发布面、构建
+脚本或 exports 时必须跑 `bun run build`，并按包运行对应的 dry-run pack 或
+package smoke test。
 
 ## 文档和示例
 
-- 用户可见能力变化需要同步 `packages/tsone/README.md` 和
-  `packages/tsone/docs/app/content/`。
+- 用户可见能力变化需要同步 `packages/tsone/README.md`、
+  `packages/tsone/README-zh.md`、CLI README 和双语 typed content。
 - 示例代码应能代表真实 API，不要展示未导出的符号或过期命令。
 - `packages/tsone/scripts/docs.ts` 只支持当前 typed content 渲染能力；写文档时避免依赖它不支持的复杂 Markdown 功能。
-- `packages/tsone/examples/index.ts` 和 `packages/tsone/examples/components/` 是开发服务入口，公共组件行为变化时检查示例仍能渲染。
+- `playground/official-site/src/main.ts` 和
+  `playground/admin-dashboard/src/main.ts` 是开发演练入口，公共组件行为变化时检查 playground 仍能渲染。
 
 ## 协作守则
 

@@ -64,7 +64,7 @@ describe('package smoke', () => {
       expect.arrayContaining(['README.md', 'README-zh.md'])
     );
     expect(rootPackageJson.private).toBe(true);
-    expect(rootPackageJson.workspaces).toEqual(['packages/*']);
+    expect(rootPackageJson.workspaces).toEqual(['packages/*', 'playground/*']);
 
     mkdirSync(tmpdir(), { recursive: true });
     mkdirSync(bunTemp, { recursive: true });
@@ -112,6 +112,9 @@ describe('package smoke', () => {
       ).toBe(false);
       expect(
         [...packageFiles].some((file) => file.startsWith('dist/examples/'))
+      ).toBe(false);
+      expect(
+        [...packageFiles].some((file) => file.startsWith('playground/'))
       ).toBe(false);
       expect([...packageFiles].some((file) => file.startsWith('lib/'))).toBe(
         false
@@ -198,7 +201,7 @@ describe('package smoke', () => {
           'const state = reactive({ ready: true });',
           'const ready = ref(true);',
           "const router = createRouter([{ path: '/', component: App }]);",
-          "const app = createApp({ root: App, rootElement: '#app', state });",
+          'const app = createApp({ root: App, state });',
           'app.use(router);',
           'const rawReady: boolean = unref(ready);',
           'const readyIsRef: boolean = isRef(ready);',

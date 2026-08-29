@@ -32,12 +32,25 @@ export const contributingPages: DocPage[] = [
       heading(3, '运行开发服务器'),
       codeBlock('bash', 'bun run dev'),
       paragraph(
-        '开发演练项目位于根目录 playground/，官网首页和后台管理页分别由独立 package.json 管理。'
+        '开发演练项目位于根目录 playground/，官网首页和后台管理页分别由独立 package.json 管理。仓库从 packages/tsone/ 发布框架，从 packages/tsone-cli/ 发布开发 CLI。'
       ),
       heading(3, '构建项目'),
       codeBlock('bash', 'bun run build'),
       heading(3, '运行代码检查'),
       codeBlock('bash', 'bun run lint'),
+      heading(2, '包边界'),
+      list([
+        ['@geektech/tsone 是浏览器框架，必须保持零外部运行时依赖'],
+        [
+          '@geektech/tsone-cli 负责 defineConfig、resolveConfig、startDevServer、build、tsone dev 与 tsone build',
+        ],
+        [
+          '不要为 @geektech/tsone 添加 ./dev 导出；应用应单独安装 @geektech/tsone-cli',
+        ],
+        [
+          'CLI 首版配置保持普通对象默认导出，不提供 plugins、WebSocket、HMR、SSR、public/ 复制以及公开的 minify/sourcemap 设置',
+        ],
+      ]),
       heading(2, '代码规范'),
       heading(3, 'TypeScript'),
       list([
@@ -112,7 +125,17 @@ export const contributingPages: DocPage[] = [
       ]),
       heading(2, '测试'),
       heading(3, '编写测试'),
-      codeBlock('bash', 'bun test'),
+      codeBlock(
+        'bash',
+        [
+          'bun test',
+          'bun test packages/tsone-cli/tests',
+          'bunx tsc --noEmit',
+          'bun run build',
+          'bun pm pack --cwd packages/tsone --dry-run',
+          'bun pm pack --cwd packages/tsone-cli --dry-run',
+        ].join('\n')
+      ),
       heading(3, '测试覆盖'),
       paragraph('尽量保持高测试覆盖率，确保代码质量。'),
       heading(2, '文档'),

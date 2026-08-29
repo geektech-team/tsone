@@ -20,20 +20,23 @@ reactivity, class-based components, strategy-driven rendering, and routing.
 
 ## Repository Structure
 
-This repository is a Bun workspace monorepo. The published package lives in
-`packages/tsone/`. Root commands delegate to that package, which owns the
-source, tests, documentation, and publishing configuration. Standalone example
-projects live in the root `playground/` directory.
+This repository is a Bun workspace monorepo with two published packages:
+`packages/tsone/` contains the browser framework `@geektech/tsone`, and
+`packages/tsone-cli/` contains the Bun-native development tooling
+`@geektech/tsone-cli`. Standalone example projects live in the root
+`playground/` directory.
 
 ## Installation
 
 ```bash
-bun add @geektech/tsone
+bun add @geektech/tsone @geektech/tsone-cli
 ```
 
 ```bash
-pnpm add @geektech/tsone
+pnpm add @geektech/tsone @geektech/tsone-cli
 ```
+
+The framework and CLI require Bun `>=1.3.0` for the documented workflow.
 
 ## Quick Start
 
@@ -95,6 +98,57 @@ console.log(status.value);
 `app.mount()` immediately after creation. If the target is not currently in the
 document, `mount()` safely skips that attempt. Pass `rootElement` only when you
 need to override the default target.
+
+## Development Tooling
+
+The separate `@geektech/tsone-cli` package provides `tsone dev` and
+`tsone build`. Its default entry is `src/main.ts`; that module must expose the
+application as `export const app`, and the value must provide
+`renderHtmlDocument()`.
+
+Create an optional `tsone.config.ts` at the project root:
+
+```typescript
+import { defineConfig } from '@geektech/tsone-cli';
+
+export default defineConfig({
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
+  build: { outDir: 'dist' },
+});
+```
+
+The string proxy shorthand is also supported, for example
+`{ '/backend': 'http://localhost:4000' }`. Defaults are `src/main.ts`,
+`127.0.0.1`, port `52211`, an empty `server.proxy`, and `dist`.
+
+```text
+tsone dev [--host <host>] [--port <port>]
+tsone build [--out-dir <path>]
+```
+
+`dev` accepts host/port overrides and `build` accepts the output-directory
+override; both `--port 3000` and `--port=3000` forms are valid. Build output
+must remain a safe child directory inside the project root.
+
+Programmatic tooling is imported from `@geektech/tsone-cli`, not from the
+framework root. It exports `defineConfig`, `resolveConfig`, `startDevServer`,
+and `build`. The dev server is owned by the caller, which must call
+`server.stop()`; `build()` returns absolute `root` and `outDir` values plus
+`assetsBuilt`.
+
+Proxy targets are HTTP/HTTPS only. Rules use literal prefix matching with the
+longest match first, retain query/body/end-to-end headers, optionally apply
+`changeOrigin` and `rewrite`, and return `502 Bad Gateway` when the upstream is
+unreachable. Version 1 has no CLI config plugins, WebSocket, HMR, SSR,
+`public/` copying, or public minify/sourcemap settings.
 
 ## Routing
 

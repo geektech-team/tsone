@@ -51,6 +51,9 @@ describe('repository hygiene', () => {
     expect(gitIgnoreMatches('.DS_Store')).toBe(true);
     expect(gitIgnoreMatches('coverage/lcov.info')).toBe(true);
     expect(gitIgnoreMatches('packages/tsone/dist/index.js')).toBe(true);
+    expect(gitIgnoreMatches('playground/official-site/dist/index.js')).toBe(
+      true
+    );
     expect(gitIgnoreMatches('packages/tsone/docs/dist/index.html')).toBe(true);
     expect(
       gitIgnoreMatches('packages/tsone/docs/node_modules/.modules.yaml')

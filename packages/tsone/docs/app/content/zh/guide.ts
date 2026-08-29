@@ -23,8 +23,8 @@ export const guidePages: DocPage[] = [
       heading(1, '快速开始'),
       paragraph('本指南将帮助您快速上手 TSone 框架。'),
       heading(2, '安装'),
-      paragraph('首先，您需要安装 TSone 包。项目默认使用 Bun：'),
-      codeBlock('bash', 'bun add @geektech/tsone'),
+      paragraph('使用 Bun >=1.3.0 安装 TSone 框架与 CLI：'),
+      codeBlock('bash', 'bun add @geektech/tsone @geektech/tsone-cli'),
       heading(2, '创建第一个应用'),
       heading(3, '1. 创建一个简单的组件'),
       codeBlock(
@@ -75,11 +75,12 @@ export const guidePages: DocPage[] = [
       codeBlock(
         'ts',
         [
-          'const app = createApp({',
+          'export const app = createApp({',
           '  root: App,',
           '  state: {',
           "    appName: 'TSone 示例',",
           '  },',
+          "  document: { title: 'TSone 示例' },",
           '});',
           '',
           'app.mount();',
@@ -87,6 +88,9 @@ export const guidePages: DocPage[] = [
       ),
       paragraph(
         '不需要为默认挂载点传入 rootElement。createApp 默认使用 #app，应用创建后直接调用 app.mount()；如果页面中暂时没有对应元素，本次挂载会安全跳过。'
+      ),
+      paragraph(
+        '将入口保存为 src/main.ts。CLI 要求使用命名导出 export const app，并且导出值必须提供 renderHtmlDocument()。'
       ),
       heading(3, '3. 使用 TypeScript 生成文档壳'),
       codeBlock(
@@ -107,10 +111,42 @@ export const guidePages: DocPage[] = [
           'app.mount();',
         ].join('\n')
       ),
-      heading(2, '运行应用'),
-      codeBlock('bash', 'bun run dev'),
+      heading(2, '配置开发与构建'),
       paragraph(
-        '根目录的 bun run dev 会启动 playground/official-site 官网首页演练；也可以运行 bun run dev:admin 查看后台管理页演练。'
+        '在 tsone.config.ts 中提供可选的普通对象默认导出。默认值为入口 src/main.ts、主机 127.0.0.1、端口 52211、空的 server.proxy，以及 build.outDir dist。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { defineConfig } from '@geektech/tsone-cli';",
+          '',
+          'export default defineConfig({',
+          '  server: {',
+          '    proxy: {',
+          "      '/api': {",
+          "        target: 'http://localhost:3000',",
+          '        changeOrigin: true,',
+          "        rewrite: (path) => path.replace(/^\\/api/, ''),",
+          '      },',
+          '    },',
+          '  },',
+          "  build: { outDir: 'dist' },",
+          '});',
+        ].join('\n')
+      ),
+      paragraph(
+        "代理也可以使用字符串简写 '/backend': 'http://localhost:4000'。目标仅支持 HTTP/HTTPS，字面前缀按最长匹配优先；查询参数、请求体与端到端请求头会转发，changeOrigin 更新 Host，rewrite 修改路径，上游不可达时返回 502 Bad Gateway。"
+      ),
+      heading(2, '运行应用'),
+      codeBlock(
+        'bash',
+        'tsone dev [--host <host>] [--port <port>]\ntsone build [--out-dir <path>]'
+      ),
+      paragraph(
+        'dev 只接受 host/port 覆盖，build 只接受 out-dir；支持 --port 3000 与 --port=3000 两种形式。build.outDir 必须是项目根目录内部的子目录。'
+      ),
+      paragraph(
+        'CLI 首版不提供 config plugins、WebSocket、HMR、SSR、public/ 复制以及公开的 minify/sourcemap 配置。'
       ),
       heading(2, '下一步'),
       list([
