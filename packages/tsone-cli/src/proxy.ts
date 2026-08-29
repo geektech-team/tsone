@@ -48,6 +48,7 @@ export function createProxyHandler(
         headers,
         body,
         signal: request.signal,
+        redirect: 'manual',
       });
 
       return new Response(upstream.body, {

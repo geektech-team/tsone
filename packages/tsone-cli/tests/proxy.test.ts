@@ -111,6 +111,28 @@ describe('HTTP development proxy', () => {
     expect(await response?.text()).toBe('created upstream resource');
   });
 
+  it('preserves upstream redirect responses without following them', async () => {
+    const upstream = startUpstream((request) => {
+      if (new URL(request.url).pathname === '/api/start') {
+        return new Response('redirect upstream response', {
+          status: 302,
+          headers: { location: '/login' },
+        });
+      }
+
+      return new Response('successful login response');
+    });
+    const handler = createProxyHandler({
+      '/api': `http://127.0.0.1:${upstream.port}`,
+    });
+
+    const response = await handler(new Request('http://client.test/api/start'));
+
+    expect(response?.status).toBe(302);
+    expect(response?.headers.get('location')).toBe('/login');
+    expect(await response?.text()).toBe('redirect upstream response');
+  });
+
   it('removes request headers named by Connection before forwarding', async () => {
     const upstream = startUpstream((request) =>
       Response.json({
