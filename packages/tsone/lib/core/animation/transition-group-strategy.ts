@@ -1,8 +1,5 @@
 import { ElementRenderStrategy } from '../renderer/element-strategy';
-import type {
-  RenderRuntimeContext,
-  Renderable,
-} from '../renderer/types';
+import type { RenderRuntimeContext, Renderable } from '../renderer/types';
 import type { VNode } from '../vnode';
 import { ListAnimationController } from './list-animation-controller';
 import {
@@ -45,7 +42,7 @@ export class TransitionGroupRenderStrategy extends ElementRenderStrategy<Transit
       const node = context.renderer.mount(childVNode, context);
       element.appendChild(node);
       const entry: TransitionEntry = {
-        key: childVNode.key!,
+        key: childVNode.key,
         vnode: childVNode,
         node,
         status: 'active',
@@ -67,11 +64,11 @@ export class TransitionGroupRenderStrategy extends ElementRenderStrategy<Transit
     const nextChildren = validateTransitionGroupChildren(
       newVNode.children ?? []
     );
-    const nextKeys = new Set(nextChildren.map((child) => child.key!));
+    const nextKeys = new Set(nextChildren.map((child) => child.key));
     const ordered: TransitionEntry[] = [];
 
     nextChildren.forEach((childVNode) => {
-      const key = childVNode.key!;
+      const key = childVNode.key;
       const current = entries.get(key);
       if (current) {
         const wasExiting = current.status === 'exiting';
@@ -111,12 +108,7 @@ export class TransitionGroupRenderStrategy extends ElementRenderStrategy<Transit
         return;
       }
 
-      this.startExit(
-        element,
-        entry,
-        newVNode.transitionGroup,
-        context
-      );
+      this.startExit(element, entry, newVNode.transitionGroup, context);
     });
 
     this.placeActiveEntries(element, ordered);

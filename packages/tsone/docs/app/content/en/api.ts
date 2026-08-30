@@ -513,6 +513,32 @@ export const enApiPages: DocPage[] = [
           '};',
         ].join('\n')
       ),
+      heading(2, 'List Enter and Exit Animations'),
+      paragraph(
+        inlineCode('TransitionGroup'),
+        ' animates initial and newly added keyed children, and delays unmounting removed children until their exit animation finishes. Its public type is ',
+        inlineCode('TransitionAnimationType'),
+        '.'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { Li, TransitionGroup, each } from '@geektech/tsone';",
+          '',
+          '{',
+          '  component: TransitionGroup,',
+          "  props: { tag: 'ul', type: 'fade', duration: 300 },",
+          '  children: each(',
+          '    this.state.items,',
+          '    (item) => Li({ children: [item.label] }),',
+          '    (item) => item.id',
+          '  ),',
+          '}',
+        ].join('\n')
+      ),
+      paragraph(
+        'Available types are fade, slide-up, slide-down, slide-left, slide-right, and scale. Defaults are tag div, type fade, duration 300 ms, and ease easing. Direct children require unique keys. The component respects prefers-reduced-motion and skips animation when Web Animations is unavailable. Reordering moves retained nodes without a reorder or FLIP animation.'
+      ),
       heading(2, 'Form Validation'),
       codeBlock(
         'ts',

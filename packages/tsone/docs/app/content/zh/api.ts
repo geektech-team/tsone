@@ -472,6 +472,32 @@ export const apiPages: DocPage[] = [
           '};',
         ].join('\n')
       ),
+      heading(2, '列表进入和退出动画'),
+      paragraph(
+        inlineCode('TransitionGroup'),
+        ' 会为初始和新增的带 key 子节点播放进入动画，并把已移除子节点的卸载延迟到退出动画结束。公开动画类型为 ',
+        inlineCode('TransitionAnimationType'),
+        '。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { Li, TransitionGroup, each } from '@geektech/tsone';",
+          '',
+          '{',
+          '  component: TransitionGroup,',
+          "  props: { tag: 'ul', type: 'fade', duration: 300 },",
+          '  children: each(',
+          '    this.state.items,',
+          '    (item) => Li({ children: [item.label] }),',
+          '    (item) => item.id',
+          '  ),',
+          '}',
+        ].join('\n')
+      ),
+      paragraph(
+        '可用类型包括 fade、slide-up、slide-down、slide-left、slide-right 和 scale。tag 默认 div，type 默认 fade，duration 默认 300 毫秒，缓动固定为 ease。直属子节点必须具有唯一 key。组件遵循 prefers-reduced-motion，Web Animations 不可用时也会跳过动画。重排只移动保留节点，不播放重排或 FLIP 动画。'
+      ),
       heading(2, '表单校验'),
       codeBlock(
         'ts',

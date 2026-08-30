@@ -1,5 +1,6 @@
 import { Component } from '../component';
 import {
+  normalizeTransitionGroupProps,
   validateTransitionGroupChildren,
   type TransitionGroupNode,
   type TransitionGroupProps,
@@ -13,18 +14,17 @@ export class TransitionGroup extends Component<TransitionGroupProps> {
   protected initStyles(): void {}
 
   protected render(): TransitionGroupNode {
-    const children = validateTransitionGroupChildren(
-      this.props.children ?? []
-    );
+    const { tag, type, duration } = normalizeTransitionGroupProps(this.props);
+    const children = validateTransitionGroupChildren(this.props.children ?? []);
 
     return {
-      tag: this.props.tag ?? 'div',
+      tag,
       props: this.props.elementProps,
       listeners: this.props.listeners,
       children,
       transitionGroup: {
-        type: this.props.type ?? 'fade',
-        duration: this.props.duration ?? 300,
+        type,
+        duration,
       },
     };
   }

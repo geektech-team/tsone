@@ -37,9 +37,35 @@ export interface TransitionGroupNode extends HTMLNode {
   children?: VNode[];
 }
 
+export type KeyedTransitionChild = VNode & {
+  key: string | number;
+};
+
+export function normalizeTransitionGroupProps(
+  props: TransitionGroupProps
+): Required<Pick<TransitionGroupProps, 'tag' | 'type' | 'duration'>> {
+  const tag = (props.tag ?? 'div').trim();
+  const type = props.type ?? 'fade';
+  const duration = props.duration ?? 300;
+
+  if (!tag) {
+    throw new Error('TransitionGroup tag must not be empty');
+  }
+  if (!TRANSITION_ANIMATION_TYPES.includes(type)) {
+    throw new Error(`Unknown TransitionGroup animation type "${type}"`);
+  }
+  if (!Number.isFinite(duration) || duration < 0) {
+    throw new Error(
+      'TransitionGroup duration must be a non-negative finite number'
+    );
+  }
+
+  return { tag, type, duration };
+}
+
 export function validateTransitionGroupChildren(
   children: Array<VNode | string>
-): VNode[] {
+): KeyedTransitionChild[] {
   const keys = new Set<string | number>();
 
   return children.map((child) => {
@@ -52,7 +78,7 @@ export function validateTransitionGroupChildren(
     }
 
     keys.add(child.key);
-    return child;
+    return child as KeyedTransitionChild;
   });
 }
 

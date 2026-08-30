@@ -178,6 +178,8 @@ describe('public API documentation', () => {
       'A',
       'Form',
       'Table',
+      'TransitionGroup',
+      'TransitionAnimationType',
       'VNode',
       'renderHtmlDocument',
       'StyleSheet',
@@ -216,6 +218,13 @@ describe('public API documentation', () => {
     expect(componentApi).toContain('createForm');
     expect(componentApi).toContain("Tag('dialog'");
     expect(componentApi).toContain('Section({');
+    expect(componentApi).toContain('TransitionGroup');
+    expect(componentApi).toContain('TransitionAnimationType');
+    expect(componentApi).toContain("type: 'fade'");
+    expect(componentApi).toContain('slide-up');
+    expect(componentApi).toContain('prefers-reduced-motion');
+    expect(componentApi).toContain('children: each(');
+    expect(readme).toContain('prefers-reduced-motion');
   });
 
   it('documents RouterView and RouterLink as public router component exits', () => {
@@ -244,6 +253,7 @@ describe('public API documentation', () => {
       'A',
       'Form',
       'Table',
+      'TransitionGroup',
       'renderHtmlDocument',
       'renderStyleSheet',
       'reactive',

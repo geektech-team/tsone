@@ -281,6 +281,7 @@ The main `@geektech/tsone` entry point exports:
 - `createApp(options)`
 - `createApp({ root, rootProps })`
 - `Component<Props, State>`
+- `TransitionGroup` / `TransitionGroupProps` / `TransitionAnimationType`
 - `VNode`
 - `h()` / `createComponent()` / `slot()` / `each()`
 - `Tag(tag, options)` for arbitrary HTML elements
@@ -326,6 +327,28 @@ const items = each(
   (user) => user.id
 );
 ```
+
+`TransitionGroup` animates the enter and exit of direct keyed children:
+
+```typescript
+{
+  component: TransitionGroup,
+  props: { tag: 'ul', type: 'fade', duration: 300 },
+  children: each(
+    this.state.items,
+    (item) => Li({ children: [item.label] }),
+    (item) => item.id
+  ),
+}
+```
+
+The animation types are `fade`, `slide-up`, `slide-down`, `slide-left`,
+`slide-right`, and `scale`. The defaults are a `div` wrapper, `fade`, and
+`300` ms with `ease` easing. Every direct child must have a unique key. Initial
+children animate in, and removed children stay mounted until their exit ends.
+TSone automatically disables these animations for
+`prefers-reduced-motion: reduce` or when Web Animations is unavailable.
+Reordering reuses and moves existing nodes without a reorder or FLIP animation.
 
 Component events return an unsubscribe function, while component VNodes can
 declare parent listeners through `emitters`:

@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import * as publicApi from '../lib';
 import { Component, TransitionGroup, each } from '../lib';
-import type { EventListeners, HTMLProps, VNode } from '../lib';
+import type {
+  EventListeners,
+  HTMLProps,
+  TransitionAnimationType,
+  TransitionGroupProps,
+  VNode,
+} from '../lib';
 
 interface AnimatedItemState {
   items: Array<{ id: string; label: string }>;
@@ -74,12 +80,14 @@ const originalMatchMedia = window.matchMedia;
 
 function setReducedMotion(reduced: boolean): void {
   window.matchMedia = ((query: string) => ({
-    matches:
-      reduced && query === '(prefers-reduced-motion: reduce)',
+    matches: reduced && query === '(prefers-reduced-motion: reduce)',
   })) as typeof window.matchMedia;
 }
 
-function finishAnimation(element: Element): void {
+function finishAnimation(element: Element | null): void {
+  if (!element) {
+    throw new Error('Expected an element with an animation');
+  }
   const animation = animationRecords.findLast(
     (record) => record.element === element
   );
@@ -110,8 +118,7 @@ beforeEach(() => {
       const record: AnimationRecord = {
         element: this,
         keyframes: Array.isArray(frames) ? frames : [],
-        options:
-          typeof options === 'object' && options !== null ? options : {},
+        options: typeof options === 'object' && options !== null ? options : {},
         resolve: () => resolveFinished(animation),
         cancelCount: 0,
       };
@@ -131,11 +138,7 @@ beforeEach(() => {
 
 afterEach(() => {
   if (originalAnimate) {
-    Object.defineProperty(
-      HTMLElement.prototype,
-      'animate',
-      originalAnimate
-    );
+    Object.defineProperty(HTMLElement.prototype, 'animate', originalAnimate);
   } else {
     Reflect.deleteProperty(HTMLElement.prototype, 'animate');
   }
@@ -209,6 +212,36 @@ describe('TransitionGroup', () => {
     );
   });
 
+  it.each([
+    [
+      { type: 'zoom' as TransitionAnimationType },
+      'Unknown TransitionGroup animation type "zoom"',
+    ],
+    [
+      { duration: -1 },
+      'TransitionGroup duration must be a non-negative finite number',
+    ],
+    [
+      { duration: Number.NaN },
+      'TransitionGroup duration must be a non-negative finite number',
+    ],
+    [
+      { duration: Number.POSITIVE_INFINITY },
+      'TransitionGroup duration must be a non-negative finite number',
+    ],
+    [{ tag: ' ' }, 'TransitionGroup tag must not be empty'],
+  ] as Array<[Partial<TransitionGroupProps>, string]>)(
+    'rejects invalid transition group props',
+    (props, message) => {
+      const group = new TransitionGroup({
+        ...props,
+        children: [{ tag: 'span', key: 'one' }],
+      });
+
+      expect(() => group.mountToNode()).toThrow(message);
+    }
+  );
+
   it('animates initial and newly added keyed children', () => {
     const container = document.createElement('div');
     const host = new AnimatedListHost();
@@ -226,13 +259,9 @@ describe('TransitionGroup', () => {
       options: { duration: 200, easing: 'ease', fill: 'both' },
     });
 
-    host.state.items = [
-      ...host.state.items,
-      { id: 'b', label: 'B' },
-    ];
+    host.state.items = [...host.state.items, { id: 'b', label: 'B' }];
 
-    const secondItem =
-      container.querySelector<HTMLElement>('[data-id="b"]');
+    const secondItem = container.querySelector<HTMLElement>('[data-id="b"]');
     expect(container.querySelectorAll('li')).toHaveLength(2);
     expect(
       animationRecords.find((record) => record.element === secondItem)
@@ -247,8 +276,7 @@ describe('TransitionGroup', () => {
       { id: 'b', label: 'B' },
     ];
     host.mount(container);
-    const firstNode =
-      container.querySelector<HTMLElement>('[data-id="a"]');
+    const firstNode = container.querySelector<HTMLElement>('[data-id="a"]');
     const initialAnimationCount = animationRecords.length;
 
     host.state.items = [...host.state.items].reverse();
@@ -269,7 +297,7 @@ describe('TransitionGroup', () => {
     expect(container.querySelector('[data-id="a"]')).toBeTruthy();
     expect(AnimatedItem.unmountedCount).toBe(0);
 
-    finishAnimation(item!);
+    finishAnimation(item);
     await Promise.resolve();
     await Promise.resolve();
 

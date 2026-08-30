@@ -261,6 +261,7 @@ const html = app.renderHtmlDocument({
 - `createApp(options)`
 - `createApp({ root, rootProps })`
 - `Component<Props, State>`
+- `TransitionGroup` / `TransitionGroupProps` / `TransitionAnimationType`
 - `VNode`
 - `h()` / `createComponent()` / `slot()` / `each()`
 - `Tag(tag, options)`，用于创建任意 HTML 元素
@@ -304,6 +305,27 @@ const items = each(
   (user) => user.id
 );
 ```
+
+`TransitionGroup` 为直属的带 key 子节点提供进入和退出动画：
+
+```typescript
+{
+  component: TransitionGroup,
+  props: { tag: 'ul', type: 'fade', duration: 300 },
+  children: each(
+    this.state.items,
+    (item) => Li({ children: [item.label] }),
+    (item) => item.id
+  ),
+}
+```
+
+动画类型包括 `fade`、`slide-up`、`slide-down`、`slide-left`、
+`slide-right` 和 `scale`。默认包装标签为 `div`，默认类型为 `fade`，默认时长为
+`300` 毫秒，并固定使用 `ease` 缓动。每个直属子节点都必须具有唯一 key。初始
+子节点会播放进入动画，移除的子节点会保留到退出动画结束。系统启用
+`prefers-reduced-motion: reduce` 或 Web Animations 不可用时，TSone 会自动跳过
+动画。列表重排只复用并移动已有节点，不播放重排或 FLIP 动画。
 
 组件事件可订阅并用返回的函数取消订阅；组件 VNode 可通过 `emitters` 声明父级监听器。
 

@@ -1,7 +1,4 @@
-import type {
-  TransitionAnimationType,
-  TransitionGroupOptions,
-} from './types';
+import type { TransitionAnimationType, TransitionGroupOptions } from './types';
 
 export interface ListAnimationRun {
   animation: Animation;
@@ -11,10 +8,7 @@ export interface ListAnimationRun {
   finished: Promise<'finished' | 'cancelled'>;
 }
 
-const ENTER_KEYFRAMES: Record<
-  TransitionAnimationType,
-  [Keyframe, Keyframe]
-> = {
+const ENTER_KEYFRAMES: Record<TransitionAnimationType, [Keyframe, Keyframe]> = {
   fade: [{ opacity: 0 }, { opacity: 1 }],
   'slide-up': [
     { opacity: 0, transform: 'translateY(12px)' },
@@ -77,9 +71,7 @@ export class ListAnimationController {
 
     const enterKeyframes = ENTER_KEYFRAMES[transition.type];
     const keyframes =
-      phase === 'enter'
-        ? [...enterKeyframes]
-        : [...enterKeyframes].reverse();
+      phase === 'enter' ? [...enterKeyframes] : [...enterKeyframes].reverse();
     const options: KeyframeAnimationOptions = {
       duration: transition.duration,
       easing: 'ease',

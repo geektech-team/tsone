@@ -34,8 +34,7 @@ function installAnimationApi(): void {
       const record: AnimationRecord = {
         element: this,
         keyframes: Array.isArray(frames) ? frames : [],
-        options:
-          typeof options === 'object' && options !== null ? options : {},
+        options: typeof options === 'object' && options !== null ? options : {},
         resolve: resolveFinished,
         cancelCount: 0,
       };
@@ -61,11 +60,7 @@ beforeEach(() => {
 
 afterEach(() => {
   if (originalAnimate) {
-    Object.defineProperty(
-      HTMLElement.prototype,
-      'animate',
-      originalAnimate
-    );
+    Object.defineProperty(HTMLElement.prototype, 'animate', originalAnimate);
   } else {
     Reflect.deleteProperty(HTMLElement.prototype, 'animate');
   }
