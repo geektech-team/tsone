@@ -7,6 +7,33 @@ interface AnimatedItemState {
   items: Array<{ id: string; label: string }>;
 }
 
+interface AnimatedItemProps {
+  id: string;
+  label: string;
+}
+
+class AnimatedItem extends Component<AnimatedItemProps> {
+  public static unmountedCount = 0;
+
+  protected initState(): object {
+    return {};
+  }
+
+  protected initStyles(): void {}
+
+  protected render(): VNode {
+    return {
+      tag: 'li',
+      props: { 'data-id': this.props.id },
+      children: [this.props.label],
+    };
+  }
+
+  protected onUnmounted(): void {
+    AnimatedItem.unmountedCount += 1;
+  }
+}
+
 class AnimatedListHost extends Component<
   Record<string, never>,
   AnimatedItemState
@@ -23,11 +50,7 @@ class AnimatedListHost extends Component<
       props: { tag: 'ul', type: 'slide-up', duration: 200 },
       children: each(
         this.state.items,
-        (item) => ({
-          tag: 'li',
-          props: { 'data-id': item.id },
-          children: [item.label],
-        }),
+        (item) => ({ component: AnimatedItem, props: item }),
         (item) => item.id
       ),
     };
@@ -38,6 +61,8 @@ interface AnimationRecord {
   element: HTMLElement;
   keyframes: Keyframe[];
   options: KeyframeAnimationOptions;
+  resolve(): void;
+  cancelCount: number;
 }
 
 const animationRecords: AnimationRecord[] = [];
@@ -45,9 +70,29 @@ const originalAnimate = Object.getOwnPropertyDescriptor(
   HTMLElement.prototype,
   'animate'
 );
+const originalMatchMedia = window.matchMedia;
+
+function setReducedMotion(reduced: boolean): void {
+  window.matchMedia = ((query: string) => ({
+    matches:
+      reduced && query === '(prefers-reduced-motion: reduce)',
+  })) as typeof window.matchMedia;
+}
+
+function finishAnimation(element: Element): void {
+  const animation = animationRecords.findLast(
+    (record) => record.element === element
+  );
+  if (!animation) {
+    throw new Error('Expected an animation for element');
+  }
+  animation.resolve();
+}
 
 beforeEach(() => {
   animationRecords.length = 0;
+  AnimatedItem.unmountedCount = 0;
+  window.matchMedia = originalMatchMedia;
   Object.defineProperty(HTMLElement.prototype, 'animate', {
     configurable: true,
     writable: true,
@@ -56,16 +101,30 @@ beforeEach(() => {
       frames: Keyframe[] | PropertyIndexedKeyframes | null,
       options?: number | KeyframeAnimationOptions
     ): Animation {
-      animationRecords.push({
+      let resolveFinished!: (animation: Animation) => void;
+      let rejectFinished!: (reason?: unknown) => void;
+      const finished = new Promise<Animation>((resolve, reject) => {
+        resolveFinished = resolve;
+        rejectFinished = reject;
+      });
+      const record: AnimationRecord = {
         element: this,
         keyframes: Array.isArray(frames) ? frames : [],
         options:
           typeof options === 'object' && options !== null ? options : {},
-      });
-      return {
-        cancel(): void {},
-        finished: new Promise<Animation>(() => {}),
+        resolve: () => resolveFinished(animation),
+        cancelCount: 0,
+      };
+      const animation = {
+        cancel(): void {
+          record.cancelCount += 1;
+          rejectFinished(new DOMException('Animation cancelled', 'AbortError'));
+        },
+        finished,
       } as Animation;
+
+      animationRecords.push(record);
+      return animation;
     },
   });
 });
@@ -80,6 +139,7 @@ afterEach(() => {
   } else {
     Reflect.deleteProperty(HTMLElement.prototype, 'animate');
   }
+  window.matchMedia = originalMatchMedia;
 });
 
 interface ExpectedTransitionGroupProps {
@@ -196,5 +256,75 @@ describe('TransitionGroup', () => {
     const items = container.querySelectorAll('li');
     expect(items[1]).toBe(firstNode);
     expect(animationRecords).toHaveLength(initialAnimationCount);
+  });
+
+  it('keeps a removed component mounted until its exit animation finishes', async () => {
+    const container = document.createElement('div');
+    const host = new AnimatedListHost();
+    host.mount(container);
+    const item = container.querySelector('[data-id="a"]');
+
+    host.state.items = [];
+
+    expect(container.querySelector('[data-id="a"]')).toBeTruthy();
+    expect(AnimatedItem.unmountedCount).toBe(0);
+
+    finishAnimation(item!);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(container.querySelector('[data-id="a"]')).toBeNull();
+    expect(AnimatedItem.unmountedCount).toBe(1);
+  });
+
+  it('reactivates the same node when an exiting key returns', async () => {
+    const container = document.createElement('div');
+    const host = new AnimatedListHost();
+    host.mount(container);
+    const original = container.querySelector('[data-id="a"]');
+
+    host.state.items = [];
+    host.state.items = [{ id: 'a', label: 'Updated' }];
+    await Promise.resolve();
+
+    expect(container.querySelector('[data-id="a"]')).toBe(original);
+    expect(original?.textContent).toBe('Updated');
+    expect(AnimatedItem.unmountedCount).toBe(0);
+  });
+
+  it('synchronously cleans active and exiting children when the group unmounts', () => {
+    const container = document.createElement('div');
+    const host = new AnimatedListHost();
+    host.mount(container);
+
+    host.state.items = [{ id: 'b', label: 'B' }];
+    host.unmount();
+
+    expect(container.childNodes).toHaveLength(0);
+    expect(AnimatedItem.unmountedCount).toBe(2);
+  });
+
+  it('removes an exiting child immediately when reduced motion is enabled', () => {
+    const container = document.createElement('div');
+    const host = new AnimatedListHost();
+    host.mount(container);
+    setReducedMotion(true);
+
+    host.state.items = [];
+
+    expect(container.querySelector('[data-id="a"]')).toBeNull();
+    expect(AnimatedItem.unmountedCount).toBe(1);
+  });
+
+  it('removes an exiting child immediately without Web Animations', () => {
+    const container = document.createElement('div');
+    const host = new AnimatedListHost();
+    host.mount(container);
+    Reflect.deleteProperty(HTMLElement.prototype, 'animate');
+
+    host.state.items = [];
+
+    expect(container.querySelector('[data-id="a"]')).toBeNull();
+    expect(AnimatedItem.unmountedCount).toBe(1);
   });
 });

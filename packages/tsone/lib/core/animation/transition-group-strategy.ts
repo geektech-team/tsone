@@ -74,6 +74,12 @@ export class TransitionGroupRenderStrategy extends ElementRenderStrategy<Transit
       const key = childVNode.key!;
       const current = entries.get(key);
       if (current) {
+        const wasExiting = current.status === 'exiting';
+        if (wasExiting && current.node instanceof HTMLElement) {
+          this.animations.cancel(current.node);
+        }
+        current.status = 'active';
+        current.animationToken = undefined;
         current.node = context.renderer.patch(
           current.vnode,
           childVNode,
@@ -81,8 +87,10 @@ export class TransitionGroupRenderStrategy extends ElementRenderStrategy<Transit
           context
         );
         current.vnode = childVNode;
-        current.status = 'active';
         ordered.push(current);
+        if (wasExiting) {
+          this.playEnter(current, current.node, newVNode.transitionGroup);
+        }
         return;
       }
 
@@ -99,13 +107,16 @@ export class TransitionGroupRenderStrategy extends ElementRenderStrategy<Transit
     });
 
     entries.forEach((entry, key) => {
-      if (nextKeys.has(key)) {
+      if (nextKeys.has(key) || entry.status !== 'active') {
         return;
       }
 
-      context.renderer.unmount(entry.vnode, entry.node, context);
-      entry.node.parentNode?.removeChild(entry.node);
-      entries.delete(key);
+      this.startExit(
+        element,
+        entry,
+        newVNode.transitionGroup,
+        context
+      );
     });
 
     this.placeActiveEntries(element, ordered);
@@ -117,7 +128,22 @@ export class TransitionGroupRenderStrategy extends ElementRenderStrategy<Transit
     vnode: TransitionGroupNode,
     context: RenderRuntimeContext
   ): void {
-    super.unmountChildren(element, vnode, context);
+    const entries = this.entries.get(element);
+    if (!entries) {
+      super.unmountChildren(element, vnode, context);
+      return;
+    }
+
+    entries.forEach((entry) => {
+      if (entry.node instanceof HTMLElement) {
+        this.animations.cancel(entry.node);
+      }
+      context.renderer.unmount(entry.vnode, entry.node, context);
+      if (entry.node.parentNode === element) {
+        element.removeChild(entry.node);
+      }
+    });
+    entries.clear();
     this.entries.delete(element);
   }
 
@@ -132,6 +158,52 @@ export class TransitionGroupRenderStrategy extends ElementRenderStrategy<Transit
 
     const run = this.animations.playEnter(node, options);
     entry.animationToken = run?.token;
+  }
+
+  private startExit(
+    wrapper: HTMLElement,
+    entry: TransitionEntry,
+    options: TransitionGroupOptions,
+    context: RenderRuntimeContext
+  ): void {
+    entry.status = 'exiting';
+    const run =
+      entry.node instanceof HTMLElement
+        ? this.animations.playExit(entry.node, options)
+        : null;
+
+    if (!run) {
+      this.finishExit(wrapper, entry, context);
+      return;
+    }
+
+    entry.animationToken = run.token;
+    void run.finished.then((result) => {
+      if (
+        result === 'finished' &&
+        entry.status === 'exiting' &&
+        entry.animationToken === run.token
+      ) {
+        this.finishExit(wrapper, entry, context);
+      }
+    });
+  }
+
+  private finishExit(
+    wrapper: HTMLElement,
+    entry: TransitionEntry,
+    context: RenderRuntimeContext
+  ): void {
+    const entries = this.entries.get(wrapper);
+    if (entries?.get(entry.key) !== entry) {
+      return;
+    }
+
+    context.renderer.unmount(entry.vnode, entry.node, context);
+    if (entry.node.parentNode === wrapper) {
+      wrapper.removeChild(entry.node);
+    }
+    entries.delete(entry.key);
   }
 
   private placeActiveEntries(
