@@ -7,3 +7,4 @@ export * from './renderer';
 export * from './document';
 export * from './model';
 export * from './form';
+export * from './animation';
