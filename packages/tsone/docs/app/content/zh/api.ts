@@ -430,6 +430,24 @@ export const apiPages: DocPage[] = [
           "const theme = this.inject(THEME, { mode: 'light' });",
         ].join('\n')
       ),
+      heading(2, 'HTML 标签快捷函数'),
+      paragraph(
+        '使用 ',
+        inlineCode('Tag(tag, options)'),
+        ' 创建任意 HTML VNode，也可以用具名快捷函数创建常用元素。所有快捷函数都支持相同的 props、children、listeners、key、slot 和 directions 选项。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { Section, Tag } from '@geektech/tsone';",
+          '',
+          "const panel = Section({ props: { className: 'panel' }, children: ['内容'] });",
+          "const dialog = Tag('dialog', { props: { open: true }, children: ['你好'] });",
+        ].join('\n')
+      ),
+      paragraph(
+        '常用快捷函数包括 Div、Span、P、Button、Input、Section、Main、Header、Footer、Nav、Article、Aside、H1 至 H6、Strong、Em、Small、Pre、Code、Blockquote、Ul、Ol、Li、A、Img、Form、Label、Textarea、Select、Option、Table、Thead、Tbody、Tr、Th 和 Td。'
+      ),
       heading(2, '条件、列表与模型绑定'),
       codeBlock(
         'ts',

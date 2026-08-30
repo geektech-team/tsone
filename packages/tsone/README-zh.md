@@ -263,7 +263,15 @@ const html = app.renderHtmlDocument({
 - `Component<Props, State>`
 - `VNode`
 - `h()` / `createComponent()` / `slot()` / `each()`
+- `Tag(tag, options)`，用于创建任意 HTML 元素
 - `Div()` / `Span()` / `P()` / `Button()` / `Input()`
+- `Section()` / `Main()` / `Header()` / `Footer()` / `Nav()` / `Article()` /
+  `Aside()`
+- `H1()` 至 `H6()` / `Strong()` / `Em()` / `Small()` / `Pre()` / `Code()` /
+  `Blockquote()`
+- `Ul()` / `Ol()` / `Li()` / `A()` / `Img()`
+- `Form()` / `Label()` / `Textarea()` / `Select()` / `Option()`
+- `Table()` / `Thead()` / `Tbody()` / `Tr()` / `Th()` / `Td()`
 - `Directions` / `ModelBinding`
 - `InjectionKey`、组件和应用的 `provide()` / `inject()`
 - `createForm()` / `required()` / `minLength()` / `validate()`

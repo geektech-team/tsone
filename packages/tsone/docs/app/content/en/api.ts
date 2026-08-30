@@ -471,6 +471,24 @@ export const enApiPages: DocPage[] = [
           "const theme = this.inject(THEME, { mode: 'light' });",
         ].join('\n')
       ),
+      heading(2, 'HTML Tag Helpers'),
+      paragraph(
+        'Use ',
+        inlineCode('Tag(tag, options)'),
+        ' to create any HTML VNode, or use a named helper for common elements. Every helper accepts the same props, children, listeners, key, slot, and directions options.'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { Section, Tag } from '@geektech/tsone';",
+          '',
+          "const panel = Section({ props: { className: 'panel' }, children: ['Content'] });",
+          "const dialog = Tag('dialog', { props: { open: true }, children: ['Hello'] });",
+        ].join('\n')
+      ),
+      paragraph(
+        'Common helpers include Div, Span, P, Button, Input, Section, Main, Header, Footer, Nav, Article, Aside, H1 through H6, Strong, Em, Small, Pre, Code, Blockquote, Ul, Ol, Li, A, Img, Form, Label, Textarea, Select, Option, Table, Thead, Tbody, Tr, Th, and Td.'
+      ),
       heading(2, 'Conditionals, Lists, and Model Binding'),
       codeBlock(
         'ts',

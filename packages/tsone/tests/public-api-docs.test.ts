@@ -172,6 +172,12 @@ describe('public API documentation', () => {
       'P',
       'Button',
       'Input',
+      'Tag',
+      'Section',
+      'H1',
+      'A',
+      'Form',
+      'Table',
       'VNode',
       'renderHtmlDocument',
       'StyleSheet',
@@ -208,6 +214,8 @@ describe('public API documentation', () => {
     expect(componentApi).toContain('provide');
     expect(componentApi).toContain('directions: { model:');
     expect(componentApi).toContain('createForm');
+    expect(componentApi).toContain("Tag('dialog'");
+    expect(componentApi).toContain('Section({');
   });
 
   it('documents RouterView and RouterLink as public router component exits', () => {
@@ -230,6 +238,12 @@ describe('public API documentation', () => {
       'P',
       'Button',
       'Input',
+      'Tag',
+      'Section',
+      'H1',
+      'A',
+      'Form',
+      'Table',
       'renderHtmlDocument',
       'renderStyleSheet',
       'reactive',

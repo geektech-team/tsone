@@ -123,11 +123,18 @@ export function h(
   };
 }
 
-function createElementFactory(tag: string): ElementShortcut {
-  return (options: ElementShortcutOptions = {}) => ({
+export function Tag(
+  tag: string,
+  options: ElementShortcutOptions = {}
+): HTMLNode {
+  return {
     tag,
     ...options,
-  });
+  };
+}
+
+function createElementFactory(tag: string): ElementShortcut {
+  return (options: ElementShortcutOptions = {}) => Tag(tag, options);
 }
 
 export const Div = createElementFactory('div');
@@ -135,6 +142,41 @@ export const Span = createElementFactory('span');
 export const P = createElementFactory('p');
 export const Button = createElementFactory('button');
 export const Input = createElementFactory('input');
+export const Section = createElementFactory('section');
+export const Main = createElementFactory('main');
+export const Header = createElementFactory('header');
+export const Footer = createElementFactory('footer');
+export const Nav = createElementFactory('nav');
+export const Article = createElementFactory('article');
+export const Aside = createElementFactory('aside');
+export const H1 = createElementFactory('h1');
+export const H2 = createElementFactory('h2');
+export const H3 = createElementFactory('h3');
+export const H4 = createElementFactory('h4');
+export const H5 = createElementFactory('h5');
+export const H6 = createElementFactory('h6');
+export const Strong = createElementFactory('strong');
+export const Em = createElementFactory('em');
+export const Small = createElementFactory('small');
+export const Pre = createElementFactory('pre');
+export const Code = createElementFactory('code');
+export const Blockquote = createElementFactory('blockquote');
+export const Ul = createElementFactory('ul');
+export const Ol = createElementFactory('ol');
+export const Li = createElementFactory('li');
+export const A = createElementFactory('a');
+export const Img = createElementFactory('img');
+export const Form = createElementFactory('form');
+export const Label = createElementFactory('label');
+export const Textarea = createElementFactory('textarea');
+export const Select = createElementFactory('select');
+export const Option = createElementFactory('option');
+export const Table = createElementFactory('table');
+export const Thead = createElementFactory('thead');
+export const Tbody = createElementFactory('tbody');
+export const Tr = createElementFactory('tr');
+export const Th = createElementFactory('th');
+export const Td = createElementFactory('td');
 
 export function createComponent<P extends VNodeComponentProps>(
   componentClass: ComponentConstructor<P>,

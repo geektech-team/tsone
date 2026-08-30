@@ -283,7 +283,15 @@ The main `@geektech/tsone` entry point exports:
 - `Component<Props, State>`
 - `VNode`
 - `h()` / `createComponent()` / `slot()` / `each()`
+- `Tag(tag, options)` for arbitrary HTML elements
 - `Div()` / `Span()` / `P()` / `Button()` / `Input()`
+- `Section()` / `Main()` / `Header()` / `Footer()` / `Nav()` / `Article()` /
+  `Aside()`
+- `H1()` through `H6()` / `Strong()` / `Em()` / `Small()` / `Pre()` /
+  `Code()` / `Blockquote()`
+- `Ul()` / `Ol()` / `Li()` / `A()` / `Img()`
+- `Form()` / `Label()` / `Textarea()` / `Select()` / `Option()`
+- `Table()` / `Thead()` / `Tbody()` / `Tr()` / `Th()` / `Td()`
 - `Directions` / `ModelBinding`
 - `InjectionKey` and component/application `provide()` / `inject()`
 - `createForm()` / `required()` / `minLength()` / `validate()`

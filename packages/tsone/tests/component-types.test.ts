@@ -39,7 +39,7 @@ describe('component public types', () => {
       writeFileSync(
         join(tempDir, 'component-consumer.ts'),
         [
-          "import { Button, Component, Div, EventListeners, HTMLProps, InjectionKey, Input, P, Span, VNode, createForm, minLength, required, validate } from 'tsone-source';",
+          "import { Button, Component, Div, EventListeners, HTMLProps, InjectionKey, Input, P, Section, Span, Tag, VNode, createForm, minLength, required, validate } from 'tsone-source';",
           "import { RouteLocation, RouteMeta, createRouter } from 'tsone-source/router';",
           '',
           'interface Props {',
@@ -96,6 +96,8 @@ describe('component public types', () => {
           '',
           "const shortcutButton: VNode = Button({ listeners, children: ['Save'] });",
           "const shortcutInput: VNode = Input({ props: { 'aria-label': 'Name' }, directions: { model: 'label' } });",
+          "const shortcutSection: VNode = Section({ props: { role: 'region' }, children: ['Content'] });",
+          "const customElement: VNode = Tag('dialog', { props: { open: true }, children: ['Hello'] });",
           '',
           "const routeMeta: RouteMeta = { title: 'Home', requiresAuth: true };",
           "const router = createRouter({ routes: [{ path: '/', component: TypedCounter, meta: routeMeta }] });",
@@ -106,6 +108,8 @@ describe('component public types', () => {
           'void listeners;',
           'void shortcutButton;',
           'void shortcutInput;',
+          'void shortcutSection;',
+          'void customElement;',
           '',
           "const form = createForm({ name: '' }, { name: [required(), minLength(2), validate((value) => Boolean(value) || 'Name required')] });",
           'const validationResult: boolean = form.validate().valid;',
