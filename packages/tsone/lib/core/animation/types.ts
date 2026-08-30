@@ -1,4 +1,10 @@
-import type { EventListeners, HTMLNode, HTMLProps, VNode } from '../vnode';
+import {
+  isHTMLNode,
+  type EventListeners,
+  type HTMLNode,
+  type HTMLProps,
+  type VNode,
+} from '../vnode';
 
 export const TRANSITION_ANIMATION_TYPES = [
   'fade',
@@ -48,4 +54,15 @@ export function validateTransitionGroupChildren(
     keys.add(child.key);
     return child;
   });
+}
+
+export function isTransitionGroupNode(
+  vnode: unknown
+): vnode is TransitionGroupNode {
+  return (
+    typeof vnode === 'object' &&
+    vnode !== null &&
+    'transitionGroup' in vnode &&
+    isHTMLNode(vnode as unknown as VNode)
+  );
 }

@@ -6,6 +6,7 @@ import {
   isComponentNode,
   isSlotProvider,
 } from './vnode';
+import { TransitionGroupRenderStrategy } from './animation/transition-group-strategy';
 import { ElementRenderStrategy } from './renderer/element-strategy';
 export { ElementRenderStrategy } from './renderer/element-strategy';
 export type {
@@ -30,6 +31,7 @@ export class RendererContext {
       new TextRenderStrategy(),
       new ComponentRenderStrategy(),
       new SlotRenderStrategy(),
+      new TransitionGroupRenderStrategy(),
       new ElementRenderStrategy(),
     ];
   }
