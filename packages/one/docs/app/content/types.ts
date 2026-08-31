@@ -1,20 +1,15 @@
+import {
+  oneDocDemoExamples,
+  type OneDocDemoName,
+  type OneDocDemoSource,
+} from './demo-examples';
+
+export type { OneDocDemoName, OneDocDemoSource } from './demo-examples';
+
 export type OneDocInline =
   | string
   | { type: 'code'; text: string }
   | { type: 'link'; text: string; href: string };
-
-export type OneDocDemoName =
-  | 'button'
-  | 'input'
-  | 'card'
-  | 'form'
-  | 'select'
-  | 'checkbox'
-  | 'switch'
-  | 'alert'
-  | 'message'
-  | 'dialog'
-  | 'tooltip';
 
 export type OneDocBlock =
   | { type: 'heading'; level: 1 | 2 | 3; id: string; text: string }
@@ -40,6 +35,7 @@ export type OneDocBlock =
       type: 'demo';
       component: OneDocDemoName;
       interactive?: boolean;
+      source: OneDocDemoSource;
     };
 
 export interface OneDocPage {
@@ -175,7 +171,12 @@ export function demo(
   component: OneDocDemoName,
   interactive = true
 ): OneDocBlock {
-  return { type: 'demo', component, interactive };
+  return {
+    type: 'demo',
+    component,
+    interactive,
+    source: { ...oneDocDemoExamples[component] },
+  };
 }
 
 function blockHasContent(block: OneDocBlock): boolean {

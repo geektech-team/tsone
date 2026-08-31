@@ -99,6 +99,32 @@ describe('One UI docs app', () => {
     }
   });
 
+  it('renders demo source in a collapsed native disclosure', () => {
+    const button = render('/components/button/');
+
+    expect(button).toContain(
+      '<details class="one-docs-demo-source" data-one-demo-source="button">'
+    );
+    expect(button).not.toContain(
+      '<details class="one-docs-demo-source" data-one-demo-source="button" open'
+    );
+    expect(button).toContain(
+      '<span class="one-docs-demo-source__show">查看代码</span>'
+    );
+    expect(button).toContain(
+      '<span class="one-docs-demo-source__hide">收起代码</span>'
+    );
+    expect(button).toContain('<code class="language-ts">');
+    expect(button).toContain('createComponent(OneButton');
+  });
+
+  it('escapes demo source before inserting it into the document', () => {
+    const form = render('/components/form/form/');
+
+    expect(form).toContain('value.length &lt; 3');
+    expect(form).not.toContain('value.length < 3');
+  });
+
   it('ships component CSS and the classic responsive layout in the head', () => {
     const html = render('/components/button/');
     expect(html).toContain('.one-button {');

@@ -452,6 +452,55 @@ const documentStyles: StyleSheet = [
     },
   },
   {
+    selector: '.one-docs-demo-source',
+    properties: {
+      borderTop: '1px solid var(--one-docs-border)',
+    },
+  },
+  {
+    selector: '.one-docs-demo-source summary',
+    properties: {
+      color: 'var(--one-docs-green-strong)',
+      cursor: 'pointer',
+      fontSize: '13px',
+      fontWeight: '650',
+      listStyle: 'none',
+      padding: '12px 18px',
+      textAlign: 'right',
+      userSelect: 'none',
+    },
+  },
+  {
+    selector: '.one-docs-demo-source summary::-webkit-details-marker',
+    properties: { display: 'none' },
+  },
+  {
+    selector: '.one-docs-demo-source summary:focus-visible',
+    properties: {
+      outline: '2px solid var(--one-docs-green-strong)',
+      outlineOffset: '-2px',
+    },
+  },
+  {
+    selector: '.one-docs-demo-source__hide',
+    properties: { display: 'none' },
+  },
+  {
+    selector: '.one-docs-demo-source[open] .one-docs-demo-source__show',
+    properties: { display: 'none' },
+  },
+  {
+    selector: '.one-docs-demo-source[open] .one-docs-demo-source__hide',
+    properties: { display: 'inline' },
+  },
+  {
+    selector: '.one-docs-demo-source pre',
+    properties: {
+      borderRadius: '0',
+      margin: '0',
+    },
+  },
+  {
     selector: '.one-docs-feedback-stack',
     properties: {
       display: 'grid',

@@ -352,12 +352,41 @@ describe('One UI docs content', () => {
       ['/components/input/', 'input'],
       ['/components/card/', 'card'],
     ] as const) {
-      expect(pageAt(path).body).toContainEqual({
-        type: 'demo',
-        component,
-        interactive: true,
-      });
+      expect(pageAt(path).body).toContainEqual(
+        expect.objectContaining({
+          type: 'demo',
+          component,
+          interactive: true,
+        })
+      );
     }
+  });
+
+  it('provides TypeScript source for every documented demo', () => {
+    const demos = oneDocPages.flatMap((page) =>
+      page.body.filter((block) => block.type === 'demo')
+    );
+
+    expect(new Set(demos.map((block) => block.component))).toEqual(
+      new Set([
+        'button',
+        'input',
+        'card',
+        'form',
+        'select',
+        'checkbox',
+        'switch',
+        'alert',
+        'message',
+        'dialog',
+        'tooltip',
+      ])
+    );
+
+    demos.forEach((block) => {
+      expect(block.source.language).toBe('ts');
+      expect(block.source.code.trim().length).toBeGreaterThan(0);
+    });
   });
 
   it('documents feedback props, services, keyboard behavior and ARIA', () => {

@@ -135,7 +135,11 @@ export class DocArticle extends Component<DocArticleProps> {
           ],
         };
       case 'demo':
-        return this.renderDemo(block.component, block.interactive === true);
+        return this.renderDemo(
+          block.component,
+          block.interactive === true,
+          block.source
+        );
       default:
         return assertNever(block);
     }
@@ -164,7 +168,8 @@ export class DocArticle extends Component<DocArticleProps> {
 
   private renderDemo(
     component: Extract<OneDocBlock, { type: 'demo' }>['component'],
-    interactive: boolean
+    interactive: boolean,
+    source: Extract<OneDocBlock, { type: 'demo' }>['source']
   ): VNode {
     return {
       tag: 'section',
@@ -186,6 +191,40 @@ export class DocArticle extends Component<DocArticleProps> {
               } as VNode,
             ]
           : []),
+        {
+          tag: 'details',
+          props: {
+            className: 'one-docs-demo-source',
+            'data-one-demo-source': component,
+          },
+          children: [
+            {
+              tag: 'summary',
+              children: [
+                {
+                  tag: 'span',
+                  props: { className: 'one-docs-demo-source__show' },
+                  children: ['查看代码'],
+                },
+                {
+                  tag: 'span',
+                  props: { className: 'one-docs-demo-source__hide' },
+                  children: ['收起代码'],
+                },
+              ],
+            },
+            {
+              tag: 'pre',
+              children: [
+                {
+                  tag: 'code',
+                  props: { className: `language-${source.language}` },
+                  children: [source.code],
+                },
+              ],
+            },
+          ],
+        },
       ],
     };
   }
