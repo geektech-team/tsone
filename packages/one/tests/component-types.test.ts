@@ -1,22 +1,29 @@
 import { describe, expect, it } from 'bun:test';
 import {
   OneAlert,
+  OneBadge,
   OneButton,
   OneCard,
   OneDialog,
+  OneEmpty,
   OneInput,
   OneMessage,
+  OneTag,
   OneTooltip,
   oneDialog,
   oneMessage,
   type OneAlertProps,
+  type OneBadgeProps,
   type OneButtonProps,
   type OneCardProps,
+  type OneDataDisplayVariant,
   type OneDialogProps,
+  type OneEmptyProps,
   type OneInputProps,
   type OneMessageOptions,
   type OneMessagePlacement,
   type OneOverlayPlacement,
+  type OneTagProps,
   type OneTooltipProps,
 } from '../lib';
 
@@ -31,6 +38,18 @@ const tooltipProps: OneTooltipProps = {
   placement: 'bottom-end',
   children: [{ tag: 'button', children: ['?'] }],
 };
+const tagProps: OneTagProps = {
+  variant: 'success',
+  size: 'sm',
+  closable: true,
+};
+const badgeProps: OneBadgeProps = {
+  value: 120,
+  max: 99,
+  variant: 'error',
+};
+const emptyProps: OneEmptyProps = { description: '暂无结果' };
+const displayVariant: OneDataDisplayVariant = 'neutral';
 const messagePlacement: OneMessagePlacement = 'top-end';
 const overlayPlacement: OneOverlayPlacement = 'right-start';
 
@@ -49,12 +68,17 @@ const invalidTooltipTrigger: OneTooltipProps = {
 };
 // @ts-expect-error unsupported overlay placement
 const invalidOverlayPlacement: OneOverlayPlacement = 'center';
+// @ts-expect-error unsupported data-display variant
+const invalidTag: OneTagProps = { variant: 'info' };
 
 describe('public component types', () => {
   it('exports constructors and approved prop shapes', () => {
     expect(typeof OneButton).toBe('function');
     expect(typeof OneInput).toBe('function');
     expect(typeof OneCard).toBe('function');
+    expect(typeof OneTag).toBe('function');
+    expect(typeof OneBadge).toBe('function');
+    expect(typeof OneEmpty).toBe('function');
     expect(typeof OneAlert).toBe('function');
     expect(typeof OneMessage).toBe('function');
     expect(typeof OneDialog).toBe('function');
@@ -64,6 +88,10 @@ describe('public component types', () => {
     expect(buttonProps.variant).toBe('danger');
     expect(inputProps.value).toBe('one');
     expect(cardProps.title).toBe('One');
+    expect(tagProps.variant).toBe('success');
+    expect(badgeProps.max).toBe(99);
+    expect(emptyProps.description).toBe('暂无结果');
+    expect(displayVariant).toBe('neutral');
     expect(new OneAlert(alertProps)).toBeInstanceOf(OneAlert);
     expect(new OneMessage(messageOptions)).toBeInstanceOf(OneMessage);
     expect(new OneDialog(dialogProps)).toBeInstanceOf(OneDialog);
@@ -76,5 +104,6 @@ describe('public component types', () => {
     void invalidMessagePlacement;
     void invalidTooltipTrigger;
     void invalidOverlayPlacement;
+    void invalidTag;
   });
 });

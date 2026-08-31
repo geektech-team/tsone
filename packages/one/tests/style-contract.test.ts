@@ -3,11 +3,14 @@ import { ONE_BUTTON_STYLES } from '../lib/button/OneButton';
 import {
   ONE_THEME_DEFAULTS,
   OneAlert,
+  OneBadge,
   OneButton,
   OneCard,
   OneDialog,
+  OneEmpty,
   OneInput,
   OneMessage,
+  OneTag,
   OneTooltip,
 } from '../lib';
 
@@ -85,6 +88,9 @@ describe('One UI style contract', () => {
     | OneButton
     | OneInput
     | OneCard
+    | OneTag
+    | OneBadge
+    | OneEmpty
     | OneAlert
     | OneMessage
     | OneDialog
@@ -115,6 +121,9 @@ describe('One UI style contract', () => {
       new OneButton({ children: ['Save'] }),
       new OneInput({ value: 'One' }),
       new OneCard({ title: 'One', children: ['Body'] }),
+      new OneTag({ children: ['Published'] }),
+      new OneBadge({ value: 8, children: ['Inbox'] }),
+      new OneEmpty(),
       new OneAlert({ title: 'Info' }),
       new OneMessage({ content: 'Saved', defaultOpen: true, duration: 0 }),
       new OneDialog({ title: 'Confirm', defaultOpen: true }),
@@ -141,6 +150,9 @@ describe('One UI style contract', () => {
     });
     expect(css).toContain('var(--one-color-primary, #5fd956)');
     expect(css).toContain('var(--one-radius-md, 8px)');
+    expect(css).toContain('.one-tag');
+    expect(css).toContain('.one-badge__content');
+    expect(css).toContain('.one-empty');
     expect(css).not.toMatch(/(^|[}\s,])(body|html)(?=[\s,{])/m);
   });
 

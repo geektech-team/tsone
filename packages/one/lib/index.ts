@@ -31,6 +31,13 @@ export { ONE_COMPONENT_CATEGORIES } from './categories';
 export type { OneComponentCategory } from './categories';
 export { OneCard } from './card';
 export type { OneCardProps } from './card';
+export type { OneDataDisplayVariant } from './data-display';
+export { OneTag } from './tag';
+export type { OneTagProps } from './tag';
+export { OneBadge } from './badge';
+export type { OneBadgeProps } from './badge';
+export { OneEmpty } from './empty';
+export type { OneEmptyProps } from './empty';
 export { ONE_THEME_DEFAULTS } from './styles/shared';
 export {
   DomOneOverlayHost,

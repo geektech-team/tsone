@@ -17,7 +17,11 @@ describe('ONE_COMPONENT_CATEGORIES', () => {
           'OneSwitch',
         ],
       },
-      { id: 'data-display', label: '数据展示', components: ['OneCard'] },
+      {
+        id: 'data-display',
+        label: '数据展示',
+        components: ['OneCard', 'OneTag', 'OneBadge', 'OneEmpty'],
+      },
       {
         id: 'feedback',
         label: '反馈与浮层',
