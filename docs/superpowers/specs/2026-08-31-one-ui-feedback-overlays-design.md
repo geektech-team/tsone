@@ -42,8 +42,10 @@ Popover、Tour、Notification Center 或跨 iframe 浮层。
 ## 3. 对象关系与职责
 
 - 四个公开组件分别继承 TSone `Component<Props, State>`；组件之间不形成继承关系。
-- `OneMessage`、`OneDialog` 和 `OneTooltip` **组合**
-  `OneOverlayMountController`，由控制器负责目标容器解析、节点迁移和卸载清理。
+- `OneMessage`、`OneDialog` 和 `OneTooltip` 在父组件树中保留稳定锚点或触发节点，
+  并分别**组合**内部 `MessageOverlay`、`DialogOverlay`、`TooltipBubble` 视图。
+- 三个公开组件**组合** `OneOverlayMountController`，由控制器负责目标容器解析、
+  内部浮层视图的挂载、更新和卸载；控制器不移动公开组件的根节点。
 - `OneMessageService` 和 `OneDialogService` **依赖** `OneOverlayHost` 接口；默认服务
   使用共享实现，但测试和高级调用方可以注入独立 Host。
 - `OneTooltip` **依赖** `OneOverlayPositioner` 接口；默认组合零依赖的
@@ -252,9 +254,13 @@ hover-focus 模式在 hover 或 focus 任一状态仍存在时保持打开，避
 按容器创建一个带 `data-one-overlay-host` 的节点，记录 Message 栈、Dialog 栈和层级。
 容器内最后一个服务浮层关闭后移除空 Host。
 
-声明式组件由父组件拥有，只通过 MountController 迁移自己的根节点；命令式组件由
-Host 创建和卸载。两者关闭路径最终都执行同一资源清理协议，清除计时器、观察器、
-事件、焦点记录、滚动锁和 DOM 关联。组件或 handle 的重复关闭不重复触发 afterClose。
+声明式公开组件由父组件拥有，并在原组件树中保留稳定锚点或 Tooltip 触发节点，避免
+破坏 TSone 渲染器按父节点索引维护的组件关系。MountController 只在 Host 中挂载和
+卸载公开组件所拥有的内部浮层视图。命令式服务直接通过 Host 创建相同的内部视图，
+因此两种入口共享渲染和清理逻辑。
+
+两种关闭路径最终都执行同一资源清理协议，清除计时器、观察器、事件、焦点记录、
+滚动锁和 DOM 关联。组件或 handle 的重复关闭不重复触发 afterClose。
 
 默认 body 与自定义容器使用相同的服务 API。自定义容器布局无法计算、已经断开或属于
 其他 Document 时，调用失败且不遗留 Host 或半挂载组件。
@@ -337,4 +343,5 @@ git diff --check
 - 浮层默认挂载到 body，并支持自定义容器。
 - Tooltip 支持 12 个方向、自动翻转和碰撞修正。
 - 定位器由 One 内部实现，不引入 `@floating-ui/dom`，不修改 TSone 公共 API。
+- 公开组件根节点不迁移出父组件树；浮层 Host 只拥有内部 Overlay 视图。
 - 共享能力通过接口和组合复用，不建立反馈组件之间的继承层级。
