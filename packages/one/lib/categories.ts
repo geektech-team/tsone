@@ -19,5 +19,9 @@ export const ONE_COMPONENT_CATEGORIES = [
     ],
   },
   { id: 'data-display', label: '数据展示', components: ['OneCard'] },
-  { id: 'feedback', label: '反馈与浮层', components: [] },
+  {
+    id: 'feedback',
+    label: '反馈与浮层',
+    components: ['OneAlert', 'OneMessage', 'OneDialog', 'OneTooltip'],
+  },
 ] as const;

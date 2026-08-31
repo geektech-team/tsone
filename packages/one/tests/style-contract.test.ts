@@ -1,6 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { ONE_BUTTON_STYLES } from '../lib/button/OneButton';
-import { ONE_THEME_DEFAULTS, OneButton, OneCard, OneInput } from '../lib';
+import {
+  ONE_THEME_DEFAULTS,
+  OneAlert,
+  OneButton,
+  OneCard,
+  OneDialog,
+  OneInput,
+  OneMessage,
+  OneTooltip,
+} from '../lib';
 
 const EXPECTED_THEME_DEFAULTS = {
   colorPrimary: '#5fd956',
@@ -72,7 +81,15 @@ function contrastRatio(foreground: string, background: string): number {
 
 describe('One UI style contract', () => {
   let container: HTMLElement;
-  let components: Array<OneButton | OneInput | OneCard>;
+  let components: Array<
+    | OneButton
+    | OneInput
+    | OneCard
+    | OneAlert
+    | OneMessage
+    | OneDialog
+    | OneTooltip
+  >;
 
   beforeEach(() => {
     document.head.innerHTML = '';
@@ -98,6 +115,14 @@ describe('One UI style contract', () => {
       new OneButton({ children: ['Save'] }),
       new OneInput({ value: 'One' }),
       new OneCard({ title: 'One', children: ['Body'] }),
+      new OneAlert({ title: 'Info' }),
+      new OneMessage({ content: 'Saved', defaultOpen: true, duration: 0 }),
+      new OneDialog({ title: 'Confirm', defaultOpen: true }),
+      new OneTooltip({
+        content: 'Help',
+        defaultOpen: true,
+        children: [{ tag: 'button', children: ['?'] }],
+      }),
     ];
     components.forEach((component) => component.mount(container));
 

@@ -62,7 +62,13 @@ describe('One UI package smoke', () => {
       const oneBundle = readFileSync(join(oneRoot, 'dist', 'index.js'), 'utf8');
       expect(oneBundle).toMatch(/from ["']@geektech\/tsone["']/);
 
-      const tsoneTarball = join(tempDir, 'geektech-tsone-0.0.2.tgz');
+      const tsoneManifest = JSON.parse(
+        readFileSync(join(tsoneRoot, 'package.json'), 'utf8')
+      ) as { name: string; version: string };
+      const tsoneTarball = join(
+        tempDir,
+        `${tsoneManifest.name.replace('@', '').replace('/', '-')}-${tsoneManifest.version}.tgz`
+      );
       const oneTarball = join(tempDir, 'geektech-one-0.0.1.tgz');
       run(
         'bun',
@@ -126,15 +132,25 @@ describe('One UI package smoke', () => {
           '  ONE_NAME,',
           '  ONE_THEME_DEFAULTS,',
           '  ONE_VERSION,',
+          '  OneAlert,',
           '  OneButton,',
           '  OneCard,',
+          '  OneDialog,',
           '  OneInput,',
+          '  OneMessage,',
+          '  OneTooltip,',
+          '  oneDialog,',
+          '  oneMessage,',
+          '  type OneAlertProps,',
           '  type OneButtonProps,',
           '  type OneButtonVariant,',
           '  type OneCardProps,',
           '  type OneComponentSize,',
+          '  type OneDialogProps,',
           '  type OneInputProps,',
           '  type OneInputValueEvent,',
+          '  type OneMessageOptions,',
+          '  type OneTooltipProps,',
           "} from '@geektech/one';",
           '',
           "const size: OneComponentSize = 'md';",
@@ -142,10 +158,22 @@ describe('One UI package smoke', () => {
           'const buttonProps: OneButtonProps = { size, variant };',
           "const inputProps: OneInputProps = { value: 'One', size };",
           "const cardProps: OneCardProps = { title: 'One', children: ['Body'] };",
+          "const alertProps: OneAlertProps = { title: 'Info', variant: 'info' };",
+          "const messageOptions: OneMessageOptions = { content: 'Saved', duration: 0 };",
+          "const dialogProps: OneDialogProps = { title: 'Confirm', defaultOpen: false };",
+          'const tooltipProps: OneTooltipProps = {',
+          "  content: 'Help',",
+          "  placement: 'bottom-end',",
+          "  children: [{ tag: 'button', children: ['?'] }],",
+          '};',
           'const inputEvent: OneInputValueEvent | undefined = undefined;',
           'const button = new OneButton(buttonProps);',
           'const input = new OneInput(inputProps);',
           'const card = new OneCard(cardProps);',
+          'const alert = new OneAlert(alertProps);',
+          'const message = new OneMessage(messageOptions);',
+          'const dialog = new OneDialog(dialogProps);',
+          'const tooltip = new OneTooltip(tooltipProps);',
           "const packageName: '@geektech/one' = ONE_NAME;",
           "const packageVersion: '0.0.1' = ONE_VERSION;",
           "const primary: '#5fd956' = ONE_THEME_DEFAULTS.colorPrimary;",
@@ -153,6 +181,12 @@ describe('One UI package smoke', () => {
           'void button;',
           'void input;',
           'void card;',
+          'void alert;',
+          'void message;',
+          'void dialog;',
+          'void tooltip;',
+          'void oneMessage;',
+          'void oneDialog;',
           'void packageName;',
           'void packageVersion;',
           'void primary;',
@@ -185,9 +219,15 @@ describe('One UI package smoke', () => {
           '  ONE_NAME,',
           '  ONE_THEME_DEFAULTS,',
           '  ONE_VERSION,',
+          '  OneAlert,',
           '  OneButton,',
           '  OneCard,',
+          '  OneDialog,',
           '  OneInput,',
+          '  OneMessage,',
+          '  OneTooltip,',
+          '  oneDialog,',
+          '  oneMessage,',
           "} from '@geektech/one';",
           '',
           'console.log(JSON.stringify({',
@@ -202,6 +242,14 @@ describe('One UI package smoke', () => {
           '    OneButton: typeof OneButton,',
           '    OneInput: typeof OneInput,',
           '    OneCard: typeof OneCard,',
+          '    OneAlert: typeof OneAlert,',
+          '    OneMessage: typeof OneMessage,',
+          '    OneDialog: typeof OneDialog,',
+          '    OneTooltip: typeof OneTooltip,',
+          '  },',
+          '  services: {',
+          '    oneMessage: typeof oneMessage.success,',
+          '    oneDialog: typeof oneDialog.confirm,',
           '  },',
           '}));',
         ].join('\n')
@@ -214,7 +262,17 @@ describe('One UI package smoke', () => {
         name: string;
         version: string;
         theme: { primary: string; danger: string; dangerHover: string };
-        constructors: Record<'OneButton' | 'OneInput' | 'OneCard', string>;
+        constructors: Record<
+          | 'OneButton'
+          | 'OneInput'
+          | 'OneCard'
+          | 'OneAlert'
+          | 'OneMessage'
+          | 'OneDialog'
+          | 'OneTooltip',
+          string
+        >;
+        services: Record<'oneMessage' | 'oneDialog', string>;
       };
 
       expect(runtimeResult).toEqual({
@@ -229,6 +287,14 @@ describe('One UI package smoke', () => {
           OneButton: 'function',
           OneInput: 'function',
           OneCard: 'function',
+          OneAlert: 'function',
+          OneMessage: 'function',
+          OneDialog: 'function',
+          OneTooltip: 'function',
+        },
+        services: {
+          oneMessage: 'function',
+          oneDialog: 'function',
         },
       });
 
