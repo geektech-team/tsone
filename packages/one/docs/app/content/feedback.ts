@@ -16,7 +16,7 @@ export const feedbackPages: OneDocPage[] = [
     description: '页面内反馈、临时消息、对话框和定位提示的使用边界。',
     section: '组件',
     sectionOrder: 2,
-    order: 8,
+    order: 12,
     body: [
       heading(1, 'feedback', '反馈与浮层'),
       paragraph(
@@ -61,7 +61,7 @@ export const feedbackPages: OneDocPage[] = [
     description: '在页面内容流中展示 info、success、warning 或 error 反馈。',
     section: '组件',
     sectionOrder: 2,
-    order: 9,
+    order: 13,
     body: [
       heading(1, 'onealert', 'OneAlert'),
       paragraph(
@@ -118,7 +118,7 @@ export const feedbackPages: OneDocPage[] = [
     description: '以声明式组件或 oneMessage 服务展示可堆叠的临时通知。',
     section: '组件',
     sectionOrder: 2,
-    order: 10,
+    order: 14,
     body: [
       heading(1, 'onemessage', 'OneMessage'),
       paragraph(
@@ -221,7 +221,7 @@ export const feedbackPages: OneDocPage[] = [
     description: '提供受控、非受控和命令式确认流程，并管理焦点与滚动锁。',
     section: '组件',
     sectionOrder: 2,
-    order: 11,
+    order: 15,
     body: [
       heading(1, 'onedialog', 'OneDialog'),
       paragraph('对话框默认挂载到 body；自定义容器模式不会锁定 body 滚动。'),
@@ -332,7 +332,7 @@ export const feedbackPages: OneDocPage[] = [
       '支持 12 个方向、碰撞翻转和 hover、focus、click、manual 触发。',
     section: '组件',
     sectionOrder: 2,
-    order: 12,
+    order: 16,
     body: [
       heading(1, 'onetooltip', 'OneTooltip'),
       paragraph(
@@ -342,7 +342,7 @@ export const feedbackPages: OneDocPage[] = [
       heading(2, 'example', '示例'),
       codeBlock(
         'ts',
-        "new OneTooltip({ content: '复制链接', placement: 'bottom-end', children: [{ tag: 'button', children: ['复制'] }] })"
+        "new OneTooltip({ content: '复制链接', placement: 'bottom-end', children: [{ component: OneButton, children: ['复制'] }] })"
       ),
       heading(2, 'placements', '12 个方向'),
       paragraph(

@@ -46,7 +46,7 @@ export const formPages: OneDocPage[] = [
     '/components/form/',
     '表单组件',
     'One 的表单组件支持同步校验、组合控件与本地选项搜索。',
-    3,
+    7,
     [
       {
         name: '组件',
@@ -61,7 +61,7 @@ export const formPages: OneDocPage[] = [
       '/components/form/form/',
       'OneForm',
       'OneForm 管理字段值与同步校验，OneFormItem 负责标签、说明、错误与焦点。',
-      4,
+      8,
       [
         {
           name: 'rules',
@@ -115,7 +115,7 @@ export const formPages: OneDocPage[] = [
     '/components/form/select/',
     'OneSelect',
     '支持单选、多选、本地搜索、分组选项以及 ArrowDown、ArrowUp、Enter、Escape 键盘操作。',
-    5,
+    9,
     [
       {
         name: 'multiple',
@@ -133,7 +133,7 @@ export const formPages: OneDocPage[] = [
     '/components/form/checkbox/',
     'OneCheckbox',
     'OneCheckbox、OneCheckboxGroup 使用布尔值或稳定排序的字符串数组。',
-    6,
+    10,
     [
       {
         name: 'checked',
@@ -151,7 +151,7 @@ export const formPages: OneDocPage[] = [
     '/components/form/switch/',
     'OneSwitch',
     'OneSwitch 使用原生 checkbox 语义并提供 role="switch" 与 aria-checked。',
-    7,
+    11,
     [
       {
         name: 'checked',

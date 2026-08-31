@@ -235,12 +235,12 @@ export const componentPages: OneDocPage[] = [
         'ts',
         [
           "import { createComponent } from '@geektech/tsone';",
-          "import { OneCard } from '@geektech/one';",
+          "import { OneButton, OneCard } from '@geektech/one';",
           '',
           "createComponent(OneCard, { title: '后备标题' }, [",
           "  { tag: 'strong', slot: 'header', children: ['显式标题'] },",
           "  { tag: 'p', children: ['default 内容'] },",
-          "  { tag: 'button', slot: 'footer', children: ['继续'] },",
+          "  { component: OneButton, slot: 'footer', children: ['继续'] },",
           ']);',
         ].join('\n')
       ),

@@ -1,14 +1,17 @@
 import { Component, type VNode } from '@geektech/tsone';
 import {
   OneButton,
+  OneBadge,
   OneCard,
   OneCheckbox,
   OneAlert,
   OneForm,
   OneFormItem,
   OneInput,
+  OneEmpty,
   OneSelect,
   OneSwitch,
+  OneTag,
 } from '../../../lib';
 import type { OneDocBlock, OneDocInline, OneDocPage } from '../content';
 
@@ -304,6 +307,61 @@ export class DocArticle extends Component<DocArticleProps> {
             ],
           },
         ];
+      case 'tag':
+        return [
+          {
+            component: OneTag,
+            props: { variant: 'success', closable: true, size: 'sm' },
+            children: ['已发布'],
+          },
+          {
+            component: OneTag,
+            props: { variant: 'neutral', size: 'md' },
+            children: ['默认'],
+          },
+          {
+            component: OneTag,
+            props: { variant: 'warning', size: 'lg' },
+            children: ['待检查'],
+          },
+        ];
+      case 'badge':
+        return [
+          {
+            component: OneBadge,
+            props: { value: 8 },
+            children: ['消息'],
+          },
+          {
+            component: OneBadge,
+            props: { value: 120, max: 99, variant: 'error' },
+            children: ['待办'],
+          },
+          {
+            component: OneBadge,
+            props: { dot: true, ariaLabel: '有新通知', variant: 'success' },
+            children: ['通知'],
+          },
+          {
+            component: OneBadge,
+            props: { value: 'NEW' },
+          },
+        ];
+      case 'empty':
+        return [
+          {
+            component: OneEmpty,
+            props: { description: '暂无搜索结果' },
+            children: [
+              {
+                component: OneButton,
+                slot: 'actions',
+                props: { size: 'sm' },
+                children: ['创建项目'],
+              },
+            ],
+          },
+        ];
       case 'form':
         return [
           {
@@ -428,7 +486,7 @@ export class DocArticle extends Component<DocArticleProps> {
         ];
       case 'tooltip':
         return [
-          { tag: 'button', props: { type: 'button' }, children: ['复制'] },
+          { component: OneButton, children: ['复制'] },
           {
             tag: 'div',
             props: {

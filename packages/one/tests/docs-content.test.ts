@@ -24,6 +24,10 @@ const APPROVED_PATHS = [
   '/components/button/',
   '/components/input/',
   '/components/card/',
+  '/components/data-display/',
+  '/components/data-display/tag/',
+  '/components/data-display/badge/',
+  '/components/data-display/empty/',
   '/components/form/',
   '/components/form/form/',
   '/components/form/select/',
@@ -82,7 +86,7 @@ function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
 }
 
 describe('One UI docs content', () => {
-  it('defines exactly the seventeen approved routes in stable order', () => {
+  it('defines exactly the twenty-one approved routes in stable order', () => {
     expect(oneDocPages.map((page) => page.path)).toEqual(APPROVED_PATHS);
   });
 
@@ -362,6 +366,30 @@ describe('One UI docs content', () => {
     }
   });
 
+  it('documents every data-display component with a real demo and public API', () => {
+    for (const [path, component] of [
+      ['/components/data-display/tag/', 'tag'],
+      ['/components/data-display/badge/', 'badge'],
+      ['/components/data-display/empty/', 'empty'],
+    ] as const) {
+      expect(pageAt(path).body).toContainEqual(
+        expect.objectContaining({
+          type: 'demo',
+          component,
+          interactive: true,
+        })
+      );
+    }
+
+    expect(pageText('/components/data-display/tag/')).toContain(
+      'OneDataDisplayVariant'
+    );
+    expect(pageText('/components/data-display/badge/')).toContain(
+      'showZero?: boolean'
+    );
+    expect(pageText('/components/data-display/empty/')).toContain('actions');
+  });
+
   it('provides TypeScript source for every documented demo', () => {
     const demos = oneDocPages.flatMap((page) =>
       page.body.filter((block) => block.type === 'demo')
@@ -380,6 +408,9 @@ describe('One UI docs content', () => {
         'message',
         'dialog',
         'tooltip',
+        'tag',
+        'badge',
+        'empty',
       ])
     );
 

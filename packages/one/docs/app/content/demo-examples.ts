@@ -9,7 +9,10 @@ export type OneDocDemoName =
   | 'alert'
   | 'message'
   | 'dialog'
-  | 'tooltip';
+  | 'tooltip'
+  | 'tag'
+  | 'badge'
+  | 'empty';
 
 export interface OneDocDemoSource {
   language: 'ts';
@@ -44,11 +47,11 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
     language: 'ts',
     code: [
       "import { createComponent } from '@geektech/tsone';",
-      "import { OneCard } from '@geektech/one';",
+      "import { OneButton, OneCard } from '@geektech/one';",
       '',
       "createComponent(OneCard, { title: '项目概览' }, [",
       "  { tag: 'p', children: ['卡片内容'] },",
-      "  { tag: 'button', slot: 'footer', children: ['继续'] },",
+      "  { component: OneButton, slot: 'footer', children: ['继续'] },",
       ']);',
     ].join('\n'),
   },
@@ -153,13 +156,37 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
   tooltip: {
     language: 'ts',
     code: [
-      "import { OneTooltip } from '@geektech/one';",
+      "import { OneButton, OneTooltip } from '@geektech/one';",
       '',
       'new OneTooltip({',
       "  content: '复制链接',",
       "  placement: 'bottom-end',",
-      "  children: [{ tag: 'button', children: ['复制'] }],",
+      "  children: [{ component: OneButton, children: ['复制'] }],",
       '});',
+    ].join('\n'),
+  },
+  tag: {
+    language: 'ts',
+    code: [
+      "import { OneTag } from '@geektech/one';",
+      '',
+      "new OneTag({ variant: 'success', closable: true, children: ['已发布'] });",
+    ].join('\n'),
+  },
+  badge: {
+    language: 'ts',
+    code: [
+      "import { OneBadge } from '@geektech/one';",
+      '',
+      "new OneBadge({ value: 120, max: 99, children: ['消息'] });",
+    ].join('\n'),
+  },
+  empty: {
+    language: 'ts',
+    code: [
+      "import { OneEmpty } from '@geektech/one';",
+      '',
+      "new OneEmpty({ description: '暂无搜索结果' });",
     ].join('\n'),
   },
 };

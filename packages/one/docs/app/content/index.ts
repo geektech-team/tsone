@@ -1,4 +1,5 @@
 import { componentPages } from './components';
+import { dataDisplayPages } from './data-display';
 import { formPages } from './form';
 import { feedbackPages } from './feedback';
 import { guidePages } from './guide';
@@ -9,6 +10,7 @@ export const oneDocPages = validateOneDocPages([
   homePage,
   ...guidePages,
   ...componentPages,
+  ...dataDisplayPages,
   ...formPages,
   ...feedbackPages,
 ]);

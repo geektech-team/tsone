@@ -84,6 +84,13 @@ describe('One UI docs app', () => {
     expect(card).toContain('data-one-demo="card"');
 
     for (const [path, preview, demo] of [
+      ['/components/data-display/tag/', 'class="one-tag ', 'tag'],
+      [
+        '/components/data-display/badge/',
+        'class="one-badge__content"',
+        'badge',
+      ],
+      ['/components/data-display/empty/', 'class="one-empty"', 'empty'],
       ['/components/feedback/alert/', 'class="one-alert ', 'alert'],
       ['/components/feedback/message/', 'class="one-message ', 'message'],
       ['/components/feedback/dialog/', 'class="one-dialog"', 'dialog'],
@@ -96,6 +103,7 @@ describe('One UI docs app', () => {
       const html = render(path);
       expect(html).toContain(preview);
       expect(html).toContain(`data-one-demo="${demo}"`);
+      expect(html).toContain(`data-one-demo-source="${demo}"`);
     }
   });
 
