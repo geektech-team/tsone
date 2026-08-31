@@ -9,6 +9,10 @@ export const ONE_THEME_DEFAULTS = {
   colorPrimaryHover: '#4bc944',
   colorDanger: '#b83232',
   colorDangerHover: '#9f2d2d',
+  colorInfo: '#2563eb',
+  colorSuccess: '#2f7c39',
+  colorWarning: '#9a6700',
+  colorOverlay: 'rgba(22, 32, 24, 0.48)',
   colorSurface: '#ffffff',
   colorText: '#162018',
   colorMuted: '#647268',
@@ -24,6 +28,10 @@ export const ONE_THEME_DEFAULTS = {
   fontSizeMd: '14px',
   fontSizeLg: '16px',
   shadowCard: '0 12px 30px rgba(32, 74, 38, 0.1)',
+  shadowOverlay: '0 18px 48px rgba(22, 32, 24, 0.2)',
+  zIndexDialog: '1000',
+  zIndexMessage: '1100',
+  zIndexTooltip: '1200',
   fontFamily:
     "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 } as const;
