@@ -3,6 +3,19 @@ export type OneDocInline =
   | { type: 'code'; text: string }
   | { type: 'link'; text: string; href: string };
 
+export type OneDocDemoName =
+  | 'button'
+  | 'input'
+  | 'card'
+  | 'form'
+  | 'select'
+  | 'checkbox'
+  | 'switch'
+  | 'alert'
+  | 'message'
+  | 'dialog'
+  | 'tooltip';
+
 export type OneDocBlock =
   | { type: 'heading'; level: 1 | 2 | 3; id: string; text: string }
   | { type: 'paragraph'; content: OneDocInline[] }
@@ -25,14 +38,7 @@ export type OneDocBlock =
     }
   | {
       type: 'demo';
-      component:
-        | 'button'
-        | 'input'
-        | 'card'
-        | 'form'
-        | 'select'
-        | 'checkbox'
-        | 'switch';
+      component: OneDocDemoName;
       interactive?: boolean;
     };
 
@@ -166,14 +172,7 @@ export function apiTable(
 }
 
 export function demo(
-  component:
-    | 'button'
-    | 'input'
-    | 'card'
-    | 'form'
-    | 'select'
-    | 'checkbox'
-    | 'switch',
+  component: OneDocDemoName,
   interactive = true
 ): OneDocBlock {
   return { type: 'demo', component, interactive };

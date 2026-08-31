@@ -22,7 +22,15 @@ export const homePage: OneDocPage = {
       link('OneInput', '/components/input/'),
       ' 处理文本输入，',
       link('OneCard', '/components/card/'),
-      ' 组合标题、正文和操作区域。'
+      ' 组合标题、正文和操作区域；',
+      link('OneAlert', '/components/feedback/alert/'),
+      '、',
+      link('OneMessage', '/components/feedback/message/'),
+      '、',
+      link('OneDialog', '/components/feedback/dialog/'),
+      ' 和 ',
+      link('OneTooltip', '/components/feedback/tooltip/'),
+      ' 提供反馈与浮层能力。'
     ),
   ],
 };

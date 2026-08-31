@@ -113,6 +113,111 @@ export const oneThemeTokens: readonly OneThemeTokenDoc[] = [
     description: '卡片阴影的共享 fallback。',
   },
   {
+    name: '--one-color-info',
+    fallback: ONE_THEME_DEFAULTS.colorInfo,
+    description: '信息反馈的强调色。',
+  },
+  {
+    name: '--one-color-success',
+    fallback: ONE_THEME_DEFAULTS.colorSuccess,
+    description: '成功反馈的强调色。',
+  },
+  {
+    name: '--one-color-warning',
+    fallback: ONE_THEME_DEFAULTS.colorWarning,
+    description: '警告反馈的强调色。',
+  },
+  {
+    name: '--one-color-overlay',
+    fallback: ONE_THEME_DEFAULTS.colorOverlay,
+    description: 'Dialog 遮罩背景色。',
+  },
+  {
+    name: '--one-color-muted',
+    fallback: ONE_THEME_DEFAULTS.colorMuted,
+    description: '反馈组件的次要文本色。',
+  },
+  {
+    name: '--one-radius-sm',
+    fallback: ONE_THEME_DEFAULTS.radiusSm,
+    description: 'Tooltip 的紧凑圆角。',
+  },
+  {
+    name: '--one-space-xs',
+    fallback: ONE_THEME_DEFAULTS.spaceXs,
+    description: '反馈内容的最小共享间距。',
+  },
+  {
+    name: '--one-space-md',
+    fallback: ONE_THEME_DEFAULTS.spaceMd,
+    description: 'Alert 与 Message 的中等共享间距。',
+  },
+  {
+    name: '--one-shadow-overlay',
+    fallback: ONE_THEME_DEFAULTS.shadowOverlay,
+    description: 'Message、Dialog 与 Tooltip 的浮层阴影。',
+  },
+  {
+    name: '--one-z-index-dialog',
+    fallback: ONE_THEME_DEFAULTS.zIndexDialog,
+    description: 'Dialog 默认层级。',
+  },
+  {
+    name: '--one-z-index-message',
+    fallback: ONE_THEME_DEFAULTS.zIndexMessage,
+    description: 'Message 默认层级。',
+  },
+  {
+    name: '--one-z-index-tooltip',
+    fallback: ONE_THEME_DEFAULTS.zIndexTooltip,
+    description: 'Tooltip 默认层级。',
+  },
+  {
+    name: '--one-alert-gap',
+    fallback: `var(--one-space-sm, ${ONE_THEME_DEFAULTS.spaceSm})`,
+    description: 'Alert 图标、正文和操作之间的间距。',
+  },
+  {
+    name: '--one-alert-padding',
+    fallback: `var(--one-space-md, ${ONE_THEME_DEFAULTS.spaceMd})`,
+    description: 'Alert 内边距。',
+  },
+  {
+    name: '--one-alert-color',
+    fallback: `var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText})`,
+    description: 'Alert 主要文本色。',
+  },
+  {
+    name: '--one-alert-background',
+    fallback: `var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface})`,
+    description: 'Alert 背景色。',
+  },
+  {
+    name: '--one-alert-border-color',
+    fallback: `var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+    description: 'Alert 默认边框色。',
+  },
+  {
+    name: '--one-alert-radius',
+    fallback: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
+    description: 'Alert 圆角。',
+  },
+  {
+    name: '--one-tooltip-background',
+    fallback: `var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText})`,
+    description: 'Tooltip 气泡背景色。',
+  },
+  {
+    name: '--one-tooltip-arrow-x',
+    fallback: '50%',
+    description: 'Tooltip 垂直方向气泡的箭头横坐标。',
+  },
+  {
+    name: '--one-tooltip-arrow-y',
+    fallback: '50%',
+    description: 'Tooltip 水平方向气泡的箭头纵坐标。',
+  },
+  {
     name: '--one-button-gap',
     fallback: `var(--one-space-sm, ${ONE_THEME_DEFAULTS.spaceSm})`,
     description: '按钮图标、spinner 与文本之间的组件级 gap override。',

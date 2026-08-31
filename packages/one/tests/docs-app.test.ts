@@ -82,6 +82,21 @@ describe('One UI docs app', () => {
     expect(card).toContain('class="one-card__header"');
     expect(card).toContain('class="one-card__footer"');
     expect(card).toContain('data-one-demo="card"');
+
+    for (const [path, preview, demo] of [
+      ['/components/feedback/alert/', 'class="one-alert ', 'alert'],
+      ['/components/feedback/message/', 'class="one-message ', 'message'],
+      ['/components/feedback/dialog/', 'class="one-dialog"', 'dialog'],
+      [
+        '/components/feedback/tooltip/',
+        'class="one-tooltip__bubble"',
+        'tooltip',
+      ],
+    ] as const) {
+      const html = render(path);
+      expect(html).toContain(preview);
+      expect(html).toContain(`data-one-demo="${demo}"`);
+    }
   });
 
   it('ships component CSS and the classic responsive layout in the head', () => {
@@ -89,6 +104,10 @@ describe('One UI docs app', () => {
     expect(html).toContain('.one-button {');
     expect(html).toContain('.one-input {');
     expect(html).toContain('.one-card {');
+    expect(html).toContain('.one-alert {');
+    expect(html).toContain('.one-message {');
+    expect(html).toContain('.one-dialog {');
+    expect(html).toContain('.one-tooltip__bubble {');
     expect(html).toContain('.one-docs-topbar {');
     expect(html).toContain('position: fixed;');
     expect(html).toContain('width: 240px;');

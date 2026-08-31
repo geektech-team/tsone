@@ -4,6 +4,10 @@ import { describe, expect, it } from 'bun:test';
 import { ONE_BUTTON_STYLES } from '../lib/button/OneButton';
 import { ONE_CARD_STYLES } from '../lib/card/OneCard';
 import { ONE_INPUT_STYLES } from '../lib/input/OneInput';
+import { ONE_ALERT_STYLES } from '../lib/alert/OneAlert';
+import { ONE_DIALOG_STYLES } from '../lib/dialog/DialogOverlay';
+import { ONE_MESSAGE_STYLES } from '../lib/message/MessageOverlay';
+import { ONE_TOOLTIP_STYLES } from '../lib/tooltip/TooltipBubble';
 import {
   headingsForPage,
   normalizeOneDocPath,
@@ -25,6 +29,11 @@ const APPROVED_PATHS = [
   '/components/form/select/',
   '/components/form/checkbox/',
   '/components/form/switch/',
+  '/components/feedback/',
+  '/components/feedback/alert/',
+  '/components/feedback/message/',
+  '/components/feedback/dialog/',
+  '/components/feedback/tooltip/',
 ];
 const packageRoot = join(import.meta.dir, '..');
 
@@ -73,7 +82,7 @@ function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
 }
 
 describe('One UI docs content', () => {
-  it('defines exactly the twelve approved routes in stable order', () => {
+  it('defines exactly the seventeen approved routes in stable order', () => {
     expect(oneDocPages.map((page) => page.path)).toEqual(APPROVED_PATHS);
   });
 
@@ -169,6 +178,10 @@ describe('One UI docs content', () => {
       ONE_BUTTON_STYLES,
       ONE_INPUT_STYLES,
       ONE_CARD_STYLES,
+      ONE_ALERT_STYLES,
+      ONE_MESSAGE_STYLES,
+      ONE_DIALOG_STYLES,
+      ONE_TOOLTIP_STYLES,
     ]);
     const runtimeTokens = [
       ...new Set(styleText.match(/--one-[a-z0-9-]+/g) ?? []),
@@ -328,4 +341,72 @@ describe('One UI docs content', () => {
       });
     }
   });
+
+  it('documents feedback props, services, keyboard behavior and ARIA', () => {
+    const alert = pageText('/components/feedback/alert/');
+    for (const fragment of [
+      'title?: string',
+      'description?: string',
+      'variant?: OneFeedbackVariant',
+      'closable?: boolean',
+      'close',
+      "role='alert'",
+    ]) {
+      expect(alert).toContain(fragment);
+    }
+
+    const message = pageText('/components/feedback/message/');
+    for (const fragment of [
+      'content: string',
+      'duration?: number',
+      'placement?: OneMessagePlacement',
+      'container?: OneOverlayContainer',
+      'oneMessage.success',
+      'oneMessage.closeAll',
+      'openChange',
+    ]) {
+      expect(message).toContain(fragment);
+    }
+
+    const dialog = pageText('/components/feedback/dialog/');
+    for (const fragment of [
+      'closeOnOverlay?: boolean',
+      'closeOnEscape?: boolean',
+      'confirmLoading?: boolean',
+      'oneDialog.confirm',
+      'Promise<boolean>',
+      '返回 false 时保持打开',
+      'Tab / Shift+Tab',
+      'aria-modal',
+    ]) {
+      expect(dialog).toContain(fragment);
+    }
+
+    const tooltip = pageText('/components/feedback/tooltip/');
+    placements.forEach((placement) => expect(tooltip).toContain(placement));
+    for (const fragment of [
+      "'hover-focus' | 'click' | 'manual'",
+      'openDelay?: number',
+      'closeDelay?: number',
+      'aria-describedby',
+      'Escape',
+    ]) {
+      expect(tooltip).toContain(fragment);
+    }
+  });
 });
+
+const placements = [
+  'top-start',
+  'top',
+  'top-end',
+  'right-start',
+  'right',
+  'right-end',
+  'bottom-start',
+  'bottom',
+  'bottom-end',
+  'left-start',
+  'left',
+  'left-end',
+];

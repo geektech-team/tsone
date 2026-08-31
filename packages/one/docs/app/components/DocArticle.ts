@@ -3,6 +3,7 @@ import {
   OneButton,
   OneCard,
   OneCheckbox,
+  OneAlert,
   OneForm,
   OneFormItem,
   OneInput,
@@ -313,6 +314,101 @@ export class DocArticle extends Component<DocArticleProps> {
         ];
       case 'switch':
         return [{ component: OneSwitch, props: { ariaLabel: '启用通知' } }];
+      case 'alert':
+        return [
+          {
+            component: OneAlert,
+            props: {
+              title: '保存成功',
+              description: '更改已经同步。',
+              variant: 'success',
+              closable: true,
+            },
+          },
+        ];
+      case 'message':
+        return [
+          {
+            tag: 'div',
+            props: {
+              className: 'one-message one-message--success',
+              role: 'status',
+              'data-one-message-placement': 'top',
+            },
+            children: [
+              {
+                tag: 'div',
+                props: { className: 'one-message__content' },
+                children: ['保存成功'],
+              },
+            ],
+          },
+        ];
+      case 'dialog':
+        return [
+          {
+            tag: 'section',
+            props: {
+              className: 'one-dialog',
+              role: 'dialog',
+              'aria-modal': 'false',
+              'aria-labelledby': 'one-docs-dialog-title',
+            },
+            children: [
+              {
+                tag: 'header',
+                props: {
+                  className: 'one-dialog__header',
+                  id: 'one-docs-dialog-title',
+                },
+                children: ['保存更改？'],
+              },
+              {
+                tag: 'div',
+                props: { className: 'one-dialog__body' },
+                children: ['确认后将同步当前设置。'],
+              },
+              {
+                tag: 'footer',
+                props: { className: 'one-dialog__footer' },
+                children: [
+                  {
+                    tag: 'button',
+                    props: { className: 'one-dialog__cancel', type: 'button' },
+                    children: ['取消'],
+                  },
+                  {
+                    tag: 'button',
+                    props: { className: 'one-dialog__confirm', type: 'button' },
+                    children: ['确认'],
+                  },
+                ],
+              },
+            ],
+          },
+        ];
+      case 'tooltip':
+        return [
+          { tag: 'button', props: { type: 'button' }, children: ['复制'] },
+          {
+            tag: 'div',
+            props: {
+              className: 'one-tooltip__bubble',
+              role: 'tooltip',
+              'data-placement': 'top',
+            },
+            children: [
+              '复制链接',
+              {
+                tag: 'span',
+                props: {
+                  className: 'one-tooltip__arrow',
+                  'aria-hidden': 'true',
+                },
+              },
+            ],
+          },
+        ];
       default:
         return assertNever(component);
     }

@@ -66,17 +66,20 @@ describe('One UI docs build', () => {
     );
   });
 
-  it('builds all twelve pages and the interactive client asset', async () => {
+  it('builds all seventeen pages and the interactive client asset', async () => {
     const outDir = makeTemporaryDirectory('one-docs-build-');
 
     const result = await buildOneDocs({ outDir });
 
-    expect(result.pagesBuilt).toBe(12);
+    expect(result.pagesBuilt).toBe(17);
     expect(result.assetsBuilt).toEqual([
       join(outDir, 'assets/one-docs-client.js'),
     ]);
     expect(existsSync(join(outDir, 'index.html'))).toBe(true);
     expect(existsSync(join(outDir, 'components/button/index.html'))).toBe(true);
+    expect(
+      existsSync(join(outDir, 'components/feedback/tooltip/index.html'))
+    ).toBe(true);
     expect(existsSync(join(outDir, 'assets/one-docs-client.js'))).toBe(true);
 
     const homeHtml = readFileSync(join(outDir, 'index.html'), 'utf8');
@@ -89,6 +92,10 @@ describe('One UI docs build', () => {
     expect(buttonHtml).toContain('.one-button {');
     expect(buttonHtml).toContain('.one-input {');
     expect(buttonHtml).toContain('.one-card {');
+    expect(buttonHtml).toContain('.one-alert {');
+    expect(buttonHtml).toContain('.one-message {');
+    expect(buttonHtml).toContain('.one-dialog {');
+    expect(buttonHtml).toContain('.one-tooltip__bubble {');
     expect(buttonHtml).toContain('class="one-docs-topbar"');
     expect(buttonHtml).toContain('class="one-docs-sidebar"');
     expect(buttonHtml).toContain('class="one-docs-main"');
