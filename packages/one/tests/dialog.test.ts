@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
-import { OneDialog } from '../lib/dialog';
+import { OneDialog, createOneDialogService } from '../lib/dialog';
+import { DomOneOverlayHost } from '../lib/overlay';
 
 describe('OneDialog', () => {
   let container: HTMLElement;
@@ -162,5 +163,138 @@ describe('OneDialog', () => {
 
     expect(custom.querySelector('[role="dialog"]')).toBeTruthy();
     expect(document.body.style.overflow).toBe('');
+  });
+});
+
+describe('OneDialogService', () => {
+  beforeEach(() => {
+    document.head.innerHTML = '';
+    document.body.innerHTML = '';
+    document.body.style.overflow = '';
+  });
+
+  afterEach(() => {
+    document.body.style.overflow = '';
+    document.body.innerHTML = '';
+  });
+
+  it('keeps confirm open for false and closes for a fulfilled confirmation', async () => {
+    const service = createOneDialogService(new DomOneOverlayHost(document));
+    const kept = service.confirm({ title: 'Keep', onConfirm: () => false });
+    (
+      document.querySelector('.one-dialog__confirm') as HTMLButtonElement
+    ).click();
+    await Promise.resolve();
+    expect(document.querySelector('[role="dialog"]')).toBeTruthy();
+    (
+      document.querySelector('.one-dialog__cancel') as HTMLButtonElement
+    ).click();
+    expect(await kept).toBe(false);
+
+    const closed = service.confirm({
+      title: 'Save',
+      onConfirm: async () => true,
+    });
+    (
+      document.querySelector('.one-dialog__confirm') as HTMLButtonElement
+    ).click();
+    expect(await closed).toBe(true);
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('shows loading and suppresses repeated confirmation while pending', async () => {
+    const service = createOneDialogService(new DomOneOverlayHost(document));
+    let calls = 0;
+    let finish: ((value: boolean) => void) | undefined;
+    const result = service.confirm({
+      title: 'Pending',
+      onConfirm: () => {
+        calls += 1;
+        return new Promise<boolean>((resolve) => {
+          finish = resolve;
+        });
+      },
+    });
+    const confirm = document.querySelector(
+      '.one-dialog__confirm'
+    ) as HTMLButtonElement;
+
+    confirm.click();
+    confirm.click();
+    expect(calls).toBe(1);
+    expect(confirm.getAttribute('aria-busy')).toBe('true');
+    finish?.(true);
+    expect(await result).toBe(true);
+  });
+
+  it('reports confirmation errors, restores controls and stays open', async () => {
+    const service = createOneDialogService(new DomOneOverlayHost(document));
+    const errors: unknown[] = [];
+    const result = service.confirm({
+      title: 'Failure',
+      onConfirm: async () => {
+        throw new Error('save failed');
+      },
+      onError: (error) => errors.push(error),
+    });
+
+    (
+      document.querySelector('.one-dialog__confirm') as HTMLButtonElement
+    ).click();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(errors).toHaveLength(1);
+    expect(document.querySelector('[role="dialog"]')).toBeTruthy();
+    expect(
+      (document.querySelector('.one-dialog__confirm') as HTMLButtonElement)
+        .disabled
+    ).toBe(false);
+    (
+      document.querySelector('.one-dialog__cancel') as HTMLButtonElement
+    ).click();
+    expect(await result).toBe(false);
+  });
+
+  it('updates normal handles and closes only dialog records', () => {
+    const host = new DomOneOverlayHost(document);
+    const service = createOneDialogService(host);
+    const message = host.open({
+      kind: 'message',
+      factory: ({ slot }) => {
+        slot.textContent = 'Keep message';
+        return { update: () => {}, destroy: () => {} };
+      },
+    });
+    const first = service.open({ title: 'Original' });
+    service.open({ title: 'Second' });
+
+    first.update({ title: 'Updated' });
+    expect(document.body.textContent).toContain('Updated');
+    service.close(first.id);
+    service.close(first.id);
+    expect(document.body.textContent).not.toContain('Updated');
+    service.closeAll();
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.body.textContent).toContain('Keep message');
+    message.close();
+  });
+
+  it('resolves overlay, Escape and stacked closures as false', async () => {
+    const service = createOneDialogService(new DomOneOverlayHost(document));
+    const overlayResult = service.confirm({ title: 'Overlay' });
+    (document.querySelector('.one-dialog__backdrop') as HTMLElement).click();
+    expect(await overlayResult).toBe(false);
+
+    const first = service.confirm({ title: 'First' });
+    const second = service.confirm({ title: 'Second' });
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(await second).toBe(false);
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(await first).toBe(false);
+
+    const external = service.confirm({ title: 'External close' });
+    service.closeAll();
+    expect(await external).toBe(false);
   });
 });
