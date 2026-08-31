@@ -9,10 +9,14 @@ interface PlaygroundManifest {
   scripts?: Record<string, string>;
 }
 
+interface PlaygroundApp {
+  mount(): void;
+  renderHtmlDocument(): string;
+}
+
 interface PlaygroundEntryModule {
-  app: {
-    renderHtmlDocument: () => string;
-  };
+  app: PlaygroundApp;
+  createPlaygroundApp(): PlaygroundApp;
 }
 
 async function importPlaygroundEntry(
@@ -63,6 +67,26 @@ describe('playground entries', () => {
     expect(app?.textContent).toContain('TSone 控制台');
     expect(app?.textContent).toContain('活跃项目');
     expect(app?.textContent).toContain('部署队列');
+  });
+
+  it('advances the visible deployment queue in the admin playground', async () => {
+    const entry = await importPlaygroundEntry('admin-dashboard');
+    document.querySelector('#app')?.replaceChildren();
+    entry.createPlaygroundApp().mount();
+
+    const visibleQueue = (): string[] =>
+      Array.from(document.querySelectorAll('.admin-queue-item')).map(
+        (item) => item.textContent ?? ''
+      );
+    const advanceButton = Array.from(document.querySelectorAll('button')).find(
+      (button) => button.textContent === '推进队列'
+    );
+
+    expect(visibleQueue()).toEqual(['类型检查', '发布预览']);
+
+    advanceButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(visibleQueue()).toEqual(['发布预览', '准备构建']);
   });
 
   it('keeps playground examples outside the publishable package', () => {

@@ -4,7 +4,9 @@ import {
   Div,
   P,
   Span,
+  TransitionGroup,
   createApp,
+  each,
   h,
   type VNode,
 } from '@geektech/tsone';
@@ -392,22 +394,32 @@ class AdminDashboardApp extends Component<object, DashboardState> {
           props: { className: 'admin-card' },
           children: [
             h('h2', {}, ['部署队列']),
-            ...queue.map((item, index) =>
-              Div({
-                props: { className: 'admin-queue-item' },
-                children: [
-                  Span({
-                    props: {
-                      className:
-                        index === this.state.queueIndex
-                          ? 'admin-dot admin-dot-active'
-                          : 'admin-dot',
-                    },
-                  }),
-                  Span({ children: [item] }),
+            {
+              component: TransitionGroup,
+              props: { type: 'slide-up', duration: 260 },
+              children: each(
+                [
+                  queue[this.state.queueIndex],
+                  queue[(this.state.queueIndex + 1) % queue.length],
                 ],
-              })
-            ),
+                (item, index) =>
+                  Div({
+                    props: { className: 'admin-queue-item' },
+                    children: [
+                      Span({
+                        props: {
+                          className:
+                            index === 0
+                              ? 'admin-dot admin-dot-active'
+                              : 'admin-dot',
+                        },
+                      }),
+                      Span({ children: [item] }),
+                    ],
+                  }),
+                (item) => item
+              ),
+            },
           ],
         }),
       ],
@@ -421,7 +433,8 @@ export function createPlaygroundApp() {
     document: {
       lang: 'zh-CN',
       title: 'TSone Playground 后台',
-      description: 'TSone 后台管理页演练，展示 TSone 在业务控制台里的基础体验。',
+      description:
+        'TSone 后台管理页演练，展示 TSone 在业务控制台里的基础体验。',
     },
   });
 }
