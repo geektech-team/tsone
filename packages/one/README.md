@@ -48,6 +48,48 @@ class App extends Component {
 createApp({ root: App }).mount();
 ```
 
+## Component categories
+
+- Basic: `OneButton`, `OneInput`
+- Form: `OneForm`, `OneFormItem`, `OneSelect`, `OneCheckbox`,
+  `OneCheckboxGroup`, `OneSwitch`
+- Data display: `OneCard`
+- Feedback and overlays: `OneAlert`, `OneMessage`, `OneDialog`, `OneTooltip`
+
+## Feedback and overlays
+
+Use `OneAlert` for persistent inline feedback and `OneTooltip` for a short
+description attached to one trigger element:
+
+```ts
+import { OneAlert, OneTooltip } from '@geektech/one';
+
+const alert = new OneAlert({
+  title: 'Saved',
+  variant: 'success',
+  closable: true,
+});
+
+const tooltip = new OneTooltip({
+  content: 'Copy link',
+  placement: 'bottom-end',
+  children: [{ tag: 'button', children: ['Copy'] }],
+});
+```
+
+Use the imperative services for transient messages and confirmation flows:
+
+```ts
+import { oneDialog, oneMessage } from '@geektech/one';
+
+oneMessage.success('Saved');
+
+const confirmed = await oneDialog.confirm({
+  title: 'Delete item?',
+  description: 'This action cannot be undone.',
+});
+```
+
 ## Button variants, sizes, loading and events
 
 `OneButton` supports `primary`, `secondary`, and `danger` variants and `sm`,

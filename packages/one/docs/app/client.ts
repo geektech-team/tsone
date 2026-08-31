@@ -6,6 +6,10 @@ import { FormDemo } from './demos/FormDemo';
 import { InputDemo } from './demos/InputDemo';
 import { SelectDemo } from './demos/SelectDemo';
 import { SwitchDemo } from './demos/SwitchDemo';
+import { AlertDemo } from './demos/AlertDemo';
+import { DialogDemo } from './demos/DialogDemo';
+import { MessageDemo } from './demos/MessageDemo';
+import { TooltipDemo } from './demos/TooltipDemo';
 
 type DemoName =
   | 'button'
@@ -14,7 +18,11 @@ type DemoName =
   | 'form'
   | 'select'
   | 'checkbox'
-  | 'switch';
+  | 'switch'
+  | 'alert'
+  | 'message'
+  | 'dialog'
+  | 'tooltip';
 type DemoConstructor = ComponentConstructor<Record<string, never>, object>;
 
 const DEMOS: Record<DemoName, DemoConstructor> = {
@@ -25,6 +33,10 @@ const DEMOS: Record<DemoName, DemoConstructor> = {
   select: SelectDemo,
   checkbox: CheckboxDemo,
   switch: SwitchDemo,
+  alert: AlertDemo,
+  message: MessageDemo,
+  dialog: DialogDemo,
+  tooltip: TooltipDemo,
 };
 const mountedDemoRoots = new WeakSet<HTMLElement>();
 
@@ -61,7 +73,11 @@ function isDemoName(value: string | undefined): value is DemoName {
     value === 'form' ||
     value === 'select' ||
     value === 'checkbox' ||
-    value === 'switch'
+    value === 'switch' ||
+    value === 'alert' ||
+    value === 'message' ||
+    value === 'dialog' ||
+    value === 'tooltip'
   );
 }
 

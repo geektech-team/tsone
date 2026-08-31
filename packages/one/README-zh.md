@@ -48,6 +48,48 @@ class App extends Component {
 createApp({ root: App }).mount();
 ```
 
+## 组件分类
+
+- 基础：`OneButton`、`OneInput`
+- 表单：`OneForm`、`OneFormItem`、`OneSelect`、`OneCheckbox`、
+  `OneCheckboxGroup`、`OneSwitch`
+- 数据展示：`OneCard`
+- 反馈与浮层：`OneAlert`、`OneMessage`、`OneDialog`、`OneTooltip`
+
+## 反馈与浮层
+
+持续显示的页面内反馈使用 `OneAlert`，附着到单个触发元素的简短说明使用
+`OneTooltip`：
+
+```ts
+import { OneAlert, OneTooltip } from '@geektech/one';
+
+const alert = new OneAlert({
+  title: '保存成功',
+  variant: 'success',
+  closable: true,
+});
+
+const tooltip = new OneTooltip({
+  content: '复制链接',
+  placement: 'bottom-end',
+  children: [{ tag: 'button', children: ['复制'] }],
+});
+```
+
+临时消息和确认流程可以使用命令式服务：
+
+```ts
+import { oneDialog, oneMessage } from '@geektech/one';
+
+oneMessage.success('Saved');
+
+const confirmed = await oneDialog.confirm({
+  title: 'Delete item?',
+  description: 'This action cannot be undone.',
+});
+```
+
 ## 按钮变体、尺寸、加载状态和事件
 
 `OneButton` 提供 `primary`、`secondary`、`danger` 三种变体，以及 `sm`、

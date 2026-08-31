@@ -452,6 +452,52 @@ const documentStyles: StyleSheet = [
     },
   },
   {
+    selector: '.one-docs-feedback-stack',
+    properties: {
+      display: 'grid',
+      gap: '12px',
+      padding: '24px',
+    },
+  },
+  {
+    selector: '.one-docs-feedback-actions, .one-docs-dialog-demo',
+    properties: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '10px',
+      padding: '24px',
+    },
+  },
+  {
+    selector: '.one-docs-dialog-container',
+    properties: {
+      position: 'relative',
+      width: '100%',
+      height: '240px',
+      overflow: 'hidden',
+      border: '1px dashed var(--one-docs-border)',
+      borderRadius: '8px',
+    },
+  },
+  {
+    selector: '.one-docs-tooltip-demo',
+    properties: {
+      display: 'grid',
+      gap: '14px',
+      padding: '24px',
+    },
+  },
+  {
+    selector: '.one-docs-tooltip-edge',
+    properties: {
+      position: 'relative',
+      minHeight: '120px',
+      border: '1px dashed var(--one-docs-border)',
+      borderRadius: '8px',
+      padding: '8px',
+    },
+  },
+  {
     atRule: '@media (max-width: 900px)',
     rules: [
       {

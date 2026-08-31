@@ -328,6 +328,24 @@ describe('One UI docs content', () => {
     }
   });
 
+  it('publishes feedback categories and minimum service examples in both READMEs', () => {
+    for (const readme of ['README.md', 'README-zh.md']) {
+      const markdown = readFileSync(join(packageRoot, readme), 'utf8');
+      for (const name of [
+        'OneAlert',
+        'OneMessage',
+        'OneDialog',
+        'OneTooltip',
+      ]) {
+        expect(markdown).toContain(name);
+      }
+      expect(markdown).toContain("oneMessage.success('Saved');");
+      expect(markdown).toContain(
+        "const confirmed = await oneDialog.confirm({\n  title: 'Delete item?',\n  description: 'This action cannot be undone.',\n});"
+      );
+    }
+  });
+
   it('gives every component page a real demo block', () => {
     for (const [path, component] of [
       ['/components/button/', 'button'],
