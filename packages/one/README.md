@@ -53,8 +53,28 @@ createApp({ root: App }).mount();
 - Basic: `OneButton`, `OneInput`
 - Form: `OneForm`, `OneFormItem`, `OneSelect`, `OneCheckbox`,
   `OneCheckboxGroup`, `OneSwitch`
-- Data display: `OneCard`
+- Data display: `OneCard`, `OneTag`, `OneBadge`, `OneEmpty`
 - Feedback and overlays: `OneAlert`, `OneMessage`, `OneDialog`, `OneTooltip`
+
+## Data display
+
+Use tags for compact status, badges for counts, and empty states when a view has
+no content. `OneEmpty` accepts an `actions` slot for the next useful action.
+
+```ts
+import { OneBadge, OneButton, OneEmpty, OneTag } from '@geektech/one';
+
+new OneTag({ variant: 'success', closable: true });
+new OneBadge({ value: 120, max: 99 });
+const actions = [
+  {
+    component: OneButton,
+    slot: 'actions',
+    children: ['Create project'],
+  },
+];
+new OneEmpty({ description: 'No results', children: actions });
+```
 
 ## Feedback and overlays
 
@@ -62,7 +82,7 @@ Use `OneAlert` for persistent inline feedback and `OneTooltip` for a short
 description attached to one trigger element:
 
 ```ts
-import { OneAlert, OneTooltip } from '@geektech/one';
+import { OneAlert, OneButton, OneTooltip } from '@geektech/one';
 
 const alert = new OneAlert({
   title: 'Saved',
@@ -73,7 +93,7 @@ const alert = new OneAlert({
 const tooltip = new OneTooltip({
   content: 'Copy link',
   placement: 'bottom-end',
-  children: [{ tag: 'button', children: ['Copy'] }],
+  children: [{ component: OneButton, children: ['Copy'] }],
 });
 ```
 
@@ -146,12 +166,12 @@ children without a slot fill the default body.
 
 ```ts
 import { createComponent } from '@geektech/tsone';
-import { OneCard } from '@geektech/one';
+import { OneButton, OneCard } from '@geektech/one';
 
 const card = createComponent(OneCard, {}, [
   { tag: 'h2', slot: 'header', children: ['Account'] },
   { tag: 'p', children: ['Default slot content'] },
-  { tag: 'button', slot: 'footer', children: ['Continue'] },
+  { component: OneButton, slot: 'footer', children: ['Continue'] },
 ]);
 ```
 

@@ -66,12 +66,12 @@ describe('One UI docs build', () => {
     );
   });
 
-  it('builds all seventeen pages and the interactive client asset', async () => {
+  it('builds all twenty-one pages and the interactive client asset', async () => {
     const outDir = makeTemporaryDirectory('one-docs-build-');
 
     const result = await buildOneDocs({ outDir });
 
-    expect(result.pagesBuilt).toBe(17);
+    expect(result.pagesBuilt).toBe(21);
     expect(result.assetsBuilt).toEqual([
       join(outDir, 'assets/one-docs-client.js'),
     ]);

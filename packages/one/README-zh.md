@@ -53,8 +53,28 @@ createApp({ root: App }).mount();
 - 基础：`OneButton`、`OneInput`
 - 表单：`OneForm`、`OneFormItem`、`OneSelect`、`OneCheckbox`、
   `OneCheckboxGroup`、`OneSwitch`
-- 数据展示：`OneCard`
+- 数据展示：`OneCard`、`OneTag`、`OneBadge`、`OneEmpty`
 - 反馈与浮层：`OneAlert`、`OneMessage`、`OneDialog`、`OneTooltip`
+
+## 数据展示
+
+标签适合表达紧凑状态，徽标适合展示数量，无数据时使用空状态。`OneEmpty`
+支持通过 `actions` 插槽提供下一步操作。
+
+```ts
+import { OneBadge, OneButton, OneEmpty, OneTag } from '@geektech/one';
+
+new OneTag({ variant: 'success', closable: true });
+new OneBadge({ value: 120, max: 99 });
+const actions = [
+  {
+    component: OneButton,
+    slot: 'actions',
+    children: ['创建项目'],
+  },
+];
+new OneEmpty({ description: '暂无结果', children: actions });
+```
 
 ## 反馈与浮层
 
@@ -62,7 +82,7 @@ createApp({ root: App }).mount();
 `OneTooltip`：
 
 ```ts
-import { OneAlert, OneTooltip } from '@geektech/one';
+import { OneAlert, OneButton, OneTooltip } from '@geektech/one';
 
 const alert = new OneAlert({
   title: '保存成功',
@@ -73,7 +93,7 @@ const alert = new OneAlert({
 const tooltip = new OneTooltip({
   content: '复制链接',
   placement: 'bottom-end',
-  children: [{ tag: 'button', children: ['复制'] }],
+  children: [{ component: OneButton, children: ['复制'] }],
 });
 ```
 
@@ -146,12 +166,12 @@ slot 的子节点进入默认内容区。
 
 ```ts
 import { createComponent } from '@geektech/tsone';
-import { OneCard } from '@geektech/one';
+import { OneButton, OneCard } from '@geektech/one';
 
 const card = createComponent(OneCard, {}, [
   { tag: 'h2', slot: 'header', children: ['账户'] },
   { tag: 'p', children: ['默认插槽内容'] },
-  { tag: 'button', slot: 'footer', children: ['继续'] },
+  { component: OneButton, slot: 'footer', children: ['继续'] },
 ]);
 ```
 

@@ -350,6 +350,23 @@ describe('One UI docs content', () => {
     }
   });
 
+  it('publishes data-display categories and minimum examples in both READMEs', () => {
+    for (const [readme, emptyDescription] of [
+      ['README.md', 'No results'],
+      ['README-zh.md', '暂无结果'],
+    ] as const) {
+      const markdown = readFileSync(join(packageRoot, readme), 'utf8');
+      for (const name of ['OneTag', 'OneBadge', 'OneEmpty']) {
+        expect(markdown).toContain(name);
+      }
+      expect(markdown).toContain("new OneTag({ variant: 'success'");
+      expect(markdown).toContain('new OneBadge({ value: 120, max: 99');
+      expect(markdown).toContain(
+        `new OneEmpty({ description: '${emptyDescription}'`
+      );
+    }
+  });
+
   it('gives every component page a real demo block', () => {
     for (const [path, component] of [
       ['/components/button/', 'button'],
