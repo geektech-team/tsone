@@ -1,5 +1,5 @@
 import { Component, type VNode } from '@geektech/tsone';
-import { OneDialog, oneDialog } from '../../../lib';
+import { OneButton, OneDialog, oneDialog } from '../../../lib';
 
 interface DialogDemoState {
   controlledOpen: boolean;
@@ -11,6 +11,41 @@ export class DialogDemo extends Component<
   DialogDemoState
 > {
   private customContainer: HTMLElement | undefined;
+  private readonly openDialog = (): void => {
+    oneDialog.open({
+      title: '保存更改？',
+      description: '取消会保留当前页面。',
+    });
+  };
+  private readonly confirmDialog = (): void => {
+    void oneDialog
+      .confirm({
+        title: '提交更改？',
+        onConfirm: () => {
+          this.setState({ result: '确认结果：true' });
+          return true;
+        },
+      })
+      .then((confirmed) => {
+        this.setState({ result: `确认结果：${String(confirmed)}` });
+      });
+  };
+  private readonly openControlledDialog = (): void => {
+    this.setState({ controlledOpen: true });
+  };
+  private readonly openContainedDialog = (): void => {
+    if (!this.customContainer) {
+      return;
+    }
+    oneDialog.open({
+      title: '容器内 Dialog',
+      description: '此示例不会锁定 body。',
+      container: this.customContainer,
+    });
+  };
+  private readonly handleControlledOpenChange = (open: unknown): void => {
+    this.setState({ controlledOpen: open as boolean });
+  };
 
   protected initState(): DialogDemoState {
     return { controlledOpen: false, result: '尚未确认' };
@@ -51,38 +86,10 @@ export class DialogDemo extends Component<
       tag: 'div',
       props: { className: 'one-docs-dialog-demo' },
       children: [
-        this.button('打开 Dialog', 'data-one-open-dialog', () => {
-          oneDialog.open({
-            title: '保存更改？',
-            description: '取消会保留当前页面。',
-          });
-        }),
-        this.button('异步确认', 'data-one-confirm-dialog', () => {
-          void oneDialog
-            .confirm({
-              title: '提交更改？',
-              onConfirm: () => {
-                this.state.result = '确认结果：true';
-                return true;
-              },
-            })
-            .then((confirmed) => {
-              this.state.result = `确认结果：${String(confirmed)}`;
-            });
-        }),
-        this.button('受控 Dialog', 'data-one-controlled-dialog', () => {
-          this.state.controlledOpen = true;
-        }),
-        this.button('容器内 Dialog', 'data-one-contained-dialog', () => {
-          if (!this.customContainer) {
-            return;
-          }
-          oneDialog.open({
-            title: '容器内 Dialog',
-            description: '此示例不会锁定 body。',
-            container: this.customContainer,
-          });
-        }),
+        this.button('打开 Dialog', this.openDialog),
+        this.button('异步确认', this.confirmDialog),
+        this.button('受控 Dialog', this.openControlledDialog),
+        this.button('容器内 Dialog', this.openContainedDialog),
         {
           tag: 'output',
           props: { 'data-one-dialog-result': '' },
@@ -101,26 +108,18 @@ export class DialogDemo extends Component<
             open: this.state.controlledOpen,
             title: '受控 Dialog',
           },
-          emitters: {
-            openChange: (open) => {
-              this.state.controlledOpen = open as boolean;
-            },
-          },
+          emitters: { openChange: this.handleControlledOpenChange },
         },
       ],
     };
   }
 
-  private button(
-    label: string,
-    dataAttribute: string,
-    onClick: () => void
-  ): VNode {
+  private button(label: string, onClick: () => void): VNode {
     return {
-      tag: 'button',
-      props: { type: 'button', [dataAttribute]: '' },
+      component: OneButton,
+      props: { variant: 'secondary' },
       children: [label],
-      listeners: { click: onClick },
+      emitters: { click: onClick },
     };
   }
 }

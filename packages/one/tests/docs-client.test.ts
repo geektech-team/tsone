@@ -1,6 +1,19 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { mountOneDocsClient } from '../docs/app/client';
 
+function getButton(
+  label: string,
+  root: ParentNode = document
+): HTMLButtonElement {
+  const button = [...root.querySelectorAll('button')].find(
+    (candidate) => candidate.textContent === label
+  );
+  if (!(button instanceof HTMLButtonElement)) {
+    throw new Error(`Missing button: ${label}`);
+  }
+  return button;
+}
+
 describe('One UI docs client', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
@@ -37,9 +50,38 @@ describe('One UI docs client', () => {
     expect(document.querySelector('.one-checkbox-group')).toBeTruthy();
     expect(document.querySelector('.one-switch')).toBeTruthy();
     expect(document.querySelector('.one-alert')).toBeTruthy();
-    expect(document.querySelector('[data-one-open-message]')).toBeTruthy();
-    expect(document.querySelector('[data-one-open-dialog]')).toBeTruthy();
-    expect(document.querySelector('[data-one-tooltip-trigger]')).toBeTruthy();
+    expect(
+      document.querySelector('.one-docs-feedback-actions .one-button')
+    ).toBeTruthy();
+    expect(
+      document.querySelector('.one-docs-dialog-demo .one-button')
+    ).toBeTruthy();
+    expect(
+      document.querySelector('.one-docs-tooltip-demo .one-button')
+    ).toBeTruthy();
+  });
+
+  it('reuses One controls throughout feedback demos', () => {
+    document.body.innerHTML = [
+      '<div data-one-demo="alert"></div>',
+      '<div data-one-demo="message"></div>',
+      '<div data-one-demo="dialog"></div>',
+      '<div data-one-demo="tooltip"></div>',
+    ].join('');
+    mountOneDocsClient();
+
+    const alertRoot = document.querySelector('[data-one-demo="alert"]');
+    const messageRoot = document.querySelector('[data-one-demo="message"]');
+    const dialogRoot = document.querySelector('[data-one-demo="dialog"]');
+    const tooltipRoot = document.querySelector('[data-one-demo="tooltip"]');
+
+    expect(
+      alertRoot?.querySelector('.one-alert__actions .one-button')
+    ).toBeTruthy();
+    expect(messageRoot?.querySelectorAll('.one-button')).toHaveLength(4);
+    expect(dialogRoot?.querySelectorAll('.one-button')).toHaveLength(4);
+    expect(tooltipRoot?.querySelector('.one-select')).toBeTruthy();
+    expect(tooltipRoot?.querySelectorAll('.one-button')).toHaveLength(3);
   });
 
   it('updates the button click count', () => {
@@ -263,9 +305,7 @@ describe('One UI docs client', () => {
     document.body.innerHTML = '<div data-one-demo="alert"></div>';
     mountOneDocsClient();
 
-    (
-      document.querySelector('[data-one-alert-action]') as HTMLButtonElement
-    ).click();
+    getButton('撤销').click();
     expect(document.querySelector('[data-one-alert-result]')?.textContent).toBe(
       '已撤销 1 次'
     );
@@ -280,35 +320,25 @@ describe('One UI docs client', () => {
       '<div data-one-demo="dialog"></div>',
     ].join('');
     mountOneDocsClient();
-    (
-      document.querySelector('[data-one-open-message]') as HTMLButtonElement
-    ).click();
+    getButton('成功消息').click();
     expect(document.body.querySelector('.one-message')?.textContent).toContain(
       '保存成功'
     );
-    (
-      document.querySelector('[data-one-update-message]') as HTMLButtonElement
-    ).click();
+    getButton('更新最近消息').click();
     expect(document.body.querySelector('.one-message')?.textContent).toContain(
       '内容已更新'
     );
-    (
-      document.querySelector('[data-one-close-messages]') as HTMLButtonElement
-    ).click();
+    getButton('关闭全部').click();
     expect(document.body.querySelector('.one-message')).toBeNull();
 
-    (
-      document.querySelector('[data-one-open-dialog]') as HTMLButtonElement
-    ).click();
+    getButton('打开 Dialog').click();
     expect(document.body.querySelector('[role="dialog"]')).toBeTruthy();
     (
       document.querySelector('.one-dialog__cancel') as HTMLButtonElement
     ).click();
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
-    (
-      document.querySelector('[data-one-confirm-dialog]') as HTMLButtonElement
-    ).click();
+    getButton('异步确认').click();
     (
       document.querySelector('.one-dialog__confirm') as HTMLButtonElement
     ).click();
@@ -316,23 +346,26 @@ describe('One UI docs client', () => {
     expect(
       document.querySelector('[data-one-dialog-result]')?.textContent
     ).toBe('确认结果：true');
+
+    getButton('受控 Dialog').click();
+    expect(document.body.querySelector('[role="dialog"]')).toBeTruthy();
+    (
+      document.querySelector('.one-dialog__cancel') as HTMLButtonElement
+    ).click();
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it('demonstrates Tooltip placement, edge flip, click and manual modes', () => {
     document.body.innerHTML = '<div data-one-demo="tooltip"></div>';
     mountOneDocsClient();
-    const trigger = document.querySelector(
-      '[data-one-tooltip-trigger]'
-    ) as HTMLButtonElement;
+    const trigger = getButton('点击提示');
 
     trigger.click();
     const tooltip = document.querySelector('[role="tooltip"]') as HTMLElement;
     expect(trigger.getAttribute('aria-describedby')).toBe(tooltip.id);
     expect(tooltip.dataset.placement).toBe('bottom');
 
-    (
-      document.querySelector('[data-one-tooltip-manual]') as HTMLButtonElement
-    ).click();
+    getButton('打开手动提示').click();
     expect(document.querySelectorAll('[role="tooltip"]')).toHaveLength(1);
     expect(document.querySelector('[role="tooltip"]')?.textContent).toContain(
       '由 open 属性控制'
@@ -341,10 +374,16 @@ describe('One UI docs client', () => {
       document.querySelector('[data-one-tooltip-result]')?.textContent
     ).toContain('请求位置：top');
 
-    (
-      document.querySelector('[data-one-tooltip-manual]') as HTMLButtonElement
-    ).click();
+    getButton('关闭手动提示').click();
     expect(document.querySelector('[role="tooltip"]')).toBeNull();
+
+    document
+      .querySelector('[aria-label="首选位置"]')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    getButton('bottom-end').click();
+    expect(
+      document.querySelector('[data-one-tooltip-result]')?.textContent
+    ).toContain('请求位置：bottom-end');
   });
 
   it('is safe when a docs page has no demo roots', () => {

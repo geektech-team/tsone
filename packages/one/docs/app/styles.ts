@@ -448,7 +448,9 @@ const documentStyles: StyleSheet = [
     selector: '[data-one-demo]',
     properties: {
       borderTop: '1px dashed var(--one-docs-border)',
+      boxSizing: 'border-box',
       minHeight: '1px',
+      padding: '24px',
     },
   },
   {
@@ -505,7 +507,6 @@ const documentStyles: StyleSheet = [
     properties: {
       display: 'grid',
       gap: '12px',
-      padding: '24px',
     },
   },
   {
@@ -514,7 +515,6 @@ const documentStyles: StyleSheet = [
       display: 'flex',
       flexWrap: 'wrap',
       gap: '10px',
-      padding: '24px',
     },
   },
   {
@@ -533,7 +533,6 @@ const documentStyles: StyleSheet = [
     properties: {
       display: 'grid',
       gap: '14px',
-      padding: '24px',
     },
   },
   {

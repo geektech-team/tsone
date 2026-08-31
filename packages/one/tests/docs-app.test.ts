@@ -149,4 +149,22 @@ describe('One UI docs app', () => {
     expect(html).toContain('@media (max-width: 900px)');
     expect(html).toContain('grid-template-columns: minmax(0, 1fr);');
   });
+
+  it('adds shared padding to every interactive demo root', () => {
+    const html = render('/components/button/');
+    const demoRootStyles = html.match(/\[data-one-demo\] \{[^}]+\}/)?.[0];
+    const feedbackStackStyles = html.match(
+      /\.one-docs-feedback-stack \{[^}]+\}/
+    )?.[0];
+    const feedbackActionStyles = html.match(
+      /\.one-docs-feedback-actions,[^{]+\{[^}]+\}/
+    )?.[0];
+    const tooltipStyles = html.match(/\.one-docs-tooltip-demo \{[^}]+\}/)?.[0];
+
+    expect(demoRootStyles).toContain('box-sizing: border-box;');
+    expect(demoRootStyles).toContain('padding: 24px;');
+    expect(feedbackStackStyles).not.toContain('padding: 24px;');
+    expect(feedbackActionStyles).not.toContain('padding: 24px;');
+    expect(tooltipStyles).not.toContain('padding: 24px;');
+  });
 });

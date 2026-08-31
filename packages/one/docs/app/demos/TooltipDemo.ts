@@ -1,5 +1,11 @@
 import { Component, type VNode } from '@geektech/tsone';
-import { OneTooltip, type OneOverlayPlacement } from '../../../lib';
+import {
+  OneButton,
+  type OneFieldValueEvent,
+  type OneOverlayPlacement,
+  OneSelect,
+  OneTooltip,
+} from '../../../lib';
 
 interface TooltipDemoState {
   placement: OneOverlayPlacement;
@@ -21,10 +27,23 @@ const placements: OneOverlayPlacement[] = [
   'left-end',
 ];
 
+const placementOptions = placements.map((placement) => ({
+  value: placement,
+  label: placement,
+}));
+
 export class TooltipDemo extends Component<
   Record<string, never>,
   TooltipDemoState
 > {
+  private readonly handlePlacementChange = (payload: unknown): void => {
+    const event = payload as OneFieldValueEvent<string>;
+    this.setState({ placement: event.value as OneOverlayPlacement });
+  };
+  private readonly toggleManual = (): void => {
+    this.setState({ manualOpen: !this.state.manualOpen });
+  };
+
   protected initState(): TooltipDemoState {
     return { placement: 'top', manualOpen: false };
   }
@@ -37,7 +56,7 @@ export class TooltipDemo extends Component<
       return;
     }
     const trigger = element.querySelector<HTMLElement>(
-      '[data-one-tooltip-trigger]'
+      '.one-docs-tooltip-edge .one-button'
     );
     if (trigger) {
       trigger.getBoundingClientRect = () => ({
@@ -60,30 +79,13 @@ export class TooltipDemo extends Component<
       props: { className: 'one-docs-tooltip-demo' },
       children: [
         {
-          tag: 'label',
-          children: [
-            '首选位置 ',
-            {
-              tag: 'select',
-              props: {
-                value: this.state.placement,
-                'data-one-tooltip-placement': '',
-              },
-              children: placements.map((placement) => ({
-                tag: 'option',
-                props: { value: placement },
-                children: [placement],
-              })),
-              listeners: {
-                change: (event) => {
-                  const select = event.currentTarget;
-                  if (select instanceof HTMLSelectElement) {
-                    this.state.placement = select.value as OneOverlayPlacement;
-                  }
-                },
-              },
-            },
-          ],
+          component: OneSelect,
+          props: {
+            options: placementOptions,
+            value: this.state.placement,
+            ariaLabel: '首选位置',
+          },
+          emitters: { change: this.handlePlacementChange },
         },
         {
           tag: 'div',
@@ -98,11 +100,7 @@ export class TooltipDemo extends Component<
               },
               children: [
                 {
-                  tag: 'button',
-                  props: {
-                    type: 'button',
-                    'data-one-tooltip-trigger': '',
-                  },
+                  component: OneButton,
                   children: ['点击提示'],
                 },
               ],
@@ -110,14 +108,10 @@ export class TooltipDemo extends Component<
           ],
         },
         {
-          tag: 'button',
-          props: { type: 'button', 'data-one-tooltip-manual': '' },
+          component: OneButton,
+          props: { variant: 'secondary' },
           children: [this.state.manualOpen ? '关闭手动提示' : '打开手动提示'],
-          listeners: {
-            click: () => {
-              this.state.manualOpen = !this.state.manualOpen;
-            },
-          },
+          emitters: { click: this.toggleManual },
         },
         {
           component: OneTooltip,
@@ -129,8 +123,8 @@ export class TooltipDemo extends Component<
           },
           children: [
             {
-              tag: 'button',
-              props: { type: 'button' },
+              component: OneButton,
+              props: { variant: 'secondary' },
               children: ['手动模式触发器'],
             },
           ],

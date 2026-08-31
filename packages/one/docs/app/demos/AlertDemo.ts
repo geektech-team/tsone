@@ -1,5 +1,5 @@
 import { Component, type VNode } from '@geektech/tsone';
-import { OneAlert } from '../../../lib';
+import { OneAlert, OneButton } from '../../../lib';
 
 interface AlertDemoState {
   actionCount: number;
@@ -9,6 +9,10 @@ export class AlertDemo extends Component<
   Record<string, never>,
   AlertDemoState
 > {
+  private readonly handleAction = (): void => {
+    this.setState({ actionCount: this.state.actionCount + 1 });
+  };
+
   protected initState(): AlertDemoState {
     return { actionCount: 0 };
   }
@@ -41,15 +45,11 @@ export class AlertDemo extends Component<
           },
           children: [
             {
-              tag: 'button',
+              component: OneButton,
               slot: 'actions',
-              props: { type: 'button', 'data-one-alert-action': '' },
+              props: { size: 'sm', variant: 'secondary' },
               children: ['撤销'],
-              listeners: {
-                click: () => {
-                  this.state.actionCount += 1;
-                },
-              },
+              emitters: { click: this.handleAction },
             },
           ],
         },
