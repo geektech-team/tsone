@@ -31,9 +31,7 @@ describe('One overlay infrastructure', () => {
     });
     document.body.appendChild(custom);
 
-    expect(resolveOneOverlayContainer(undefined, document)).toBe(
-      document.body
-    );
+    expect(resolveOneOverlayContainer(undefined, document)).toBe(document.body);
     expect(resolveOneOverlayContainer(() => custom, document)).toBe(custom);
   });
 
@@ -108,6 +106,8 @@ describe('One overlay infrastructure', () => {
       document.querySelector('[data-one-overlay-kind="dialog"]')
     ).toBeTruthy();
     controller.close();
-    expect(document.querySelector('[data-one-overlay-kind="dialog"]')).toBeNull();
+    expect(
+      document.querySelector('[data-one-overlay-kind="dialog"]')
+    ).toBeNull();
   });
 });

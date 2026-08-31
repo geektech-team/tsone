@@ -1,7 +1,4 @@
-import {
-  OneOverlayContainerError,
-  OneOverlayEnvironmentError,
-} from './errors';
+import { OneOverlayContainerError, OneOverlayEnvironmentError } from './errors';
 import type { OneOverlayContainer } from './types';
 
 function globalDocument(): Document | null {
