@@ -11,6 +11,9 @@ describe('One UI docs client', () => {
       '<div data-one-demo="button"></div>',
       '<div data-one-demo="input"></div>',
       '<div data-one-demo="card"></div>',
+      '<div data-one-demo="tag"></div>',
+      '<div data-one-demo="badge"></div>',
+      '<div data-one-demo="empty"></div>',
       '<div data-one-demo="form"></div>',
       '<div data-one-demo="select"></div>',
       '<div data-one-demo="checkbox"></div>',
@@ -26,6 +29,9 @@ describe('One UI docs client', () => {
     expect(document.querySelector('.one-button')).toBeTruthy();
     expect(document.querySelector('.one-input')).toBeTruthy();
     expect(document.querySelector('.one-card')).toBeTruthy();
+    expect(document.querySelector('.one-tag')).toBeTruthy();
+    expect(document.querySelector('.one-badge')).toBeTruthy();
+    expect(document.querySelector('.one-empty')).toBeTruthy();
     expect(document.querySelector('.one-form')).toBeTruthy();
     expect(document.querySelector('.one-select')).toBeTruthy();
     expect(document.querySelector('.one-checkbox-group')).toBeTruthy();
@@ -84,6 +90,57 @@ describe('One UI docs client', () => {
     expect(
       document.querySelector('[data-one-controlled-value]')?.textContent
     ).toBe('受控值：父组件状态');
+  });
+
+  it('counts tags closed from the interactive tag demo', () => {
+    document.body.innerHTML = '<div data-one-demo="tag"></div>';
+    mountOneDocsClient();
+
+    const closeButton = document.querySelector(
+      '.one-tag__close'
+    ) as HTMLButtonElement | null;
+    expect(closeButton).toBeInstanceOf(HTMLButtonElement);
+    closeButton?.click();
+
+    expect(document.querySelector('[data-one-tag-result]')?.textContent).toBe(
+      '已关闭 1 个标签'
+    );
+  });
+
+  it('increments and caps the interactive badge count', () => {
+    document.body.innerHTML = '<div data-one-demo="badge"></div>';
+    mountOneDocsClient();
+
+    expect(document.querySelector('.one-badge__content')?.textContent).toBe(
+      '99'
+    );
+    const incrementButton = [...document.querySelectorAll('button')].find(
+      (button) => button.textContent === '增加数量'
+    );
+    expect(incrementButton).toBeInstanceOf(HTMLButtonElement);
+    incrementButton?.click();
+
+    expect(document.querySelector('.one-badge__content')?.textContent).toBe(
+      '99+'
+    );
+    expect(document.querySelector('[data-one-badge-result]')?.textContent).toBe(
+      '当前数量：100'
+    );
+  });
+
+  it('runs the empty-state action from the interactive empty demo', () => {
+    document.body.innerHTML = '<div data-one-demo="empty"></div>';
+    mountOneDocsClient();
+
+    const createButton = [...document.querySelectorAll('button')].find(
+      (button) => button.textContent === '创建项目'
+    );
+    expect(createButton).toBeInstanceOf(HTMLButtonElement);
+    createButton?.click();
+
+    expect(document.querySelector('[data-one-empty-result]')?.textContent).toBe(
+      '已请求创建项目'
+    );
   });
 
   it('mounts an interactive switch demo that toggles in both directions', () => {

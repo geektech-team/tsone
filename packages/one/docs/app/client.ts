@@ -1,11 +1,14 @@
 import { createApp, type ComponentConstructor } from '@geektech/tsone';
 import { ButtonDemo } from './demos/ButtonDemo';
+import { BadgeDemo } from './demos/BadgeDemo';
 import { CardDemo } from './demos/CardDemo';
 import { CheckboxDemo } from './demos/CheckboxDemo';
+import { EmptyDemo } from './demos/EmptyDemo';
 import { FormDemo } from './demos/FormDemo';
 import { InputDemo } from './demos/InputDemo';
 import { SelectDemo } from './demos/SelectDemo';
 import { SwitchDemo } from './demos/SwitchDemo';
+import { TagDemo } from './demos/TagDemo';
 import { AlertDemo } from './demos/AlertDemo';
 import { DialogDemo } from './demos/DialogDemo';
 import { MessageDemo } from './demos/MessageDemo';
@@ -15,6 +18,9 @@ type DemoName =
   | 'button'
   | 'input'
   | 'card'
+  | 'tag'
+  | 'badge'
+  | 'empty'
   | 'form'
   | 'select'
   | 'checkbox'
@@ -29,6 +35,9 @@ const DEMOS: Record<DemoName, DemoConstructor> = {
   button: ButtonDemo,
   input: InputDemo,
   card: CardDemo,
+  tag: TagDemo,
+  badge: BadgeDemo,
+  empty: EmptyDemo,
   form: FormDemo,
   select: SelectDemo,
   checkbox: CheckboxDemo,
@@ -70,6 +79,9 @@ function isDemoName(value: string | undefined): value is DemoName {
     value === 'button' ||
     value === 'input' ||
     value === 'card' ||
+    value === 'tag' ||
+    value === 'badge' ||
+    value === 'empty' ||
     value === 'form' ||
     value === 'select' ||
     value === 'checkbox' ||
