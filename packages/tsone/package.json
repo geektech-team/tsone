@@ -1,6 +1,6 @@
 {
   "name": "@geektech/tsone",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "TSone 是轻量级纯 TypeScript 前端框架，提供响应式系统、类组件、策略化渲染和路由功能",
   "type": "module",
   "main": "./dist/index.js",
