@@ -141,6 +141,11 @@ describe('OneMessage', () => {
     expect(
       document.querySelectorAll('[data-one-overlay-group="top"]')
     ).toHaveLength(1);
+    const group = document.querySelector(
+      '[data-one-overlay-group="top"]'
+    ) as HTMLElement;
+    expect(group.classList.contains('one-overlay-group--message')).toBe(true);
+    expect(group.dataset.oneMessagePlacement).toBe('top');
     first.update({ content: 'Updated' });
     expect(document.body.textContent).toContain('Updated');
     service.close(first.id);

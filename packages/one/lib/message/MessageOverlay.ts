@@ -121,6 +121,11 @@ export class MessageOverlay extends Component<
 > {
   private timer: OneMessageTimer | undefined;
 
+  public mount(container: HTMLElement): void {
+    super.mount(container);
+    this.decorateGroup();
+  }
+
   protected initState(): MessageOverlayState {
     return {};
   }
@@ -132,7 +137,6 @@ export class MessageOverlay extends Component<
   }
 
   protected onMounted(): void {
-    this.decorateGroup();
     this.timer = new OneMessageTimer(this.props.duration, undefined, () => {
       this.props.requestClose();
     });
