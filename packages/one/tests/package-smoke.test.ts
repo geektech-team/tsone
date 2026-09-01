@@ -129,6 +129,7 @@ describe('One UI package smoke', () => {
         join(tempDir, 'consumer.ts'),
         [
           'import {',
+          '  ONE_DEFAULT_THEME,',
           '  ONE_NAME,',
           '  ONE_THEME_DEFAULTS,',
           '  ONE_VERSION,',
@@ -145,8 +146,12 @@ describe('One UI package smoke', () => {
           '  OneTag,',
           '  OneTabs,',
           '  OneTooltip,',
+          '  OneThemeConfigError,',
+          '  OneThemeEnvironmentError,',
+          '  OneThemeNotFoundError,',
           '  oneDialog,',
           '  oneMessage,',
+          '  oneTheme,',
           '  type OneAlertProps,',
           '  type OneBadgeProps,',
           '  type OneBreadcrumbItem,',
@@ -166,6 +171,14 @@ describe('One UI package smoke', () => {
           '  type OneTabItem,',
           '  type OneTabsProps,',
           '  type OneTooltipProps,',
+          '  type OneResolvedTheme,',
+          '  type OneThemeBorder,',
+          '  type OneThemeColors,',
+          '  type OneThemeDefinition,',
+          '  type OneThemeInitOptions,',
+          '  type OneThemeRadius,',
+          '  type OneThemeService,',
+          '  type OneThemeTypography,',
           "} from '@geektech/one';",
           '',
           "const size: OneComponentSize = 'md';",
@@ -191,6 +204,28 @@ describe('One UI package smoke', () => {
           'const breadcrumbProps: OneBreadcrumbProps = { items: [breadcrumbItem] };',
           'const paginationProps: OnePaginationProps = { total: 100 };',
           'const inputEvent: OneInputValueEvent | undefined = undefined;',
+          'const themeDefinition: OneThemeDefinition = {',
+          "  colors: { primary: '#112233' },",
+          "  typography: { lineHeight: '1.7' },",
+          "  border: { width: '2px', style: 'dashed' },",
+          "  radius: { lg: '12px' },",
+          '};',
+          'const themeOptions: OneThemeInitOptions = {',
+          "  defaultTheme: 'brand',",
+          '  themes: { brand: themeDefinition },',
+          '};',
+          'const themeService: OneThemeService = oneTheme;',
+          'const resolvedTheme: OneResolvedTheme = ONE_DEFAULT_THEME;',
+          'const colors: OneThemeColors = resolvedTheme.colors;',
+          'const typography: OneThemeTypography = resolvedTheme.typography;',
+          'const border: OneThemeBorder = resolvedTheme.border;',
+          'const radius: OneThemeRadius = resolvedTheme.radius;',
+          'if (false) {',
+          '  oneTheme.init(themeOptions);',
+          "  oneTheme.switch('brand');",
+          '  // @ts-expect-error switchTheme is intentionally absent',
+          "  oneTheme.switchTheme('brand');",
+          '}',
           'const button = new OneButton(buttonProps);',
           'const input = new OneInput(inputProps);',
           'const card = new OneCard(cardProps);',
@@ -224,6 +259,14 @@ describe('One UI package smoke', () => {
           'void pagination;',
           'void oneMessage;',
           'void oneDialog;',
+          'void themeService;',
+          'void colors;',
+          'void typography;',
+          'void border;',
+          'void radius;',
+          'void OneThemeConfigError;',
+          'void OneThemeNotFoundError;',
+          'void OneThemeEnvironmentError;',
           'void packageName;',
           'void packageVersion;',
           'void primary;',
@@ -253,6 +296,7 @@ describe('One UI package smoke', () => {
         join(tempDir, 'runtime-consumer.mjs'),
         [
           'import {',
+          '  ONE_DEFAULT_THEME,',
           '  ONE_NAME,',
           '  ONE_THEME_DEFAULTS,',
           '  ONE_VERSION,',
@@ -271,6 +315,7 @@ describe('One UI package smoke', () => {
           '  OneTooltip,',
           '  oneDialog,',
           '  oneMessage,',
+          '  oneTheme,',
           "} from '@geektech/one';",
           '',
           'console.log(JSON.stringify({',
@@ -300,6 +345,13 @@ describe('One UI package smoke', () => {
           '    oneMessage: typeof oneMessage.success,',
           '    oneDialog: typeof oneDialog.confirm,',
           '  },',
+          '  themeService: {',
+          '    defaultPrimary: ONE_DEFAULT_THEME.colors.primary,',
+          '    current: oneTheme.currentTheme,',
+          '    init: typeof oneTheme.init,',
+          '    switch: typeof oneTheme.switch,',
+          "    legacySwitch: 'switchTheme' in oneTheme,",
+          '  },',
           '}));',
         ].join('\n')
       );
@@ -328,6 +380,13 @@ describe('One UI package smoke', () => {
           string
         >;
         services: Record<'oneMessage' | 'oneDialog', string>;
+        themeService: {
+          defaultPrimary: string;
+          current: string;
+          init: string;
+          switch: string;
+          legacySwitch: boolean;
+        };
       };
 
       expect(runtimeResult).toEqual({
@@ -356,6 +415,13 @@ describe('One UI package smoke', () => {
         services: {
           oneMessage: 'function',
           oneDialog: 'function',
+        },
+        themeService: {
+          defaultPrimary: '#5fd956',
+          current: 'default',
+          init: 'function',
+          switch: 'function',
+          legacySwitch: false,
         },
       });
 

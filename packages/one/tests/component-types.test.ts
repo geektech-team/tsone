@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+  ONE_DEFAULT_THEME,
   OneAlert,
   OneBadge,
   OneBreadcrumb,
@@ -13,8 +14,12 @@ import {
   OneTag,
   OneTabs,
   OneTooltip,
+  OneThemeConfigError,
+  OneThemeEnvironmentError,
+  OneThemeNotFoundError,
   oneDialog,
   oneMessage,
+  oneTheme,
   type OneAlertProps,
   type OneBadgeProps,
   type OneBreadcrumbProps,
@@ -31,6 +36,14 @@ import {
   type OneTagProps,
   type OneTabsProps,
   type OneTooltipProps,
+  type OneResolvedTheme,
+  type OneThemeBorder,
+  type OneThemeColors,
+  type OneThemeDefinition,
+  type OneThemeInitOptions,
+  type OneThemeRadius,
+  type OneThemeService,
+  type OneThemeTypography,
 } from '../lib';
 
 const buttonProps: OneButtonProps = { variant: 'danger', size: 'lg' };
@@ -71,6 +84,29 @@ const paginationProps: OnePaginationProps = {
   defaultPage: 2,
   showQuickJumper: true,
 };
+const themeDefinition: OneThemeDefinition = {
+  colors: { primary: '#112233' },
+  typography: { lineHeight: '1.7' },
+  border: { width: '2px', style: 'dashed' },
+  radius: { lg: '12px' },
+};
+const themeOptions: OneThemeInitOptions = {
+  defaultTheme: 'brand',
+  themes: { brand: themeDefinition, night: {} },
+};
+const themeService: OneThemeService = oneTheme;
+const resolvedTheme: OneResolvedTheme = ONE_DEFAULT_THEME;
+const themeColors: OneThemeColors = resolvedTheme.colors;
+const themeTypography: OneThemeTypography = resolvedTheme.typography;
+const themeBorder: OneThemeBorder = resolvedTheme.border;
+const themeRadius: OneThemeRadius = resolvedTheme.radius;
+
+if (false) {
+  oneTheme.init(themeOptions);
+  oneTheme.switch('brand');
+  // @ts-expect-error switchTheme is not part of the public service
+  oneTheme.switchTheme('brand');
+}
 
 // @ts-expect-error unsupported variant
 const invalidButton: OneButtonProps = { variant: 'ghost' };
@@ -111,6 +147,13 @@ describe('public component types', () => {
     expect(typeof OnePagination).toBe('function');
     expect(typeof oneMessage.success).toBe('function');
     expect(typeof oneDialog.confirm).toBe('function');
+    expect(typeof oneTheme.init).toBe('function');
+    expect(typeof oneTheme.switch).toBe('function');
+    expect(oneTheme.currentTheme).toBe('default');
+    expect(ONE_DEFAULT_THEME.colors.primary).toBe('#5fd956');
+    expect(OneThemeConfigError).toBeFunction();
+    expect(OneThemeNotFoundError).toBeFunction();
+    expect(OneThemeEnvironmentError).toBeFunction();
     expect(buttonProps.variant).toBe('danger');
     expect(inputProps.value).toBe('one');
     expect(cardProps.title).toBe('One');
@@ -127,6 +170,11 @@ describe('public component types', () => {
     expect(new OnePagination(paginationProps)).toBeInstanceOf(OnePagination);
     expect(messagePlacement).toBe('top-end');
     expect(overlayPlacement).toBe('right-start');
+    expect(themeService).toBe(oneTheme);
+    expect(themeColors.primary).toBe('#5fd956');
+    expect(themeTypography.lineHeight).toBe('1.5');
+    expect(themeBorder.width).toBe('1px');
+    expect(themeRadius.lg).toBe('8px');
     void invalidButton;
     void invalidInput;
     void invalidAlert;

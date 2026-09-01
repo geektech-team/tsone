@@ -54,6 +54,23 @@ export { OneEmpty } from './empty';
 export type { OneEmptyProps } from './empty';
 export { ONE_THEME_DEFAULTS } from './styles/shared';
 export {
+  ONE_DEFAULT_THEME,
+  OneThemeConfigError,
+  OneThemeEnvironmentError,
+  OneThemeNotFoundError,
+  oneTheme,
+} from './theme';
+export type {
+  OneResolvedTheme,
+  OneThemeBorder,
+  OneThemeColors,
+  OneThemeDefinition,
+  OneThemeInitOptions,
+  OneThemeRadius,
+  OneThemeService,
+  OneThemeTypography,
+} from './theme';
+export {
   DomOneOverlayHost,
   OneFloatingPositioner,
   OneOverlayContainerError,
