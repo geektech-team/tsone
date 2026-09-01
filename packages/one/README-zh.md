@@ -236,7 +236,36 @@ const card = createComponent(OneCard, {}, [
 ]);
 ```
 
-## 主题覆盖
+## 全局主题
+
+不可变的内置 `default` 主题始终可用。可以注册任意多套局部配置；未填写的颜色、
+字体、行高、边框和圆角字段都会从 `ONE_DEFAULT_THEME` 继承。
+
+```ts
+import { ONE_DEFAULT_THEME, oneTheme } from '@geektech/one';
+
+oneTheme.init({
+  defaultTheme: 'brand',
+  themes: {
+    brand: {
+      colors: { primary: '#326bff' },
+      typography: { fontFamily: 'Inter, sans-serif', lineHeight: '1.6' },
+      border: { color: '#cbd5e1', width: '1px', style: 'solid' },
+      radius: { sm: '4px', md: '8px', lg: '12px' },
+    },
+    night: { colors: { surface: '#101510', text: '#f4f8f4' } },
+  },
+});
+
+oneTheme.switch('default');
+console.log(oneTheme.currentTheme, ONE_DEFAULT_THEME.colors.primary);
+```
+
+主题服务只写入 `document.documentElement`，不创建局部主题，也不会自动持久化选中
+名称或跟随系统配色。无效配置会抛出 `OneThemeConfigError`，未知主题名称会抛出
+`OneThemeNotFoundError`。
+
+## CSS 变量覆盖
 
 One UI 样式限定在 `.one-*` 选择器中。可以在应用容器或 `:root` 上覆盖公开
 CSS 变量：

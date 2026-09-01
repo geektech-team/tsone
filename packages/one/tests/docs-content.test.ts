@@ -224,6 +224,27 @@ describe('One UI docs content', () => {
     expect(theming).toContain('.checkout-panel');
   });
 
+  it('documents global theme initialization and switching with OneButton', () => {
+    const theming = pageText('/guide/theming/');
+
+    for (const fragment of [
+      "import { OneButton, oneTheme } from '@geektech/one'",
+      'oneTheme.init({',
+      "defaultTheme: 'brand'",
+      'themes:',
+      "oneTheme.switch('default')",
+      'oneTheme.currentTheme',
+      'document.documentElement',
+      'OneThemeConfigError',
+      'OneThemeNotFoundError',
+      '不会自动持久化',
+      '内置 default',
+    ]) {
+      expect(theming).toContain(fragment);
+    }
+    expect(theming).not.toContain('switchTheme(');
+  });
+
   it('documents every OneButton prop and click event signature', () => {
     const text = pageText('/components/button/');
     for (const fragment of [
@@ -386,6 +407,23 @@ describe('One UI docs content', () => {
       expect(markdown).toContain('new OneBreadcrumb({');
       expect(markdown).toContain("href: '/projects'");
       expect(markdown).toContain('new OnePagination({ total: 95');
+    }
+  });
+
+  it('publishes the global theme service contract in both READMEs', () => {
+    for (const readme of ['README.md', 'README-zh.md']) {
+      const markdown = readFileSync(join(packageRoot, readme), 'utf8');
+
+      for (const fragment of [
+        'oneTheme.init({',
+        "defaultTheme: 'brand'",
+        "oneTheme.switch('default')",
+        'oneTheme.currentTheme',
+        'ONE_DEFAULT_THEME',
+      ]) {
+        expect(markdown).toContain(fragment);
+      }
+      expect(markdown).not.toContain('switchTheme(');
     }
   });
 

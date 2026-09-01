@@ -75,7 +75,12 @@ export const oneThemeTokens: readonly OneThemeTokenDoc[] = [
   {
     name: '--one-radius-md',
     fallback: ONE_THEME_DEFAULTS.radiusMd,
-    description: '按钮和输入框的默认圆角，也是卡片圆角的共享 fallback。',
+    description: '按钮和输入框的默认圆角。',
+  },
+  {
+    name: '--one-radius-lg',
+    fallback: ONE_THEME_DEFAULTS.radiusMd,
+    description: '卡片与 Dialog 等大型表面的圆角。',
   },
   {
     name: '--one-space-sm',
@@ -106,6 +111,21 @@ export const oneThemeTokens: readonly OneThemeTokenDoc[] = [
     name: '--one-font-family',
     fallback: ONE_THEME_DEFAULTS.fontFamily,
     description: '全部 One UI 组件使用的字体栈。',
+  },
+  {
+    name: '--one-line-height',
+    fallback: '1.5',
+    description: '全部 One UI 组件使用的基础行高。',
+  },
+  {
+    name: '--one-border-width',
+    fallback: '1px',
+    description: '普通组件边框与分隔线使用的全局宽度。',
+  },
+  {
+    name: '--one-border-style',
+    fallback: 'solid',
+    description: '普通组件边框与分隔线使用的全局样式。',
   },
   {
     name: '--one-shadow-card',
@@ -294,7 +314,7 @@ export const oneThemeTokens: readonly OneThemeTokenDoc[] = [
   },
   {
     name: '--one-card-radius',
-    fallback: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
+    fallback: `var(--one-radius-lg, ${ONE_THEME_DEFAULTS.radiusMd})`,
     description: '卡片圆角的组件级 override。',
   },
   {

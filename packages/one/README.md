@@ -237,7 +237,38 @@ const card = createComponent(OneCard, {}, [
 ]);
 ```
 
-## Theme overrides
+## Global themes
+
+The immutable `default` theme is always available. Register any number of
+partial themes; omitted colors, typography, border, and radius values inherit
+from `ONE_DEFAULT_THEME`.
+
+```ts
+import { ONE_DEFAULT_THEME, oneTheme } from '@geektech/one';
+
+oneTheme.init({
+  defaultTheme: 'brand',
+  themes: {
+    brand: {
+      colors: { primary: '#326bff' },
+      typography: { fontFamily: 'Inter, sans-serif', lineHeight: '1.6' },
+      border: { color: '#cbd5e1', width: '1px', style: 'solid' },
+      radius: { sm: '4px', md: '8px', lg: '12px' },
+    },
+    night: { colors: { surface: '#101510', text: '#f4f8f4' } },
+  },
+});
+
+oneTheme.switch('default');
+console.log(oneTheme.currentTheme, ONE_DEFAULT_THEME.colors.primary);
+```
+
+The service writes to `document.documentElement` only. It does not create local
+themes, persist the selected name, or follow the operating-system scheme.
+Invalid configuration throws `OneThemeConfigError`; unknown theme names throw
+`OneThemeNotFoundError`.
+
+## CSS variable overrides
 
 One UI styles are scoped to `.one-*` selectors. Override public CSS variables
 on an application container or `:root`:

@@ -95,14 +95,56 @@ export const guidePages: OneDocPage[] = [
   {
     path: '/guide/theming/',
     title: '主题定制',
-    description: '查看 One UI 的完整主题 token 和全局、局部覆盖方式。',
+    description: '初始化多套全局主题、切换当前主题并查看完整 CSS token。',
     section: '指南',
     sectionOrder: 1,
     order: 2,
     body: [
       heading(1, 'theming', '主题定制'),
       paragraph(
-        'ONE_THEME_DEFAULTS 导出全部默认回退值；对应的 CSS Variables 可以在任意作用域覆盖。'
+        'One UI 始终包含不可覆盖的内置 default 主题。oneTheme.init() 可以注册多套全局主题，每套自定义主题都会按 colors、typography、border 和 radius 分组，从内置 default 深度继承未填写的字段。'
+      ),
+      heading(2, 'initialize', '初始化多套主题'),
+      codeBlock(
+        'ts',
+        [
+          "import { OneButton, oneTheme } from '@geektech/one';",
+          '',
+          'oneTheme.init({',
+          "  defaultTheme: 'brand',",
+          '  themes: {',
+          '    brand: {',
+          "      colors: { primary: '#326bff', primaryHover: '#2457dc' },",
+          "      typography: { fontFamily: 'Inter, sans-serif', lineHeight: '1.6' },",
+          "      border: { color: '#cbd5e1', width: '1px', style: 'solid' },",
+          "      radius: { sm: '4px', md: '8px', lg: '12px' },",
+          '    },',
+          '    night: {',
+          "      colors: { surface: '#101510', text: '#f4f8f4', muted: '#a8b3aa' },",
+          '    },',
+          '  },',
+          '});',
+          '',
+          "const defaultButton = new OneButton({ children: ['默认主题'] });",
+          "const nightButton = new OneButton({ children: ['夜间主题'] });",
+          "defaultButton.on('click', () => oneTheme.switch('default'));",
+          "nightButton.on('click', () => oneTheme.switch('night'));",
+          'console.log(oneTheme.currentTheme);',
+        ].join('\n')
+      ),
+      paragraph(
+        '初始化会立即应用 defaultTheme；再次调用 init() 会替换此前注册的自定义主题。oneTheme.switch() 只接受已注册名称，并在成功写入全部变量后更新 currentTheme。'
+      ),
+      heading(2, 'scope-and-errors', '作用域、错误与持久化'),
+      paragraph(
+        '主题服务只作用于全局 document.documentElement，不提供局部主题容器。配置字段、名称或 CSS 值无效时抛出 OneThemeConfigError；切换到未知名称时抛出 OneThemeNotFoundError；没有浏览器根节点时抛出 OneThemeEnvironmentError。失败操作不会改变当前主题。'
+      ),
+      callout('tip', '持久化由应用负责', [
+        'One UI 不会自动持久化主题，也不会自动跟随系统配色；应用可以自行保存名称，并在启动时传给 defaultTheme。',
+      ]),
+      heading(2, 'fallback-defaults', '读取 CSS 回退值'),
+      paragraph(
+        '原有的扁平 ONE_THEME_DEFAULTS 仍用于读取组件 CSS 的默认回退值；嵌套的 ONE_DEFAULT_THEME 则描述完整内置主题。'
       ),
       codeBlock(
         'ts',
@@ -122,12 +164,15 @@ export const guidePages: OneDocPage[] = [
           description: token.description,
         }))
       ),
-      heading(2, 'global-override', '全局覆盖'),
+      heading(2, 'global-override', '全局 CSS 变量覆盖'),
       codeBlock(
         'css',
         ':root {\n  --one-color-primary: #326bff;\n  --one-radius-md: 12px;\n}'
       ),
-      heading(2, 'scoped-override', '局部覆盖'),
+      heading(2, 'scoped-override', '局部 CSS 变量覆盖'),
+      paragraph(
+        '这只是现有 CSS 变量覆盖能力，不会创建可由 oneTheme 管理或切换的局部主题。'
+      ),
       codeBlock(
         'css',
         '.checkout-panel {\n  --one-color-primary: #7c3aed;\n  --one-shadow-card: none;\n}'
