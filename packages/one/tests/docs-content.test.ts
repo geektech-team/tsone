@@ -371,6 +371,24 @@ describe('One UI docs content', () => {
     }
   });
 
+  it('publishes navigation categories and minimum examples in both READMEs', () => {
+    for (const [readme, category] of [
+      ['README.md', 'Navigation'],
+      ['README-zh.md', '导航'],
+    ] as const) {
+      const markdown = readFileSync(join(packageRoot, readme), 'utf8');
+      expect(markdown).toContain(category);
+      for (const name of ['OneTabs', 'OneBreadcrumb', 'OnePagination']) {
+        expect(markdown).toContain(name);
+      }
+      expect(markdown).toContain('new OneTabs({');
+      expect(markdown).toContain("value: 'overview'");
+      expect(markdown).toContain('new OneBreadcrumb({');
+      expect(markdown).toContain("href: '/projects'");
+      expect(markdown).toContain('new OnePagination({ total: 95');
+    }
+  });
+
   it('gives every component page a real demo block', () => {
     for (const [path, component] of [
       ['/components/button/', 'button'],

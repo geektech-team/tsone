@@ -53,8 +53,70 @@ createApp({ root: App }).mount();
 - Basic: `OneButton`, `OneInput`
 - Form: `OneForm`, `OneFormItem`, `OneSelect`, `OneCheckbox`,
   `OneCheckboxGroup`, `OneSwitch`
+- Navigation: `OneTabs`, `OneBreadcrumb`, `OnePagination`
 - Data display: `OneCard`, `OneTag`, `OneBadge`, `OneEmpty`
 - Feedback and overlays: `OneAlert`, `OneMessage`, `OneDialog`, `OneTooltip`
+
+## Navigation
+
+Use tabs for parallel views, breadcrumbs for a hierarchy, and pagination for a
+long collection. All three components support controlled state or cancellable
+events where native navigation is involved.
+
+```ts
+import {
+  OneBreadcrumb,
+  OnePagination,
+  OneTabs,
+  type OneBreadcrumbClickEvent,
+  type OnePaginationChangeEvent,
+  type OneTabsChangeEvent,
+} from '@geektech/one';
+
+const tabs = new OneTabs({
+  value: 'overview',
+  items: [
+    { value: 'overview', label: 'Overview' },
+    { value: 'security', label: 'Security' },
+  ],
+  children: [
+    { tag: 'p', slot: 'overview', children: ['Overview content'] },
+    { tag: 'p', slot: 'security', children: ['Security content'] },
+  ],
+});
+tabs.on('change', (payload) => {
+  const event = payload as OneTabsChangeEvent;
+  tabs.setProps({ value: event.value });
+});
+
+const breadcrumb = new OneBreadcrumb({
+  maxItems: 3,
+  separator: '/',
+  items: [
+    { label: 'Home', href: '/' },
+    { label: 'Projects', href: '/projects' },
+    { label: 'Details', current: true },
+  ],
+});
+breadcrumb.on('itemClick', (payload) => {
+  const event = payload as OneBreadcrumbClickEvent;
+  console.log(event.item, event.index);
+});
+
+const basicPagination = new OnePagination({ total: 95 });
+const pagination = new OnePagination({
+  total: 95,
+  page: 1,
+  pageSize: 10,
+  pageSizeOptions: [10, 20, 50],
+  showQuickJumper: true,
+});
+pagination.on('change', (payload) => {
+  const event = payload as OnePaginationChangeEvent;
+  pagination.setProps({ page: event.page, pageSize: event.pageSize });
+});
+void basicPagination;
+```
 
 ## Data display
 

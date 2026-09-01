@@ -53,8 +53,69 @@ createApp({ root: App }).mount();
 - 基础：`OneButton`、`OneInput`
 - 表单：`OneForm`、`OneFormItem`、`OneSelect`、`OneCheckbox`、
   `OneCheckboxGroup`、`OneSwitch`
+- 导航：`OneTabs`、`OneBreadcrumb`、`OnePagination`
 - 数据展示：`OneCard`、`OneTag`、`OneBadge`、`OneEmpty`
 - 反馈与浮层：`OneAlert`、`OneMessage`、`OneDialog`、`OneTooltip`
+
+## 导航
+
+并列内容使用标签页，层级位置使用面包屑，大量同类记录使用分页。三个组件分别
+提供受控状态；涉及原生链接时也可以通过事件决定是否继续导航。
+
+```ts
+import {
+  OneBreadcrumb,
+  OnePagination,
+  OneTabs,
+  type OneBreadcrumbClickEvent,
+  type OnePaginationChangeEvent,
+  type OneTabsChangeEvent,
+} from '@geektech/one';
+
+const tabs = new OneTabs({
+  value: 'overview',
+  items: [
+    { value: 'overview', label: '概览' },
+    { value: 'security', label: '安全' },
+  ],
+  children: [
+    { tag: 'p', slot: 'overview', children: ['概览内容'] },
+    { tag: 'p', slot: 'security', children: ['安全内容'] },
+  ],
+});
+tabs.on('change', (payload) => {
+  const event = payload as OneTabsChangeEvent;
+  tabs.setProps({ value: event.value });
+});
+
+const breadcrumb = new OneBreadcrumb({
+  maxItems: 3,
+  separator: '/',
+  items: [
+    { label: '首页', href: '/' },
+    { label: '项目', href: '/projects' },
+    { label: '详情', current: true },
+  ],
+});
+breadcrumb.on('itemClick', (payload) => {
+  const event = payload as OneBreadcrumbClickEvent;
+  console.log(event.item, event.index);
+});
+
+const basicPagination = new OnePagination({ total: 95 });
+const pagination = new OnePagination({
+  total: 95,
+  page: 1,
+  pageSize: 10,
+  pageSizeOptions: [10, 20, 50],
+  showQuickJumper: true,
+});
+pagination.on('change', (payload) => {
+  const event = payload as OnePaginationChangeEvent;
+  pagination.setProps({ page: event.page, pageSize: event.pageSize });
+});
+void basicPagination;
+```
 
 ## 数据展示
 
