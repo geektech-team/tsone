@@ -1,6 +1,11 @@
 import { Component, slot, type VNode } from '@geektech/tsone';
 import type { OneNavigationChangeEvent } from '../navigation';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
+  type OneNamedStyle,
+} from '../styles/shared';
 
 export interface OneTabItem {
   value: string;
@@ -41,8 +46,8 @@ export const ONE_TABS_STYLES: OneNamedStyle[] = [
     name: 'one-tabs-base',
     selector: '.one-tabs',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       color: `var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText})`,
-      fontFamily: `var(--one-font-family, ${ONE_THEME_DEFAULTS.fontFamily})`,
     },
   },
   {
@@ -51,7 +56,7 @@ export const ONE_TABS_STYLES: OneNamedStyle[] = [
     properties: {
       display: 'flex',
       overflowX: 'auto',
-      borderBottom: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      borderBottom: oneThemeBorder(),
     },
   },
   {

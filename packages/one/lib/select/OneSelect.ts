@@ -1,7 +1,12 @@
 import { Component, type VNode } from '@geektech/tsone';
 import type { OneFieldValueEvent, OneFormFieldContext } from '../form/context';
 import { ONE_FORM_FIELD_KEY } from '../form/context';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
+  type OneNamedStyle,
+} from '../styles/shared';
 
 export interface OneSelectOption {
   value: string;
@@ -39,7 +44,11 @@ export const ONE_SELECT_STYLES: OneNamedStyle[] = [
   {
     name: 'one-select-base',
     selector: '.one-select',
-    properties: { position: 'relative', width: '100%' },
+    properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
+      position: 'relative',
+      width: '100%',
+    },
   },
   {
     name: 'one-select-trigger',
@@ -48,7 +57,7 @@ export const ONE_SELECT_STYLES: OneNamedStyle[] = [
       width: '100%',
       minHeight: '40px',
       textAlign: 'left',
-      border: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      border: oneThemeBorder(),
       borderRadius: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
       backgroundColor: `var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface})`,
     },
@@ -62,7 +71,7 @@ export const ONE_SELECT_STYLES: OneNamedStyle[] = [
       width: '100%',
       marginTop: '4px',
       padding: '4px',
-      border: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      border: oneThemeBorder(),
       borderRadius: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
       backgroundColor: `var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface})`,
     },

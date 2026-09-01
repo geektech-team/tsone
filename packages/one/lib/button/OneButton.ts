@@ -2,6 +2,8 @@ import { Component, type VNode } from '@geektech/tsone';
 import {
   normalizeOneSize,
   ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
   type OneNamedStyle,
 } from '../styles/shared';
 import type { OneComponentSize } from '../types';
@@ -34,15 +36,14 @@ export const ONE_BUTTON_STYLES: OneNamedStyle[] = [
     name: 'one-button-base',
     selector: '.one-button',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
       gap: `var(--one-button-gap, var(--one-space-sm, ${ONE_THEME_DEFAULTS.spaceSm}))`,
-      border: '1px solid transparent',
+      border: oneThemeBorder('transparent'),
       borderRadius: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
-      fontFamily: `var(--one-font-family, ${ONE_THEME_DEFAULTS.fontFamily})`,
       fontWeight: '500',
-      lineHeight: '1.5',
       cursor: 'pointer',
       transition: '150ms ease',
     },

@@ -1,5 +1,10 @@
 import { Component, slot, type VNode } from '@geektech/tsone';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
+  type OneNamedStyle,
+} from '../styles/shared';
 import { OneDialogFocusManager } from './focus-manager';
 import { lockOneDialogBody } from './scroll-lock';
 import type { OneDialogCloseReason, OneDialogProps } from './types';
@@ -38,13 +43,14 @@ export const ONE_DIALOG_STYLES: OneNamedStyle[] = [
     name: 'one-dialog-panel',
     selector: '.one-dialog',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       width: 'min(520px, 100%)',
       maxHeight: 'calc(100vh - 32px)',
       overflow: 'auto',
       color: `var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText})`,
       backgroundColor: `var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface})`,
-      border: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
-      borderRadius: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
+      border: oneThemeBorder(),
+      borderRadius: `var(--one-radius-lg, ${ONE_THEME_DEFAULTS.radiusMd})`,
       boxShadow: `var(--one-shadow-overlay, ${ONE_THEME_DEFAULTS.shadowOverlay})`,
     },
   },
@@ -55,7 +61,7 @@ export const ONE_DIALOG_STYLES: OneNamedStyle[] = [
       padding: `var(--one-space-lg, ${ONE_THEME_DEFAULTS.spaceLg})`,
       fontSize: '18px',
       fontWeight: '600',
-      borderBottom: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      borderBottom: oneThemeBorder(),
     },
   },
   {
@@ -74,7 +80,7 @@ export const ONE_DIALOG_STYLES: OneNamedStyle[] = [
       justifyContent: 'flex-end',
       gap: `var(--one-space-sm, ${ONE_THEME_DEFAULTS.spaceSm})`,
       padding: `var(--one-space-md, ${ONE_THEME_DEFAULTS.spaceMd}) var(--one-space-lg, ${ONE_THEME_DEFAULTS.spaceLg})`,
-      borderTop: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      borderTop: oneThemeBorder(),
     },
   },
   {
@@ -83,7 +89,7 @@ export const ONE_DIALOG_STYLES: OneNamedStyle[] = [
     properties: {
       minHeight: '36px',
       padding: '0 14px',
-      border: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      border: oneThemeBorder(),
       borderRadius: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
       cursor: 'pointer',
     },

@@ -1,6 +1,11 @@
 import { Component, type VNode } from '@geektech/tsone';
 import type { OneFeedbackVariant } from '../overlay';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
+  type OneNamedStyle,
+} from '../styles/shared';
 import type { OneMessageOptions, OneMessagePlacement } from './types';
 import { OneMessageTimer } from './timer';
 
@@ -58,6 +63,7 @@ export const ONE_MESSAGE_STYLES: OneNamedStyle[] = [
     name: 'one-message-base',
     selector: '.one-message',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       display: 'grid',
       gridTemplateColumns: 'minmax(0, 1fr) auto',
       alignItems: 'center',
@@ -66,7 +72,7 @@ export const ONE_MESSAGE_STYLES: OneNamedStyle[] = [
       padding: `var(--one-space-md, ${ONE_THEME_DEFAULTS.spaceMd}) var(--one-space-lg, ${ONE_THEME_DEFAULTS.spaceLg})`,
       color: `var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText})`,
       backgroundColor: `var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface})`,
-      border: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      border: oneThemeBorder(),
       borderRadius: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
       boxShadow: `var(--one-shadow-overlay, ${ONE_THEME_DEFAULTS.shadowOverlay})`,
       pointerEvents: 'auto',

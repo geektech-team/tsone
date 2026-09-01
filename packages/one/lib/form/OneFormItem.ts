@@ -1,5 +1,8 @@
 import { Component, slot, type VNode } from '@geektech/tsone';
-import type { OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  type OneNamedStyle,
+} from '../styles/shared';
 import { ONE_FORM_FIELD_KEY, ONE_FORM_MODEL_KEY } from './context';
 import type { OneFormFieldContext } from './context';
 import type { OneFormModel } from './model';
@@ -20,6 +23,7 @@ export const ONE_FORM_ITEM_STYLES: OneNamedStyle[] = [
     name: 'one-form-item-base',
     selector: '.one-form-item',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       display: 'grid',
       gap: '6px',
     },

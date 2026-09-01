@@ -1,6 +1,10 @@
 import { Component, slot, type VNode } from '@geektech/tsone';
 import { normalizePositiveInteger } from '../navigation';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  type OneNamedStyle,
+} from '../styles/shared';
 
 export interface OneBreadcrumbItem {
   label: string;
@@ -35,8 +39,8 @@ export const ONE_BREADCRUMB_STYLES: OneNamedStyle[] = [
     name: 'one-breadcrumb-base',
     selector: '.one-breadcrumb',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       color: `var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText})`,
-      fontFamily: `var(--one-font-family, ${ONE_THEME_DEFAULTS.fontFamily})`,
     },
   },
   {

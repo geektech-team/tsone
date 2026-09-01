@@ -3,7 +3,12 @@ import {
   normalizeOneDataDisplayVariant,
   type OneDataDisplayVariant,
 } from '../data-display';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
+  type OneNamedStyle,
+} from '../styles/shared';
 
 export interface OneBadgeProps {
   value?: number | string;
@@ -20,6 +25,7 @@ export const ONE_BADGE_STYLES: OneNamedStyle[] = [
     name: 'one-badge-base',
     selector: '.one-badge',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       position: 'relative',
       display: 'inline-flex',
       verticalAlign: 'middle',
@@ -70,7 +76,7 @@ export const ONE_BADGE_STYLES: OneNamedStyle[] = [
     properties: {
       color: `var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText})`,
       backgroundColor: `var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface})`,
-      border: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      border: oneThemeBorder(),
     },
   },
   {

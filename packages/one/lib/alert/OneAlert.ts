@@ -1,6 +1,11 @@
 import { Component, slot, type VNode } from '@geektech/tsone';
 import type { OneFeedbackVariant } from '../overlay';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
+  type OneNamedStyle,
+} from '../styles/shared';
 
 export interface OneAlertProps {
   title?: string;
@@ -33,6 +38,7 @@ export const ONE_ALERT_STYLES: OneNamedStyle[] = [
     name: 'one-alert-base',
     selector: '.one-alert',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       display: 'grid',
       gridTemplateColumns: 'auto minmax(0, 1fr) auto',
       gap: `var(--one-alert-gap, var(--one-space-sm, ${ONE_THEME_DEFAULTS.spaceSm}))`,
@@ -40,7 +46,9 @@ export const ONE_ALERT_STYLES: OneNamedStyle[] = [
       padding: `var(--one-alert-padding, var(--one-space-md, ${ONE_THEME_DEFAULTS.spaceMd}))`,
       color: `var(--one-alert-color, var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText}))`,
       backgroundColor: `var(--one-alert-background, var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface}))`,
-      border: `1px solid var(--one-alert-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`,
+      border: oneThemeBorder(
+        `var(--one-alert-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`
+      ),
       borderRadius: `var(--one-alert-radius, var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd}))`,
     },
   },

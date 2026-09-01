@@ -6,6 +6,8 @@ import {
 import {
   normalizeOneSize,
   ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
   type OneNamedStyle,
 } from '../styles/shared';
 import type { OneComponentSize } from '../types';
@@ -26,13 +28,12 @@ export const ONE_TAG_STYLES: OneNamedStyle[] = [
     name: 'one-tag-base',
     selector: '.one-tag',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       display: 'inline-flex',
       alignItems: 'center',
       gap: ONE_THEME_DEFAULTS.spaceXs,
-      border: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      border: oneThemeBorder(),
       borderRadius: `var(--one-radius-sm, ${ONE_THEME_DEFAULTS.radiusSm})`,
-      fontFamily: `var(--one-font-family, ${ONE_THEME_DEFAULTS.fontFamily})`,
-      lineHeight: '1.5',
     },
   },
   {

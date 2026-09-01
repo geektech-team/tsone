@@ -1,7 +1,11 @@
 import { Component, slot, type VNode } from '@geektech/tsone';
 import type { OneFieldValueEvent, OneFormFieldContext } from '../form/context';
 import { ONE_FORM_FIELD_KEY } from '../form/context';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  type OneNamedStyle,
+} from '../styles/shared';
 
 export interface OneCheckboxProps {
   checked?: boolean;
@@ -24,6 +28,7 @@ export const ONE_CHECKBOX_STYLES: OneNamedStyle[] = [
     name: 'one-checkbox-base',
     selector: '.one-checkbox',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       display: 'inline-flex',
       gap: '8px',
       alignItems: 'center',

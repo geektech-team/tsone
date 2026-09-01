@@ -4,7 +4,11 @@ import type {
   OneOverlayPositioner,
   OneOverlayRect,
 } from '../overlay';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  type OneNamedStyle,
+} from '../styles/shared';
 
 export interface TooltipBubbleProps {
   id: string;
@@ -23,6 +27,7 @@ export const ONE_TOOLTIP_STYLES: OneNamedStyle[] = [
     name: 'one-tooltip-bubble',
     selector: '.one-tooltip__bubble',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       position: 'fixed',
       zIndex: `var(--one-z-index-tooltip, ${ONE_THEME_DEFAULTS.zIndexTooltip})`,
       boxSizing: 'border-box',

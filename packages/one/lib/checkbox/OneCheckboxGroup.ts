@@ -2,6 +2,10 @@ import { Component, type VNode } from '@geektech/tsone';
 import type { OneFieldValueEvent, OneFormFieldContext } from '../form/context';
 import { ONE_FORM_FIELD_KEY } from '../form/context';
 import type { OneSelectOption } from '../select';
+import {
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  type OneNamedStyle,
+} from '../styles/shared';
 
 export interface OneCheckboxGroupProps {
   options: readonly OneSelectOption[];
@@ -18,6 +22,16 @@ interface OneCheckboxGroupState {
   revision: number;
 }
 
+export const ONE_CHECKBOX_GROUP_STYLES: OneNamedStyle[] = [
+  {
+    name: 'one-checkbox-group-base',
+    selector: '.one-checkbox-group',
+    properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
+    },
+  },
+];
+
 export class OneCheckboxGroup extends Component<
   OneCheckboxGroupProps,
   OneCheckboxGroupState
@@ -27,7 +41,11 @@ export class OneCheckboxGroup extends Component<
   protected initState(): OneCheckboxGroupState {
     return { internalValue: [...(this.props.defaultValue ?? [])], revision: 0 };
   }
-  protected initStyles(): void {}
+  protected initStyles(): void {
+    ONE_CHECKBOX_GROUP_STYLES.forEach(({ name, ...style }) =>
+      this.styleManager.addStyle(name, style)
+    );
+  }
   protected beforeMount(): void {
     this.fieldContext = this.inject(ONE_FORM_FIELD_KEY);
     this.fieldContext?.model.ensureValue(

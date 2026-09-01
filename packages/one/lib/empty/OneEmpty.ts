@@ -1,5 +1,9 @@
 import { Component, slot, type VNode } from '@geektech/tsone';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  type OneNamedStyle,
+} from '../styles/shared';
 
 export interface OneEmptyProps {
   description?: string;
@@ -11,12 +15,12 @@ export const ONE_EMPTY_STYLES: OneNamedStyle[] = [
     name: 'one-empty-base',
     selector: '.one-empty',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       display: 'grid',
       justifyItems: 'center',
       gap: ONE_THEME_DEFAULTS.spaceMd,
       padding: '24px',
       color: `var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText})`,
-      fontFamily: `var(--one-font-family, ${ONE_THEME_DEFAULTS.fontFamily})`,
       textAlign: 'center',
     },
   },

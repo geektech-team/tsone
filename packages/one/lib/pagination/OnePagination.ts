@@ -4,7 +4,12 @@ import {
   normalizePositiveInteger,
   normalizePositiveIntegerList,
 } from '../navigation';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
+  type OneNamedStyle,
+} from '../styles/shared';
 import { createOnePaginationTokens } from './tokens';
 
 export interface OnePaginationChangeEvent {
@@ -39,12 +44,12 @@ export const ONE_PAGINATION_STYLES: OneNamedStyle[] = [
     name: 'one-pagination-base',
     selector: '.one-pagination',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       display: 'flex',
       flexWrap: 'wrap',
       gap: ONE_THEME_DEFAULTS.spaceSm,
       alignItems: 'center',
       color: `var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText})`,
-      fontFamily: `var(--one-font-family, ${ONE_THEME_DEFAULTS.fontFamily})`,
     },
   },
   {
@@ -66,7 +71,7 @@ export const ONE_PAGINATION_STYLES: OneNamedStyle[] = [
       padding: `0 ${ONE_THEME_DEFAULTS.spaceSm}`,
       color: 'inherit',
       backgroundColor: `var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface})`,
-      border: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      border: oneThemeBorder(),
       borderRadius: `var(--one-radius-sm, ${ONE_THEME_DEFAULTS.radiusSm})`,
       cursor: 'pointer',
       font: 'inherit',
@@ -119,7 +124,7 @@ export const ONE_PAGINATION_STYLES: OneNamedStyle[] = [
       padding: `0 ${ONE_THEME_DEFAULTS.spaceSm}`,
       color: 'inherit',
       backgroundColor: `var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface})`,
-      border: `1px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+      border: oneThemeBorder(),
       borderRadius: `var(--one-radius-sm, ${ONE_THEME_DEFAULTS.radiusSm})`,
       font: 'inherit',
     },

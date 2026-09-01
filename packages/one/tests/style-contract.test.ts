@@ -1,7 +1,30 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { ONE_ALERT_STYLES } from '../lib/alert/OneAlert';
+import { ONE_BADGE_STYLES } from '../lib/badge/OneBadge';
+import { ONE_BREADCRUMB_STYLES } from '../lib/breadcrumb/OneBreadcrumb';
 import { ONE_BUTTON_STYLES } from '../lib/button/OneButton';
+import { ONE_CARD_STYLES } from '../lib/card/OneCard';
+import { ONE_CHECKBOX_STYLES } from '../lib/checkbox/OneCheckbox';
+import { ONE_CHECKBOX_GROUP_STYLES } from '../lib/checkbox/OneCheckboxGroup';
+import { ONE_DIALOG_STYLES } from '../lib/dialog/DialogOverlay';
+import { ONE_EMPTY_STYLES } from '../lib/empty/OneEmpty';
+import { ONE_FORM_STYLES } from '../lib/form/OneForm';
+import { ONE_FORM_ITEM_STYLES } from '../lib/form/OneFormItem';
+import { ONE_INPUT_STYLES } from '../lib/input/OneInput';
+import { ONE_MESSAGE_STYLES } from '../lib/message/MessageOverlay';
+import { ONE_PAGINATION_STYLES } from '../lib/pagination/OnePagination';
+import { ONE_SELECT_STYLES } from '../lib/select/OneSelect';
 import {
   ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
+  type OneNamedStyle,
+} from '../lib/styles/shared';
+import { ONE_SWITCH_STYLES } from '../lib/switch/OneSwitch';
+import { ONE_TABS_STYLES } from '../lib/tabs/OneTabs';
+import { ONE_TAG_STYLES } from '../lib/tag/OneTag';
+import { ONE_TOOLTIP_STYLES } from '../lib/tooltip/TooltipBubble';
+import {
   OneAlert,
   OneBadge,
   OneBreadcrumb,
@@ -16,6 +39,38 @@ import {
   OneTabs,
   OneTooltip,
 } from '../lib';
+
+const COMPONENT_STYLE_GROUPS = [
+  ONE_ALERT_STYLES,
+  ONE_BADGE_STYLES,
+  ONE_BREADCRUMB_STYLES,
+  ONE_BUTTON_STYLES,
+  ONE_CARD_STYLES,
+  ONE_CHECKBOX_STYLES,
+  ONE_CHECKBOX_GROUP_STYLES,
+  ONE_DIALOG_STYLES,
+  ONE_EMPTY_STYLES,
+  ONE_FORM_STYLES,
+  ONE_FORM_ITEM_STYLES,
+  ONE_INPUT_STYLES,
+  ONE_MESSAGE_STYLES,
+  ONE_PAGINATION_STYLES,
+  ONE_SELECT_STYLES,
+  ONE_SWITCH_STYLES,
+  ONE_TABS_STYLES,
+  ONE_TAG_STYLES,
+  ONE_TOOLTIP_STYLES,
+] as const;
+
+function styleByName(name: string): OneNamedStyle {
+  const style = COMPONENT_STYLE_GROUPS.flat().find(
+    (candidate) => candidate.name === name
+  );
+  if (!style) {
+    throw new Error(`Missing style: ${name}`);
+  }
+  return style;
+}
 
 const EXPECTED_THEME_DEFAULTS = {
   colorPrimary: '#5fd956',
@@ -119,6 +174,86 @@ describe('One UI style contract', () => {
     expect(ONE_THEME_DEFAULTS).toEqual(EXPECTED_THEME_DEFAULTS);
     expect(Object.keys(ONE_THEME_DEFAULTS)).toEqual(
       Object.keys(EXPECTED_THEME_DEFAULTS)
+    );
+  });
+
+  it('applies global theme typography to every semantic component root', () => {
+    const roots = [
+      'one-alert-base',
+      'one-badge-base',
+      'one-breadcrumb-base',
+      'one-button-base',
+      'one-card-base',
+      'one-checkbox-base',
+      'one-checkbox-group-base',
+      'one-dialog-panel',
+      'one-empty-base',
+      'one-form-base',
+      'one-form-item-base',
+      'one-input-base',
+      'one-message-base',
+      'one-pagination-base',
+      'one-select-base',
+      'one-switch-base',
+      'one-tabs-base',
+      'one-tag-base',
+      'one-tooltip-bubble',
+    ];
+
+    roots.forEach((name) => {
+      expect(styleByName(name).properties.fontFamily).toBe(
+        ONE_THEME_TYPOGRAPHY_PROPERTIES.fontFamily
+      );
+      expect(styleByName(name).properties.lineHeight).toBe(
+        ONE_THEME_TYPOGRAPHY_PROPERTIES.lineHeight
+      );
+    });
+  });
+
+  it('uses global theme width and style for normal component borders', () => {
+    expect(oneThemeBorder('red')).toBe(
+      'var(--one-border-width, 1px) var(--one-border-style, solid) red'
+    );
+    const borders = [
+      ['one-alert-base', 'border'],
+      ['one-badge-neutral', 'border'],
+      ['one-button-base', 'border'],
+      ['one-card-base', 'border'],
+      ['one-card-header', 'borderBottom'],
+      ['one-card-footer', 'borderTop'],
+      ['one-dialog-panel', 'border'],
+      ['one-dialog-header', 'borderBottom'],
+      ['one-dialog-footer', 'borderTop'],
+      ['one-dialog-button', 'border'],
+      ['one-input-base', 'border'],
+      ['one-message-base', 'border'],
+      ['one-pagination-button', 'border'],
+      ['one-pagination-control', 'border'],
+      ['one-select-trigger', 'border'],
+      ['one-select-menu', 'border'],
+      ['one-tabs-list', 'borderBottom'],
+      ['one-tag-base', 'border'],
+    ] as const;
+
+    borders.forEach(([name, property]) => {
+      const value = styleByName(name).properties[property];
+      expect(value).toContain('var(--one-border-width, 1px)');
+      expect(value).toContain('var(--one-border-style, solid)');
+    });
+    expect(styleByName('one-empty-illustration').properties.border).toContain(
+      '2px solid'
+    );
+    expect(styleByName('one-button-spinner').properties.border).toBe(
+      '2px solid currentColor'
+    );
+  });
+
+  it('uses the large radius token for cards and dialogs', () => {
+    expect(styleByName('one-card-base').properties.borderRadius).toContain(
+      'var(--one-radius-lg, 8px)'
+    );
+    expect(styleByName('one-dialog-panel').properties.borderRadius).toContain(
+      'var(--one-radius-lg, 8px)'
     );
   });
 

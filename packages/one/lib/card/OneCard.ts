@@ -1,5 +1,10 @@
 import { Component, slot, type VNode } from '@geektech/tsone';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
+  type OneNamedStyle,
+} from '../styles/shared';
 
 export interface OneCardProps {
   title?: string;
@@ -11,11 +16,14 @@ export const ONE_CARD_STYLES: OneNamedStyle[] = [
     name: 'one-card-base',
     selector: '.one-card',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       overflow: 'hidden',
       color: `var(--one-card-color, var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText}))`,
       backgroundColor: `var(--one-card-background, var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface}))`,
-      border: `1px solid var(--one-card-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`,
-      borderRadius: `var(--one-card-radius, var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd}))`,
+      border: oneThemeBorder(
+        `var(--one-card-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`
+      ),
+      borderRadius: `var(--one-card-radius, var(--one-radius-lg, ${ONE_THEME_DEFAULTS.radiusMd}))`,
       boxShadow: `var(--one-card-shadow, var(--one-shadow-card, ${ONE_THEME_DEFAULTS.shadowCard}))`,
     },
   },
@@ -24,7 +32,9 @@ export const ONE_CARD_STYLES: OneNamedStyle[] = [
     selector: '.one-card__header',
     properties: {
       padding: `var(--one-card-header-padding, var(--one-space-lg, ${ONE_THEME_DEFAULTS.spaceLg}))`,
-      borderBottom: `1px solid var(--one-card-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`,
+      borderBottom: oneThemeBorder(
+        `var(--one-card-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`
+      ),
       fontWeight: '500',
     },
   },
@@ -40,7 +50,9 @@ export const ONE_CARD_STYLES: OneNamedStyle[] = [
     selector: '.one-card__footer',
     properties: {
       padding: `var(--one-card-footer-padding, var(--one-space-lg, ${ONE_THEME_DEFAULTS.spaceLg}))`,
-      borderTop: `1px solid var(--one-card-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`,
+      borderTop: oneThemeBorder(
+        `var(--one-card-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`
+      ),
     },
   },
 ];

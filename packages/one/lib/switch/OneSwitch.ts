@@ -1,7 +1,11 @@
 import { Component, type VNode } from '@geektech/tsone';
 import type { OneFieldValueEvent, OneFormFieldContext } from '../form/context';
 import { ONE_FORM_FIELD_KEY } from '../form/context';
-import { ONE_THEME_DEFAULTS, type OneNamedStyle } from '../styles/shared';
+import {
+  ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  type OneNamedStyle,
+} from '../styles/shared';
 
 export interface OneSwitchProps {
   checked?: boolean;
@@ -21,6 +25,7 @@ export const ONE_SWITCH_STYLES: OneNamedStyle[] = [
     name: 'one-switch-base',
     selector: '.one-switch',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       display: 'inline-flex',
       alignItems: 'center',
       position: 'relative',

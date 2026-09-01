@@ -36,6 +36,17 @@ export const ONE_THEME_DEFAULTS = {
     "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 } as const;
 
+export const ONE_THEME_TYPOGRAPHY_PROPERTIES = Object.freeze({
+  fontFamily: `var(--one-font-family, ${ONE_THEME_DEFAULTS.fontFamily})`,
+  lineHeight: 'var(--one-line-height, 1.5)',
+});
+
+export function oneThemeBorder(
+  color = `var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`
+): string {
+  return `var(--one-border-width, 1px) var(--one-border-style, solid) ${color}`;
+}
+
 const ONE_SIZES: readonly OneComponentSize[] = ['sm', 'md', 'lg'];
 
 export function normalizeOneSize(value: unknown): OneComponentSize {

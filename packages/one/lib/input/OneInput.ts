@@ -2,6 +2,8 @@ import { Component, type VNode } from '@geektech/tsone';
 import {
   normalizeOneSize,
   ONE_THEME_DEFAULTS,
+  ONE_THEME_TYPOGRAPHY_PROPERTIES,
+  oneThemeBorder,
   type OneNamedStyle,
 } from '../styles/shared';
 import type { OneComponentSize } from '../types';
@@ -37,14 +39,15 @@ export const ONE_INPUT_STYLES: OneNamedStyle[] = [
     name: 'one-input-base',
     selector: '.one-input',
     properties: {
+      ...ONE_THEME_TYPOGRAPHY_PROPERTIES,
       boxSizing: 'border-box',
       width: '100%',
-      border: `1px solid var(--one-input-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`,
+      border: oneThemeBorder(
+        `var(--one-input-border-color, var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder}))`
+      ),
       borderRadius: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
       color: `var(--one-input-color, var(--one-color-text, ${ONE_THEME_DEFAULTS.colorText}))`,
       backgroundColor: `var(--one-input-background, var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface}))`,
-      fontFamily: `var(--one-font-family, ${ONE_THEME_DEFAULTS.fontFamily})`,
-      lineHeight: '1.5',
       transition: '150ms ease',
     },
   },
