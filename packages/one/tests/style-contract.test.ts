@@ -4,13 +4,16 @@ import {
   ONE_THEME_DEFAULTS,
   OneAlert,
   OneBadge,
+  OneBreadcrumb,
   OneButton,
   OneCard,
   OneDialog,
   OneEmpty,
   OneInput,
   OneMessage,
+  OnePagination,
   OneTag,
+  OneTabs,
   OneTooltip,
 } from '../lib';
 
@@ -95,6 +98,9 @@ describe('One UI style contract', () => {
     | OneMessage
     | OneDialog
     | OneTooltip
+    | OneTabs
+    | OneBreadcrumb
+    | OnePagination
   >;
 
   beforeEach(() => {
@@ -132,6 +138,9 @@ describe('One UI style contract', () => {
         defaultOpen: true,
         children: [{ tag: 'button', children: ['?'] }],
       }),
+      new OneTabs({ items: [{ value: 'a', label: 'A' }] }),
+      new OneBreadcrumb({ items: [{ label: '当前' }] }),
+      new OnePagination({ total: 100 }),
     ];
     components.forEach((component) => component.mount(container));
 
@@ -153,6 +162,10 @@ describe('One UI style contract', () => {
     expect(css).toContain('.one-tag');
     expect(css).toContain('.one-badge__content');
     expect(css).toContain('.one-empty');
+    expect(css).toContain('.one-tabs__tab');
+    expect(css).toContain('.one-breadcrumb__link');
+    expect(css).toContain('.one-pagination__button');
+    expect(css).not.toMatch(/(^|})\s*(button|a|nav)\s*\{/);
     expect(css).not.toMatch(/(^|[}\s,])(body|html)(?=[\s,{])/m);
   });
 

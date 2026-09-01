@@ -27,6 +27,20 @@ export type {
   OneSelectOptionGroup,
   OneSelectProps,
 } from './select';
+export { OneTabs } from './tabs';
+export type { OneTabItem, OneTabsChangeEvent, OneTabsProps } from './tabs';
+export { OneBreadcrumb } from './breadcrumb';
+export type {
+  OneBreadcrumbClickEvent,
+  OneBreadcrumbItem,
+  OneBreadcrumbProps,
+} from './breadcrumb';
+export { OnePagination, createOnePaginationTokens } from './pagination';
+export type {
+  OnePaginationChangeEvent,
+  OnePaginationProps,
+  OnePaginationToken,
+} from './pagination';
 export { ONE_COMPONENT_CATEGORIES } from './categories';
 export type { OneComponentCategory } from './categories';
 export { OneCard } from './card';

@@ -1,6 +1,7 @@
 export type OneComponentCategory =
   | 'basic'
   | 'form'
+  | 'navigation'
   | 'data-display'
   | 'feedback';
 
@@ -17,6 +18,11 @@ export const ONE_COMPONENT_CATEGORIES = [
       'OneCheckboxGroup',
       'OneSwitch',
     ],
+  },
+  {
+    id: 'navigation',
+    label: '导航',
+    components: ['OneTabs', 'OneBreadcrumb', 'OnePagination'],
   },
   {
     id: 'data-display',

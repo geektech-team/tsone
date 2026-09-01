@@ -18,6 +18,11 @@ describe('ONE_COMPONENT_CATEGORIES', () => {
         ],
       },
       {
+        id: 'navigation',
+        label: '导航',
+        components: ['OneTabs', 'OneBreadcrumb', 'OnePagination'],
+      },
+      {
         id: 'data-display',
         label: '数据展示',
         components: ['OneCard', 'OneTag', 'OneBadge', 'OneEmpty'],
