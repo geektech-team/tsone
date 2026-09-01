@@ -35,6 +35,9 @@ describe('One UI docs client', () => {
       '<div data-one-demo="message"></div>',
       '<div data-one-demo="dialog"></div>',
       '<div data-one-demo="tooltip"></div>',
+      '<div data-one-demo="tabs"></div>',
+      '<div data-one-demo="breadcrumb"></div>',
+      '<div data-one-demo="pagination"></div>',
     ].join('');
 
     mountOneDocsClient();
@@ -59,6 +62,9 @@ describe('One UI docs client', () => {
     expect(
       document.querySelector('.one-docs-tooltip-demo .one-button')
     ).toBeTruthy();
+    expect(document.querySelector('.one-tabs')).toBeTruthy();
+    expect(document.querySelector('.one-breadcrumb')).toBeTruthy();
+    expect(document.querySelector('.one-pagination')).toBeTruthy();
   });
 
   it('reuses One controls throughout feedback demos', () => {
@@ -384,6 +390,57 @@ describe('One UI docs client', () => {
     expect(
       document.querySelector('[data-one-tooltip-result]')?.textContent
     ).toContain('请求位置：bottom-end');
+  });
+
+  it('switches tabs, expands breadcrumbs and controls pagination', () => {
+    document.body.innerHTML = [
+      '<div data-one-demo="tabs"></div>',
+      '<div data-one-demo="breadcrumb"></div>',
+      '<div data-one-demo="pagination"></div>',
+    ].join('');
+    mountOneDocsClient();
+
+    getButton('安全').click();
+    expect(document.querySelector('[data-one-tabs-result]')?.textContent).toBe(
+      '当前标签：security'
+    );
+    expect(
+      document.querySelector('[role="tabpanel"]:not([hidden])')?.textContent
+    ).toContain('安全内容');
+
+    (
+      document.querySelector('[aria-label="展开面包屑"]') as HTMLButtonElement
+    ).click();
+    expect(document.querySelectorAll('.one-breadcrumb__item')).toHaveLength(5);
+    (
+      document.querySelector('.one-breadcrumb__link') as HTMLAnchorElement
+    ).click();
+    expect(
+      document.querySelector('[data-one-breadcrumb-result]')?.textContent
+    ).toBe('点击：首页');
+
+    (
+      document.querySelector('[aria-label="下一页"]') as HTMLButtonElement
+    ).click();
+    expect(
+      document.querySelector('[data-one-pagination-result]')?.textContent
+    ).toBe('第 2 页，每页 10 条');
+    const pageSize = document.querySelector(
+      '[aria-label="每页条数"]'
+    ) as HTMLSelectElement;
+    pageSize.value = '20';
+    pageSize.dispatchEvent(new Event('change', { bubbles: true }));
+    const jumper = document.querySelector(
+      '[aria-label="快速跳转页码"]'
+    ) as HTMLInputElement;
+    jumper.value = '99';
+    jumper.dispatchEvent(new Event('input', { bubbles: true }));
+    jumper.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+    );
+    expect(
+      document.querySelector('[data-one-pagination-result]')?.textContent
+    ).toBe('第 5 页，每页 20 条');
   });
 
   it('is safe when a docs page has no demo roots', () => {
