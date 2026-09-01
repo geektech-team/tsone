@@ -145,9 +145,8 @@ export function normalizeOneThemeOptions(
   assertRecord(options, 'options');
   assertKnownKeys(options, OPTION_KEYS, 'options');
 
-  const themes: Record<string, OneResolvedTheme> = {
-    default: ONE_DEFAULT_THEME,
-  };
+  const themes = Object.create(null) as Record<string, OneResolvedTheme>;
+  themes.default = ONE_DEFAULT_THEME;
 
   if (options.themes !== undefined) {
     assertRecord(options.themes, 'options.themes');

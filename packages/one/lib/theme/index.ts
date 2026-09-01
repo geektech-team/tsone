@@ -4,6 +4,7 @@ export {
   OneThemeEnvironmentError,
   OneThemeNotFoundError,
 } from './errors';
+export { oneTheme } from './OneThemeService';
 export type {
   OneResolvedTheme,
   OneThemeBorder,

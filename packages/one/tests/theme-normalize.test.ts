@@ -115,6 +115,18 @@ describe('normalizeOneThemeOptions', () => {
     });
   });
 
+  test('registers valid names that affect ordinary object prototypes', () => {
+    const result = normalizeOneThemeOptions({
+      defaultTheme: '__proto__',
+      themes: {
+        ['__proto__']: { colors: { primary: '#334455' } },
+      },
+    });
+
+    expect(Object.keys(result.themes)).toEqual(['default', '__proto__']);
+    expect(result.themes.__proto__.colors.primary).toBe('#334455');
+  });
+
   test.each([
     ['reserved name', { themes: { default: {} } }],
     ['blank name', { themes: { '': {} } }],
