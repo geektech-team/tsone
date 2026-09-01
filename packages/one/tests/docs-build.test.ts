@@ -66,12 +66,12 @@ describe('One UI docs build', () => {
     );
   });
 
-  it('builds all twenty-one pages and the interactive client asset', async () => {
+  it('builds all twenty-five pages and the interactive client asset', async () => {
     const outDir = makeTemporaryDirectory('one-docs-build-');
 
     const result = await buildOneDocs({ outDir });
 
-    expect(result.pagesBuilt).toBe(21);
+    expect(result.pagesBuilt).toBe(25);
     expect(result.assetsBuilt).toEqual([
       join(outDir, 'assets/one-docs-client.js'),
     ]);
@@ -79,6 +79,9 @@ describe('One UI docs build', () => {
     expect(existsSync(join(outDir, 'components/button/index.html'))).toBe(true);
     expect(
       existsSync(join(outDir, 'components/feedback/tooltip/index.html'))
+    ).toBe(true);
+    expect(
+      existsSync(join(outDir, 'components/navigation/pagination/index.html'))
     ).toBe(true);
     expect(existsSync(join(outDir, 'assets/one-docs-client.js'))).toBe(true);
 

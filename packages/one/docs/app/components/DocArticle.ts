@@ -2,6 +2,7 @@ import { Component, type VNode } from '@geektech/tsone';
 import {
   OneButton,
   OneBadge,
+  OneBreadcrumb,
   OneCard,
   OneCheckbox,
   OneAlert,
@@ -10,8 +11,10 @@ import {
   OneInput,
   OneEmpty,
   OneSelect,
+  OnePagination,
   OneSwitch,
   OneTag,
+  OneTabs,
 } from '../../../lib';
 import type { OneDocBlock, OneDocInline, OneDocPage } from '../content';
 
@@ -411,6 +414,45 @@ export class DocArticle extends Component<DocArticleProps> {
         ];
       case 'switch':
         return [{ component: OneSwitch, props: { ariaLabel: '启用通知' } }];
+      case 'tabs':
+        return [
+          {
+            component: OneTabs,
+            props: {
+              defaultValue: 'overview',
+              ariaLabel: '项目设置',
+              items: [
+                { value: 'overview', label: '概览' },
+                { value: 'security', label: '安全' },
+              ],
+            },
+            children: [
+              { tag: 'p', slot: 'overview', children: ['概览内容'] },
+              { tag: 'p', slot: 'security', children: ['安全内容'] },
+            ],
+          },
+        ];
+      case 'breadcrumb':
+        return [
+          {
+            component: OneBreadcrumb,
+            props: {
+              ariaLabel: '项目路径',
+              items: [
+                { label: '首页', href: '/' },
+                { label: '项目', href: '/projects' },
+                { label: '详情', current: true },
+              ],
+            },
+          },
+        ];
+      case 'pagination':
+        return [
+          {
+            component: OnePagination,
+            props: { total: 95, page: 3, pageSize: 10 },
+          },
+        ];
       case 'alert':
         return [
           {

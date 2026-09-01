@@ -99,6 +99,17 @@ describe('One UI docs app', () => {
         'class="one-tooltip__bubble"',
         'tooltip',
       ],
+      ['/components/navigation/tabs/', 'class="one-tabs"', 'tabs'],
+      [
+        '/components/navigation/breadcrumb/',
+        'class="one-breadcrumb"',
+        'breadcrumb',
+      ],
+      [
+        '/components/navigation/pagination/',
+        'class="one-pagination"',
+        'pagination',
+      ],
     ] as const) {
       const html = render(path);
       expect(html).toContain(preview);

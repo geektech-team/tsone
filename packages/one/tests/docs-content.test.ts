@@ -33,6 +33,10 @@ const APPROVED_PATHS = [
   '/components/form/select/',
   '/components/form/checkbox/',
   '/components/form/switch/',
+  '/components/navigation/',
+  '/components/navigation/tabs/',
+  '/components/navigation/breadcrumb/',
+  '/components/navigation/pagination/',
   '/components/feedback/',
   '/components/feedback/alert/',
   '/components/feedback/message/',
@@ -86,7 +90,7 @@ function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
 }
 
 describe('One UI docs content', () => {
-  it('defines exactly the twenty-one approved routes in stable order', () => {
+  it('defines exactly the twenty-five approved routes in stable order', () => {
     expect(oneDocPages.map((page) => page.path)).toEqual(APPROVED_PATHS);
   });
 
@@ -428,6 +432,9 @@ describe('One UI docs content', () => {
         'tag',
         'badge',
         'empty',
+        'tabs',
+        'breadcrumb',
+        'pagination',
       ])
     );
 
@@ -487,6 +494,59 @@ describe('One UI docs content', () => {
       'Escape',
     ]) {
       expect(tooltip).toContain(fragment);
+    }
+  });
+
+  it('documents navigation demos, public APIs, events, keyboard behavior and ARIA', () => {
+    for (const [path, component] of [
+      ['/components/navigation/tabs/', 'tabs'],
+      ['/components/navigation/breadcrumb/', 'breadcrumb'],
+      ['/components/navigation/pagination/', 'pagination'],
+    ] as const) {
+      expect(pageAt(path).body).toContainEqual(
+        expect.objectContaining({
+          type: 'demo',
+          component,
+          interactive: true,
+        })
+      );
+      expect(pageText(path)).toContain('API');
+      expect(pageText(path)).toContain('language":"ts');
+      expect(pageText(path)).toMatch(/ARIA|aria-/);
+    }
+
+    const tabs = pageText('/components/navigation/tabs/');
+    for (const fragment of [
+      'OneTabsProps',
+      'OneTabItem',
+      'OneTabsChangeEvent',
+      'ArrowLeft',
+      'role=tablist',
+    ]) {
+      expect(tabs).toContain(fragment);
+    }
+
+    const breadcrumb = pageText('/components/navigation/breadcrumb/');
+    for (const fragment of [
+      'OneBreadcrumbProps',
+      'OneBreadcrumbItem',
+      'OneBreadcrumbClickEvent',
+      'itemClick',
+      'aria-current',
+    ]) {
+      expect(breadcrumb).toContain(fragment);
+    }
+
+    const pagination = pageText('/components/navigation/pagination/');
+    for (const fragment of [
+      'OnePaginationProps',
+      'OnePaginationChangeEvent',
+      'pageSizeOptions',
+      'showQuickJumper',
+      'change',
+      'aria-label',
+    ]) {
+      expect(pagination).toContain(fragment);
     }
   });
 });

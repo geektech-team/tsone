@@ -12,7 +12,10 @@ export type OneDocDemoName =
   | 'tooltip'
   | 'tag'
   | 'badge'
-  | 'empty';
+  | 'empty'
+  | 'tabs'
+  | 'breadcrumb'
+  | 'pagination';
 
 export interface OneDocDemoSource {
   language: 'ts';
@@ -187,6 +190,52 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
       "import { OneEmpty } from '@geektech/one';",
       '',
       "new OneEmpty({ description: '暂无搜索结果' });",
+    ].join('\n'),
+  },
+  tabs: {
+    language: 'ts',
+    code: [
+      "import { OneTabs } from '@geektech/one';",
+      '',
+      'new OneTabs({',
+      "  defaultValue: 'overview',",
+      '  items: [',
+      "    { value: 'overview', label: '概览' },",
+      "    { value: 'security', label: '安全' },",
+      '  ],',
+      '  children: [',
+      "    { tag: 'p', slot: 'overview', children: ['概览内容'] },",
+      "    { tag: 'p', slot: 'security', children: ['安全内容'] },",
+      '  ],',
+      '});',
+    ].join('\n'),
+  },
+  breadcrumb: {
+    language: 'ts',
+    code: [
+      "import { OneBreadcrumb } from '@geektech/one';",
+      '',
+      'new OneBreadcrumb({',
+      '  maxItems: 3,',
+      '  items: [',
+      "    { label: '首页', href: '/' },",
+      "    { label: '项目', href: '/projects' },",
+      "    { label: '详情', current: true },",
+      '  ],',
+      '});',
+    ].join('\n'),
+  },
+  pagination: {
+    language: 'ts',
+    code: [
+      "import { OnePagination } from '@geektech/one';",
+      '',
+      'new OnePagination({',
+      '  total: 95,',
+      '  defaultPage: 3,',
+      '  pageSizeOptions: [10, 20, 50],',
+      '  showQuickJumper: true,',
+      '});',
     ].join('\n'),
   },
 };
