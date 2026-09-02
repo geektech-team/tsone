@@ -26,6 +26,9 @@ describe('OneEmpty', () => {
       container.querySelector('.one-empty__description')?.textContent
     ).toBe('暂无数据');
     expect(container.querySelector('.one-empty__actions')).toBeNull();
+    expect(
+      container.querySelectorAll('.one-empty__illustration-line')
+    ).toHaveLength(2);
   });
 
   it('prefers image, default and actions slots over fallback content', () => {

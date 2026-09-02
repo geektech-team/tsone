@@ -1,5 +1,6 @@
 import { Component, type VNode } from '@geektech/tsone';
 import { OneBadge, OneButton } from '../../../lib';
+import { pick } from './locale';
 
 interface BadgeDemoState {
   count: number;
@@ -30,7 +31,7 @@ export class BadgeDemo extends Component<
           children: [
             {
               tag: 'span',
-              children: ['待办事项'],
+              children: [pick('待办事项', 'To-do items')],
             },
           ],
         },
@@ -38,12 +39,17 @@ export class BadgeDemo extends Component<
           component: OneButton,
           props: { size: 'sm', variant: 'secondary' },
           emitters: { click: this.increment },
-          children: ['增加数量'],
+          children: [pick('增加数量', 'Increase count')],
         },
         {
           tag: 'output',
           props: { 'data-one-badge-result': '' },
-          children: [`当前数量：${this.state.count}`],
+          children: [
+            pick(
+              `当前数量：${this.state.count}`,
+              `Current count: ${this.state.count}`
+            ),
+          ],
         },
       ],
     };

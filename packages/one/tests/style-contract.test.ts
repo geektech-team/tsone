@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { ONE_ALERT_STYLES } from '../lib/alert/OneAlert';
+import { ONE_AVATAR_STYLES } from '../lib/avatar/OneAvatar';
 import { ONE_BADGE_STYLES } from '../lib/badge/OneBadge';
 import { ONE_BREADCRUMB_STYLES } from '../lib/breadcrumb/OneBreadcrumb';
 import { ONE_BUTTON_STYLES } from '../lib/button/OneButton';
@@ -11,8 +12,12 @@ import { ONE_EMPTY_STYLES } from '../lib/empty/OneEmpty';
 import { ONE_FORM_STYLES } from '../lib/form/OneForm';
 import { ONE_FORM_ITEM_STYLES } from '../lib/form/OneFormItem';
 import { ONE_INPUT_STYLES } from '../lib/input/OneInput';
+import { ONE_LOADING_STYLES } from '../lib/loading/OneLoading';
 import { ONE_MESSAGE_STYLES } from '../lib/message/MessageOverlay';
 import { ONE_PAGINATION_STYLES } from '../lib/pagination/OnePagination';
+import { ONE_PROGRESS_STYLES } from '../lib/progress/OneProgress';
+import { ONE_RADIO_GROUP_STYLES } from '../lib/radio/OneRadioGroup';
+import { ONE_RADIO_STYLES } from '../lib/radio/OneRadio';
 import { ONE_SELECT_STYLES } from '../lib/select/OneSelect';
 import {
   ONE_THEME_DEFAULTS,
@@ -23,9 +28,17 @@ import {
 import { ONE_SWITCH_STYLES } from '../lib/switch/OneSwitch';
 import { ONE_TABS_STYLES } from '../lib/tabs/OneTabs';
 import { ONE_TAG_STYLES } from '../lib/tag/OneTag';
+import { ONE_TIME_PICKER_STYLES } from '../lib/time-picker/OneTimePicker';
 import { ONE_TOOLTIP_STYLES } from '../lib/tooltip/TooltipBubble';
+import { ONE_SLIDER_STYLES } from '../lib/slider/OneSlider';
+import { ONE_RATE_STYLES } from '../lib/rate/OneRate';
+import { ONE_UPLOAD_STYLES } from '../lib/upload/OneUpload';
+import { ONE_TABLE_STYLES } from '../lib/table/OneTable';
+import { ONE_COLLAPSE_STYLES } from '../lib/collapse/OneCollapse';
+import { ONE_SKELETON_STYLES } from '../lib/skeleton/OneSkeleton';
 import {
   OneAlert,
+  OneAvatar,
   OneBadge,
   OneBreadcrumb,
   OneButton,
@@ -33,15 +46,27 @@ import {
   OneDialog,
   OneEmpty,
   OneInput,
+  OneLoading,
   OneMessage,
   OnePagination,
+  OneProgress,
+  OneRadio,
+  OneRadioGroup,
   OneTag,
   OneTabs,
+  OneTimePicker,
   OneTooltip,
+  OneSlider,
+  OneRate,
+  OneUpload,
+  OneTable,
+  OneCollapse,
+  OneSkeleton,
 } from '../lib';
 
 const COMPONENT_STYLE_GROUPS = [
   ONE_ALERT_STYLES,
+  ONE_AVATAR_STYLES,
   ONE_BADGE_STYLES,
   ONE_BREADCRUMB_STYLES,
   ONE_BUTTON_STYLES,
@@ -53,13 +78,24 @@ const COMPONENT_STYLE_GROUPS = [
   ONE_FORM_STYLES,
   ONE_FORM_ITEM_STYLES,
   ONE_INPUT_STYLES,
+  ONE_LOADING_STYLES,
   ONE_MESSAGE_STYLES,
   ONE_PAGINATION_STYLES,
+  ONE_PROGRESS_STYLES,
+  ONE_RADIO_GROUP_STYLES,
+  ONE_RADIO_STYLES,
   ONE_SELECT_STYLES,
   ONE_SWITCH_STYLES,
   ONE_TABS_STYLES,
   ONE_TAG_STYLES,
+  ONE_TIME_PICKER_STYLES,
   ONE_TOOLTIP_STYLES,
+  ONE_SLIDER_STYLES,
+  ONE_RATE_STYLES,
+  ONE_UPLOAD_STYLES,
+  ONE_TABLE_STYLES,
+  ONE_COLLAPSE_STYLES,
+  ONE_SKELETON_STYLES,
 ] as const;
 
 function styleByName(name: string): OneNamedStyle {
@@ -156,6 +192,18 @@ describe('One UI style contract', () => {
     | OneTabs
     | OneBreadcrumb
     | OnePagination
+    | OneRadio
+    | OneRadioGroup
+    | OneTimePicker
+    | OneAvatar
+    | OneProgress
+    | OneLoading
+    | OneSlider
+    | OneRate
+    | OneUpload
+    | OneTable
+    | OneCollapse
+    | OneSkeleton
   >;
 
   beforeEach(() => {
@@ -198,6 +246,18 @@ describe('One UI style contract', () => {
       'one-tabs-base',
       'one-tag-base',
       'one-tooltip-bubble',
+      'one-radio-base',
+      'one-radio-group-base',
+      'one-time-picker-base',
+      'one-avatar-base',
+      'one-progress-base',
+      'one-loading-base',
+      'one-slider-base',
+      'one-rate-base',
+      'one-upload-base',
+      'one-table-base',
+      'one-collapse-base',
+      'one-skeleton-base',
     ];
 
     roots.forEach((name) => {
@@ -233,6 +293,12 @@ describe('One UI style contract', () => {
       ['one-select-menu', 'border'],
       ['one-tabs-list', 'borderBottom'],
       ['one-tag-base', 'border'],
+      ['one-time-picker-input', 'border'],
+      ['one-upload-item', 'border'],
+      ['one-table-wrap', 'border'],
+      ['one-table-cell', 'borderBottom'],
+      ['one-collapse-base', 'border'],
+      ['one-collapse-item', 'borderBottom'],
     ] as const;
 
     borders.forEach(([name, property]) => {
@@ -276,6 +342,27 @@ describe('One UI style contract', () => {
       new OneTabs({ items: [{ value: 'a', label: 'A' }] }),
       new OneBreadcrumb({ items: [{ label: '当前' }] }),
       new OnePagination({ total: 100 }),
+      new OneRadio({ value: 'a', defaultChecked: true }),
+      new OneRadioGroup({ options: [{ value: 'a', label: 'A' }] }),
+      new OneTimePicker({ defaultValue: '09:30' }),
+      new OneAvatar({ text: 'JD' }),
+      new OneProgress({ percent: 50 }),
+      new OneLoading({ label: '加载中' }),
+      new OneSlider({ defaultValue: 40, showValue: true }),
+      new OneRate({ defaultValue: 4 }),
+      new OneUpload({ defaultValue: [{ id: 'a', name: '报告.pdf', size: 2 }] }),
+      new OneTable({
+        data: [{ name: '林晚', role: '设计' }],
+        columns: [
+          { key: 'name', title: '姓名' },
+          { key: 'role', title: '角色' },
+        ],
+      }),
+      new OneCollapse({
+        defaultActive: ['a'],
+        items: [{ value: 'a', title: '基础', children: ['内容'] }],
+      }),
+      new OneSkeleton({ rows: 2, avatar: true }),
     ];
     components.forEach((component) => component.mount(container));
 
@@ -300,6 +387,21 @@ describe('One UI style contract', () => {
     expect(css).toContain('.one-tabs__tab');
     expect(css).toContain('.one-breadcrumb__link');
     expect(css).toContain('.one-pagination__button');
+    expect(css).toContain('.one-radio');
+    expect(css).toContain('.one-radio-group');
+    expect(css).toContain('.one-time-picker');
+    expect(css).toContain('.one-time-picker__input');
+    expect(css).toContain('.one-time-picker__panel');
+    expect(css).toContain('.one-time-picker__option--selected');
+    expect(css).toContain('.one-avatar');
+    expect(css).toContain('.one-progress__bar');
+    expect(css).toContain('.one-loading__spinner');
+    expect(css).toContain('.one-slider');
+    expect(css).toContain('.one-rate__star');
+    expect(css).toContain('.one-upload__item');
+    expect(css).toContain('.one-table__cell');
+    expect(css).toContain('.one-collapse__panel');
+    expect(css).toContain('.one-skeleton__line');
     expect(css).not.toMatch(/(^|})\s*(button|a|nav)\s*\{/);
     expect(css).not.toMatch(/(^|[}\s,])(body|html)(?=[\s,{])/m);
   });

@@ -110,12 +110,18 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'code',
         language: 'bash',
-        code: 'tsone dev [--host <host>] [--port <port>]\ntsone build [--out-dir <path>]',
+        code: 'tsone dev [--host <host>] [--port <port>] [--no-watch]\ntsone build [--out-dir <path>]',
       },
       {
         type: 'paragraph',
         content: [
-          'dev accepts only host/port overrides and build accepts only out-dir. Separated and equals forms such as --port 3000 and --port=3000 are supported. build.outDir must stay a child of the project root.',
+          'dev accepts host/port overrides plus a --no-watch flag, and build accepts only out-dir. Separated and equals forms such as --port 3000 and --port=3000 are supported. build.outDir must stay a child of the project root.',
+        ],
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'tsone dev watches the project by default: source, style, or config changes rebuild the current page and notify connected browsers to reload, while a change to tsone.config.ts restarts the server with the fresh configuration. Pass --no-watch to serve as a plain on-demand builder.',
         ],
       },
       {

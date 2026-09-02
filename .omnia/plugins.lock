@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "plugins": [
+    {
+      "id": "app.omnia.studio",
+      "version": "0.1.0",
+      "source": "local-development",
+      "manifestDigest": "9c9f2ea73a48991d00b26ae72ec693c6990293740472469b85e41f0a8cc6a07f"
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import {
   type OneMessageOptions,
   type OneOverlayHandle,
 } from '../../../lib';
+import { pick } from './locale';
 
 export class MessageDemo extends Component<Record<string, never>> {
   private latest: OneOverlayHandle<OneMessageOptions> | undefined;
@@ -25,16 +26,24 @@ export class MessageDemo extends Component<Record<string, never>> {
       tag: 'div',
       props: { className: 'one-docs-feedback-actions' },
       children: [
-        this.button('成功消息', () => {
-          this.latest = oneMessage.success('保存成功', { duration: 0 });
+        this.button(pick('成功消息', 'Success message'), () => {
+          this.latest = oneMessage.success(
+            pick('保存成功', 'Saved successfully'),
+            { duration: 0 }
+          );
         }),
-        this.button('警告消息', () => {
-          this.latest = oneMessage.warning('请检查输入', { duration: 0 });
+        this.button(pick('警告消息', 'Warning message'), () => {
+          this.latest = oneMessage.warning(
+            pick('请检查输入', 'Please check your input'),
+            { duration: 0 }
+          );
         }),
-        this.button('更新最近消息', () => {
-          this.latest?.update({ content: '内容已更新' });
+        this.button(pick('更新最近消息', 'Update latest message'), () => {
+          this.latest?.update({
+            content: pick('内容已更新', 'Content updated'),
+          });
         }),
-        this.button('关闭全部', () => {
+        this.button(pick('关闭全部', 'Close all'), () => {
           oneMessage.closeAll();
           this.latest = undefined;
         }),

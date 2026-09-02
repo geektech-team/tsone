@@ -140,10 +140,13 @@ export const guidePages: DocPage[] = [
       heading(2, '运行应用'),
       codeBlock(
         'bash',
-        'tsone dev [--host <host>] [--port <port>]\ntsone build [--out-dir <path>]'
+        'tsone dev [--host <host>] [--port <port>] [--no-watch]\ntsone build [--out-dir <path>]'
       ),
       paragraph(
-        'dev 只接受 host/port 覆盖，build 只接受 out-dir；支持 --port 3000 与 --port=3000 两种形式。build.outDir 必须是项目根目录内部的子目录。'
+        'dev 接受 host/port 覆盖以及 --no-watch 标志，build 只接受 out-dir；支持 --port 3000 与 --port=3000 两种形式。build.outDir 必须是项目根目录内部的子目录。'
+      ),
+      paragraph(
+        'tsone dev 默认监听项目文件：源码、样式或配置变更时重建当前页面并通知已连接的浏览器刷新，tsone.config.ts 变更会以新配置重启开发服务器；传入 --no-watch 则退化为普通的按需构建服务器。'
       ),
       paragraph(
         'CLI 首版配置不提供 plugins、WebSocket、HMR、SSR、函数式配置、public/ 复制以及公开的 minify/sourcemap 配置。'

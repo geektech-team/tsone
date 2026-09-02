@@ -1,5 +1,6 @@
 import { Component, type VNode } from '@geektech/tsone';
 import { OneInput, type OneInputValueEvent } from '../../../lib';
+import { pick } from './locale';
 
 interface InputDemoState {
   controlledValue: string;
@@ -15,7 +16,7 @@ export class InputDemo extends Component<
   };
 
   protected initState(): InputDemoState {
-    return { controlledValue: '初始受控值' };
+    return { controlledValue: pick('初始受控值', 'Initial controlled value') };
   }
 
   protected initStyles(): void {}
@@ -28,15 +29,15 @@ export class InputDemo extends Component<
         {
           component: OneInput,
           props: {
-            defaultValue: '非受控值',
-            ariaLabel: '非受控输入',
+            defaultValue: pick('非受控值', 'Uncontrolled value'),
+            ariaLabel: pick('非受控输入', 'Uncontrolled input'),
           },
         },
         {
           component: OneInput,
           props: {
             value: this.state.controlledValue,
-            ariaLabel: '受控输入',
+            ariaLabel: pick('受控输入', 'Controlled input'),
           },
           emitters: {
             input: this.handleInput,
@@ -45,7 +46,12 @@ export class InputDemo extends Component<
         {
           tag: 'span',
           props: { 'data-one-controlled-value': '' },
-          children: [`受控值：${this.state.controlledValue}`],
+          children: [
+            pick(
+              `受控值：${this.state.controlledValue}`,
+              `Controlled value: ${this.state.controlledValue}`
+            ),
+          ],
         },
       ],
     };

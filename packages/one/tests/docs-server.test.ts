@@ -17,6 +17,7 @@ describe('One UI docs server', () => {
     await buildOneDocs({ outDir });
     const switchPage = join(
       outDir,
+      'zh',
       'components',
       'form',
       'switch',
@@ -32,7 +33,7 @@ describe('One UI docs server', () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:${server.port}/components/form/switch/`
+        `http://127.0.0.1:${server.port}/zh/components/form/switch/`
       );
       const html = await response.text();
       expect(response.status).toBe(200);
@@ -60,7 +61,7 @@ describe('One UI docs server', () => {
       expect(home.headers.get('content-type')).toContain('text/html');
       expect(await home.text()).toContain('One UI');
 
-      const button = await fetch(`${origin}/components/button/`);
+      const button = await fetch(`${origin}/zh/components/button/`);
       expect(button.status).toBe(200);
       expect(await button.text()).toContain(
         '<title>OneButton - One UI</title>'
@@ -72,6 +73,27 @@ describe('One UI docs server', () => {
       expect(await client.text()).toContain('mountOneDocsClient');
 
       expect((await fetch(`${origin}/missing/`)).status).toBe(404);
+    } finally {
+      server.stop(true);
+      rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
+  it('falls back locale-agnostic doc routes to the default zh locale', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'one-docs-server-fallback-'));
+    await buildOneDocs({ outDir });
+    const server = await startOneDocsServer({
+      hostname: '127.0.0.1',
+      port: 0,
+      outDir,
+    });
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:${server.port}/components/button/`
+      );
+      expect(response.status).toBe(200);
+      expect(await response.text()).toContain('<title>OneButton - One UI</title>');
     } finally {
       server.stop(true);
       rmSync(outDir, { recursive: true, force: true });

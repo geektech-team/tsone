@@ -50,12 +50,15 @@ createApp({ root: App }).mount();
 
 ## 组件分类
 
-- 基础：`OneButton`、`OneInput`
-- 表单：`OneForm`、`OneFormItem`、`OneSelect`、`OneCheckbox`、
-  `OneCheckboxGroup`、`OneSwitch`
+- 基础：`OneButton`
+- 表单：`OneForm`、`OneFormItem`、`OneInput`、`OneSelect`、`OneTimePicker`、
+  `OneCheckbox`、`OneCheckboxGroup`、`OneRadio`、`OneRadioGroup`、`OneSwitch`、
+  `OneSlider`、`OneRate`、`OneUpload`
 - 导航：`OneTabs`、`OneBreadcrumb`、`OnePagination`
-- 数据展示：`OneCard`、`OneTag`、`OneBadge`、`OneEmpty`
-- 反馈与浮层：`OneAlert`、`OneMessage`、`OneDialog`、`OneTooltip`
+- 数据展示：`OneCard`、`OneTag`、`OneBadge`、`OneAvatar`、`OneProgress`、
+  `OneEmpty`、`OneTable`、`OneCollapse`、`OneSkeleton`
+- 反馈与浮层：`OneAlert`、`OneMessage`、`OneDialog`、`OneTooltip`、
+  `OneLoading`
 
 ## 导航
 
@@ -119,8 +122,9 @@ void basicPagination;
 
 ## 数据展示
 
-标签适合表达紧凑状态，徽标适合展示数量，无数据时使用空状态。`OneEmpty`
-支持通过 `actions` 插槽提供下一步操作。
+标签适合表达紧凑状态，徽标适合展示数量，头像适合表达身份，进度条适合表达完成
+度，无数据时使用空状态，表格适合组织行列数据，折叠面板适合组织分组详情，加载中
+使用骨架占位。`OneEmpty` 支持通过 `actions` 插槽提供下一步操作。
 
 ```ts
 import { OneBadge, OneButton, OneEmpty, OneTag } from '@geektech/one';
@@ -137,13 +141,46 @@ const actions = [
 new OneEmpty({ description: '暂无结果', children: actions });
 ```
 
+```ts
+import { OneAvatar, OneProgress } from '@geektech/one';
+
+new OneAvatar({ text: 'M', variant: 'primary' });
+new OneAvatar({ src: '/avatar.png', alt: '头像', shape: 'square' });
+new OneProgress({ percent: 65, showText: true });
+new OneProgress({ percent: 30, variant: 'success' });
+```
+
+```ts
+import { OneTable, OneCollapse, OneSkeleton } from '@geektech/one';
+
+new OneTable({
+  data: [
+    { name: '林晚', role: '设计' },
+    { name: '苏北', role: '前端' },
+  ],
+  columns: [
+    { key: 'name', title: '姓名' },
+    { key: 'role', title: '角色' },
+  ],
+});
+new OneCollapse({
+  accordion: true,
+  defaultActive: ['basic'],
+  items: [
+    { value: 'basic', title: '基础用法', children: ['内容'] },
+    { value: 'advanced', title: '高级用法', children: ['更多内容'] },
+  ],
+});
+new OneSkeleton({ rows: 3, title: true, avatar: true });
+```
+
 ## 反馈与浮层
 
 持续显示的页面内反馈使用 `OneAlert`，附着到单个触发元素的简短说明使用
-`OneTooltip`：
+`OneTooltip`，进行中的加载状态使用 `OneLoading`：
 
 ```ts
-import { OneAlert, OneButton, OneTooltip } from '@geektech/one';
+import { OneAlert, OneButton, OneLoading, OneTooltip } from '@geektech/one';
 
 const alert = new OneAlert({
   title: '保存成功',
@@ -156,6 +193,8 @@ const tooltip = new OneTooltip({
   placement: 'bottom-end',
   children: [{ component: OneButton, children: ['复制'] }],
 });
+
+const loading = new OneLoading({ size: 'md', label: '加载中' });
 ```
 
 临时消息和确认流程可以使用命令式服务：
@@ -217,6 +256,70 @@ const uncontrolled = new OneInput({
 uncontrolled.on('change', (payload) => {
   const event = payload as OneInputValueEvent;
   console.log(event.value, event.originalEvent);
+});
+```
+
+## 选择与时间
+
+单选按钮从多个选项中选一个，时间选择器提供可编辑文本输入，点击展开时/分/秒下拉
+面板。二者都支持受控与非受控模式。
+
+```ts
+import {
+  OneRadio,
+  OneRadioGroup,
+  OneTimePicker,
+  type OneFieldValueEvent,
+} from '@geektech/one';
+
+const radio = new OneRadio({ value: 'design', defaultChecked: true });
+const group = new OneRadioGroup({
+  defaultValue: 'weekly',
+  ariaLabel: '通知频率',
+  options: [
+    { value: 'daily', label: '每天' },
+    { value: 'weekly', label: '每周' },
+  ],
+});
+group.on('change', (payload) => {
+  const event = payload as OneFieldValueEvent<string>;
+  console.log(event.value);
+});
+
+new OneTimePicker({ defaultValue: '09:30', ariaLabel: '开始时间' });
+```
+
+## 滑块、评分与上传
+
+滑块在范围内选择一个数值，评分用星星表达打分，上传用于收集本地文件元数据。
+三者都支持受控与非受控模式。
+
+```ts
+import {
+  OneSlider,
+  OneRate,
+  OneUpload,
+  type OneSliderValueEvent,
+  type OneRateValueEvent,
+  type OneUploadChangeEvent,
+} from '@geektech/one';
+
+const slider = new OneSlider({ defaultValue: 60, showValue: true });
+slider.on('change', (payload) => {
+  const event = payload as OneSliderValueEvent;
+  console.log(event.value);
+});
+
+const rating = new OneRate({ defaultValue: 4, allowClear: true });
+rating.on('change', (payload) => {
+  const event = payload as OneRateValueEvent;
+  console.log(event.value);
+});
+
+const upload = new OneUpload({ multiple: true, ariaLabel: '附件' });
+upload.on('change', (payload) => {
+  const event = payload as OneUploadChangeEvent;
+  console.log(event.files.map((file) => file.name));
 });
 ```
 

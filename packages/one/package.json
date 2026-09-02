@@ -23,7 +23,8 @@
     "@geektech/tsone": ">=0.1.0 <0.2.0"
   },
   "devDependencies": {
-    "@geektech/tsone": "workspace:*"
+    "@geektech/tsone": "workspace:*",
+    "@geektech/tsone-cli": "workspace:*"
   },
   "files": [
     "dist",

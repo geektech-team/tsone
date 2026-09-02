@@ -1,5 +1,6 @@
 import { Component, type VNode } from '@geektech/tsone';
 import { OneBreadcrumb, type OneBreadcrumbClickEvent } from '../../../lib';
+import { pick } from './locale';
 
 interface BreadcrumbDemoState {
   clickedLabel: string;

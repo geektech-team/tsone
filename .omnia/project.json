@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "id": "bba03556-6287-4324-b8d8-098dd1b05e26",
+  "name": "tsone",
+  "primaryPlugin": {
+    "id": "app.omnia.studio"
+  }
+}

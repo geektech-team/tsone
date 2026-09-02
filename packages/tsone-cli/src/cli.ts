@@ -3,14 +3,17 @@ import { startDevServer } from './server';
 
 const USAGE = [
   'Usage:',
-  '  tsone dev [--host <host>] [--port <port>]',
+  '  tsone dev [--host <host>] [--port <port>] [--no-watch]',
   '  tsone build [--out-dir <path>]',
 ].join('\n');
+
+const FLAG_OPTIONS = new Set(['--no-watch']);
 
 export interface DevCliArgs {
   command: 'dev';
   host?: string;
   port?: number;
+  noWatch?: boolean;
 }
 
 export interface BuildCliArgs {
@@ -41,6 +44,10 @@ export function parseCliArgs(argv: string[]): CliArgs {
     if (options.has(name)) {
       throw parseError(`Duplicate option: ${name}`);
     }
+    if (FLAG_OPTIONS.has(name)) {
+      options.set(name, 'true');
+      continue;
+    }
 
     const value = inlineValue ?? argv[index + 1];
     if (value === undefined || value === '' || value.startsWith('--')) {
@@ -58,6 +65,7 @@ export function parseCliArgs(argv: string[]): CliArgs {
       command,
       ...(options.has('--host') ? { host: options.get('--host') } : {}),
       ...(port === undefined ? {} : { port: parsePort(port) }),
+      ...(options.has('--no-watch') ? { noWatch: true } : {}),
     };
   }
 
@@ -76,6 +84,7 @@ export async function runCli(
     const server = await startDevServer({
       ...(args.host === undefined ? {} : { host: args.host }),
       ...(args.port === undefined ? {} : { port: args.port }),
+      watch: !args.noWatch,
     });
     console.log(
       `TSone dev server listening at http://${server.hostname}:${server.port}`
@@ -104,7 +113,12 @@ function splitOption(token: string): { name: string; inlineValue?: string } {
 }
 
 function assertKnownOption(name: string): void {
-  if (name === '--host' || name === '--port' || name === '--out-dir') {
+  if (
+    name === '--host' ||
+    name === '--port' ||
+    name === '--out-dir' ||
+    name === '--no-watch'
+  ) {
     return;
   }
 
@@ -116,7 +130,8 @@ function assertSupportedOption(
   name: string
 ): void {
   const supported =
-    (command === 'dev' && (name === '--host' || name === '--port')) ||
+    (command === 'dev' &&
+      (name === '--host' || name === '--port' || name === '--no-watch')) ||
     (command === 'build' && name === '--out-dir');
 
   if (!supported) {

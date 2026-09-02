@@ -58,36 +58,38 @@ describe('One UI docs build', () => {
   it('maps documentation routes to directory-style HTML paths', () => {
     const outDir = '/tmp/one-docs-output';
 
-    expect(routeToOneDocsOutputPath('/', outDir)).toBe(
-      join(outDir, 'index.html')
+    expect(routeToOneDocsOutputPath('/', 'zh', outDir)).toBe(
+      join(outDir, 'zh', 'index.html')
     );
-    expect(routeToOneDocsOutputPath('/components/button/', outDir)).toBe(
-      join(outDir, 'components/button/index.html')
-    );
+    expect(
+      routeToOneDocsOutputPath('/components/button/', 'zh', outDir)
+    ).toBe(join(outDir, 'zh/components/button/index.html'));
   });
 
-  it('builds all twenty-five pages and the interactive client asset', async () => {
+  it('builds all seventy-two pages and the interactive client asset', async () => {
     const outDir = makeTemporaryDirectory('one-docs-build-');
 
     const result = await buildOneDocs({ outDir });
 
-    expect(result.pagesBuilt).toBe(25);
+    expect(result.pagesBuilt).toBe(72);
     expect(result.assetsBuilt).toEqual([
       join(outDir, 'assets/one-docs-client.js'),
     ]);
     expect(existsSync(join(outDir, 'index.html'))).toBe(true);
-    expect(existsSync(join(outDir, 'components/button/index.html'))).toBe(true);
+    expect(existsSync(join(outDir, 'zh/index.html'))).toBe(true);
+    expect(existsSync(join(outDir, 'en/index.html'))).toBe(true);
+    expect(existsSync(join(outDir, 'zh/components/button/index.html'))).toBe(true);
     expect(
-      existsSync(join(outDir, 'components/feedback/tooltip/index.html'))
+      existsSync(join(outDir, 'zh/components/feedback/tooltip/index.html'))
     ).toBe(true);
     expect(
-      existsSync(join(outDir, 'components/navigation/pagination/index.html'))
+      existsSync(join(outDir, 'en/components/navigation/pagination/index.html'))
     ).toBe(true);
     expect(existsSync(join(outDir, 'assets/one-docs-client.js'))).toBe(true);
 
     const homeHtml = readFileSync(join(outDir, 'index.html'), 'utf8');
     const buttonHtml = readFileSync(
-      join(outDir, 'components/button/index.html'),
+      join(outDir, 'zh/components/button/index.html'),
       'utf8'
     );
     expect(homeHtml).toContain('<!doctype html>');
@@ -104,6 +106,11 @@ describe('One UI docs build', () => {
     expect(buttonHtml).toContain('class="one-docs-main"');
     expect(buttonHtml).toContain('class="one-docs-toc"');
     expect(buttonHtml).toContain('/assets/one-docs-client.js');
+    expect(buttonHtml).toContain('data-one-theme="default"');
+    expect(buttonHtml).toContain('class="one-docs-theme"');
+    expect(buttonHtml).toContain('class="one-switch"');
+    expect(buttonHtml).toContain('html[data-one-theme="dark"]');
+    expect(buttonHtml).toContain('localStorage.getItem');
   });
 
   it('allows new and empty custom directories and marks them as One-owned', async () => {

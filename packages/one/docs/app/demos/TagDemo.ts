@@ -1,5 +1,6 @@
 import { Component, type VNode } from '@geektech/tsone';
 import { OneTag } from '../../../lib';
+import { pick } from './locale';
 
 interface TagDemoState {
   closedCount: number;
@@ -25,22 +26,27 @@ export class TagDemo extends Component<Record<string, never>, TagDemoState> {
           component: OneTag,
           props: { variant: 'success', closable: true },
           emitters: { close: this.handleClose },
-          children: ['已发布'],
+          children: [pick('已发布', 'Published')],
         },
         {
           component: OneTag,
           props: { variant: 'warning' },
-          children: ['待检查'],
+          children: [pick('待检查', 'Needs review')],
         },
         {
           component: OneTag,
           props: { variant: 'error' },
-          children: ['已阻塞'],
+          children: [pick('已阻塞', 'Blocked')],
         },
         {
           tag: 'output',
           props: { 'data-one-tag-result': '' },
-          children: [`已关闭 ${this.state.closedCount} 个标签`],
+          children: [
+            pick(
+              `已关闭 ${this.state.closedCount} 个标签`,
+              `${this.state.closedCount} tags closed`
+            ),
+          ],
         },
       ],
     };

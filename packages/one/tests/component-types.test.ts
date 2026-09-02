@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
   ONE_DEFAULT_THEME,
   OneAlert,
+  OneAvatar,
   OneBadge,
   OneBreadcrumb,
   OneButton,
@@ -9,11 +10,22 @@ import {
   OneDialog,
   OneEmpty,
   OneInput,
+  OneLoading,
   OneMessage,
   OnePagination,
+  OneProgress,
+  OneRadio,
+  OneRadioGroup,
   OneTag,
   OneTabs,
+  OneTimePicker,
   OneTooltip,
+  OneSlider,
+  OneRate,
+  OneUpload,
+  OneTable,
+  OneCollapse,
+  OneSkeleton,
   OneThemeConfigError,
   OneThemeEnvironmentError,
   OneThemeNotFoundError,
@@ -21,6 +33,8 @@ import {
   oneMessage,
   oneTheme,
   type OneAlertProps,
+  type OneAvatarProps,
+  type OneAvatarShape,
   type OneBadgeProps,
   type OneBreadcrumbProps,
   type OneButtonProps,
@@ -29,13 +43,32 @@ import {
   type OneDialogProps,
   type OneEmptyProps,
   type OneInputProps,
+  type OneLoadingProps,
   type OneMessageOptions,
   type OneMessagePlacement,
   type OnePaginationProps,
   type OneOverlayPlacement,
+  type OneProgressProps,
+  type OneRadioGroupProps,
+  type OneRadioProps,
   type OneTagProps,
   type OneTabsProps,
+  type OneTimePickerProps,
   type OneTooltipProps,
+  type OneSliderProps,
+  type OneSliderValueEvent,
+  type OneRateProps,
+  type OneRateValueEvent,
+  type OneUploadProps,
+  type OneUploadFile,
+  type OneUploadChangeEvent,
+  type OneTableProps,
+  type OneTableRow,
+  type OneTableColumn,
+  type OneCollapseProps,
+  type OneCollapseItem,
+  type OneCollapseChangeEvent,
+  type OneSkeletonProps,
   type OneResolvedTheme,
   type OneThemeBorder,
   type OneThemeColors,
@@ -84,6 +117,57 @@ const paginationProps: OnePaginationProps = {
   defaultPage: 2,
   showQuickJumper: true,
 };
+const radioProps: OneRadioProps = { value: 'design', defaultChecked: true };
+const radioGroupProps: OneRadioGroupProps = {
+  options: [{ value: 'design', label: '设计' }],
+  defaultValue: 'design',
+};
+const timePickerProps: OneTimePickerProps = {
+  defaultValue: '09:30',
+  step: 1,
+};
+const avatarProps: OneAvatarProps = {
+  src: '/avatar.png',
+  alt: '头像',
+  size: 'lg',
+  shape: 'square',
+};
+const avatarShape: OneAvatarShape = 'circle';
+const progressProps: OneProgressProps = {
+  percent: 80,
+  variant: 'success',
+  showText: true,
+};
+const loadingProps: OneLoadingProps = {
+  size: 'lg',
+  variant: 'primary',
+  label: '加载中',
+};
+const sliderProps: OneSliderProps = {
+  defaultValue: 40,
+  min: 0,
+  max: 100,
+  showValue: true,
+};
+const rateProps: OneRateProps = {
+  defaultValue: 4,
+  count: 10,
+  allowClear: true,
+};
+const uploadProps: OneUploadProps = { multiple: true, max: 3 };
+const uploadFile: OneUploadFile = { id: 'a', name: '报告.pdf', size: 2 };
+const tableProps: OneTableProps = {
+  data: [{ name: '林晚' }],
+  columns: [{ key: 'name' }],
+};
+const tableRow: OneTableRow = { name: '林晚' };
+const tableColumn: OneTableColumn = { key: 'role', title: '角色' };
+const collapseProps: OneCollapseProps = {
+  defaultActive: ['a'],
+  items: [{ value: 'a', title: '基础' }],
+};
+const collapseItem: OneCollapseItem = { value: 'a', title: '基础' };
+const skeletonProps: OneSkeletonProps = { rows: 2, avatar: true };
 const themeDefinition: OneThemeDefinition = {
   colors: { primary: '#112233' },
   typography: { lineHeight: '1.7' },
@@ -129,6 +213,14 @@ const invalidTag: OneTagProps = { variant: 'info' };
 const invalidTabs: OneTabsProps = { items: [{ value: 1, label: '错误' }] };
 // @ts-expect-error total is required
 const invalidPagination: OnePaginationProps = {};
+// @ts-expect-error unsupported avatar shape
+const invalidAvatar: OneAvatarProps = { shape: 'triangle' };
+// @ts-expect-error unsupported data-display variant
+const invalidProgress: OneProgressProps = { variant: 'info' };
+// @ts-expect-error upload files must carry a name
+const invalidUpload: OneUploadProps = { defaultValue: [{ id: 'a' }] };
+// @ts-expect-error slider max must be a number
+const invalidSlider: OneSliderProps = { max: '100' };
 
 describe('public component types', () => {
   it('exports constructors and approved prop shapes', () => {
@@ -145,6 +237,18 @@ describe('public component types', () => {
     expect(typeof OneTabs).toBe('function');
     expect(typeof OneBreadcrumb).toBe('function');
     expect(typeof OnePagination).toBe('function');
+    expect(typeof OneRadio).toBe('function');
+    expect(typeof OneRadioGroup).toBe('function');
+    expect(typeof OneTimePicker).toBe('function');
+    expect(typeof OneAvatar).toBe('function');
+    expect(typeof OneProgress).toBe('function');
+    expect(typeof OneLoading).toBe('function');
+    expect(typeof OneSlider).toBe('function');
+    expect(typeof OneRate).toBe('function');
+    expect(typeof OneUpload).toBe('function');
+    expect(typeof OneTable).toBe('function');
+    expect(typeof OneCollapse).toBe('function');
+    expect(typeof OneSkeleton).toBe('function');
     expect(typeof oneMessage.success).toBe('function');
     expect(typeof oneDialog.confirm).toBe('function');
     expect(typeof oneTheme.init).toBe('function');
@@ -168,8 +272,45 @@ describe('public component types', () => {
     expect(new OneTabs(tabsProps)).toBeInstanceOf(OneTabs);
     expect(new OneBreadcrumb(breadcrumbProps)).toBeInstanceOf(OneBreadcrumb);
     expect(new OnePagination(paginationProps)).toBeInstanceOf(OnePagination);
+    expect(new OneRadio(radioProps)).toBeInstanceOf(OneRadio);
+    expect(new OneRadioGroup(radioGroupProps)).toBeInstanceOf(OneRadioGroup);
+    expect(new OneTimePicker(timePickerProps)).toBeInstanceOf(OneTimePicker);
+    expect(new OneAvatar(avatarProps)).toBeInstanceOf(OneAvatar);
+    expect(new OneProgress(progressProps)).toBeInstanceOf(OneProgress);
+    expect(new OneLoading(loadingProps)).toBeInstanceOf(OneLoading);
+    expect(new OneSlider(sliderProps)).toBeInstanceOf(OneSlider);
+    expect(new OneRate(rateProps)).toBeInstanceOf(OneRate);
+    expect(new OneUpload(uploadProps)).toBeInstanceOf(OneUpload);
+    expect(new OneTable(tableProps)).toBeInstanceOf(OneTable);
+    expect(new OneCollapse(collapseProps)).toBeInstanceOf(OneCollapse);
+    expect(new OneSkeleton(skeletonProps)).toBeInstanceOf(OneSkeleton);
+    expect(uploadFile.name).toBe('报告.pdf');
+    expect(tableRow.name).toBe('林晚');
+    expect(tableColumn.title).toBe('角色');
+    expect(collapseItem.title).toBe('基础');
+    const sliderValue: OneSliderValueEvent = {
+      value: 1,
+      originalEvent: new Event('input'),
+    };
+    const rateValue: OneRateValueEvent = {
+      value: 5,
+      originalEvent: new Event('click'),
+    };
+    const uploadChange: OneUploadChangeEvent = {
+      files: [],
+      originalEvent: new Event('change'),
+    };
+    const collapseChange: OneCollapseChangeEvent = {
+      value: [],
+      originalEvent: new Event('click'),
+    };
+    expect(sliderValue.value).toBe(1);
+    expect(rateValue.value).toBe(5);
+    expect(uploadChange.files).toHaveLength(0);
+    expect(collapseChange.value).toEqual([]);
     expect(messagePlacement).toBe('top-end');
     expect(overlayPlacement).toBe('right-start');
+    expect(avatarShape).toBe('circle');
     expect(themeService).toBe(oneTheme);
     expect(themeColors.primary).toBe('#5fd956');
     expect(themeTypography.lineHeight).toBe('1.5');
@@ -184,5 +325,9 @@ describe('public component types', () => {
     void invalidTag;
     void invalidTabs;
     void invalidPagination;
+    void invalidAvatar;
+    void invalidProgress;
+    void invalidUpload;
+    void invalidSlider;
   });
 });

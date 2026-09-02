@@ -1,5 +1,6 @@
 import { Component, type VNode } from '@geektech/tsone';
 import { OneAlert, OneButton } from '../../../lib';
+import { pick } from './locale';
 
 interface AlertDemoState {
   actionCount: number;
@@ -26,21 +27,24 @@ export class AlertDemo extends Component<
       children: [
         {
           component: OneAlert,
-          props: { title: '信息', description: '这是一条普通提示。' },
+          props: {
+            title: pick('信息', 'Info'),
+            description: pick('这是一条普通提示。', 'This is a regular notice.'),
+          },
         },
         {
           component: OneAlert,
           props: {
-            title: '保存成功',
-            description: '更改已经同步。',
+            title: pick('保存成功', 'Saved successfully'),
+            description: pick('更改已经同步。', 'Changes have been synced.'),
             variant: 'success',
           },
         },
         {
           component: OneAlert,
           props: {
-            title: '需要注意',
-            description: '请检查当前配置。',
+            title: pick('需要注意', 'Attention needed'),
+            description: pick('请检查当前配置。', 'Please review the current configuration.'),
             variant: 'warning',
           },
           children: [
@@ -48,7 +52,7 @@ export class AlertDemo extends Component<
               component: OneButton,
               slot: 'actions',
               props: { size: 'sm', variant: 'secondary' },
-              children: ['撤销'],
+              children: [pick('撤销', 'Undo')],
               emitters: { click: this.handleAction },
             },
           ],
@@ -56,8 +60,8 @@ export class AlertDemo extends Component<
         {
           component: OneAlert,
           props: {
-            title: '操作失败',
-            description: '可以关闭这条提示。',
+            title: pick('操作失败', 'Operation failed'),
+            description: pick('可以关闭这条提示。', 'You can dismiss this alert.'),
             variant: 'error',
             closable: true,
           },
@@ -65,7 +69,12 @@ export class AlertDemo extends Component<
         {
           tag: 'output',
           props: { 'data-one-alert-result': '' },
-          children: [`已撤销 ${this.state.actionCount} 次`],
+          children: [
+            pick(
+              `已撤销 ${this.state.actionCount} 次`,
+              `Undone ${this.state.actionCount} times`
+            ),
+          ],
         },
       ],
     };

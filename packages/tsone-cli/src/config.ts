@@ -1,6 +1,5 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import type {
   BuildConfig,
   ProxyOptions,
@@ -84,6 +83,8 @@ export async function resolveConfig(
   };
 }
 
+let configLoadSequence = 0;
+
 async function loadConfigFile(
   configFile: string
 ): Promise<ConfigFileLoadResult> {
@@ -91,8 +92,9 @@ async function loadConfigFile(
     return { exists: false };
   }
 
+  configLoadSequence += 1;
   const module = await import(
-    `${pathToFileURL(configFile).href}?t=${Date.now()}`
+    `${configFile}?tsone_config=${configLoadSequence}`
   );
   return { exists: true, config: module.default };
 }

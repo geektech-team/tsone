@@ -11,6 +11,7 @@ import { ONE_TOOLTIP_STYLES } from '../lib/tooltip/TooltipBubble';
 import {
   headingsForPage,
   normalizeOneDocPath,
+  localize,
   oneDocPages,
   validateOneDocPages,
   type OneDocPage,
@@ -28,11 +29,21 @@ const APPROVED_PATHS = [
   '/components/data-display/tag/',
   '/components/data-display/badge/',
   '/components/data-display/empty/',
+  '/components/data-display/avatar/',
+  '/components/data-display/progress/',
+  '/components/data-display/table/',
+  '/components/data-display/collapse/',
+  '/components/data-display/skeleton/',
   '/components/form/',
   '/components/form/form/',
   '/components/form/select/',
   '/components/form/checkbox/',
   '/components/form/switch/',
+  '/components/form/radio/',
+  '/components/form/time-picker/',
+  '/components/form/slider/',
+  '/components/form/rate/',
+  '/components/form/upload/',
   '/components/navigation/',
   '/components/navigation/tabs/',
   '/components/navigation/breadcrumb/',
@@ -42,6 +53,7 @@ const APPROVED_PATHS = [
   '/components/feedback/message/',
   '/components/feedback/dialog/',
   '/components/feedback/tooltip/',
+  '/components/feedback/loading/',
 ];
 const packageRoot = join(import.meta.dir, '..');
 
@@ -81,7 +93,7 @@ function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
     path: '/valid/',
     title: 'Valid page',
     description: 'A valid documentation page.',
-    section: '指南',
+    section: 'guide',
     sectionOrder: 1,
     order: 1,
     body: [{ type: 'heading', level: 1, id: 'valid', text: 'Valid' }],
@@ -90,7 +102,7 @@ function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
 }
 
 describe('One UI docs content', () => {
-  it('defines exactly the twenty-five approved routes in stable order', () => {
+  it('defines exactly the thirty-six approved routes in stable order', () => {
     expect(oneDocPages.map((page) => page.path)).toEqual(APPROVED_PATHS);
   });
 
@@ -137,7 +149,12 @@ describe('One UI docs content', () => {
   });
 
   it('derives the ordered table of contents from page headings', () => {
-    expect(headingsForPage(pageAt('/components/card/'))).toEqual([
+    expect(
+      headingsForPage(pageAt('/components/card/')).map((heading) => ({
+        ...heading,
+        text: localize(heading.text, 'zh'),
+      }))
+    ).toEqual([
       { id: 'card', level: 1, text: 'OneCard' },
       { id: 'slots', level: 2, text: '插槽与优先级' },
       { id: 'api', level: 2, text: 'API' },
@@ -203,19 +220,32 @@ describe('One UI docs content', () => {
       expect(row.signature.startsWith('Fallback: ')).toBe(true);
       const fallback = row.signature.slice('Fallback: '.length);
       expect(styleText).toContain(`var(${row.name}, ${fallback})`);
-      expect(row.description.trim().length).toBeGreaterThan(4);
+      expect(localize(row.description, 'zh').trim().length).toBeGreaterThan(4);
     });
     expect(
-      apiRowAt('/guide/theming/', '--one-color-primary-contrast').description
+      localize(
+        apiRowAt('/guide/theming/', '--one-color-primary-contrast').description,
+        'zh'
+      )
     ).toContain('对比');
     expect(
-      apiRowAt('/guide/theming/', '--one-button-padding-md').description
+      localize(
+        apiRowAt('/guide/theming/', '--one-button-padding-md').description,
+        'zh'
+      )
     ).toContain('按钮');
     expect(
-      apiRowAt('/guide/theming/', '--one-card-shadow').description
+      localize(
+        apiRowAt('/guide/theming/', '--one-card-shadow').description,
+        'zh'
+      )
     ).toContain('卡片');
     expect(
-      apiRowAt('/guide/theming/', '--one-input-focus-border-color').description
+      localize(
+        apiRowAt('/guide/theming/', '--one-input-focus-border-color')
+          .description,
+        'zh'
+      )
     ).toContain('输入框');
     expect(theming).toContain(
       "import { ONE_THEME_DEFAULTS } from '@geektech/one'"
@@ -266,15 +296,15 @@ describe('One UI docs content', () => {
     expect(apiRowAt('/components/button/', 'variant').signature).toBe(
       'variant?: OneButtonVariant'
     );
-    expect(apiRowAt('/components/button/', 'variant').description).toContain(
-      "'primary' | 'secondary' | 'danger'"
-    );
+    expect(
+      localize(apiRowAt('/components/button/', 'variant').description, 'zh')
+    ).toContain("'primary' | 'secondary' | 'danger'");
     expect(apiRowAt('/components/button/', 'size').signature).toBe(
       'size?: OneComponentSize'
     );
-    expect(apiRowAt('/components/button/', 'size').description).toContain(
-      "'sm' | 'md' | 'lg'"
-    );
+    expect(
+      localize(apiRowAt('/components/button/', 'size').description, 'zh')
+    ).toContain("'sm' | 'md' | 'lg'");
   });
 
   it('documents every OneInput prop, event, payload and state mode', () => {
@@ -303,9 +333,9 @@ describe('One UI docs content', () => {
     expect(apiRowAt('/components/input/', 'size').signature).toBe(
       'size?: OneComponentSize'
     );
-    expect(apiRowAt('/components/input/', 'size').description).toContain(
-      "'sm' | 'md' | 'lg'"
-    );
+    expect(
+      localize(apiRowAt('/components/input/', 'size').description, 'zh')
+    ).toContain("'sm' | 'md' | 'lg'");
   });
 
   it('documents every OneCard prop, slot and header precedence rule', () => {
@@ -481,16 +511,27 @@ describe('One UI docs content', () => {
         'select',
         'checkbox',
         'switch',
+        'radio',
+        'time-picker',
         'alert',
         'message',
         'dialog',
         'tooltip',
+        'loading',
         'tag',
         'badge',
         'empty',
+        'avatar',
+        'progress',
         'tabs',
         'breadcrumb',
         'pagination',
+        'slider',
+        'rate',
+        'upload',
+        'table',
+        'collapse',
+        'skeleton',
       ])
     );
 
@@ -603,6 +644,189 @@ describe('One UI docs content', () => {
       'aria-label',
     ]) {
       expect(pagination).toContain(fragment);
+    }
+  });
+
+  it('documents radio, time-picker, avatar, progress and loading pages with demos and APIs', () => {
+    for (const [path, component] of [
+      ['/components/form/radio/', 'radio'],
+      ['/components/form/time-picker/', 'time-picker'],
+      ['/components/data-display/avatar/', 'avatar'],
+      ['/components/data-display/progress/', 'progress'],
+      ['/components/feedback/loading/', 'loading'],
+    ] as const) {
+      expect(pageAt(path).body).toContainEqual(
+        expect.objectContaining({
+          type: 'demo',
+          component,
+          interactive: true,
+        })
+      );
+      expect(pageText(path)).toContain('API');
+    }
+
+    const radio = pageText('/components/form/radio/');
+    for (const fragment of [
+      'OneRadio',
+      'OneRadioGroup',
+      'checked?: boolean',
+      'defaultChecked?: boolean',
+      'defaultValue?: string',
+      'OneSelectOption',
+      'radiogroup',
+    ]) {
+      expect(radio).toContain(fragment);
+    }
+
+    const timePicker = pageText('/components/form/time-picker/');
+    for (const fragment of ['OneTimePicker', 'step?: number', 'min / max']) {
+      expect(timePicker).toContain(fragment);
+    }
+
+    const avatar = pageText('/components/data-display/avatar/');
+    for (const fragment of [
+      "shape?: 'circle' | 'square'",
+      'src?: string',
+      'OneDataDisplayVariant',
+    ]) {
+      expect(avatar).toContain(fragment);
+    }
+
+    const progress = pageText('/components/data-display/progress/');
+    for (const fragment of [
+      'percent?: number',
+      'showText?: boolean',
+      'role=progressbar',
+    ]) {
+      expect(progress).toContain(fragment);
+    }
+
+    const loading = pageText('/components/feedback/loading/');
+    for (const fragment of ['OneLoading', 'label?: string', 'role=status']) {
+      expect(loading).toContain(fragment);
+    }
+  });
+
+  it('publishes selection, time and added data-display components in both READMEs', () => {
+    for (const readme of ['README.md', 'README-zh.md']) {
+      const markdown = readFileSync(join(packageRoot, readme), 'utf8');
+      for (const name of [
+        'OneRadio',
+        'OneRadioGroup',
+        'OneTimePicker',
+        'OneAvatar',
+        'OneProgress',
+        'OneLoading',
+      ]) {
+        expect(markdown).toContain(name);
+      }
+      expect(markdown).toContain('new OneRadioGroup({');
+      expect(markdown).toContain('new OneTimePicker({');
+      expect(markdown).toContain('new OneAvatar({');
+      expect(markdown).toContain('new OneProgress({');
+      expect(markdown).toContain('new OneLoading({');
+    }
+  });
+
+  it('documents slider, rate, upload, table, collapse and skeleton pages with demos and APIs', () => {
+    for (const [path, component] of [
+      ['/components/form/slider/', 'slider'],
+      ['/components/form/rate/', 'rate'],
+      ['/components/form/upload/', 'upload'],
+      ['/components/data-display/table/', 'table'],
+      ['/components/data-display/collapse/', 'collapse'],
+      ['/components/data-display/skeleton/', 'skeleton'],
+    ] as const) {
+      expect(pageAt(path).body).toContainEqual(
+        expect.objectContaining({
+          type: 'demo',
+          component,
+          interactive: true,
+        })
+      );
+      expect(pageText(path)).toContain('API');
+    }
+
+    const slider = pageText('/components/form/slider/');
+    for (const fragment of [
+      'OneSlider',
+      'min?: number',
+      'showValue?: boolean',
+      'OneSliderValueEvent',
+    ]) {
+      expect(slider).toContain(fragment);
+    }
+
+    const rate = pageText('/components/form/rate/');
+    for (const fragment of [
+      'OneRate',
+      'count?: number',
+      'allowClear?: boolean',
+      'OneRateValueEvent',
+    ]) {
+      expect(rate).toContain(fragment);
+    }
+
+    const upload = pageText('/components/form/upload/');
+    for (const fragment of [
+      'OneUpload',
+      'multiple?: boolean',
+      'OneUploadFile',
+      'OneUploadChangeEvent',
+    ]) {
+      expect(upload).toContain(fragment);
+    }
+
+    const table = pageText('/components/data-display/table/');
+    for (const fragment of [
+      'OneTable',
+      'OneTableColumn',
+      'emptyText',
+      'striped?: boolean',
+    ]) {
+      expect(table).toContain(fragment);
+    }
+
+    const collapse = pageText('/components/data-display/collapse/');
+    for (const fragment of [
+      'OneCollapse',
+      'accordion?: boolean',
+      'OneCollapseChangeEvent',
+      'aria-expanded',
+    ]) {
+      expect(collapse).toContain(fragment);
+    }
+
+    const skeleton = pageText('/components/data-display/skeleton/');
+    for (const fragment of [
+      'OneSkeleton',
+      'rows?: number',
+      'animated?: boolean',
+      'aria-busy',
+    ]) {
+      expect(skeleton).toContain(fragment);
+    }
+  });
+
+  it('publishes slider, rate, upload, table, collapse and skeleton in both READMEs', () => {
+    for (const readme of ['README.md', 'README-zh.md']) {
+      const markdown = readFileSync(join(packageRoot, readme), 'utf8');
+      for (const name of [
+        'OneSlider',
+        'OneRate',
+        'OneUpload',
+        'OneTable',
+        'OneCollapse',
+        'OneSkeleton',
+      ]) {
+        expect(markdown).toContain(name);
+      }
+      expect(markdown).toContain('new OneSlider({');
+      expect(markdown).toContain('new OneRate({');
+      expect(markdown).toContain('new OneUpload({');
+      expect(markdown).toContain('new OneTable({');
+      expect(markdown).toContain('new OneCollapse({');
+      expect(markdown).toContain('new OneSkeleton({');
     }
   });
 });

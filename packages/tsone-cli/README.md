@@ -96,14 +96,22 @@ are rejected before the output directory is removed.
 Development and build options are deliberately separate:
 
 ```text
-tsone dev [--host <host>] [--port <port>]
+tsone dev [--host <host>] [--port <port>] [--no-watch]
 tsone build [--out-dir <path>]
 ```
 
-`dev` accepts only `--host` and `--port`; `build` accepts only `--out-dir`.
-Options override `tsone.config.ts`. Both separated and equals forms work, for
-example `--port 3000`, `--port=3000`, `--out-dir output`, and
+`dev` accepts `--host`, `--port`, and `--no-watch`; `build` accepts only
+`--out-dir`. Options override `tsone.config.ts`. Both separated and equals
+forms work, for example `--port 3000`, `--port=3000`, `--out-dir output`, and
 `--out-dir=output`.
+
+`tsone dev` watches the project by default: when a source, style, or config
+file changes it rebuilds the current page and notifies connected browsers to
+reload over a server-sent events stream at `/__tsone/reload`, so the page
+updates without a manual refresh. A failed rebuild keeps the last working page
+served, and changes to `tsone.config.ts` restart the development server with
+the fresh configuration. Pass `--no-watch` to disable file watching and keep
+the server as a plain on-demand builder.
 
 `tsone dev` serves the generated HTML at `/` and `/index.html`. Each document
 build writes an immutable browser ESM generation beneath the internal
@@ -169,7 +177,8 @@ console.log(result.root, result.outDir, result.assetsBuilt);
 ## Version 1 Scope
 
 The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.
-CLI v1 has no config plugins, WebSocket, HMR, SSR, functional config, `public/`
-directory copying, or public `minify` and `sourcemap` configuration.
-Development bundles use an internal inline source map, while production build
-minification and source-map controls are intentionally not configurable.
+CLI v1 has no config plugins, WebSocket, HMR, SSR, functional config,
+`public/` directory copying, or public `minify` and `sourcemap`
+configuration. Development bundles use an internal inline source map, while
+production build minification and source-map controls are intentionally not
+configurable.

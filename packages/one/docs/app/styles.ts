@@ -7,6 +7,18 @@ import { ONE_FORM_ITEM_STYLES } from '../../lib/form/OneFormItem';
 import { ONE_FORM_STYLES } from '../../lib/form/OneForm';
 import { ONE_SELECT_STYLES } from '../../lib/select/OneSelect';
 import { ONE_SWITCH_STYLES } from '../../lib/switch/OneSwitch';
+import { ONE_RADIO_STYLES } from '../../lib/radio/OneRadio';
+import { ONE_RADIO_GROUP_STYLES } from '../../lib/radio/OneRadioGroup';
+import { ONE_TIME_PICKER_STYLES } from '../../lib/time-picker/OneTimePicker';
+import { ONE_AVATAR_STYLES } from '../../lib/avatar/OneAvatar';
+import { ONE_PROGRESS_STYLES } from '../../lib/progress/OneProgress';
+import { ONE_LOADING_STYLES } from '../../lib/loading/OneLoading';
+import { ONE_SLIDER_STYLES } from '../../lib/slider/OneSlider';
+import { ONE_RATE_STYLES } from '../../lib/rate/OneRate';
+import { ONE_UPLOAD_STYLES } from '../../lib/upload/OneUpload';
+import { ONE_TABLE_STYLES } from '../../lib/table/OneTable';
+import { ONE_COLLAPSE_STYLES } from '../../lib/collapse/OneCollapse';
+import { ONE_SKELETON_STYLES } from '../../lib/skeleton/OneSkeleton';
 import { ONE_ALERT_STYLES } from '../../lib/alert/OneAlert';
 import { ONE_DIALOG_STYLES } from '../../lib/dialog/DialogOverlay';
 import { ONE_MESSAGE_STYLES } from '../../lib/message/MessageOverlay';
@@ -20,6 +32,7 @@ const documentStyles: StyleSheet = [
       colorScheme: 'light',
       '--one-docs-green': '#5fd956',
       '--one-docs-green-strong': '#2f7c39',
+      '--one-docs-green-soft': 'rgba(95, 217, 86, 0.14)',
       '--one-docs-bg': '#ffffff',
       '--one-docs-surface': '#f6faf5',
       '--one-docs-text': '#162018',
@@ -27,6 +40,48 @@ const documentStyles: StyleSheet = [
       '--one-docs-border': '#d9e8d6',
       '--one-docs-code-bg': '#102016',
       '--one-docs-code-text': '#e8f5e7',
+    },
+  },
+  {
+    selector: 'html[data-one-theme="dark"]',
+    properties: {
+      colorScheme: 'dark',
+      '--one-docs-green': '#5fd956',
+      '--one-docs-green-strong': '#7ee877',
+      '--one-docs-green-soft': 'rgba(95, 217, 86, 0.16)',
+      '--one-docs-bg': '#101610',
+      '--one-docs-surface': '#1a231c',
+      '--one-docs-text': '#e6efe7',
+      '--one-docs-muted': '#93a99a',
+      '--one-docs-border': '#2f3d33',
+      '--one-docs-code-bg': '#0a120c',
+      '--one-docs-code-text': '#d7f5d3',
+      '--one-color-primary': '#5fd956',
+      '--one-color-primary-hover': '#6fe667',
+      '--one-color-primary-contrast': '#0e1a10',
+      '--one-color-secondary': '#1a231c',
+      '--one-color-secondary-hover': '#2c3a30',
+      '--one-color-secondary-contrast': '#e6efe7',
+      '--one-color-danger': '#e05252',
+      '--one-color-danger-hover': '#cf3f3f',
+      '--one-color-danger-contrast': '#ffffff',
+      '--one-color-info': '#5b8def',
+      '--one-color-success': '#3fae51',
+      '--one-color-warning': '#d8a13c',
+      '--one-color-overlay': 'rgba(0, 0, 0, 0.62)',
+      '--one-color-surface': '#1a231c',
+      '--one-color-text': '#e6efe7',
+      '--one-color-muted': '#93a99a',
+      '--one-color-focus': '#7ee877',
+      '--one-color-border': '#2f3d33',
+      '--one-shadow-card': '0 12px 30px rgba(0, 0, 0, 0.45)',
+      '--one-shadow-overlay': '0 18px 48px rgba(0, 0, 0, 0.6)',
+    },
+  },
+  {
+    selector: 'html[data-one-theme="dark"] .one-docs-topbar',
+    properties: {
+      background: 'rgba(16, 22, 16, 0.96)',
     },
   },
   {
@@ -116,6 +171,76 @@ const documentStyles: StyleSheet = [
     },
   },
   {
+    selector: '.one-docs-topbar-end',
+    properties: {
+      alignItems: 'center',
+      display: 'flex',
+      gap: '24px',
+    },
+  },
+  {
+    selector: '.one-docs-lang',
+    properties: {
+      alignItems: 'center',
+      borderLeft: '1px solid var(--one-docs-border)',
+      display: 'flex',
+      gap: '4px',
+      paddingLeft: '20px',
+    },
+  },
+  {
+    selector: '.one-docs-lang a',
+    properties: {
+      borderRadius: '6px',
+      color: 'var(--one-docs-muted)',
+      fontSize: '13px',
+      fontWeight: 500,
+      padding: '4px 8px',
+      textDecoration: 'none',
+    },
+  },
+  {
+    selector: '.one-docs-lang a:hover',
+    properties: {
+      color: 'var(--one-docs-green-strong)',
+    },
+  },
+  {
+    selector: '.one-docs-lang a.active',
+    properties: {
+      background: 'var(--one-docs-green-soft)',
+      color: 'var(--one-docs-green-strong)',
+    },
+  },
+  {
+    selector: '.one-docs-theme',
+    properties: {
+      alignItems: 'center',
+      display: 'flex',
+      gap: '8px',
+    },
+  },
+  {
+    selector: '.one-docs-theme-label',
+    properties: {
+      color: 'var(--one-docs-muted)',
+      fontSize: '13px',
+      fontWeight: 500,
+    },
+  },
+  {
+    selector: 'html[data-one-theme="dark"] .one-docs-theme .one-switch',
+    properties: {
+      backgroundColor: `var(--one-color-primary, #5fd956)`,
+    },
+  },
+  {
+    selector: 'html[data-one-theme="dark"] .one-docs-theme .one-switch__thumb',
+    properties: {
+      transform: 'translateX(20px)',
+    },
+  },
+  {
     selector: '.one-docs-layout',
     properties: {
       boxSizing: 'border-box',
@@ -147,6 +272,35 @@ const documentStyles: StyleSheet = [
     selector: '.one-docs-nav-section + .one-docs-nav-section',
     properties: {
       marginTop: '26px',
+    },
+  },
+  {
+    selector: '.one-docs-nav-section--components .one-docs-nav-item--category',
+    properties: {
+      fontWeight: 500,
+    },
+  },
+  {
+    selector:
+      '.one-docs-nav-section--components .one-docs-nav-item--category-label',
+    properties: {
+      color: 'var(--one-docs-text)',
+      fontSize: '12px',
+      fontWeight: 600,
+      marginTop: '6px',
+    },
+  },
+  {
+    selector: '.one-docs-nav-section--components .one-docs-nav-item--leaf',
+    properties: {
+      paddingLeft: '10px',
+    },
+  },
+  {
+    selector: '.one-docs-nav-section--components .one-docs-nav-item--leaf a',
+    properties: {
+      fontSize: '13px',
+      paddingLeft: '8px',
     },
   },
   {
@@ -182,7 +336,7 @@ const documentStyles: StyleSheet = [
   {
     selector: '.one-docs-nav a.active,\n.one-docs-nav a:hover',
     properties: {
-      background: 'rgba(95, 217, 86, 0.14)',
+      background: 'var(--one-docs-green-soft)',
       color: 'var(--one-docs-green-strong)',
     },
   },
@@ -591,6 +745,65 @@ const documentStyles: StyleSheet = [
       },
     ],
   },
+  {
+    selector: '[data-one-demo] output',
+    properties: {
+      display: 'block',
+      marginTop: '12px',
+      color: 'var(--one-docs-muted)',
+      fontSize: '13px',
+    },
+  },
+  {
+    selector: '.one-docs-slider-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      maxWidth: '420px',
+    },
+  },
+  {
+    selector: '.one-docs-rate-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+    },
+  },
+  {
+    selector: '.one-docs-upload-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+    },
+  },
+  {
+    selector: '.one-docs-collapse-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      maxWidth: '520px',
+    },
+  },
+  {
+    selector: '.one-docs-skeleton-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      maxWidth: '360px',
+    },
+  },
+  {
+    atRule: '@keyframes one-skeleton-pulse',
+    rules: [
+      { selector: '0%, 100%', properties: { opacity: '1' } },
+      { selector: '50%', properties: { opacity: '0.45' } },
+    ],
+  },
 ];
 
 export const oneDocsStyles: StyleSheet = [
@@ -602,9 +815,21 @@ export const oneDocsStyles: StyleSheet = [
   ...oneStylesToSheet(ONE_SELECT_STYLES),
   ...oneStylesToSheet(ONE_CHECKBOX_STYLES),
   ...oneStylesToSheet(ONE_SWITCH_STYLES),
+  ...oneStylesToSheet(ONE_RADIO_STYLES),
+  ...oneStylesToSheet(ONE_RADIO_GROUP_STYLES),
+  ...oneStylesToSheet(ONE_TIME_PICKER_STYLES),
+  ...oneStylesToSheet(ONE_AVATAR_STYLES),
+  ...oneStylesToSheet(ONE_PROGRESS_STYLES),
+  ...oneStylesToSheet(ONE_LOADING_STYLES),
   ...oneStylesToSheet(ONE_ALERT_STYLES),
   ...oneStylesToSheet(ONE_MESSAGE_STYLES),
   ...oneStylesToSheet(ONE_DIALOG_STYLES),
   ...oneStylesToSheet(ONE_TOOLTIP_STYLES),
+  ...oneStylesToSheet(ONE_SLIDER_STYLES),
+  ...oneStylesToSheet(ONE_RATE_STYLES),
+  ...oneStylesToSheet(ONE_UPLOAD_STYLES),
+  ...oneStylesToSheet(ONE_TABLE_STYLES),
+  ...oneStylesToSheet(ONE_COLLAPSE_STYLES),
+  ...oneStylesToSheet(ONE_SKELETON_STYLES),
   ...documentStyles,
 ];

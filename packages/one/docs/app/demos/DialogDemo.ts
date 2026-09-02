@@ -1,5 +1,6 @@
 import { Component, type VNode } from '@geektech/tsone';
 import { OneButton, OneDialog, oneDialog } from '../../../lib';
+import { pick } from './locale';
 
 interface DialogDemoState {
   controlledOpen: boolean;
@@ -13,21 +14,28 @@ export class DialogDemo extends Component<
   private customContainer: HTMLElement | undefined;
   private readonly openDialog = (): void => {
     oneDialog.open({
-      title: '保存更改？',
-      description: '取消会保留当前页面。',
+      title: pick('保存更改？', 'Save changes?'),
+      description: pick('取消会保留当前页面。', 'Canceling keeps the current page.'),
     });
   };
   private readonly confirmDialog = (): void => {
     void oneDialog
       .confirm({
-        title: '提交更改？',
+        title: pick('提交更改？', 'Submit changes?'),
         onConfirm: () => {
-          this.setState({ result: '确认结果：true' });
+          this.setState({
+            result: pick('确认结果：true', 'Confirmation result: true'),
+          });
           return true;
         },
       })
       .then((confirmed) => {
-        this.setState({ result: `确认结果：${String(confirmed)}` });
+        this.setState({
+          result: pick(
+            `确认结果：${String(confirmed)}`,
+            `Confirmation result: ${String(confirmed)}`
+          ),
+        });
       });
   };
   private readonly openControlledDialog = (): void => {
@@ -38,8 +46,8 @@ export class DialogDemo extends Component<
       return;
     }
     oneDialog.open({
-      title: '容器内 Dialog',
-      description: '此示例不会锁定 body。',
+      title: pick('容器内 Dialog', 'In-container dialog'),
+      description: pick('此示例不会锁定 body。', 'This example does not lock the body.'),
       container: this.customContainer,
     });
   };
@@ -48,7 +56,10 @@ export class DialogDemo extends Component<
   };
 
   protected initState(): DialogDemoState {
-    return { controlledOpen: false, result: '尚未确认' };
+    return {
+      controlledOpen: false,
+      result: pick('尚未确认', 'Not confirmed yet'),
+    };
   }
 
   protected initStyles(): void {}
@@ -86,10 +97,10 @@ export class DialogDemo extends Component<
       tag: 'div',
       props: { className: 'one-docs-dialog-demo' },
       children: [
-        this.button('打开 Dialog', this.openDialog),
-        this.button('异步确认', this.confirmDialog),
-        this.button('受控 Dialog', this.openControlledDialog),
-        this.button('容器内 Dialog', this.openContainedDialog),
+        this.button(pick('打开 Dialog', 'Open dialog'), this.openDialog),
+        this.button(pick('异步确认', 'Async confirm'), this.confirmDialog),
+        this.button(pick('受控 Dialog', 'Controlled dialog'), this.openControlledDialog),
+        this.button(pick('容器内 Dialog', 'In-container dialog'), this.openContainedDialog),
         {
           tag: 'output',
           props: { 'data-one-dialog-result': '' },
@@ -106,7 +117,7 @@ export class DialogDemo extends Component<
           component: OneDialog,
           props: {
             open: this.state.controlledOpen,
-            title: '受控 Dialog',
+            title: pick('受控 Dialog', 'Controlled dialog'),
           },
           emitters: { openChange: this.handleControlledOpenChange },
         },

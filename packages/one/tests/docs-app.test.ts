@@ -20,7 +20,7 @@ describe('One UI docs app', () => {
   it('renders the classic documentation shell and document metadata', () => {
     const html = render('/components/button/');
     expect(html).toContain('<!doctype html>');
-    expect(html).toContain('<html lang="zh-CN">');
+    expect(html).toContain('<html lang="zh-CN" data-one-theme="default">');
     expect(html).toContain('<title>OneButton - One UI</title>');
     expect(html).toContain('data-one-docs-page="/components/button/"');
     expect(html).toContain('class="one-docs-topbar"');
@@ -34,6 +34,26 @@ describe('One UI docs app', () => {
     expect(html).toContain('/assets/one-docs-client.js');
   });
 
+  it('renders a default theme switch and a no-flash bootstrap script', () => {
+    const html = render('/components/button/');
+    expect(html).toContain('class="one-docs-theme"');
+    expect(html).toContain('data-one-theme-toggle=""');
+    expect(html).toContain('class="one-switch"');
+    expect(html).toContain('class="one-switch__input"');
+    expect(html).toContain('class="one-switch__thumb"');
+    expect(html).toContain('aria-label="切换主题"');
+    expect(html).toContain('class="one-docs-theme-label">主题</span>');
+    expect(html).toContain('data-one-theme="dark"');
+    expect(html).toContain('localStorage.getItem');
+    expect(html).toContain("'one-docs-theme'");
+    expect(html.indexOf('localStorage.getItem')).toBeLessThan(
+      html.indexOf('</head>')
+    );
+    expect(html.indexOf('localStorage.getItem')).toBeLessThan(
+      html.indexOf('<body>')
+    );
+  });
+
   it('renders ordered grouped navigation and marks the current page', () => {
     const html = render('/components/input/');
     const start = html.indexOf('>开始</h2>');
@@ -43,8 +63,30 @@ describe('One UI docs app', () => {
     expect(guide).toBeGreaterThan(start);
     expect(components).toBeGreaterThan(guide);
     expect(html).toContain(
-      'href="/components/input/" class="active" aria-current="page"'
+      'href="/zh/components/input/" class="active" aria-current="page"'
     );
+  });
+
+  it('renders unclassified components in a 通用分类 and keeps hierarchy with categories', () => {
+    const html = render('/components/data-display/tag/');
+
+    expect(html).toContain('>Button</a>');
+    expect(html).toContain('>Input</a>');
+    expect(html).toContain('>通用</li>');
+    expect(html).toContain('>数据展示</li>');
+    expect(html).toContain(
+      'class="one-docs-nav-item one-docs-nav-item--category one-docs-nav-item--category-label"'
+    );
+    expect(html).toContain(
+      'class="one-docs-nav-section one-docs-nav-section--components"'
+    );
+    expect(html).toContain(
+      'class="one-docs-nav-item one-docs-nav-item--category one-docs-nav-item--category-label">'
+    );
+    expect(html).toContain(
+      'class="one-docs-nav-item one-docs-nav-item--component one-docs-nav-item--leaf"'
+    );
+    expect(html).not.toContain('>OneButton</a>');
   });
 
   it('renders heading ids and an ordered right-hand table of contents', () => {
@@ -91,9 +133,18 @@ describe('One UI docs app', () => {
         'badge',
       ],
       ['/components/data-display/empty/', 'class="one-empty"', 'empty'],
+      ['/components/data-display/avatar/', 'class="one-avatar ', 'avatar'],
+      ['/components/data-display/progress/', 'class="one-progress"', 'progress'],
+      ['/components/form/radio/', 'class="one-radio-group"', 'radio'],
+      [
+        '/components/form/time-picker/',
+        'class="one-time-picker',
+        'time-picker',
+      ],
       ['/components/feedback/alert/', 'class="one-alert ', 'alert'],
       ['/components/feedback/message/', 'class="one-message ', 'message'],
       ['/components/feedback/dialog/', 'class="one-dialog"', 'dialog'],
+      ['/components/feedback/loading/', 'class="one-loading ', 'loading'],
       [
         '/components/feedback/tooltip/',
         'class="one-tooltip__bubble"',
@@ -110,6 +161,12 @@ describe('One UI docs app', () => {
         'class="one-pagination"',
         'pagination',
       ],
+      ['/components/form/slider/', 'class="one-slider"', 'slider'],
+      ['/components/form/rate/', 'class="one-rate', 'rate'],
+      ['/components/form/upload/', 'class="one-upload', 'upload'],
+      ['/components/data-display/table/', 'class="one-table__wrap"', 'table'],
+      ['/components/data-display/collapse/', 'class="one-collapse"', 'collapse'],
+      ['/components/data-display/skeleton/', 'class="one-skeleton', 'skeleton'],
     ] as const) {
       const html = render(path);
       expect(html).toContain(preview);
@@ -149,10 +206,21 @@ describe('One UI docs app', () => {
     expect(html).toContain('.one-button {');
     expect(html).toContain('.one-input {');
     expect(html).toContain('.one-card {');
+    expect(html).toContain('.one-radio {');
+    expect(html).toContain('.one-time-picker {');
+    expect(html).toContain('.one-avatar {');
+    expect(html).toContain('.one-progress {');
+    expect(html).toContain('.one-loading {');
     expect(html).toContain('.one-alert {');
     expect(html).toContain('.one-message {');
     expect(html).toContain('.one-dialog {');
     expect(html).toContain('.one-tooltip__bubble {');
+    expect(html).toContain('.one-slider {');
+    expect(html).toContain('.one-rate {');
+    expect(html).toContain('.one-upload {');
+    expect(html).toContain('.one-table {');
+    expect(html).toContain('.one-collapse {');
+    expect(html).toContain('.one-skeleton {');
     expect(html).toContain('.one-docs-topbar {');
     expect(html).toContain('position: fixed;');
     expect(html).toContain('width: 240px;');

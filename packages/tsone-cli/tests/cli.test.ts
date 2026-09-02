@@ -94,6 +94,14 @@ describe('TSone CLI arguments', () => {
     });
   });
 
+  it('parses the dev no-watch flag without consuming a value', () => {
+    expect(parseCliArgs(['dev', '--no-watch', '--port', '4301'])).toEqual({
+      command: 'dev',
+      port: 4301,
+      noWatch: true,
+    });
+  });
+
   it('parses build options in equals form', () => {
     expect(parseCliArgs(['build', '--out-dir=output'])).toEqual({
       command: 'build',
@@ -125,7 +133,7 @@ describe('TSone CLI arguments', () => {
       parseCliArgs(['build', '--out-dir', 'one', '--out-dir=two'])
     ).toThrow('Duplicate option: --out-dir');
     expect(() => parseCliArgs(['dev', '--open'])).toThrow(
-      'tsone dev [--host <host>] [--port <port>]\n  tsone build [--out-dir <path>]'
+      'tsone dev [--host <host>] [--port <port>] [--no-watch]\n  tsone build [--out-dir <path>]'
     );
   });
 

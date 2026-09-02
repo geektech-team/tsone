@@ -18,23 +18,24 @@
     },
     "packages/one": {
       "name": "@geektech/one",
-      "version": "0.0.1",
+      "version": "0.1.0",
       "devDependencies": {
         "@geektech/tsone": "workspace:*",
+        "@geektech/tsone-cli": "workspace:*",
       },
       "peerDependencies": {
-        "@geektech/tsone": ">=0.0.2 <0.1.0",
+        "@geektech/tsone": ">=0.1.0 <0.2.0",
       },
     },
     "packages/tsone": {
       "name": "@geektech/tsone",
-      "version": "0.0.2",
+      "version": "0.1.0",
     },
     "packages/tsone-cli": {
       "name": "@geektech/tsone-cli",
       "version": "0.0.1",
       "bin": {
-        "tsone": "./bin/tsone.ts",
+        "tsone": "bin/tsone.ts",
       },
       "dependencies": {
         "@geektech/tsone": "workspace:*",

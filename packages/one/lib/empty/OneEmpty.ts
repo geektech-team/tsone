@@ -37,13 +37,34 @@ export const ONE_EMPTY_STYLES: OneNamedStyle[] = [
     name: 'one-empty-illustration',
     selector: '.one-empty__illustration',
     properties: {
-      display: 'block',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '4px',
       width: '48px',
       height: '36px',
+      boxSizing: 'border-box',
       backgroundColor: `var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface})`,
       border: `2px solid var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
       borderRadius: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
     },
+  },
+  {
+    name: 'one-empty-illustration-line',
+    selector: '.one-empty__illustration-line',
+    properties: {
+      display: 'block',
+      width: '20px',
+      height: '3px',
+      borderRadius: '999px',
+      backgroundColor: `var(--one-color-border, ${ONE_THEME_DEFAULTS.colorBorder})`,
+    },
+  },
+  {
+    name: 'one-empty-illustration-line-short',
+    selector: '.one-empty__illustration-line--short',
+    properties: { width: '12px' },
   },
   {
     name: 'one-empty-description',
@@ -113,6 +134,19 @@ export class OneEmpty extends Component<OneEmptyProps> {
                 {
                   tag: 'span',
                   props: { className: 'one-empty__illustration' },
+                  children: [
+                    {
+                      tag: 'span',
+                      props: { className: 'one-empty__illustration-line' },
+                    },
+                    {
+                      tag: 'span',
+                      props: {
+                        className:
+                          'one-empty__illustration-line one-empty__illustration-line--short',
+                      },
+                    },
+                  ],
                 },
               ],
         },

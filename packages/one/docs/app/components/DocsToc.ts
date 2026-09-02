@@ -1,8 +1,15 @@
 import { Component, type VNode } from '@geektech/tsone';
-import { headingsForPage, type OneDocPage } from '../content';
+import {
+  headingsForPage,
+  localize,
+  type OneDocLocale,
+  type OneDocPage,
+} from '../content';
+import { pick } from '../locale';
 
 export interface DocsTocProps {
   page: OneDocPage;
+  locale: OneDocLocale;
 }
 
 export class DocsToc extends Component<DocsTocProps> {
@@ -13,14 +20,22 @@ export class DocsToc extends Component<DocsTocProps> {
   protected initStyles(): void {}
 
   protected render(): VNode {
+    const { page, locale } = this.props;
+
     return {
       tag: 'nav',
-      props: { className: 'one-docs-toc-nav', 'aria-label': '本文目录' },
+      props: {
+        className: 'one-docs-toc-nav',
+        'aria-label': pick('本文目录', 'On this page', locale),
+      },
       children: [
-        { tag: 'strong', children: ['本页内容'] },
+        {
+          tag: 'strong',
+          children: [pick('本页内容', 'On this page', locale)],
+        },
         {
           tag: 'ol',
-          children: headingsForPage(this.props.page).map((heading) => ({
+          children: headingsForPage(page).map((heading) => ({
             tag: 'li',
             props: {
               className: `one-docs-toc-level-${heading.level}`,
@@ -29,7 +44,7 @@ export class DocsToc extends Component<DocsTocProps> {
               {
                 tag: 'a',
                 props: { href: `#${heading.id}` },
-                children: [heading.text],
+                children: [localize(heading.text, locale)],
               },
             ],
           })),

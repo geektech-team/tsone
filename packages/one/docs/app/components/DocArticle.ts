@@ -6,20 +6,42 @@ import {
   OneCard,
   OneCheckbox,
   OneAlert,
+  OneAvatar,
   OneForm,
   OneFormItem,
   OneInput,
   OneEmpty,
+  OneLoading,
+  OneProgress,
+  OneRadio,
+  OneRadioGroup,
   OneSelect,
   OnePagination,
   OneSwitch,
   OneTag,
   OneTabs,
+  OneTimePicker,
+  OneSlider,
+  OneRate,
+  OneUpload,
+  OneTable,
+  OneCollapse,
+  OneSkeleton,
 } from '../../../lib';
-import type { OneDocBlock, OneDocInline, OneDocPage } from '../content';
+import {
+  localize,
+  sectionLabel,
+  type OneDocBlock,
+  type OneDocInline,
+  type OneDocLocale,
+  type OneDocPage,
+} from '../content';
+import { localeHref } from '../locale';
+import { pick } from '../locale';
 
 export interface DocArticleProps {
   page: OneDocPage;
+  locale: OneDocLocale;
 }
 
 export class DocArticle extends Component<DocArticleProps> {
@@ -30,6 +52,8 @@ export class DocArticle extends Component<DocArticleProps> {
   protected initStyles(): void {}
 
   protected render(): VNode {
+    const { page, locale } = this.props;
+
     return {
       tag: 'article',
       props: { className: 'one-doc-article' },
@@ -37,20 +61,22 @@ export class DocArticle extends Component<DocArticleProps> {
         {
           tag: 'p',
           props: { className: 'one-docs-section-label' },
-          children: [this.props.page.section],
+          children: [sectionLabel(page.section, locale)],
         },
-        ...this.props.page.body.map((block) => this.renderBlock(block)),
+        ...page.body.map((block) => this.renderBlock(block)),
       ],
     };
   }
 
   private renderBlock(block: OneDocBlock): VNode {
+    const { locale } = this.props;
+
     switch (block.type) {
       case 'heading':
         return {
           tag: `h${block.level}`,
           props: { id: block.id },
-          children: [block.text],
+          children: [localize(block.text, locale)],
         };
       case 'paragraph':
         return { tag: 'p', children: this.renderInline(block.content) };
@@ -80,7 +106,7 @@ export class DocArticle extends Component<DocArticleProps> {
             className: `one-docs-callout one-docs-callout--${block.kind}`,
           },
           children: [
-            { tag: 'strong', children: [block.title] },
+            { tag: 'strong', children: [localize(block.title, locale)] },
             { tag: 'p', children: this.renderInline(block.body) },
           ],
         };
@@ -93,7 +119,7 @@ export class DocArticle extends Component<DocArticleProps> {
               tag: 'table',
               props: { className: 'one-docs-api-table' },
               children: [
-                { tag: 'caption', children: [block.caption] },
+                { tag: 'caption', children: [localize(block.caption, locale)] },
                 {
                   tag: 'thead',
                   children: [
@@ -103,17 +129,17 @@ export class DocArticle extends Component<DocArticleProps> {
                         {
                           tag: 'th',
                           props: { scope: 'col' },
-                          children: ['名称'],
+                          children: [pick('名称', 'Name', locale)],
                         },
                         {
                           tag: 'th',
                           props: { scope: 'col' },
-                          children: ['签名'],
+                          children: [pick('签名', 'Signature', locale)],
                         },
                         {
                           tag: 'th',
                           props: { scope: 'col' },
-                          children: ['说明'],
+                          children: [pick('说明', 'Description', locale)],
                         },
                       ],
                     },
@@ -132,7 +158,10 @@ export class DocArticle extends Component<DocArticleProps> {
                         tag: 'td',
                         children: [{ tag: 'code', children: [row.signature] }],
                       },
-                      { tag: 'td', children: [row.description] },
+                      {
+                        tag: 'td',
+                        children: [localize(row.description, locale)],
+                      },
                     ],
                   })),
                 },
@@ -152,23 +181,25 @@ export class DocArticle extends Component<DocArticleProps> {
   }
 
   private renderInline(content: OneDocInline[]): Array<VNode | string> {
+    const { locale } = this.props;
+
     return content.map((item) => {
       if (typeof item === 'string') {
         return item;
       }
 
-      switch (item.type) {
-        case 'code':
+      if ('type' in item) {
+        if (item.type === 'code') {
           return { tag: 'code', children: [item.text] };
-        case 'link':
-          return {
-            tag: 'a',
-            props: { href: item.href },
-            children: [item.text],
-          };
-        default:
-          return assertNever(item);
+        }
+        return {
+          tag: 'a',
+          props: { href: this.localizeHref(item.href) },
+          children: [localize(item.text, locale)],
+        };
       }
+
+      return localize(item, locale);
     });
   }
 
@@ -177,11 +208,17 @@ export class DocArticle extends Component<DocArticleProps> {
     interactive: boolean,
     source: Extract<OneDocBlock, { type: 'demo' }>['source']
   ): VNode {
+    const { locale } = this.props;
+
     return {
       tag: 'section',
       props: {
         className: 'one-docs-demo',
-        'aria-label': `${component} 组件预览`,
+        'aria-label': pick(
+          `${component} 组件预览`,
+          `${component} demo`,
+          locale
+        ),
       },
       children: [
         {
@@ -210,12 +247,12 @@ export class DocArticle extends Component<DocArticleProps> {
                 {
                   tag: 'span',
                   props: { className: 'one-docs-demo-source__show' },
-                  children: ['查看代码'],
+                  children: [pick('查看代码', 'View code', locale)],
                 },
                 {
                   tag: 'span',
                   props: { className: 'one-docs-demo-source__hide' },
-                  children: ['收起代码'],
+                  children: [pick('收起代码', 'Hide code', locale)],
                 },
               ],
             },
@@ -238,6 +275,8 @@ export class DocArticle extends Component<DocArticleProps> {
   private renderStaticPreview(
     component: Extract<OneDocBlock, { type: 'demo' }>['component']
   ): VNode[] {
+    const { locale } = this.props;
+
     switch (component) {
       case 'button':
         return [
@@ -274,19 +313,25 @@ export class DocArticle extends Component<DocArticleProps> {
         return [
           {
             component: OneInput,
-            props: { value: '受控值', ariaLabel: '受控输入' },
-          },
-          {
-            component: OneInput,
-            props: { defaultValue: '非受控值', ariaLabel: '非受控输入' },
+            props: {
+              value: pick('受控值', 'Controlled value', locale),
+              ariaLabel: pick('受控输入', 'Controlled input', locale),
+            },
           },
           {
             component: OneInput,
             props: {
-              placeholder: '必填输入',
+              defaultValue: pick('非受控值', 'Uncontrolled value', locale),
+              ariaLabel: pick('非受控输入', 'Uncontrolled input', locale),
+            },
+          },
+          {
+            component: OneInput,
+            props: {
+              placeholder: pick('必填输入', 'Required input', locale),
               required: true,
               invalid: true,
-              ariaLabel: '无效输入',
+              ariaLabel: pick('无效输入', 'Invalid input', locale),
             },
           },
         ];
@@ -294,18 +339,21 @@ export class DocArticle extends Component<DocArticleProps> {
         return [
           {
             component: OneCard,
-            props: { title: '后备标题' },
+            props: { title: pick('后备标题', 'Fallback title', locale) },
             children: [
               {
                 tag: 'strong',
                 slot: 'header',
-                children: ['显式 header'],
+                children: [pick('显式 header', 'Explicit header', locale)],
               },
-              { tag: 'p', children: ['default 主体内容'] },
+              {
+                tag: 'p',
+                children: [pick('default 主体内容', 'default body content', locale)],
+              },
               {
                 tag: 'span',
                 slot: 'footer',
-                children: ['footer 操作区'],
+                children: [pick('footer 操作区', 'footer action area', locale)],
               },
             ],
           },
@@ -315,17 +363,17 @@ export class DocArticle extends Component<DocArticleProps> {
           {
             component: OneTag,
             props: { variant: 'success', closable: true, size: 'sm' },
-            children: ['已发布'],
+            children: [pick('已发布', 'Published', locale)],
           },
           {
             component: OneTag,
             props: { variant: 'neutral', size: 'md' },
-            children: ['默认'],
+            children: [pick('默认', 'Default', locale)],
           },
           {
             component: OneTag,
             props: { variant: 'warning', size: 'lg' },
-            children: ['待检查'],
+            children: [pick('待检查', 'Needs review', locale)],
           },
         ];
       case 'badge':
@@ -333,17 +381,21 @@ export class DocArticle extends Component<DocArticleProps> {
           {
             component: OneBadge,
             props: { value: 8 },
-            children: ['消息'],
+            children: [pick('消息', 'Messages', locale)],
           },
           {
             component: OneBadge,
             props: { value: 120, max: 99, variant: 'error' },
-            children: ['待办'],
+            children: [pick('待办', 'To-do', locale)],
           },
           {
             component: OneBadge,
-            props: { dot: true, ariaLabel: '有新通知', variant: 'success' },
-            children: ['通知'],
+            props: {
+              dot: true,
+              ariaLabel: pick('有新通知', 'New notifications', locale),
+              variant: 'success',
+            },
+            children: [pick('通知', 'Notifications', locale)],
           },
           {
             component: OneBadge,
@@ -354,13 +406,15 @@ export class DocArticle extends Component<DocArticleProps> {
         return [
           {
             component: OneEmpty,
-            props: { description: '暂无搜索结果' },
+            props: {
+              description: pick('暂无搜索结果', 'No search results', locale),
+            },
             children: [
               {
                 component: OneButton,
                 slot: 'actions',
                 props: { size: 'sm' },
-                children: ['创建项目'],
+                children: [pick('创建项目', 'Create project', locale)],
               },
             ],
           },
@@ -371,20 +425,30 @@ export class DocArticle extends Component<DocArticleProps> {
             component: OneForm,
             props: {
               initialValues: { name: '' },
-              rules: { name: [{ required: true, message: '请输入名称' }] },
+              rules: {
+                name: [
+                  {
+                    required: true,
+                    message: pick('请输入名称', 'Please enter a name', locale),
+                  },
+                ],
+              },
             },
             children: [
               {
                 component: OneFormItem,
-                props: { name: 'name', label: '名称' },
+                props: { name: 'name', label: pick('名称', 'Name', locale) },
                 children: [
-                  { component: OneInput, props: { ariaLabel: '名称' } },
+                  {
+                    component: OneInput,
+                    props: { ariaLabel: pick('名称', 'Name', locale) },
+                  },
                 ],
               },
               {
                 component: OneButton,
                 props: { type: 'submit' },
-                children: ['提交'],
+                children: [pick('提交', 'Submit', locale)],
               },
             ],
           },
@@ -396,10 +460,15 @@ export class DocArticle extends Component<DocArticleProps> {
             props: {
               multiple: true,
               searchable: true,
-              ariaLabel: '城市',
+              ariaLabel: pick('城市', 'City', locale),
               options: [
-                { value: 'beijing', label: '北京' },
-                { label: '海外', options: [{ value: 'tokyo', label: '东京' }] },
+                { value: 'beijing', label: pick('北京', 'Beijing', locale) },
+                {
+                  label: pick('海外', 'Overseas', locale),
+                  options: [
+                    { value: 'tokyo', label: pick('东京', 'Tokyo', locale) },
+                  ],
+                },
               ],
             },
           },
@@ -408,27 +477,124 @@ export class DocArticle extends Component<DocArticleProps> {
         return [
           {
             component: OneCheckbox,
-            props: { ariaLabel: '同意协议' },
-            children: ['同意协议'],
+            props: { ariaLabel: pick('同意协议', 'Agree to terms', locale) },
+            children: [pick('同意协议', 'Agree to terms', locale)],
           },
         ];
       case 'switch':
-        return [{ component: OneSwitch, props: { ariaLabel: '启用通知' } }];
+        return [
+          {
+            component: OneSwitch,
+            props: {
+              ariaLabel: pick('启用通知', 'Enable notifications', locale),
+            },
+          },
+        ];
+      case 'radio':
+        return [
+          {
+            component: OneRadio,
+            props: {
+              value: 'design',
+              defaultChecked: true,
+              ariaLabel: pick('设计', 'Design', locale),
+            },
+            children: [pick('设计', 'Design', locale)],
+          },
+          {
+            component: OneRadioGroup,
+            props: {
+              defaultValue: 'weekly',
+              ariaLabel: pick('通知频率', 'Notification frequency', locale),
+              options: [
+                { value: 'daily', label: pick('每天', 'Daily', locale) },
+                { value: 'weekly', label: pick('每周', 'Weekly', locale) },
+              ],
+            },
+          },
+        ];
+      case 'time-picker':
+        return [
+          {
+            component: OneTimePicker,
+            props: {
+              defaultValue: '09:30',
+              ariaLabel: pick('开始时间', 'Start time', locale),
+            },
+          },
+        ];
+      case 'loading':
+        return [
+          {
+            component: OneLoading,
+            props: { label: pick('加载中', 'Loading', locale) },
+          },
+          {
+            component: OneLoading,
+            props: {
+              size: 'lg',
+              variant: 'primary',
+              label: pick('提交中', 'Submitting', locale),
+            },
+          },
+        ];
+      case 'avatar':
+        return [
+          {
+            component: OneAvatar,
+            props: { text: 'M', variant: 'primary' },
+          },
+          {
+            component: OneAvatar,
+            props: {
+              text: pick('设计', 'Design', locale),
+              shape: 'square',
+              variant: 'success',
+            },
+          },
+        ];
+      case 'progress':
+        return [
+          {
+            component: OneProgress,
+            props: {
+              percent: 65,
+              showText: true,
+              ariaLabel: pick('完成进度', 'Completion progress', locale),
+            },
+          },
+          {
+            component: OneProgress,
+            props: {
+              percent: 30,
+              variant: 'success',
+              ariaLabel: pick('成功进度', 'Success progress', locale),
+            },
+          },
+        ];
       case 'tabs':
         return [
           {
             component: OneTabs,
             props: {
               defaultValue: 'overview',
-              ariaLabel: '项目设置',
+              ariaLabel: pick('项目设置', 'Project settings', locale),
               items: [
-                { value: 'overview', label: '概览' },
-                { value: 'security', label: '安全' },
+                { value: 'overview', label: pick('概览', 'Overview', locale) },
+                { value: 'security', label: pick('安全', 'Security', locale) },
               ],
             },
             children: [
-              { tag: 'p', slot: 'overview', children: ['概览内容'] },
-              { tag: 'p', slot: 'security', children: ['安全内容'] },
+              {
+                tag: 'p',
+                slot: 'overview',
+                children: [pick('概览内容', 'Overview content', locale)],
+              },
+              {
+                tag: 'p',
+                slot: 'security',
+                children: [pick('安全内容', 'Security content', locale)],
+              },
             ],
           },
         ];
@@ -437,11 +603,11 @@ export class DocArticle extends Component<DocArticleProps> {
           {
             component: OneBreadcrumb,
             props: {
-              ariaLabel: '项目路径',
+              ariaLabel: pick('项目路径', 'Project path', locale),
               items: [
-                { label: '首页', href: '/' },
-                { label: '项目', href: '/projects' },
-                { label: '详情', current: true },
+                { label: pick('首页', 'Home', locale), href: '/' },
+                { label: pick('项目', 'Projects', locale), href: '/projects' },
+                { label: pick('详情', 'Details', locale), current: true },
               ],
             },
           },
@@ -458,8 +624,12 @@ export class DocArticle extends Component<DocArticleProps> {
           {
             component: OneAlert,
             props: {
-              title: '保存成功',
-              description: '更改已经同步。',
+              title: pick('保存成功', 'Saved successfully', locale),
+              description: pick(
+                '更改已经同步。',
+                'Changes have been synced.',
+                locale
+              ),
               variant: 'success',
               closable: true,
             },
@@ -478,7 +648,7 @@ export class DocArticle extends Component<DocArticleProps> {
               {
                 tag: 'div',
                 props: { className: 'one-message__content' },
-                children: ['保存成功'],
+                children: [pick('保存成功', 'Saved successfully', locale)],
               },
             ],
           },
@@ -500,12 +670,18 @@ export class DocArticle extends Component<DocArticleProps> {
                   className: 'one-dialog__header',
                   id: 'one-docs-dialog-title',
                 },
-                children: ['保存更改？'],
+                children: [pick('保存更改？', 'Save changes?', locale)],
               },
               {
                 tag: 'div',
                 props: { className: 'one-dialog__body' },
-                children: ['确认后将同步当前设置。'],
+                children: [
+                  pick(
+                    '确认后将同步当前设置。',
+                    'Your current settings will be synced after confirmation.',
+                    locale
+                  ),
+                ],
               },
               {
                 tag: 'footer',
@@ -514,12 +690,12 @@ export class DocArticle extends Component<DocArticleProps> {
                   {
                     tag: 'button',
                     props: { className: 'one-dialog__cancel', type: 'button' },
-                    children: ['取消'],
+                    children: [pick('取消', 'Cancel', locale)],
                   },
                   {
                     tag: 'button',
                     props: { className: 'one-dialog__confirm', type: 'button' },
-                    children: ['确认'],
+                    children: [pick('确认', 'Confirm', locale)],
                   },
                 ],
               },
@@ -528,7 +704,7 @@ export class DocArticle extends Component<DocArticleProps> {
         ];
       case 'tooltip':
         return [
-          { component: OneButton, children: ['复制'] },
+          { component: OneButton, children: [pick('复制', 'Copy', locale)] },
           {
             tag: 'div',
             props: {
@@ -537,7 +713,7 @@ export class DocArticle extends Component<DocArticleProps> {
               'data-placement': 'top',
             },
             children: [
-              '复制链接',
+              pick('复制链接', 'Copy link', locale),
               {
                 tag: 'span',
                 props: {
@@ -548,9 +724,127 @@ export class DocArticle extends Component<DocArticleProps> {
             ],
           },
         ];
+      case 'slider':
+        return [
+          {
+            component: OneSlider,
+            props: {
+              defaultValue: 60,
+              min: 0,
+              max: 100,
+              showValue: true,
+              ariaLabel: pick('音量', 'Volume', locale),
+            },
+          },
+        ];
+      case 'rate':
+        return [
+          {
+            component: OneRate,
+            props: {
+              defaultValue: 3,
+              ariaLabel: pick('评分', 'Rating', locale),
+            },
+          },
+        ];
+      case 'upload':
+        return [
+          {
+            component: OneUpload,
+            props: {
+              defaultValue: [
+                { id: 'preview-report', name: '报告.pdf', size: 240 * 1024 },
+              ],
+              ariaLabel: pick('附件', 'Attachments', locale),
+              children: [pick('选择文件', 'Choose files', locale)],
+            },
+          },
+        ];
+      case 'table':
+        return [
+          {
+            component: OneTable,
+            props: {
+              hover: true,
+              ariaLabel: pick('团队成员', 'Team members', locale),
+              data: [
+                {
+                  name: pick('林晚', 'Eve Lin', locale),
+                  role: pick('设计', 'Design', locale),
+                  status: pick('在线', 'Online', locale),
+                },
+                {
+                  name: pick('苏北', 'Ben Su', locale),
+                  role: pick('前端', 'Frontend', locale),
+                  status: pick('忙碌', 'Busy', locale),
+                },
+              ],
+              columns: [
+                { key: 'name', title: pick('姓名', 'Name', locale) },
+                { key: 'role', title: pick('角色', 'Role', locale) },
+                { key: 'status', title: pick('状态', 'Status', locale) },
+              ],
+            },
+          },
+        ];
+      case 'collapse':
+        return [
+          {
+            component: OneCollapse,
+            props: {
+              accordion: true,
+              defaultActive: ['basic'],
+              items: [
+                {
+                  value: 'basic',
+                  title: pick('基础用法', 'Basic usage', locale),
+                  children: [
+                    pick(
+                      '一次只能展开一项。',
+                      'Only one panel opens at a time.',
+                      locale
+                    ),
+                  ],
+                },
+                {
+                  value: 'advanced',
+                  title: pick('高级用法', 'Advanced usage', locale),
+                  children: [pick('更多内容。', 'More content.', locale)],
+                },
+              ],
+            },
+          },
+        ];
+      case 'skeleton':
+        return [
+          {
+            component: OneSkeleton,
+            props: {
+              rows: 3,
+              title: true,
+              ariaLabel: pick('加载中', 'Loading', locale),
+            },
+          },
+        ];
       default:
         return assertNever(component);
     }
+  }
+
+  private localizeHref(href: string): string {
+    if (
+      href.startsWith('#') ||
+      href.startsWith('http://') ||
+      href.startsWith('https://') ||
+      href.startsWith('//') ||
+      href.startsWith('mailto:') ||
+      href.startsWith('javascript:')
+    ) {
+      return href;
+    }
+
+    const { locale } = this.props;
+    return localeHref(href, locale);
   }
 }
 

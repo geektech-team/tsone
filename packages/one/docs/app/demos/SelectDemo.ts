@@ -1,21 +1,15 @@
 import { Component, type VNode } from '@geektech/tsone';
-import { OneSelect, type OneFieldValueEvent } from '../../../lib';
+import {
+  OneSelect,
+  type OneFieldValueEvent,
+  type OneSelectOption,
+  type OneSelectOptionGroup,
+} from '../../../lib';
+import { pick } from './locale';
 
 interface SelectDemoState {
   value: string[];
 }
-
-const options = [
-  { value: 'beijing', label: '北京' },
-  { value: 'shanghai', label: '上海' },
-  {
-    label: '海外',
-    options: [
-      { value: 'tokyo', label: '东京' },
-      { value: 'disabled', label: '暂不可选', disabled: true },
-    ],
-  },
-] as const;
 
 export class SelectDemo extends Component<
   Record<string, never>,
@@ -40,21 +34,41 @@ export class SelectDemo extends Component<
         {
           component: OneSelect,
           props: {
-            options,
+            options: this.options(),
             value: this.state.value,
             multiple: true,
             searchable: true,
-            ariaLabel: '选择城市',
-            placeholder: '搜索并选择城市',
+            ariaLabel: pick('选择城市', 'Select a city'),
+            placeholder: pick('搜索并选择城市', 'Search and select cities'),
           },
           emitters: { change: this.handleChange },
         },
         {
           tag: 'output',
           props: { 'data-one-select-value': '' },
-          children: [this.state.value.join(', ') || '尚未选择'],
+          children: [
+            this.state.value.join(', ') || pick('尚未选择', 'Not selected'),
+          ],
         },
       ],
     };
+  }
+
+  private options(): readonly (OneSelectOption | OneSelectOptionGroup)[] {
+    return [
+      { value: 'beijing', label: pick('北京', 'Beijing') },
+      { value: 'shanghai', label: pick('上海', 'Shanghai') },
+      {
+        label: pick('海外', 'Overseas'),
+        options: [
+          { value: 'tokyo', label: pick('东京', 'Tokyo') },
+          {
+            value: 'disabled',
+            label: pick('暂不可选', 'Unavailable'),
+            disabled: true,
+          },
+        ],
+      },
+    ];
   }
 }

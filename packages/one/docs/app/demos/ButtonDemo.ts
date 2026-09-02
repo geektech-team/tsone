@@ -1,5 +1,6 @@
 import { Component, type VNode } from '@geektech/tsone';
 import { OneButton } from '../../../lib';
+import { pick } from './locale';
 
 interface ButtonDemoState {
   clickCount: number;
@@ -43,7 +44,12 @@ export class ButtonDemo extends Component<
         {
           tag: 'span',
           props: { 'data-one-click-count': '' },
-          children: [`点击次数：${this.state.clickCount}`],
+          children: [
+            pick(
+              `点击次数：${this.state.clickCount}`,
+              `Clicks: ${this.state.clickCount}`
+            ),
+          ],
         },
       ],
     };

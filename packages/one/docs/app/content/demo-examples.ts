@@ -6,16 +6,27 @@ export type OneDocDemoName =
   | 'select'
   | 'checkbox'
   | 'switch'
+  | 'radio'
+  | 'time-picker'
   | 'alert'
   | 'message'
   | 'dialog'
   | 'tooltip'
+  | 'loading'
   | 'tag'
   | 'badge'
   | 'empty'
+  | 'avatar'
+  | 'progress'
   | 'tabs'
   | 'breadcrumb'
-  | 'pagination';
+  | 'pagination'
+  | 'slider'
+  | 'rate'
+  | 'upload'
+  | 'table'
+  | 'collapse'
+  | 'skeleton';
 
 export interface OneDocDemoSource {
   language: 'ts';
@@ -122,6 +133,31 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
       '});',
     ].join('\n'),
   },
+  radio: {
+    language: 'ts',
+    code: [
+      "import { OneRadio, OneRadioGroup } from '@geektech/one';",
+      '',
+      "new OneRadio({ value: 'design', defaultChecked: true, ariaLabel: '设计' });",
+      'new OneRadioGroup({',
+      "  defaultValue: 'weekly',",
+      "  ariaLabel: '通知频率',",
+      '  options: [',
+      "    { value: 'daily', label: '每天' },",
+      "    { value: 'weekly', label: '每周' },",
+      '  ],',
+      '});',
+    ].join('\n'),
+  },
+  'time-picker': {
+    language: 'ts',
+    code: [
+      "import { OneTimePicker } from '@geektech/one';",
+      '',
+      "new OneTimePicker({ defaultValue: '09:30', ariaLabel: '开始时间' });",
+      "new OneTimePicker({ step: 60, min: '08:00', max: '18:00', ariaLabel: '结束时间' });",
+    ].join('\n'),
+  },
   alert: {
     language: 'ts',
     code: [
@@ -168,6 +204,15 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
       '});',
     ].join('\n'),
   },
+  loading: {
+    language: 'ts',
+    code: [
+      "import { OneLoading } from '@geektech/one';",
+      '',
+      "new OneLoading({ label: '加载中' });",
+      "new OneLoading({ size: 'lg', variant: 'primary', label: '提交中' });",
+    ].join('\n'),
+  },
   tag: {
     language: 'ts',
     code: [
@@ -190,6 +235,24 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
       "import { OneEmpty } from '@geektech/one';",
       '',
       "new OneEmpty({ description: '暂无搜索结果' });",
+    ].join('\n'),
+  },
+  avatar: {
+    language: 'ts',
+    code: [
+      "import { OneAvatar } from '@geektech/one';",
+      '',
+      "new OneAvatar({ src: '/avatar.png', alt: '头像', ariaLabel: '用户头像' });",
+      "new OneAvatar({ text: 'M', variant: 'primary' });",
+    ].join('\n'),
+  },
+  progress: {
+    language: 'ts',
+    code: [
+      "import { OneProgress } from '@geektech/one';",
+      '',
+      "new OneProgress({ percent: 65, showText: true });",
+      "new OneProgress({ percent: 30, variant: 'success' });",
     ].join('\n'),
   },
   tabs: {
@@ -236,6 +299,91 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
       '  pageSizeOptions: [10, 20, 50],',
       '  showQuickJumper: true,',
       '});',
+    ].join('\n'),
+  },
+  slider: {
+    language: 'ts',
+    code: [
+      "import { OneSlider, type OneSliderValueEvent } from '@geektech/one';",
+      '',
+      'const slider = new OneSlider({',
+      '  defaultValue: 60,',
+      '  min: 0,',
+      '  max: 100,',
+      '  showValue: true,',
+      "  ariaLabel: '音量',",
+      '});',
+      "slider.on('change', (payload) => {",
+      '  const event = payload as OneSliderValueEvent;',
+      '  console.log(event.value);',
+      '});',
+    ].join('\n'),
+  },
+  rate: {
+    language: 'ts',
+    code: [
+      "import { OneRate, type OneRateValueEvent } from '@geektech/one';",
+      '',
+      "const rating = new OneRate({ defaultValue: 3, ariaLabel: '评分' });",
+      "rating.on('change', (payload) => {",
+      '  const event = payload as OneRateValueEvent;',
+      '  console.log(event.value);',
+      '});',
+    ].join('\n'),
+  },
+  upload: {
+    language: 'ts',
+    code: [
+      "import { OneUpload, type OneUploadChangeEvent } from '@geektech/one';",
+      '',
+      "const upload = new OneUpload({ multiple: true, ariaLabel: '附件' });",
+      "upload.on('change', (payload) => {",
+      '  const event = payload as OneUploadChangeEvent;',
+      '  console.log(event.files.map((file) => file.name));',
+      '});',
+    ].join('\n'),
+  },
+  table: {
+    language: 'ts',
+    code: [
+      "import { OneTable } from '@geektech/one';",
+      '',
+      'new OneTable({',
+      '  data: [',
+      "    { name: '林晚', role: '设计' },",
+      "    { name: '苏北', role: '前端' },",
+      '  ],',
+      '  columns: [',
+      "    { key: 'name', title: '姓名' },",
+      "    { key: 'role', title: '角色' },",
+      '  ],',
+      '});',
+    ].join('\n'),
+  },
+  collapse: {
+    language: 'ts',
+    code: [
+      "import { OneCollapse, type OneCollapseChangeEvent } from '@geektech/one';",
+      '',
+      'const collapse = new OneCollapse({',
+      "  defaultActive: ['basic'],",
+      '  items: [',
+      "    { value: 'basic', title: '基础用法', children: ['内容'] },",
+      "    { value: 'advanced', title: '高级用法', children: ['更多内容'] },",
+      '  ],',
+      '});',
+      "collapse.on('change', (payload) => {",
+      '  const event = payload as OneCollapseChangeEvent;',
+      '  console.log(event.value);',
+      '});',
+    ].join('\n'),
+  },
+  skeleton: {
+    language: 'ts',
+    code: [
+      "import { OneSkeleton } from '@geektech/one';",
+      '',
+      "new OneSkeleton({ rows: 3, title: true, avatar: true });",
     ].join('\n'),
   },
 };

@@ -1,5 +1,6 @@
 import { Component, type VNode } from '@geektech/tsone';
 import { OneTabs, type OneTabsChangeEvent } from '../../../lib';
+import { pick } from './locale';
 
 interface TabsDemoState {
   value: string;
@@ -26,22 +27,35 @@ export class TabsDemo extends Component<Record<string, never>, TabsDemoState> {
           component: OneTabs,
           props: {
             value: this.state.value,
-            ariaLabel: '账户设置',
+            ariaLabel: pick('账户设置', 'Account settings'),
             items: [
-              { value: 'overview', label: '概览' },
-              { value: 'security', label: '安全' },
+              { value: 'overview', label: pick('概览', 'Overview') },
+              { value: 'security', label: pick('安全', 'Security') },
             ],
           },
           emitters: { change: this.handleChange },
           children: [
-            { tag: 'p', slot: 'overview', children: ['概览内容'] },
-            { tag: 'p', slot: 'security', children: ['安全内容'] },
+            {
+              tag: 'p',
+              slot: 'overview',
+              children: [pick('概览内容', 'Overview content')],
+            },
+            {
+              tag: 'p',
+              slot: 'security',
+              children: [pick('安全内容', 'Security content')],
+            },
           ],
         },
         {
           tag: 'output',
           props: { 'data-one-tabs-result': '' },
-          children: [`当前标签：${this.state.value}`],
+          children: [
+            pick(
+              `当前标签：${this.state.value}`,
+              `Current tab: ${this.state.value}`
+            ),
+          ],
         },
       ],
     };

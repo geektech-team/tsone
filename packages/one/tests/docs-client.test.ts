@@ -17,6 +17,8 @@ function getButton(
 describe('One UI docs client', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
+    document.documentElement.removeAttribute('data-one-theme');
+    localStorage.removeItem('one-docs-theme');
   });
 
   it('mounts each real component demo into marked roots', () => {
@@ -27,14 +29,19 @@ describe('One UI docs client', () => {
       '<div data-one-demo="tag"></div>',
       '<div data-one-demo="badge"></div>',
       '<div data-one-demo="empty"></div>',
+      '<div data-one-demo="avatar"></div>',
+      '<div data-one-demo="progress"></div>',
       '<div data-one-demo="form"></div>',
       '<div data-one-demo="select"></div>',
       '<div data-one-demo="checkbox"></div>',
       '<div data-one-demo="switch"></div>',
+      '<div data-one-demo="radio"></div>',
+      '<div data-one-demo="time-picker"></div>',
       '<div data-one-demo="alert"></div>',
       '<div data-one-demo="message"></div>',
       '<div data-one-demo="dialog"></div>',
       '<div data-one-demo="tooltip"></div>',
+      '<div data-one-demo="loading"></div>',
       '<div data-one-demo="tabs"></div>',
       '<div data-one-demo="breadcrumb"></div>',
       '<div data-one-demo="pagination"></div>',
@@ -48,11 +55,16 @@ describe('One UI docs client', () => {
     expect(document.querySelector('.one-tag')).toBeTruthy();
     expect(document.querySelector('.one-badge')).toBeTruthy();
     expect(document.querySelector('.one-empty')).toBeTruthy();
+    expect(document.querySelector('.one-avatar')).toBeTruthy();
+    expect(document.querySelector('.one-progress')).toBeTruthy();
     expect(document.querySelector('.one-form')).toBeTruthy();
     expect(document.querySelector('.one-select')).toBeTruthy();
     expect(document.querySelector('.one-checkbox-group')).toBeTruthy();
     expect(document.querySelector('.one-switch')).toBeTruthy();
+    expect(document.querySelector('.one-radio-group')).toBeTruthy();
+    expect(document.querySelector('.one-time-picker')).toBeTruthy();
     expect(document.querySelector('.one-alert')).toBeTruthy();
+    expect(document.querySelector('.one-loading')).toBeTruthy();
     expect(
       document.querySelector('.one-docs-feedback-actions .one-button')
     ).toBeTruthy();
@@ -441,6 +453,115 @@ describe('One UI docs client', () => {
     expect(
       document.querySelector('[data-one-pagination-result]')?.textContent
     ).toBe('第 5 页，每页 20 条');
+  });
+
+  it('toggles the docs theme with the switch and persists the choice', () => {
+    document.body.innerHTML = [
+      '<div data-one-theme-toggle="">',
+      '  <label class="one-switch" role="switch" aria-checked="false">',
+      '    <input type="checkbox" class="one-switch__input">',
+      '    <span class="one-switch__thumb"></span>',
+      '  </label>',
+      '</div>',
+    ].join('');
+    mountOneDocsClient();
+
+    const toggle = document.querySelector('[data-one-theme-toggle]');
+    const input = toggle?.querySelector('.one-switch__input');
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    expect(document.documentElement.getAttribute('data-one-theme')).toBeNull();
+    expect((input as HTMLInputElement).checked).toBe(false);
+
+    (input as HTMLInputElement).checked = true;
+    (input as HTMLInputElement).dispatchEvent(
+      new Event('change', { bubbles: true })
+    );
+    expect(document.documentElement.getAttribute('data-one-theme')).toBe(
+      'dark'
+    );
+    expect(localStorage.getItem('one-docs-theme')).toBe('dark');
+
+    (input as HTMLInputElement).checked = false;
+    (input as HTMLInputElement).dispatchEvent(
+      new Event('change', { bubbles: true })
+    );
+    expect(document.documentElement.getAttribute('data-one-theme')).toBe(
+      'default'
+    );
+    expect(localStorage.getItem('one-docs-theme')).toBe('default');
+  });
+
+  it('applies a saved dark theme to the root and switch when the client mounts', () => {
+    localStorage.setItem('one-docs-theme', 'dark');
+    document.body.innerHTML = [
+      '<div data-one-theme-toggle="">',
+      '  <label class="one-switch" role="switch" aria-checked="false">',
+      '    <input type="checkbox" class="one-switch__input">',
+      '    <span class="one-switch__thumb"></span>',
+      '  </label>',
+      '</div>',
+    ].join('');
+
+    mountOneDocsClient();
+
+    expect(document.documentElement.getAttribute('data-one-theme')).toBe(
+      'dark'
+    );
+    const input = document.querySelector(
+      '.one-switch__input'
+    ) as HTMLInputElement;
+    expect(input.checked).toBe(true);
+    expect(
+      document.querySelector('.one-switch')?.getAttribute('aria-checked')
+    ).toBe('true');
+  });
+
+  it('ignores an unknown saved theme value', () => {
+    localStorage.setItem('one-docs-theme', 'neon');
+    document.body.innerHTML = [
+      '<div data-one-theme-toggle="">',
+      '  <label class="one-switch" role="switch" aria-checked="false">',
+      '    <input type="checkbox" class="one-switch__input">',
+      '    <span class="one-switch__thumb"></span>',
+      '  </label>',
+      '</div>',
+    ].join('');
+
+    mountOneDocsClient();
+
+    expect(document.documentElement.getAttribute('data-one-theme')).toBeNull();
+    const input = document.querySelector(
+      '.one-switch__input'
+    ) as HTMLInputElement;
+    expect(input.checked).toBe(false);
+  });
+
+  it('binds the theme switch only once per element', () => {
+    document.body.innerHTML = [
+      '<div data-one-theme-toggle="">',
+      '  <label class="one-switch" role="switch" aria-checked="false">',
+      '    <input type="checkbox" class="one-switch__input">',
+      '    <span class="one-switch__thumb"></span>',
+      '  </label>',
+      '</div>',
+    ].join('');
+    mountOneDocsClient();
+    mountOneDocsClient();
+
+    const input = document.querySelector(
+      '.one-switch__input'
+    ) as HTMLInputElement;
+    input.checked = true;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(document.documentElement.getAttribute('data-one-theme')).toBe(
+      'dark'
+    );
+
+    input.checked = false;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(document.documentElement.getAttribute('data-one-theme')).toBe(
+      'default'
+    );
   });
 
   it('is safe when a docs page has no demo roots', () => {

@@ -6,17 +6,24 @@ export type OneComponentCategory =
   | 'feedback';
 
 export const ONE_COMPONENT_CATEGORIES = [
-  { id: 'basic', label: '基础', components: ['OneButton', 'OneInput'] },
+  { id: 'basic', label: '基础', components: ['OneButton'] },
   {
     id: 'form',
     label: '表单',
     components: [
       'OneForm',
       'OneFormItem',
+      'OneInput',
       'OneSelect',
+      'OneTimePicker',
       'OneCheckbox',
       'OneCheckboxGroup',
+      'OneRadio',
+      'OneRadioGroup',
       'OneSwitch',
+      'OneSlider',
+      'OneRate',
+      'OneUpload',
     ],
   },
   {
@@ -27,11 +34,27 @@ export const ONE_COMPONENT_CATEGORIES = [
   {
     id: 'data-display',
     label: '数据展示',
-    components: ['OneCard', 'OneTag', 'OneBadge', 'OneEmpty'],
+    components: [
+      'OneCard',
+      'OneAvatar',
+      'OneTag',
+      'OneBadge',
+      'OneProgress',
+      'OneEmpty',
+      'OneTable',
+      'OneCollapse',
+      'OneSkeleton',
+    ],
   },
   {
     id: 'feedback',
     label: '反馈与浮层',
-    components: ['OneAlert', 'OneMessage', 'OneDialog', 'OneTooltip'],
+    components: [
+      'OneAlert',
+      'OneMessage',
+      'OneDialog',
+      'OneTooltip',
+      'OneLoading',
+    ],
   },
 ] as const;

@@ -3,18 +3,14 @@ import {
   OneCheckbox,
   OneCheckboxGroup,
   type OneFieldValueEvent,
+  type OneSelectOption,
 } from '../../../lib';
+import { pick } from './locale';
 
 interface CheckboxDemoState {
   agreed: boolean;
   topics: string[];
 }
-
-const topicOptions = [
-  { value: 'design', label: '设计' },
-  { value: 'engineering', label: '工程' },
-  { value: 'disabled', label: '暂不可选', disabled: true },
-] as const;
 
 export class CheckboxDemo extends Component<
   Record<string, never>,
@@ -43,30 +39,52 @@ export class CheckboxDemo extends Component<
       children: [
         {
           component: OneCheckbox,
-          props: { checked: this.state.agreed, ariaLabel: '同意协议' },
+          props: {
+            checked: this.state.agreed,
+            ariaLabel: pick('同意协议', 'Agree to terms'),
+          },
           emitters: { change: this.handleAgreement },
-          children: ['同意协议'],
+          children: [pick('同意协议', 'Agree to terms')],
         },
         {
           tag: 'output',
           props: { 'data-one-checkbox-value': '' },
-          children: [`已同意：${String(this.state.agreed)}`],
+          children: [
+            pick(
+              `已同意：${String(this.state.agreed)}`,
+              `Agreed: ${String(this.state.agreed)}`
+            ),
+          ],
         },
         {
           component: OneCheckboxGroup,
           props: {
-            options: topicOptions,
+            options: this.topicOptions(),
             value: this.state.topics,
-            ariaLabel: '关注主题',
+            ariaLabel: pick('关注主题', 'Topics'),
           },
           emitters: { change: this.handleTopics },
         },
         {
           tag: 'output',
           props: { 'data-one-checkbox-group-value': '' },
-          children: [this.state.topics.join(', ') || '尚未选择'],
+          children: [
+            this.state.topics.join(', ') || pick('尚未选择', 'Not selected'),
+          ],
         },
       ],
     };
+  }
+
+  private topicOptions(): readonly OneSelectOption[] {
+    return [
+      { value: 'design', label: pick('设计', 'Design') },
+      { value: 'engineering', label: pick('工程', 'Engineering') },
+      {
+        value: 'disabled',
+        label: pick('暂不可选', 'Unavailable'),
+        disabled: true,
+      },
+    ];
   }
 }

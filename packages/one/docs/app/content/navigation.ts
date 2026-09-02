@@ -6,45 +6,52 @@ import {
   inlineCode,
   list,
   paragraph,
+  t,
   type OneDocPage,
 } from './types';
 
 export const navigationPages: OneDocPage[] = [
   {
     path: '/components/navigation/',
-    title: '导航组件',
-    description: '使用 Tabs、Breadcrumb 和 Pagination 帮助用户定位与移动。',
-    section: '组件',
+    title: t('导航组件', 'Navigation'),
+    description: t(
+      '使用 Tabs、Breadcrumb 和 Pagination 帮助用户定位与移动。',
+      'Use Tabs, Breadcrumb and Pagination to help users orient and move.'
+    ),
+    section: 'components',
     sectionOrder: 2,
-    order: 12,
+    order: 22,
     body: [
-      heading(1, 'navigation', '导航组件'),
+      heading(1, 'navigation', t('导航组件', 'Navigation')),
       paragraph(
-        '导航组件保持当前位置可见，并使用原生链接、按钮和 ARIA 语义提供可预测的键盘操作。'
+        t(
+          '导航组件保持当前位置可见，并使用原生链接、按钮和 ARIA 语义提供可预测的键盘操作。',
+          'Navigation components keep the current position visible and provide predictable keyboard operation through native links, buttons and ARIA semantics.'
+        )
       ),
       demo('tabs'),
-      heading(2, 'choose', '如何选择'),
+      heading(2, 'choose', t('如何选择', 'How to choose')),
       list([
-        ['同一页面内切换并列内容时使用 OneTabs。'],
-        ['表达当前位置的层级路径时使用 OneBreadcrumb。'],
-        ['在大量同类记录之间翻页时使用 OnePagination。'],
+        [t('同一页面内切换并列内容时使用 OneTabs。', 'Use OneTabs to switch between sibling content within the same page.')],
+        [t('表达当前位置的层级路径时使用 OneBreadcrumb。', 'Use OneBreadcrumb to express the hierarchical path of the current position.')],
+        [t('在大量同类记录之间翻页时使用 OnePagination。', 'Use OnePagination to page through many records of the same kind.')],
       ]),
-      heading(2, 'components', '组件'),
-      apiTable('导航组件', [
+      heading(2, 'components', t('组件', 'Components')),
+      apiTable(t('导航组件', 'Navigation components'), [
         {
           name: 'OneTabs',
           signature: 'new OneTabs(props: OneTabsProps)',
-          description: '带动态面板插槽的水平标签页。',
+          description: t('带动态面板插槽的水平标签页。', 'Horizontal tabs with dynamic panel slots.'),
         },
         {
           name: 'OneBreadcrumb',
           signature: 'new OneBreadcrumb(props: OneBreadcrumbProps)',
-          description: '支持原生链接与折叠展开的层级路径。',
+          description: t('支持原生链接与折叠展开的层级路径。', 'Hierarchical path with native links and collapse/expand.'),
         },
         {
           name: 'OnePagination',
           signature: 'new OnePagination(props: OnePaginationProps)',
-          description: '支持页大小与快速跳转的分页控件。',
+          description: t('支持页大小与快速跳转的分页控件。', 'Pagination control with page size and quick jump.'),
         },
       ]),
     ],
@@ -52,66 +59,78 @@ export const navigationPages: OneDocPage[] = [
   {
     path: '/components/navigation/tabs/',
     title: 'OneTabs',
-    description: '在同一上下文中切换并列内容，支持受控状态和完整键盘导航。',
-    section: '组件',
+    description: t(
+      '在同一上下文中切换并列内容，支持受控状态和完整键盘导航。',
+      'Switches sibling content within the same context, with controlled state and full keyboard navigation.'
+    ),
+    section: 'components',
     sectionOrder: 2,
-    order: 13,
+    order: 23,
     body: [
       heading(1, 'onetabs', 'OneTabs'),
       paragraph(
-        'OneTabs 根据 OneTabItem.value 匹配同名动态插槽；value 用于受控状态，defaultValue 用于非受控初始状态。'
+        t(
+          'OneTabs 根据 OneTabItem.value 匹配同名动态插槽；value 用于受控状态，defaultValue 用于非受控初始状态。',
+          'OneTabs matches same-named dynamic slots by OneTabItem.value; value drives the controlled state and defaultValue the uncontrolled initial state.'
+        )
       ),
       demo('tabs'),
-      heading(2, 'keyboard-aria', '键盘与 ARIA'),
+      heading(2, 'keyboard-aria', t('键盘与 ARIA', 'Keyboard and ARIA')),
       paragraph(
-        '标签列表使用 role=tablist，标签和面板通过 aria-controls 与 aria-labelledby 关联。ArrowLeft、ArrowRight 会循环移动并激活，Home 和 End 跳到首尾可用标签。'
+        t(
+          '标签列表使用 role=tablist，标签和面板通过 aria-controls 与 aria-labelledby 关联。ArrowLeft、ArrowRight 会循环移动并激活，Home 和 End 跳到首尾可用标签。',
+          'The tab list uses role=tablist; tabs and panels are associated via aria-controls and aria-labelledby. ArrowLeft and ArrowRight cycle and activate, while Home and End jump to the first and last available tab.'
+        )
       ),
-      callout('tip', '禁用标签', [
-        'disabled 标签不会获得焦点，也不会通过点击或方向键发出 change。',
+      callout('tip', t('禁用标签', 'Disabled tabs'), [
+        t(
+          'disabled 标签不会获得焦点，也不会通过点击或方向键发出 change。',
+          'Disabled tabs do not receive focus and do not emit change via click or arrow keys.'
+        ),
       ]),
       heading(2, 'api', 'API'),
       apiTable('OneTabsProps', [
         {
           name: 'items',
           signature: 'items: readonly OneTabItem[]',
-          description: '标签项；重复 value 只保留第一项。',
+          description: t('标签项；重复 value 只保留第一项。', 'Tab items; duplicate values keep only the first entry.'),
         },
         {
           name: 'value',
           signature: 'value?: string',
-          description: '受控选中值。',
+          description: t('受控选中值。', 'Controlled selected value.'),
         },
         {
           name: 'defaultValue',
           signature: 'defaultValue?: string',
-          description: '非受控初始值。',
+          description: t('非受控初始值。', 'Uncontrolled initial value.'),
         },
         {
           name: 'id',
           signature: 'id?: string',
-          description: '稳定的标签与面板 ID 前缀。',
+          description: t('稳定的标签与面板 ID 前缀。', 'Stable ID prefix for tabs and panels.'),
         },
         {
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
-          description: 'tablist 的可访问名称。',
+          description: t('tablist 的可访问名称。', 'Accessible name of the tablist.'),
         },
         {
           name: 'children',
           signature: 'children?: Array<VNode | string>',
-          description: 'slot 名与 item.value 相同的动态面板内容。',
+          description: t('slot 名与 item.value 相同的动态面板内容。', 'Dynamic panel content whose slot name matches item.value.'),
         },
       ]),
-      apiTable('OneTabItem 与事件', [
+      apiTable(t('OneTabItem 与事件', 'OneTabItem and events'), [
         {
           name: 'OneTabItem',
           signature: '{ value: string; label: string; disabled?: boolean }',
-          description: '标签项公开类型。',
+          description: t('标签项公开类型。', 'Public tab item type.'),
         },
         {
           name: 'change',
           signature: '(event: OneTabsChangeEvent) => void',
-          description: '事件包含 value: string 与 originalEvent: Event。',
+          description: t('事件包含 value: string 与 originalEvent: Event。', 'The event carries value: string and originalEvent: Event.'),
         },
       ]),
     ],
@@ -119,64 +138,75 @@ export const navigationPages: OneDocPage[] = [
   {
     path: '/components/navigation/breadcrumb/',
     title: 'OneBreadcrumb',
-    description: '展示当前位置的层级路径，并保留原生链接导航语义。',
-    section: '组件',
+    description: t(
+      '展示当前位置的层级路径，并保留原生链接导航语义。',
+      'Shows the hierarchical path of the current position and keeps native link navigation semantics.'
+    ),
+    section: 'components',
     sectionOrder: 2,
-    order: 14,
+    order: 24,
     body: [
       heading(1, 'onebreadcrumb', 'OneBreadcrumb'),
       paragraph(
-        '第一个 current 项作为当前位置；没有显式 current 时使用最后一项。非当前位置的 href 使用原生链接。'
+        t(
+          '第一个 current 项作为当前位置；没有显式 current 时使用最后一项。非当前位置的 href 使用原生链接。',
+          'The first current item marks the current position; without an explicit current, the last item is used. href on non-current items renders native links.'
+        )
       ),
       demo('breadcrumb'),
-      heading(2, 'collapse', '折叠与分隔符'),
+      heading(2, 'collapse', t('折叠与分隔符', 'Collapse and separator')),
       paragraph(
         inlineCode('maxItems'),
-        ' 保留首项、当前位置和末项，省略按钮可展开全部路径。separator 插槽优先于 separator 文本。'
+        t(' 保留首项、当前位置和末项，省略按钮可展开全部路径。separator 插槽优先于 separator 文本。', ' keeps the first item, current position and last item; the ellipsis button expands the full path. The separator slot takes precedence over separator text.')
       ),
-      heading(2, 'keyboard-aria', '键盘与 ARIA'),
+      heading(2, 'keyboard-aria', t('键盘与 ARIA', 'Keyboard and ARIA')),
       paragraph(
-        '外层 nav 使用 aria-label，当前位置使用 aria-current=page；链接和展开按钮均保留原生 Tab、Enter 与 Space 行为。'
+        t(
+          '外层 nav 使用 aria-label，当前位置使用 aria-current=page；链接和展开按钮均保留原生 Tab、Enter 与 Space 行为。',
+          'The outer nav uses aria-label and the current position uses aria-current=page; links and the expand button keep native Tab, Enter and Space behavior.'
+        )
       ),
       heading(2, 'api', 'API'),
       apiTable('OneBreadcrumbProps', [
         {
           name: 'items',
           signature: 'items: readonly OneBreadcrumbItem[]',
-          description: '按来源顺序显示的层级项目。',
+          description: t('按来源顺序显示的层级项目。', 'Hierarchical items shown in source order.'),
         },
         {
           name: 'separator',
           signature: 'separator?: string',
-          description: '文本分隔符，默认 /。',
+          description: t('文本分隔符，默认 /。', 'Text separator; default /.'),
         },
         {
           name: 'maxItems',
           signature: 'maxItems?: number',
-          description: '折叠前最多保留的项目数，最小为 3。',
+          description: t('折叠前最多保留的项目数，最小为 3。', 'Maximum items kept before collapsing; minimum 3.'),
         },
         {
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
-          description: '导航的可访问名称，默认“面包屑”。',
+          description: t('导航的可访问名称，默认“面包屑”。', 'Accessible name of the navigation; default "breadcrumb".'),
         },
         {
           name: 'children',
           signature: 'children?: Array<VNode | string>',
-          description: '可提供 separator 命名插槽。',
+          description: t('可提供 separator 命名插槽。', 'Can provide a separator named slot.'),
         },
       ]),
-      apiTable('OneBreadcrumbItem 与事件', [
+      apiTable(t('OneBreadcrumbItem 与事件', 'OneBreadcrumbItem and events'), [
         {
           name: 'OneBreadcrumbItem',
           signature: '{ label: string; href?: string; current?: boolean }',
-          description: '层级项目公开类型。',
+          description: t('层级项目公开类型。', 'Public hierarchical item type.'),
         },
         {
           name: 'itemClick',
           signature: '(event: OneBreadcrumbClickEvent) => void',
-          description:
+          description: t(
             '在原生导航前发出 item、index 和 originalEvent；可调用 preventDefault。',
+            'Emits item, index and originalEvent before native navigation; preventDefault can be called.'
+          ),
         },
       ]),
     ],
@@ -184,83 +214,97 @@ export const navigationPages: OneDocPage[] = [
   {
     path: '/components/navigation/pagination/',
     title: 'OnePagination',
-    description: '在大量记录间切换页码，并统一处理页大小和快速跳转。',
-    section: '组件',
+    description: t(
+      '在大量记录间切换页码，并统一处理页大小和快速跳转。',
+      'Switches pages across many records and unifies page size and quick jump.'
+    ),
+    section: 'components',
     sectionOrder: 2,
-    order: 15,
+    order: 25,
     body: [
       heading(1, 'onepagination', 'OnePagination'),
       paragraph(
-        'page 与 pageSize 可分别受控；defaultPage 与 defaultPageSize 提供非受控初始状态。所有变更统一发出 change。'
+        t(
+          'page 与 pageSize 可分别受控；defaultPage 与 defaultPageSize 提供非受控初始状态。所有变更统一发出 change。',
+          'page and pageSize can each be controlled; defaultPage and defaultPageSize provide the uncontrolled initial state. All changes emit change.'
+        )
       ),
       demo('pagination'),
-      heading(2, 'behavior', '页码窗口与收敛'),
+      heading(2, 'behavior', t('页码窗口与收敛', 'Page window and clamping')),
       paragraph(
-        '页码窗口始终保留首尾页，并按 siblingCount 显示当前页附近页码。改变 pageSize 或快速跳转时，目标页会收敛到有效范围。'
+        t(
+          '页码窗口始终保留首尾页，并按 siblingCount 显示当前页附近页码。改变 pageSize 或快速跳转时，目标页会收敛到有效范围。',
+          'The page window always keeps the first and last pages and shows nearby pages according to siblingCount. When pageSize changes or a quick jump happens, the target page is clamped to a valid range.'
+        )
       ),
-      heading(2, 'keyboard-aria', '键盘与 ARIA'),
+      heading(2, 'keyboard-aria', t('键盘与 ARIA', 'Keyboard and ARIA')),
       paragraph(
-        '导航、上一页、下一页、数字页、每页条数和快速跳转均有明确 aria-label；当前页使用 aria-current=page。Enter 提交快速跳转，disabled 会禁用所有交互控件。'
+        t(
+          '导航、上一页、下一页、数字页、每页条数和快速跳转均有明确 aria-label；当前页使用 aria-current=page。Enter 提交快速跳转，disabled 会禁用所有交互控件。',
+          'Navigation, previous, next, page numbers, page size and quick jump all have explicit aria-labels; the current page uses aria-current=page. Enter submits quick jump, and disabled disables all interactive controls.'
+        )
       ),
       heading(2, 'api', 'API'),
       apiTable('OnePaginationProps', [
         {
           name: 'total',
           signature: 'total: number',
-          description: '记录总数。',
+          description: t('记录总数。', 'Total number of records.'),
         },
         {
           name: 'page',
           signature: 'page?: number',
-          description: '受控当前页。',
+          description: t('受控当前页。', 'Controlled current page.'),
         },
         {
           name: 'defaultPage',
           signature: 'defaultPage?: number',
-          description: '非受控初始页。',
+          description: t('非受控初始页。', 'Uncontrolled initial page.'),
         },
         {
           name: 'pageSize',
           signature: 'pageSize?: number',
-          description: '受控每页条数。',
+          description: t('受控每页条数。', 'Controlled page size.'),
         },
         {
           name: 'defaultPageSize',
           signature: 'defaultPageSize?: number',
-          description: '非受控初始每页条数，默认 10。',
+          description: t('非受控初始每页条数，默认 10。', 'Uncontrolled initial page size; default 10.'),
         },
         {
           name: 'pageSizeOptions',
           signature: 'pageSizeOptions?: readonly number[]',
-          description: '每页条数选项。',
+          description: t('每页条数选项。', 'Page size options.'),
         },
         {
           name: 'siblingCount',
           signature: 'siblingCount?: number',
-          description: '当前页两侧保留页数，默认 1。',
+          description: t('当前页两侧保留页数，默认 1。', 'Number of pages kept on each side of the current page; default 1.'),
         },
         {
           name: 'showQuickJumper',
           signature: 'showQuickJumper?: boolean',
-          description: '显示快速跳转输入框。',
+          description: t('显示快速跳转输入框。', 'Shows the quick jump input.'),
         },
         {
           name: 'disabled',
           signature: 'disabled?: boolean',
-          description: '禁用所有控件。',
+          description: t('禁用所有控件。', 'Disables all controls.'),
         },
         {
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
-          description: '导航可访问名称，默认“分页”。',
+          description: t('导航可访问名称，默认“分页”。', 'Accessible name of the navigation; default "pagination".'),
         },
       ]),
-      apiTable('OnePagination 事件', [
+      apiTable(t('OnePagination 事件', 'OnePagination events'), [
         {
           name: 'change',
           signature: '(event: OnePaginationChangeEvent) => void',
-          description:
+          description: t(
             '事件包含 page: number、pageSize: number 与 originalEvent: Event。',
+            'The event carries page: number, pageSize: number and originalEvent: Event.'
+          ),
         },
       ]),
     ],

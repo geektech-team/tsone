@@ -19,5 +19,5 @@ export function createApp<
 }
 
 // 导出框架名称和版本
-export const version = '0.0.2';
+export const version = '0.1.0';
 export const name = '@geektech/tsone';

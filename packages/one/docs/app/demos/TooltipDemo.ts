@@ -6,6 +6,7 @@ import {
   OneSelect,
   OneTooltip,
 } from '../../../lib';
+import { pick } from './locale';
 
 interface TooltipDemoState {
   placement: OneOverlayPlacement;
@@ -83,7 +84,7 @@ export class TooltipDemo extends Component<
           props: {
             options: placementOptions,
             value: this.state.placement,
-            ariaLabel: '首选位置',
+            ariaLabel: pick('首选位置', 'Preferred placement'),
           },
           emitters: { change: this.handlePlacementChange },
         },
@@ -94,14 +95,17 @@ export class TooltipDemo extends Component<
             {
               component: OneTooltip,
               props: {
-                content: '靠近边缘时自动翻转',
+                content: pick(
+                  '靠近边缘时自动翻转',
+                  'Flips automatically near edges'
+                ),
                 placement: this.state.placement,
                 trigger: 'click',
               },
               children: [
                 {
                   component: OneButton,
-                  children: ['点击提示'],
+                  children: [pick('点击提示', 'Click hint')],
                 },
               ],
             },
@@ -110,13 +114,17 @@ export class TooltipDemo extends Component<
         {
           component: OneButton,
           props: { variant: 'secondary' },
-          children: [this.state.manualOpen ? '关闭手动提示' : '打开手动提示'],
+          children: [
+            this.state.manualOpen
+              ? pick('关闭手动提示', 'Close manual tooltip')
+              : pick('打开手动提示', 'Open manual tooltip'),
+          ],
           emitters: { click: this.toggleManual },
         },
         {
           component: OneTooltip,
           props: {
-            content: '由 open 属性控制',
+            content: pick('由 open 属性控制', 'Controlled by the open prop'),
             placement: 'right',
             trigger: 'manual',
             open: this.state.manualOpen,
@@ -125,14 +133,19 @@ export class TooltipDemo extends Component<
             {
               component: OneButton,
               props: { variant: 'secondary' },
-              children: ['手动模式触发器'],
+              children: [pick('手动模式触发器', 'Manual mode trigger')],
             },
           ],
         },
         {
           tag: 'output',
           props: { 'data-one-tooltip-result': '' },
-          children: [`请求位置：${this.state.placement}`],
+          children: [
+            pick(
+              `请求位置：${this.state.placement}`,
+              `Requested placement: ${this.state.placement}`
+            ),
+          ],
         },
       ],
     };

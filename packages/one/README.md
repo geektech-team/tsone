@@ -50,12 +50,15 @@ createApp({ root: App }).mount();
 
 ## Component categories
 
-- Basic: `OneButton`, `OneInput`
-- Form: `OneForm`, `OneFormItem`, `OneSelect`, `OneCheckbox`,
-  `OneCheckboxGroup`, `OneSwitch`
+- Basic: `OneButton`
+- Form: `OneForm`, `OneFormItem`, `OneInput`, `OneSelect`, `OneTimePicker`,
+  `OneCheckbox`, `OneCheckboxGroup`, `OneRadio`, `OneRadioGroup`, `OneSwitch`,
+  `OneSlider`, `OneRate`, `OneUpload`
 - Navigation: `OneTabs`, `OneBreadcrumb`, `OnePagination`
-- Data display: `OneCard`, `OneTag`, `OneBadge`, `OneEmpty`
-- Feedback and overlays: `OneAlert`, `OneMessage`, `OneDialog`, `OneTooltip`
+- Data display: `OneCard`, `OneTag`, `OneBadge`, `OneAvatar`, `OneProgress`,
+  `OneEmpty`, `OneTable`, `OneCollapse`, `OneSkeleton`
+- Feedback and overlays: `OneAlert`, `OneMessage`, `OneDialog`, `OneTooltip`,
+  `OneLoading`
 
 ## Navigation
 
@@ -120,8 +123,10 @@ void basicPagination;
 
 ## Data display
 
-Use tags for compact status, badges for counts, and empty states when a view has
-no content. `OneEmpty` accepts an `actions` slot for the next useful action.
+Use tags for compact status, badges for counts, avatars for identity, progress
+bars for completion, empty states when a view has no content, tables for row
+data, collapsible panels for grouped detail, and skeletons while content loads.
+`OneEmpty` accepts an `actions` slot for the next useful action.
 
 ```ts
 import { OneBadge, OneButton, OneEmpty, OneTag } from '@geektech/one';
@@ -138,13 +143,47 @@ const actions = [
 new OneEmpty({ description: 'No results', children: actions });
 ```
 
-## Feedback and overlays
+```ts
+import { OneAvatar, OneProgress } from '@geektech/one';
 
-Use `OneAlert` for persistent inline feedback and `OneTooltip` for a short
-description attached to one trigger element:
+new OneAvatar({ text: 'M', variant: 'primary' });
+new OneAvatar({ src: '/avatar.png', alt: 'Avatar', shape: 'square' });
+new OneProgress({ percent: 65, showText: true });
+new OneProgress({ percent: 30, variant: 'success' });
+```
 
 ```ts
-import { OneAlert, OneButton, OneTooltip } from '@geektech/one';
+import { OneTable, OneCollapse, OneSkeleton } from '@geektech/one';
+
+new OneTable({
+  data: [
+    { name: 'Eve Lin', role: 'Design' },
+    { name: 'Ben Su', role: 'Frontend' },
+  ],
+  columns: [
+    { key: 'name', title: 'Name' },
+    { key: 'role', title: 'Role' },
+  ],
+});
+new OneCollapse({
+  accordion: true,
+  defaultActive: ['basic'],
+  items: [
+    { value: 'basic', title: 'Basic usage', children: ['Content'] },
+    { value: 'advanced', title: 'Advanced usage', children: ['More content'] },
+  ],
+});
+new OneSkeleton({ rows: 3, title: true, avatar: true });
+```
+
+## Feedback and overlays
+
+Use `OneAlert` for persistent inline feedback, `OneTooltip` for a short
+description attached to one trigger element, and `OneLoading` for an
+in-progress indicator:
+
+```ts
+import { OneAlert, OneButton, OneLoading, OneTooltip } from '@geektech/one';
 
 const alert = new OneAlert({
   title: 'Saved',
@@ -157,6 +196,8 @@ const tooltip = new OneTooltip({
   placement: 'bottom-end',
   children: [{ component: OneButton, children: ['Copy'] }],
 });
+
+const loading = new OneLoading({ size: 'md', label: 'Loading' });
 ```
 
 Use the imperative services for transient messages and confirmation flows:
@@ -218,6 +259,72 @@ const uncontrolled = new OneInput({
 uncontrolled.on('change', (payload) => {
   const event = payload as OneInputValueEvent;
   console.log(event.value, event.originalEvent);
+});
+```
+
+## Selection and time
+
+Radio buttons pick one option out of several. Time pickers offer an editable
+text input plus a click-to-open hour/minute/second dropdown. Both support
+controlled and uncontrolled modes.
+
+```ts
+import {
+  OneRadio,
+  OneRadioGroup,
+  OneTimePicker,
+  type OneFieldValueEvent,
+} from '@geektech/one';
+
+const radio = new OneRadio({ value: 'design', defaultChecked: true });
+const group = new OneRadioGroup({
+  defaultValue: 'weekly',
+  ariaLabel: 'Frequency',
+  options: [
+    { value: 'daily', label: 'Daily' },
+    { value: 'weekly', label: 'Weekly' },
+  ],
+});
+group.on('change', (payload) => {
+  const event = payload as OneFieldValueEvent<string>;
+  console.log(event.value);
+});
+
+new OneTimePicker({ defaultValue: '09:30', ariaLabel: 'Start time' });
+```
+
+## Sliders, ratings and uploads
+
+Sliders pick a number within a range, ratings express a star score, and uploads
+collect local file metadata. All three support controlled and uncontrolled
+modes.
+
+```ts
+import {
+  OneSlider,
+  OneRate,
+  OneUpload,
+  type OneSliderValueEvent,
+  type OneRateValueEvent,
+  type OneUploadChangeEvent,
+} from '@geektech/one';
+
+const slider = new OneSlider({ defaultValue: 60, showValue: true });
+slider.on('change', (payload) => {
+  const event = payload as OneSliderValueEvent;
+  console.log(event.value);
+});
+
+const rating = new OneRate({ defaultValue: 4, allowClear: true });
+rating.on('change', (payload) => {
+  const event = payload as OneRateValueEvent;
+  console.log(event.value);
+});
+
+const upload = new OneUpload({ multiple: true, ariaLabel: 'Attachments' });
+upload.on('change', (payload) => {
+  const event = payload as OneUploadChangeEvent;
+  console.log(event.files.map((file) => file.name));
 });
 ```
 

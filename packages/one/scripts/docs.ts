@@ -22,7 +22,13 @@ import {
 } from 'node:path';
 import { Window } from 'happy-dom';
 import { createOneDocsPageApp } from '../docs/app/app';
-import { normalizeOneDocPath, oneDocPages } from '../docs/app/content';
+import {
+  normalizeOneDocPath,
+  ONE_DOC_DEFAULT_LOCALE,
+  ONE_DOC_LOCALES,
+  oneDocPages,
+  type OneDocLocale,
+} from '../docs/app/content';
 
 export interface OneDocsBuildOptions {
   outDir?: string;
@@ -52,14 +58,15 @@ let clientBundlePromise: Promise<string> | undefined;
 
 export function routeToOneDocsOutputPath(
   route: string,
+  locale: OneDocLocale,
   outDir: string
 ): string {
   const normalizedRoute = normalizeOneDocPath(route);
   if (normalizedRoute === '/') {
-    return join(outDir, 'index.html');
+    return join(outDir, locale, 'index.html');
   }
 
-  return join(outDir, normalizedRoute.slice(1, -1), 'index.html');
+  return join(outDir, locale, normalizedRoute.slice(1, -1), 'index.html');
 }
 
 export async function buildOneDocs(
@@ -78,19 +85,48 @@ export async function buildOneDocs(
 
   const assetsBuilt = await buildClientAsset(outDir);
 
-  for (const page of oneDocPages) {
-    installBuildDom(page.path);
-    const html = createOneDocsPageApp(page, oneDocPages).renderHtmlDocument();
-    const outputPath = routeToOneDocsOutputPath(page.path, outDir);
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(outputPath, html);
+  for (const locale of ONE_DOC_LOCALES) {
+    for (const page of oneDocPages) {
+      installBuildDom(localeHref(page.path, locale));
+      const html = createOneDocsPageApp(page, oneDocPages, locale).renderHtmlDocument();
+      const outputPath = routeToOneDocsOutputPath(page.path, locale, outDir);
+      await mkdir(dirname(outputPath), { recursive: true });
+      await writeFile(outputPath, html);
+    }
   }
+
+  await writeFile(
+    join(outDir, 'index.html'),
+    renderRootRedirect(ONE_DOC_DEFAULT_LOCALE)
+  );
 
   return {
     outDir,
-    pagesBuilt: oneDocPages.length,
+    pagesBuilt: oneDocPages.length * ONE_DOC_LOCALES.length,
     assetsBuilt,
   };
+}
+
+function localeHref(path: string, locale: OneDocLocale): string {
+  return `/${locale}${path}`;
+}
+
+function renderRootRedirect(locale: OneDocLocale): string {
+  const target = `/${locale}/`;
+
+  return [
+    '<!doctype html>',
+    '<html lang="zh-CN">',
+    '  <head>',
+    '    <meta charset="utf-8" />',
+    `    <meta http-equiv="refresh" content="0; url=${target}" />`,
+    '    <title>One UI</title>',
+    '  </head>',
+    '  <body>',
+    `    <a href="${target}">One UI</a>`,
+    '  </body>',
+    '</html>',
+  ].join('\n');
 }
 
 export async function assertSafeOneDocsOutputDirectory(
@@ -399,7 +435,8 @@ function resolveStaticFile(outDir: string, pathname: string): string | null {
     return null;
   }
 
-  const requestedPath = pathname === '/' ? '/index.html' : pathname;
+  const localeAwarePath = toDefaultLocalePath(pathname);
+  const requestedPath = localeAwarePath === '/' ? '/index.html' : localeAwarePath;
   const candidate = normalize(
     extname(requestedPath) === ''
       ? join(outDir, requestedPath, 'index.html')
@@ -416,6 +453,18 @@ function resolveStaticFile(outDir: string, pathname: string): string | null {
   }
 
   return candidate;
+}
+
+function toDefaultLocalePath(pathname: string): string {
+  if (
+    pathname === '/' ||
+    /^\/(zh|en)(?:\/|$)/.test(pathname) ||
+    pathname.startsWith('/assets/')
+  ) {
+    return pathname;
+  }
+
+  return `/zh${pathname}`;
 }
 
 function isPathInside(rootPath: string, candidatePath: string): boolean {

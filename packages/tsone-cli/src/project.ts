@@ -1,4 +1,3 @@
-import { pathToFileURL } from 'node:url';
 import { Window } from 'happy-dom';
 import type { AppDocumentRenderOptions, OneApp } from '@geektech/tsone';
 import type { ResolvedConfig } from './types';
@@ -84,10 +83,12 @@ async function runWithProjectDom<T>(callback: () => Promise<T>): Promise<T> {
   }
 }
 
+let projectEntrySequence = 0;
+
 async function importProjectEntry(entry: string): Promise<ProjectEntryModule> {
-  const entryUrl = pathToFileURL(entry);
+  projectEntrySequence += 1;
   return (await import(
-    `${entryUrl.href}?tsone_entry=${Date.now()}`
+    `${entry}?tsone_entry=${projectEntrySequence}`
   )) as ProjectEntryModule;
 }
 
