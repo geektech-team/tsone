@@ -1,6 +1,19 @@
 export type { OneComponentSize } from './types';
 export { OneButton } from './button';
 export type { OneButtonProps, OneButtonVariant } from './button';
+export { OneDivider } from './divider';
+export type {
+  OneDividerDirection,
+  OneDividerProps,
+  OneDividerTextAlign,
+} from './divider';
+export { OneSpace } from './space';
+export type {
+  OneSpaceAlign,
+  OneSpaceDirection,
+  OneSpaceProps,
+  OneSpaceSize,
+} from './space';
 export { OneInput } from './input';
 export type { OneInputProps, OneInputValueEvent } from './input';
 export { OneForm, OneFormItem, OneFormModel } from './form';
@@ -34,6 +47,8 @@ export type {
   OneTimePickerProps,
   OneTimePickerValueEvent,
 } from './time-picker';
+export { OneCascader } from './cascader';
+export type { OneCascaderOption, OneCascaderProps } from './cascader';
 export { OneSlider } from './slider';
 export type { OneSliderProps, OneSliderValueEvent } from './slider';
 export { OneRate } from './rate';
@@ -46,6 +61,13 @@ export type {
 } from './upload';
 export { OneTabs } from './tabs';
 export type { OneTabItem, OneTabsChangeEvent, OneTabsProps } from './tabs';
+export { OneSteps, resolveOneStepsStatus } from './steps';
+export type {
+  OneStepsDirection,
+  OneStepsItem,
+  OneStepsProps,
+  OneStepsStatus,
+} from './steps';
 export { OneBreadcrumb } from './breadcrumb';
 export type {
   OneBreadcrumbClickEvent,
@@ -83,6 +105,17 @@ export type {
 } from './collapse';
 export { OneSkeleton } from './skeleton';
 export type { OneSkeletonProps } from './skeleton';
+export { OneDescriptions } from './descriptions';
+export type {
+  OneDescriptionsItem,
+  OneDescriptionsProps,
+} from './descriptions';
+export { OneTimeline } from './timeline';
+export type {
+  OneTimelineColor,
+  OneTimelineItem,
+  OneTimelineProps,
+} from './timeline';
 export { ONE_THEME_DEFAULTS } from './styles/shared';
 export {
   ONE_DEFAULT_THEME,
@@ -143,6 +176,8 @@ export { OneTooltip } from './tooltip';
 export type { OneTooltipProps, OneTooltipTrigger } from './tooltip';
 export { OneLoading } from './loading';
 export type { OneLoadingProps } from './loading';
+export { OnePopover } from './popover';
+export type { OnePopoverProps, OnePopoverTrigger } from './popover';
 
 export const ONE_NAME = '@geektech/one';
-export const ONE_VERSION = '0.1.0';
+export const ONE_VERSION = '0.3.3';

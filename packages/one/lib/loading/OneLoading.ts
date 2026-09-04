@@ -11,6 +11,25 @@ import {
 } from '../styles/shared';
 import type { OneComponentSize } from '../types';
 
+const ensuredKeyframesDocuments = new WeakSet<Document>();
+
+function ensureOneLoadingKeyframes(): void {
+  if (ensuredKeyframesDocuments.has(document)) {
+    return;
+  }
+  const hasKeyframes = Array.from(document.querySelectorAll('style')).some(
+    (style) =>
+      (style.textContent ?? '').includes('@keyframes one-loading-spin')
+  );
+  if (!hasKeyframes) {
+    const style = document.createElement('style');
+    style.textContent =
+      '@keyframes one-loading-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
+  }
+  ensuredKeyframesDocuments.add(document);
+}
+
 export interface OneLoadingProps {
   size?: OneComponentSize;
   variant?: OneDataDisplayVariant;
@@ -39,6 +58,7 @@ export const ONE_LOADING_STYLES: OneNamedStyle[] = [
       borderRadius: '50%',
       border: '2px solid currentColor',
       borderTopColor: 'transparent',
+      animation: 'one-loading-spin 1s linear infinite',
     },
   },
   {
@@ -99,6 +119,7 @@ export class OneLoading extends Component<OneLoadingProps> {
   }
 
   protected initStyles(): void {
+    ensureOneLoadingKeyframes();
     ONE_LOADING_STYLES.forEach(({ name, ...style }) => {
       this.styleManager.addStyle(name, style);
     });

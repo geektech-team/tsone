@@ -26,7 +26,14 @@ export type OneDocDemoName =
   | 'upload'
   | 'table'
   | 'collapse'
-  | 'skeleton';
+  | 'skeleton'
+  | 'divider'
+  | 'space'
+  | 'steps'
+  | 'descriptions'
+  | 'timeline'
+  | 'popover'
+  | 'cascader';
 
 export interface OneDocDemoSource {
   language: 'ts';
@@ -384,6 +391,103 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
       "import { OneSkeleton } from '@geektech/one';",
       '',
       "new OneSkeleton({ rows: 3, title: true, avatar: true });",
+    ].join('\n'),
+  },
+  divider: {
+    language: 'ts',
+    code: [
+      "import { OneDivider } from '@geektech/one';",
+      '',
+      "new OneDivider({ text: '或' });",
+      "new OneDivider({ direction: 'vertical' });",
+    ].join('\n'),
+  },
+  space: {
+    language: 'ts',
+    code: [
+      "import { OneSpace } from '@geektech/one';",
+      "import { OneButton } from '@geektech/one';",
+      '',
+      "new OneSpace({ size: 'md', children: [",
+      "  { component: OneButton, props: { variant: 'primary' }, children: ['保存'] },",
+      "  { component: OneButton, props: {}, children: ['取消'] },",
+      ']);',
+    ].join('\n'),
+  },
+  steps: {
+    language: 'ts',
+    code: [
+      "import { OneSteps } from '@geektech/one';",
+      '',
+      'new OneSteps({',
+      '  current: 1,',
+      '  items: [',
+      "    { title: '填写信息' },",
+      "    { title: '确认订单', description: '核对收货地址' },",
+      "    { title: '完成支付' },",
+      '  ],',
+      '});',
+    ].join('\n'),
+  },
+  descriptions: {
+    language: 'ts',
+    code: [
+      "import { OneDescriptions } from '@geektech/one';",
+      '',
+      'new OneDescriptions({',
+      "  title: '订单信息',",
+      '  column: 2,',
+      '  bordered: true,',
+      '  items: [',
+      "    { label: '订单号', value: 'A-1024' },",
+      "    { label: '状态', value: '已发货' },",
+      "    { label: '收件人', value: '张三' },",
+      '  ],',
+      '});',
+    ].join('\n'),
+  },
+  timeline: {
+    language: 'ts',
+    code: [
+      "import { OneTimeline } from '@geektech/one';",
+      '',
+      'new OneTimeline({',
+      '  items: [',
+      "    { title: '创建订单', time: '09-01 10:00', content: '订单已创建' },",
+      "    { title: '已发货', color: 'success' },",
+      '  ],',
+      '});',
+    ].join('\n'),
+  },
+  popover: {
+    language: 'ts',
+    code: [
+      "import { OnePopover } from '@geektech/one';",
+      '',
+      "new OnePopover({ content: '这是一段弹层说明', children: [",
+      "  { tag: 'button', children: ['点击打开'] },",
+      ']);',
+    ].join('\n'),
+  },
+  cascader: {
+    language: 'ts',
+    code: [
+      "import { OneCascader } from '@geektech/one';",
+      '',
+      "new OneCascader({",
+      "  options: [",
+      "    {",
+      "      value: 'zhejiang',",
+      "      label: '浙江',",
+      "      children: [",
+      "        { value: 'hangzhou', label: '杭州', children: [{ value: 'xihu', label: '西湖区' }] },",
+      "        { value: 'ningbo', label: '宁波' },",
+      '      ],',
+      "    },",
+      "    { value: 'jiangsu', label: '江苏', children: [{ value: 'nanjing', label: '南京' }] },",
+      '  ],',
+      "  placeholder: '请选择地区',",
+      '});',
     ].join('\n'),
   },
 };

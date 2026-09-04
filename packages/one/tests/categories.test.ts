@@ -4,7 +4,11 @@ import { ONE_COMPONENT_CATEGORIES } from '../lib';
 describe('ONE_COMPONENT_CATEGORIES', () => {
   it('keeps component names in a stable category catalog', () => {
     expect(ONE_COMPONENT_CATEGORIES).toEqual([
-      { id: 'basic', label: '基础', components: ['OneButton'] },
+      {
+        id: 'basic',
+        label: '基础',
+        components: ['OneButton', 'OneDivider', 'OneSpace'],
+      },
       {
         id: 'form',
         label: '表单',
@@ -13,6 +17,7 @@ describe('ONE_COMPONENT_CATEGORIES', () => {
           'OneFormItem',
           'OneInput',
           'OneSelect',
+          'OneCascader',
           'OneTimePicker',
           'OneCheckbox',
           'OneCheckboxGroup',
@@ -27,7 +32,7 @@ describe('ONE_COMPONENT_CATEGORIES', () => {
       {
         id: 'navigation',
         label: '导航',
-        components: ['OneTabs', 'OneBreadcrumb', 'OnePagination'],
+        components: ['OneTabs', 'OneSteps', 'OneBreadcrumb', 'OnePagination'],
       },
       {
         id: 'data-display',
@@ -42,6 +47,8 @@ describe('ONE_COMPONENT_CATEGORIES', () => {
           'OneTable',
           'OneCollapse',
           'OneSkeleton',
+          'OneDescriptions',
+          'OneTimeline',
         ],
       },
       {
@@ -52,6 +59,7 @@ describe('ONE_COMPONENT_CATEGORIES', () => {
           'OneMessage',
           'OneDialog',
           'OneTooltip',
+          'OnePopover',
           'OneLoading',
         ],
       },

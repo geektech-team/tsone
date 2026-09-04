@@ -2,6 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { flushSync } from '../lib';
 import { resetRouter } from '../lib/router/instance';
 import { packagePath, repoPath } from './paths';
 
@@ -85,6 +86,7 @@ describe('playground entries', () => {
     expect(visibleQueue()).toEqual(['类型检查', '发布预览']);
 
     advanceButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    flushSync();
 
     expect(visibleQueue()).toEqual(['发布预览', '准备构建']);
   });

@@ -48,13 +48,20 @@ export interface ApiTableBlock {
   }>;
 }
 
+export interface TableBlock {
+  type: 'table';
+  columns: string[];
+  rows: string[][];
+}
+
 export type DocBlock =
   | HeadingBlock
   | ParagraphBlock
   | ListBlock
   | CodeBlock
   | CalloutBlock
-  | ApiTableBlock;
+  | ApiTableBlock
+  | TableBlock;
 
 export interface DocPage {
   path: string;
@@ -108,6 +115,10 @@ export function callout(
 
 export function apiTable(rows: ApiTableBlock['rows']): DocBlock {
   return { type: 'api-table', rows };
+}
+
+export function table(columns: string[], rows: string[][]): DocBlock {
+  return { type: 'table', columns, rows };
 }
 
 const DOC_ROUTE_WITH_TRAILING_SLASH = /^\/?[a-z0-9-]+(?:\/[a-z0-9-]+)*(?:\/)?$/;
@@ -238,6 +249,11 @@ function blockText(block: DocBlock): string {
       return block.rows
         .map((row) => `${row.name} ${row.signature} ${row.description}`)
         .join(' ');
+    case 'table':
+      return [
+        block.columns.join(' '),
+        ...block.rows.map((row) => row.join(' ')),
+      ].join(' ');
   }
 }
 

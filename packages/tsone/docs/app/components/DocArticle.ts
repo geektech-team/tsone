@@ -128,6 +128,35 @@ export class DocArticle extends Component<DocArticleProps> {
             },
           ],
         };
+      case 'table':
+        return {
+          tag: 'table',
+          props: { className: 'doc-table' },
+          children: [
+            {
+              tag: 'thead',
+              children: [
+                {
+                  tag: 'tr',
+                  children: block.columns.map((column) => ({
+                    tag: 'th',
+                    children: [column],
+                  })),
+                },
+              ],
+            },
+            {
+              tag: 'tbody',
+              children: block.rows.map((row) => ({
+                tag: 'tr',
+                children: row.map((cell) => ({
+                  tag: 'td',
+                  children: [cell],
+                })),
+              })),
+            },
+          ],
+        };
     }
   }
 

@@ -42,7 +42,7 @@ export const contributingPages: DocPage[] = [
       list([
         ['@geektech/tsone 是浏览器框架，必须保持零外部运行时依赖'],
         [
-          '@geektech/tsone-cli 负责 defineConfig、resolveConfig、startDevServer、build、tsone dev 与 tsone build',
+          '@geektech/tsone-cli 负责 defineConfig、resolveConfig、startDevServer、build、createProject、tsone create、tsone dev 与 tsone build',
         ],
         [
           '不要为 @geektech/tsone 添加 ./dev 导出；应用应单独安装 @geektech/tsone-cli',
@@ -151,7 +151,7 @@ export const contributingPages: DocPage[] = [
         inlineCode('packages/tsone/docs/app/content/zh/'),
         '，英文内容维护在 ',
         inlineCode('packages/tsone/docs/app/content/en/'),
-        '。两边都使用 typed content registry 和结构化 block helper；中英文逻辑路由必须一致。中英文 catalog 当前各包含 14 条逻辑路由；新增或删除路由时必须同步修改两边。'
+        '。两边都使用 typed content registry 和结构化 block helper；中英文逻辑路由必须一致。中英文 catalog 当前各包含 15 条逻辑路由；新增或删除路由时必须同步修改两边。'
       ),
       list([
         ['内容链接保持 locale-neutral，不要手写 /en/'],
@@ -159,6 +159,9 @@ export const contributingPages: DocPage[] = [
         ['浏览器语言检测仅在 / 生效；手动选择优先并持久化'],
         [
           'bun run docs:build 遇到缺失、多余、重复、空内容或混用语言的页面时严格失败',
+        ],
+        [
+          '托管到子路径时用 bun run docs:build -- --base=/tsone/（或环境变量 DOCS_BASE_PATH）',
         ],
       ]),
       heading(2, '问题报告'),

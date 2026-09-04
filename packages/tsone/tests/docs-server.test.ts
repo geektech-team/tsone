@@ -33,7 +33,7 @@ afterEach(() => {
 });
 
 describe('TSone docs preview server', () => {
-  it('resolves host, port, and output directory from args', () => {
+  it('resolves host, port, base path, and output directory from args', () => {
     expect(
       resolveDocsServerOptions([
         'bun',
@@ -44,11 +44,26 @@ describe('TSone docs preview server', () => {
         '51234',
         '--out-dir',
         '/tmp/docs',
+        '--base',
+        '/tsone/',
       ])
     ).toEqual({
       hostname: '127.0.0.1',
       port: 51234,
       outDir: '/tmp/docs',
+      basePath: '/tsone/',
+    });
+
+    expect(
+      resolveDocsServerOptions(
+        ['bun', 'scripts/docs.ts'],
+        { DOCS_BASE_PATH: '/tsone' },
+      )
+    ).toEqual({
+      hostname: '127.0.0.1',
+      port: 5173,
+      outDir: join(packageRoot, 'docs/dist'),
+      basePath: '/tsone',
     });
   });
 
@@ -126,6 +141,37 @@ describe('TSone docs preview server', () => {
       expect(await gettingStarted.text()).toContain(
         '<title>Getting Started - TSone Docs</title>'
       );
+    } finally {
+      rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
+  it('serves documentation routes under a configured base path', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'tsone-docs-server-'));
+    const port = getAvailablePort();
+
+    try {
+      await buildDocs({ outDir, basePath: '/tsone' });
+      server = await startDocsServer({
+        hostname: '127.0.0.1',
+        port,
+        outDir,
+        basePath: '/tsone',
+      });
+
+      const home = await fetch(`http://127.0.0.1:${port}/tsone/`);
+      expect(home.status).toBe(200);
+      expect(await home.text()).toContain('data-doc-base="/tsone"');
+
+      const gettingStarted = await fetch(
+        `http://127.0.0.1:${port}/tsone/guide/getting-started/`
+      );
+      expect(gettingStarted.status).toBe(200);
+
+      const clientAsset = await fetch(
+        `http://127.0.0.1:${port}/tsone/assets/docs-client.js`
+      );
+      expect(clientAsset.status).toBe(200);
     } finally {
       rmSync(outDir, { recursive: true, force: true });
     }

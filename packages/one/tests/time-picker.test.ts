@@ -149,4 +149,15 @@ describe('OneTimePicker', () => {
     open();
     expect(container.querySelector('.one-time-picker__panel')).toBeNull();
   });
+  it('positions the panel as a fixed floating layer and closes on outside click', () => {
+    component = new OneTimePicker({ defaultValue: '09:30' });
+    component.mount(container);
+    open();
+    const panel = container.querySelector(
+      '.one-time-picker__panel'
+    ) as HTMLElement;
+    expect(panel.style.position).toBe('fixed');
+    document.dispatchEvent(new Event('pointerdown'));
+    expect(container.querySelector('.one-time-picker__panel')).toBeNull();
+  });
 });

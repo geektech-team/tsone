@@ -58,7 +58,7 @@ class App extends Component<Record<string, never>, AppState> {
   protected initState(): AppState {
     return {
       count: 0,
-      version: '0.1.0',
+      version: '0.3.0',
     };
   }
 
@@ -101,8 +101,10 @@ need to override the default target.
 
 ## Development Tooling
 
-The separate `@geektech/tsone-cli` package provides `tsone dev` and
-`tsone build`. Its default entry is `src/main.ts`; that module must expose the
+The separate `@geektech/tsone-cli` package provides `tsone create`, `tsone dev`,
+and `tsone build`. `tsone create` scaffolds a basic project (including a
+homepage showing the TSone name and a GitHub link) into the current directory.
+The CLI's default entry is `src/main.ts`; that module must expose the
 application as `export const app`, and the value must provide
 `renderHtmlDocument()`.
 
@@ -130,16 +132,39 @@ export default defineConfig({
 
 The string proxy shorthand is also supported, for example
 `{ '/backend': 'http://localhost:4000' }`. Defaults are `src/main.ts`,
-`127.0.0.1`, port `52211`, an empty `server.proxy`, and `dist`.
+`127.0.0.1`, port `52211`, an empty `server.proxy`, `dist`, and no additional
+pages.
+
+Multi-page applications map routes to page entries in the same config file;
+each page entry exposes `app` with `renderHtmlDocument()` exactly like the root
+entry:
+
+```typescript
+export default defineConfig({
+  entry: 'src/main.ts',
+  pages: {
+    '/about': 'src/about.ts',
+    '/docs/guide': 'src/guide.ts',
+  },
+});
+```
+
+`pages` keys must start with `/` and may nest; the root `/` is served by
+`entry`. During development each page is served at its route, and `tsone build`
+emits one HTML document per page (`index.html`, `about.html`,
+`docs/guide.html`) with page-relative asset URLs.
 
 ```text
-tsone dev [--host <host>] [--port <port>]
+tsone create
+tsone dev [--host <host>] [--port <port>] [--no-watch]
 tsone build [--out-dir <path>]
 ```
 
-`dev` accepts host/port overrides and `build` accepts the output-directory
-override; both `--port 3000` and `--port=3000` forms are valid. Build output
-must remain a safe child directory inside the project root.
+`create` takes no options. `dev` accepts host/port overrides and `--no-watch`;
+`build` accepts the output-directory override; both `--port 3000` and
+`--port=3000` forms are valid. `tsone dev` watches the project by default and
+notifies browsers to reload over `/__tsone/reload` when a watched file changes.
+Build output must remain a safe child directory inside the project root.
 
 Programmatic tooling is imported from `@geektech/tsone-cli`, not from the
 framework root. It exports `defineConfig`, `resolveConfig`, `startDevServer`,
@@ -227,7 +252,7 @@ content lives in `packages/tsone/docs/app/content/zh/`, while English content
 lives in `packages/tsone/docs/app/content/en/`. Every logical route must exist
 in both directories.
 
-Chinese and English catalogs each contain exactly 14 logical routes. Add or
+Chinese and English catalogs each contain exactly 15 logical routes. Add or
 remove a route in both catalogs in the same change.
 
 Content links stay locale-neutral: never write `/en/` manually. Chinese public
@@ -243,6 +268,18 @@ bun run docs:build
 
 The build fails strictly for missing, extra, duplicate, empty, or
 mixed-language pages.
+
+To host the site under a sub-path (for example a GitHub Pages project page such
+as `https://<owner>.github.io/tsone/`), build it with a base path:
+
+```bash
+bun run docs:build -- --base=/tsone/
+```
+
+You can also set the `DOCS_BASE_PATH` environment variable. When a base path is
+configured, every link and asset URL is prefixed with it, and the locale
+bootstrap reads the base path from the rendered document, so the site works
+under any sub-path.
 
 The base HTML document shell can also be generated from `createApp`. It emits a
 `#app` mount node by default; pass `rootElement` only to use a different target.
@@ -303,7 +340,8 @@ The main `@geektech/tsone` entry point exports:
 - `effect()` / `stop()`
 - `computed()`
 - `ref()` / `isRef()` / `unref()`
-- `version`, currently `0.1.0`
+- `nextTick()` / `flushSync()`
+- `version`, currently `0.3.0`
 
 ## Rendering, Communication, and Forms
 

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN" data-framework="">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TSone × Vue × React Benchmark</title>
+    <script>
+      window.__t0 = performance.now();
+    </script>
+    <style>
+      body {
+        font: 14px/1.5 system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 24px;
+        background: #fff;
+        color: #222;
+      }
+      .app {
+        max-width: 640px;
+        margin: 0 auto;
+      }
+      .toolbar {
+        margin: 8px 0;
+      }
+      .todo-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .todo-title {
+        flex: 1;
+      }
+      .todo-title.done {
+        text-decoration: line-through;
+        color: #999;
+      }
+      .footer {
+        display: flex;
+        gap: 16px;
+        margin-top: 8px;
+        color: #666;
+      }
+      .count {
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./main.js"></script>
+    <script type="module" src="./bench-driver.js"></script>
+  </body>
+</html>

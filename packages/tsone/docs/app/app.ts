@@ -5,8 +5,11 @@ import { SearchBox } from './components/SearchBox';
 import { ThemeToggle } from './components/ThemeToggle';
 import {
   docCatalogs,
+  getDocBasePath,
   localizeDocPath,
   parseLocalizedDocPath,
+  readDocBaseFromDocument,
+  setDocBasePath,
   type DocLocale,
   type DocLocaleMessages,
   type DocPage,
@@ -42,6 +45,9 @@ export function createDocsPageApp(
         : catalog.pages;
   const messages = catalog.config.messages;
   const rootProps = { locale, page, pages, messages };
+  const basePath = getDocBasePath();
+  const assetPath = (name: string): string =>
+    basePath ? `${basePath}/assets/${name}` : `/assets/${name}`;
 
   return createApp({
     root: DocsPage,
@@ -50,6 +56,7 @@ export function createDocsPageApp(
       lang: catalog.config.htmlLang,
       title: `${page.title} - TSone Docs`,
       description: page.description,
+      htmlAttributes: basePath ? { 'data-doc-base': basePath } : undefined,
       head: [
         {
           tag: 'link',
@@ -69,7 +76,7 @@ export function createDocsPageApp(
         },
         {
           tag: 'script',
-          attributes: { src: '/assets/docs-locale.js' },
+          attributes: { src: assetPath('docs-locale.js') },
         },
       ],
       body: {
@@ -77,7 +84,7 @@ export function createDocsPageApp(
         props: rootProps,
       },
       styles: docsStyles,
-      scripts: [{ type: 'module', src: '/assets/docs-client.js' }],
+      scripts: [{ type: 'module', src: assetPath('docs-client.js') }],
     },
   });
 }
@@ -116,6 +123,8 @@ export function createDocsLocaleApp(
 }
 
 export function mountDocsClient(): void {
+  setDocBasePath(readDocBaseFromDocument(document));
+
   const { locale, logicalPath } = parseLocalizedDocPath(location.pathname);
   const catalog = docCatalogs[locale];
   const messages = catalog.config.messages;

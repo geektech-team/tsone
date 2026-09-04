@@ -84,7 +84,7 @@ function mockRejectedBuild(error: Error): void {
   const originalBuild = Bun.build;
   Bun.build = (async () => {
     throw error;
-  }) as typeof Bun.build;
+  }) as unknown as typeof Bun.build;
   restorers.push(() => {
     Bun.build = originalBuild;
   });
@@ -171,6 +171,45 @@ describe('TSone production build', () => {
     expect(
       existsSync(fileURLToPath(new URL(stylesheetHref, documentUrl)))
     ).toBe(true);
+  });
+
+  it('minifies production bundles by default', async () => {
+    const root = makeRoot();
+    const originalBuild = Bun.build;
+    let buildOptions: Record<string, unknown> | undefined;
+    Bun.build = (async (options: Record<string, unknown>) => {
+      buildOptions = options;
+      return { success: true, logs: [], outputs: [] };
+    }) as unknown as typeof Bun.build;
+    restorers.push(() => {
+      Bun.build = originalBuild;
+    });
+
+    await expect(build({ root })).rejects.toThrow();
+    expect(buildOptions).toEqual(expect.objectContaining({ minify: true }));
+  });
+
+  it('builds unminified output when TSONE_MINIFY=0', async () => {
+    const root = makeRoot();
+    const originalBuild = Bun.build;
+    const originalMinify = process.env.TSONE_MINIFY;
+    let buildOptions: Record<string, unknown> | undefined;
+    process.env.TSONE_MINIFY = '0';
+    Bun.build = (async (options: Record<string, unknown>) => {
+      buildOptions = options;
+      return { success: true, logs: [], outputs: [] };
+    }) as unknown as typeof Bun.build;
+    restorers.push(() => {
+      Bun.build = originalBuild;
+      if (originalMinify === undefined) {
+        delete process.env.TSONE_MINIFY;
+      } else {
+        process.env.TSONE_MINIFY = originalMinify;
+      }
+    });
+
+    await expect(build({ root })).rejects.toThrow();
+    expect(buildOptions).toEqual(expect.objectContaining({ minify: false }));
   });
 
   it('reports a failed Bun build even when it emitted JavaScript without logs', async () => {

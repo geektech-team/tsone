@@ -55,7 +55,7 @@ describe('One UI docs app', () => {
   });
 
   it('renders ordered grouped navigation and marks the current page', () => {
-    const html = render('/components/input/');
+    const html = render('/components/form/input/');
     const start = html.indexOf('>开始</h2>');
     const guide = html.indexOf('>指南</h2>');
     const components = html.indexOf('>组件</h2>');
@@ -63,7 +63,7 @@ describe('One UI docs app', () => {
     expect(guide).toBeGreaterThan(start);
     expect(components).toBeGreaterThan(guide);
     expect(html).toContain(
-      'href="/zh/components/input/" class="active" aria-current="page"'
+      'href="/zh/components/form/input/" class="active" aria-current="page"'
     );
   });
 
@@ -71,8 +71,8 @@ describe('One UI docs app', () => {
     const html = render('/components/data-display/tag/');
 
     expect(html).toContain('>Button</a>');
-    expect(html).toContain('>Input</a>');
     expect(html).toContain('>通用</li>');
+    expect(html).toContain('>表单组件</li>');
     expect(html).toContain('>数据展示</li>');
     expect(html).toContain(
       'class="one-docs-nav-item one-docs-nav-item--category one-docs-nav-item--category-label"'
@@ -115,7 +115,7 @@ describe('One UI docs app', () => {
     expect(button).toContain('one-button one-button--danger one-button--lg');
     expect(button).toContain('data-one-demo="button"');
 
-    const input = render('/components/input/');
+    const input = render('/components/form/input/');
     expect(input).toContain('one-input one-input--md');
     expect(input).toContain('data-one-demo="input"');
 

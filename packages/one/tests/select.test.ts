@@ -51,4 +51,16 @@ describe('OneSelect', () => {
       ?.dispatchEvent(new Event('click'));
     expect(changes[1].value).toEqual(['beijing', 'tokyo']);
   });
+  it('positions the menu as a fixed floating layer and closes on outside click', () => {
+    component = new OneSelect({ options });
+    component.mount(container);
+    const trigger = container.querySelector(
+      '[role="combobox"]'
+    ) as HTMLElement;
+    trigger.dispatchEvent(new Event('click'));
+    const menu = container.querySelector('.one-select__menu') as HTMLElement;
+    expect(menu.style.position).toBe('fixed');
+    document.dispatchEvent(new Event('pointerdown'));
+    expect(container.querySelector('.one-select__menu')).toBeNull();
+  });
 });

@@ -6,7 +6,7 @@ export type OneComponentCategory =
   | 'feedback';
 
 export const ONE_COMPONENT_CATEGORIES = [
-  { id: 'basic', label: '基础', components: ['OneButton'] },
+  { id: 'basic', label: '基础', components: ['OneButton', 'OneDivider', 'OneSpace'] },
   {
     id: 'form',
     label: '表单',
@@ -15,6 +15,7 @@ export const ONE_COMPONENT_CATEGORIES = [
       'OneFormItem',
       'OneInput',
       'OneSelect',
+      'OneCascader',
       'OneTimePicker',
       'OneCheckbox',
       'OneCheckboxGroup',
@@ -29,7 +30,12 @@ export const ONE_COMPONENT_CATEGORIES = [
   {
     id: 'navigation',
     label: '导航',
-    components: ['OneTabs', 'OneBreadcrumb', 'OnePagination'],
+    components: [
+      'OneTabs',
+      'OneSteps',
+      'OneBreadcrumb',
+      'OnePagination',
+    ],
   },
   {
     id: 'data-display',
@@ -44,6 +50,8 @@ export const ONE_COMPONENT_CATEGORIES = [
       'OneTable',
       'OneCollapse',
       'OneSkeleton',
+      'OneDescriptions',
+      'OneTimeline',
     ],
   },
   {
@@ -54,6 +62,7 @@ export const ONE_COMPONENT_CATEGORIES = [
       'OneMessage',
       'OneDialog',
       'OneTooltip',
+      'OnePopover',
       'OneLoading',
     ],
   },

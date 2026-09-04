@@ -3,9 +3,11 @@ import {
   resolvePreferredDocLocale,
   type DocLocale,
 } from './content/locales';
+import { setDocBasePath, withDocBasePath } from './content/base';
 
 export interface LocaleBootstrapEnvironment {
   pathname: string;
+  basePath?: string;
   storage?: Pick<Storage, 'getItem'>;
   languages?: readonly string[];
   replace: (href: string) => void;
@@ -14,7 +16,9 @@ export interface LocaleBootstrapEnvironment {
 export function runDocsLocaleBootstrap(
   environment: LocaleBootstrapEnvironment
 ): void {
-  if (environment.pathname !== '/') {
+  setDocBasePath(environment.basePath ?? '');
+
+  if (environment.pathname !== withDocBasePath('/')) {
     return;
   }
 
@@ -33,6 +37,6 @@ export function runDocsLocaleBootstrap(
     environment.languages ?? []
   );
   if (locale === 'en') {
-    environment.replace('/en/');
+    environment.replace(withDocBasePath('/en/'));
   }
 }

@@ -161,11 +161,6 @@ function createIsolatedWorkspace(
     join(cliNodeModules, '@geektech', 'tsone'),
     'dir'
   );
-  symlinkSync(
-    realpathSync(join(repoRoot, 'node_modules', 'happy-dom')),
-    join(cliNodeModules, 'happy-dom'),
-    'dir'
-  );
 }
 
 function copyPackage(sourceRoot: string, destinationRoot: string): void {
@@ -443,7 +438,7 @@ describe('CLI package smoke', () => {
         dependencies?: Record<string, string>;
       };
       expect(extractedManifest.dependencies).toEqual({
-        '@geektech/tsone': '0.1.0',
+        '@geektech/tsone': '0.3.0',
       });
       const binTarget = extractedManifest.bin?.tsone;
       expect(binTarget).toBeTruthy();
@@ -514,8 +509,8 @@ describe('CLI package smoke', () => {
         `${consumerNodeModules}${sep}`
       );
       expect(installedCliRoot).toStartWith(`${consumerNodeModules}${sep}`);
-      expect(installedFrameworkManifest.version).toBe('0.1.0');
-      expect(installedCliManifest.version).toBe('0.0.1');
+      expect(installedFrameworkManifest.version).toBe('0.3.0');
+      expect(installedCliManifest.version).toBe('0.3.0');
 
       expect(
         findInstalledPackage(join(consumerRoot, 'node_modules'), 'happy-dom')

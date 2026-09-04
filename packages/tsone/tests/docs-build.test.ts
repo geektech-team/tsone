@@ -134,12 +134,12 @@ describe('docs static build', () => {
     try {
       const result = await buildDocs({ outDir });
 
-      expect(result.pagesBuilt).toBe(28);
+      expect(result.pagesBuilt).toBe(30);
       expect(result.assetsBuilt).toEqual([
         join(outDir, 'assets/docs-client.js'),
         join(outDir, 'assets/docs-locale.js'),
       ]);
-      expect(collectHtmlFiles(outDir)).toHaveLength(28);
+      expect(collectHtmlFiles(outDir)).toHaveLength(30);
       expect(existsSync(join(outDir, 'index.html'))).toBe(true);
       expect(existsSync(join(outDir, 'api/component/index.html'))).toBe(true);
       expect(existsSync(join(outDir, 'en/index.html'))).toBe(true);
@@ -180,6 +180,7 @@ describe('docs static build', () => {
         ['/api/style/', '/en/api/style/'],
         ['/examples/basic/', '/en/examples/basic/'],
         ['/contributing/', '/en/contributing/'],
+        ['/benchmark/framework-comparison/', '/en/benchmark/framework-comparison/'],
       ] as const;
 
       expect(docCatalogs.zh.pages.map((page) => page.path)).toEqual(
@@ -250,6 +251,44 @@ describe('docs static build', () => {
       expect(componentApi).toContain('protected render(): VNode');
       expect(componentApi).toContain('data-doc-search-root');
       expect(componentApi).toContain('data-doc-theme-root');
+    } finally {
+      rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
+  it('builds localized static pages with a base path prefix', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'tsone-docs-base-'));
+
+    try {
+      const result = await buildDocs({ outDir, basePath: '/tsone' });
+
+      expect(result.pagesBuilt).toBe(30);
+
+      const home = readFileSync(join(outDir, 'index.html'), 'utf8');
+      expect(home).toContain('data-doc-base="/tsone"');
+      expect(home).toContain('<script src="/tsone/assets/docs-locale.js">');
+      expect(home).toContain(
+        '<script type="module" src="/tsone/assets/docs-client.js">'
+      );
+
+      const enHome = readFileSync(join(outDir, 'en/index.html'), 'utf8');
+      expect(enHome).toContain('data-doc-base="/tsone"');
+      expect(enHome).toContain('<link rel="alternate" hreflang="en"');
+      expect(enHome).toContain('href="/tsone/"');
+      expect(enHome).toContain('href="/tsone/en/"');
+
+      const guide = readFileSync(
+        join(outDir, 'guide/getting-started/index.html'),
+        'utf8'
+      );
+      expect(guide).toContain('href="/tsone/guide/core-concepts/"');
+
+      // The file layout stays under the output directory root (base is a URL
+      // prefix, not a directory).
+      expect(existsSync(join(outDir, 'tsone'))).toBe(false);
+      expect(existsSync(join(outDir, 'guide/getting-started/index.html'))).toBe(
+        true
+      );
     } finally {
       rmSync(outDir, { recursive: true, force: true });
     }

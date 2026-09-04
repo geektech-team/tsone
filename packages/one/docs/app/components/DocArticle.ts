@@ -27,6 +27,13 @@ import {
   OneTable,
   OneCollapse,
   OneSkeleton,
+  OneDivider,
+  OneSpace,
+  OneSteps,
+  OneDescriptions,
+  OneTimeline,
+  OnePopover,
+  OneCascader,
 } from '../../../lib';
 import {
   localize,
@@ -823,6 +830,147 @@ export class DocArticle extends Component<DocArticleProps> {
               rows: 3,
               title: true,
               ariaLabel: pick('加载中', 'Loading', locale),
+            },
+          },
+        ];
+      case 'divider':
+        return [
+          {
+            component: OneDivider,
+            props: { text: pick('或', 'or', locale) },
+          },
+          {
+            component: OneDivider,
+            props: {},
+          },
+          {
+            component: OneDivider,
+            props: { direction: 'vertical' },
+          },
+        ];
+      case 'space':
+        return [
+          {
+            component: OneSpace,
+            props: { size: 'md', wrap: true },
+            children: [
+              {
+                component: OneButton,
+                props: { variant: 'primary', size: 'sm' },
+                children: [pick('保存', 'Save', locale)],
+              },
+              {
+                component: OneButton,
+                props: { size: 'sm' },
+                children: [pick('取消', 'Cancel', locale)],
+              },
+              {
+                component: OneButton,
+                props: { variant: 'danger', size: 'sm' },
+                children: [pick('删除', 'Delete', locale)],
+              },
+            ],
+          },
+        ];
+      case 'steps':
+        return [
+          {
+            component: OneSteps,
+            props: {
+              current: 1,
+              items: [
+                { title: pick('填写信息', 'Fill details', locale) },
+                {
+                  title: pick('确认订单', 'Confirm order', locale),
+                  description: pick('核对收货地址', 'Check the address', locale),
+                },
+                { title: pick('完成支付', 'Pay', locale) },
+              ],
+            },
+          },
+        ];
+      case 'descriptions':
+        return [
+          {
+            component: OneDescriptions,
+            props: {
+              title: pick('订单信息', 'Order info', locale),
+              column: 2,
+              bordered: true,
+              items: [
+                { label: pick('订单号', 'Order ID', locale), value: 'A-1024' },
+                { label: pick('状态', 'Status', locale), value: pick('已发货', 'Shipped', locale) },
+                { label: pick('收件人', 'Recipient', locale), value: pick('张三', 'Zhang San', locale) },
+                { label: pick('金额', 'Amount', locale), value: '¥ 128.00' },
+              ],
+            },
+          },
+        ];
+      case 'timeline':
+        return [
+          {
+            component: OneTimeline,
+            props: {
+              items: [
+                {
+                  title: pick('创建订单', 'Order created', locale),
+                  time: '09-01 10:00',
+                  content: pick('订单已创建', 'Order created', locale),
+                },
+                {
+                  title: pick('已发货', 'Shipped', locale),
+                  color: 'success',
+                  content: pick('快递已揽收', 'Parcel picked up', locale),
+                },
+              ],
+            },
+          },
+        ];
+      case 'popover':
+        return [
+          {
+            component: OnePopover,
+            props: {
+              content: pick('这是一段浮层说明，点击外部或按 Escape 关闭。', 'Popover content; click outside or press Escape to close.', locale),
+              defaultOpen: true,
+            },
+            children: [
+              {
+                tag: 'button',
+                props: { className: 'one-button one-button--secondary one-button--md' },
+                children: [pick('点击打开', 'Open popover', locale)],
+              },
+            ],
+          },
+        ];
+      case 'cascader':
+        return [
+          {
+            component: OneCascader,
+            props: {
+              placeholder: pick('请选择地区', 'Select a region', locale),
+              options: [
+                {
+                  value: 'zhejiang',
+                  label: pick('浙江', 'Zhejiang', locale),
+                  children: [
+                    {
+                      value: 'hangzhou',
+                      label: pick('杭州', 'Hangzhou', locale),
+                      children: [
+                        { value: 'xihu', label: pick('西湖区', 'Xihu', locale) },
+                        { value: 'yuhang', label: pick('余杭区', 'Yuhang', locale) },
+                      ],
+                    },
+                    { value: 'ningbo', label: pick('宁波', 'Ningbo', locale) },
+                  ],
+                },
+                {
+                  value: 'jiangsu',
+                  label: pick('江苏', 'Jiangsu', locale),
+                  children: [{ value: 'nanjing', label: pick('南京', 'Nanjing', locale) }],
+                },
+              ],
             },
           },
         ];

@@ -15,11 +15,15 @@ async function run(command: string[]): Promise<void> {
 await rm('dist', { recursive: true, force: true });
 await run(['bunx', 'tsc', '--project', 'tsconfig.build.json']);
 
+// 默认压缩产物；TSONE_MINIFY=0 时生成未压缩版本，便于排查产物问题
+const minify = process.env.TSONE_MINIFY !== '0';
+
 const result = await Bun.build({
   entrypoints: [
     './lib/index.ts',
     './lib/router/index.ts',
     './lib/style/index.ts',
+    './lib/dom/index.ts',
   ],
   outdir: './dist',
   root: './lib',
@@ -27,6 +31,7 @@ const result = await Bun.build({
   format: 'esm',
   sourcemap: 'linked',
   splitting: true,
+  minify,
   naming: {
     entry: '[dir]/[name].js',
     chunk: '[name]-[hash].js',
@@ -40,4 +45,6 @@ if (!result.success) {
   throw new Error('Bun.build failed');
 }
 
-console.log(`Built ${result.outputs.length} artifacts with Bun.`);
+console.log(
+  `Built ${result.outputs.length} artifacts with Bun${minify ? ' (minified)' : ''}.`
+);

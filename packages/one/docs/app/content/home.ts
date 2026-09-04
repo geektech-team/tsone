@@ -24,7 +24,7 @@ export const homePage: OneDocPage = {
     paragraph(
       link('OneButton', '/components/button/'),
       t(' 处理操作与提交，', ' handles actions and submission, '),
-      link('OneInput', '/components/input/'),
+      link('OneInput', '/components/form/input/'),
       t(' 处理文本输入，', ' handles text input, '),
       link('OneCard', '/components/card/'),
       t(' 组合标题、正文和操作区域；', ' composes title, body and action areas; '),

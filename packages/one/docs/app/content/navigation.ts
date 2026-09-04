@@ -20,7 +20,7 @@ export const navigationPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 22,
+    order: 27,
     body: [
       heading(1, 'navigation', t('导航组件', 'Navigation')),
       paragraph(
@@ -33,6 +33,7 @@ export const navigationPages: OneDocPage[] = [
       heading(2, 'choose', t('如何选择', 'How to choose')),
       list([
         [t('同一页面内切换并列内容时使用 OneTabs。', 'Use OneTabs to switch between sibling content within the same page.')],
+        [t('按步骤推进一个多阶段流程时使用 OneSteps。', 'Use OneSteps to walk through a multi-stage process.')],
         [t('表达当前位置的层级路径时使用 OneBreadcrumb。', 'Use OneBreadcrumb to express the hierarchical path of the current position.')],
         [t('在大量同类记录之间翻页时使用 OnePagination。', 'Use OnePagination to page through many records of the same kind.')],
       ]),
@@ -42,6 +43,11 @@ export const navigationPages: OneDocPage[] = [
           name: 'OneTabs',
           signature: 'new OneTabs(props: OneTabsProps)',
           description: t('带动态面板插槽的水平标签页。', 'Horizontal tabs with dynamic panel slots.'),
+        },
+        {
+          name: 'OneSteps',
+          signature: 'new OneSteps(props: OneStepsProps)',
+          description: t('按当前进度推导等待、进行与完成状态的步骤条。', 'A step tracker that derives wait, process and finish states from current.'),
         },
         {
           name: 'OneBreadcrumb',
@@ -65,7 +71,7 @@ export const navigationPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 23,
+    order: 28,
     body: [
       heading(1, 'onetabs', 'OneTabs'),
       paragraph(
@@ -136,6 +142,69 @@ export const navigationPages: OneDocPage[] = [
     ],
   },
   {
+    path: '/components/navigation/steps/',
+    title: 'OneSteps',
+    description: t(
+      '展示多阶段流程的进度，自动推导等待、进行与完成状态。',
+      'Shows progress through a multi-stage flow, deriving wait, process and finish states automatically.'
+    ),
+    section: 'components',
+    sectionOrder: 2,
+    order: 29,
+    body: [
+      heading(1, 'onesteps', 'OneSteps'),
+      paragraph(
+        t(
+          'OneSteps 根据 current 索引推导每个步骤的状态：小于 current 为完成、等于为进行、大于为等待。',
+          'OneSteps derives each step state from the current index: before it is finish, equal is process, after is wait.'
+        )
+      ),
+      demo('steps'),
+      heading(2, 'status', t('状态与覆盖', 'Status and overrides')),
+      paragraph(
+        t(
+          '每个 item 可显式传入 status（wait/process/finish/error）覆盖自动推导；error 步骤会以危险色显示。',
+          'Each item can pass an explicit status (wait/process/finish/error) to override the derivation; error steps render in the danger color.'
+        )
+      ),
+      heading(2, 'api', 'API'),
+      apiTable(t('OneSteps 属性', 'OneSteps props'), [
+        {
+          name: 'items',
+          signature: 'items: OneStepsItem[]',
+          description: t('步骤项：title、description 与可选 status。', 'Step items: title, description and optional status.'),
+        },
+        {
+          name: 'current',
+          signature: 'current?: number',
+          description: t('当前进行步骤的索引，默认 0。', 'Index of the current step; defaults to 0.'),
+        },
+        {
+          name: 'direction',
+          signature: "direction?: 'horizontal' | 'vertical'",
+          description: t('排列方向，默认 horizontal。', 'Layout direction; defaults to horizontal.'),
+        },
+      ]),
+      apiTable(t('OneStepsItem 与状态', 'OneStepsItem and status'), [
+        {
+          name: 'OneStepsItem',
+          signature: '{ title: string; description?: string; status?: OneStepsStatus }',
+          description: t('步骤项公开类型。', 'Public step item type.'),
+        },
+        {
+          name: 'OneStepsStatus',
+          signature: "'wait' | 'process' | 'finish' | 'error'",
+          description: t('步骤状态。', 'Step status.'),
+        },
+        {
+          name: 'resolveOneStepsStatus',
+          signature: '(item, current, index) => OneStepsStatus',
+          description: t('按当前进度解析单步状态。', 'Resolves a step status from the current progress.'),
+        },
+      ]),
+    ],
+  },
+  {
     path: '/components/navigation/breadcrumb/',
     title: 'OneBreadcrumb',
     description: t(
@@ -144,7 +213,7 @@ export const navigationPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 24,
+    order: 30,
     body: [
       heading(1, 'onebreadcrumb', 'OneBreadcrumb'),
       paragraph(
@@ -220,7 +289,7 @@ export const navigationPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 25,
+    order: 31,
     body: [
       heading(1, 'onepagination', 'OnePagination'),
       paragraph(

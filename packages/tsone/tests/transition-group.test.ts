@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import * as publicApi from '../lib';
-import { Component, TransitionGroup, each } from '../lib';
+import { Component, TransitionGroup, flushSync, each } from '../lib';
 import type {
   EventListeners,
   HTMLProps,
@@ -260,6 +260,7 @@ describe('TransitionGroup', () => {
     });
 
     host.state.items = [...host.state.items, { id: 'b', label: 'B' }];
+    flushSync();
 
     const secondItem = container.querySelector<HTMLElement>('[data-id="b"]');
     expect(container.querySelectorAll('li')).toHaveLength(2);
@@ -280,6 +281,7 @@ describe('TransitionGroup', () => {
     const initialAnimationCount = animationRecords.length;
 
     host.state.items = [...host.state.items].reverse();
+    flushSync();
 
     const items = container.querySelectorAll('li');
     expect(items[1]).toBe(firstNode);
@@ -293,6 +295,7 @@ describe('TransitionGroup', () => {
     const item = container.querySelector('[data-id="a"]');
 
     host.state.items = [];
+    flushSync();
 
     expect(container.querySelector('[data-id="a"]')).toBeTruthy();
     expect(AnimatedItem.unmountedCount).toBe(0);
@@ -326,6 +329,7 @@ describe('TransitionGroup', () => {
     host.mount(container);
 
     host.state.items = [{ id: 'b', label: 'B' }];
+    flushSync();
     host.unmount();
 
     expect(container.childNodes).toHaveLength(0);
@@ -339,6 +343,7 @@ describe('TransitionGroup', () => {
     setReducedMotion(true);
 
     host.state.items = [];
+    flushSync();
 
     expect(container.querySelector('[data-id="a"]')).toBeNull();
     expect(AnimatedItem.unmountedCount).toBe(1);
@@ -351,6 +356,7 @@ describe('TransitionGroup', () => {
     Reflect.deleteProperty(HTMLElement.prototype, 'animate');
 
     host.state.items = [];
+    flushSync();
 
     expect(container.querySelector('[data-id="a"]')).toBeNull();
     expect(AnimatedItem.unmountedCount).toBe(1);

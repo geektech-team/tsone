@@ -6,6 +6,7 @@ import {
   oneThemeBorder,
   type OneNamedStyle,
 } from '../styles/shared';
+import { bindOneFloatingPanel } from '../dropdown';
 import type { OneComponentSize } from '../types';
 import { ONE_FORM_FIELD_KEY } from '../form/context';
 import type { OneFormFieldContext } from '../form/context';
@@ -126,10 +127,8 @@ export const ONE_TIME_PICKER_STYLES: OneNamedStyle[] = [
     name: 'one-time-picker-panel',
     selector: '.one-time-picker__panel',
     properties: {
-      position: 'absolute',
-      top: 'calc(100% + 4px)',
-      left: '0',
-      zIndex: '1',
+      position: 'fixed',
+      zIndex: '1000',
       display: 'flex',
       gap: '8px',
       padding: '8px',
@@ -218,6 +217,7 @@ export class OneTimePicker extends Component<
 > {
   private fieldContext: OneFormFieldContext | undefined;
   private unsubscribe: (() => void) | undefined;
+  private floatingCleanup: (() => void) | undefined;
 
   protected initState(): OneTimePickerState {
     return {
@@ -352,9 +352,6 @@ export class OneTimePicker extends Component<
   }
 
   protected onUpdated(): void {
-    if (this.fieldContext || this.props.value === undefined) {
-      return;
-    }
     const root = this.getElement();
     const input =
       root instanceof HTMLInputElement
@@ -362,9 +359,26 @@ export class OneTimePicker extends Component<
         : root instanceof HTMLElement
           ? root.querySelector('input')
           : null;
-    if (input instanceof HTMLInputElement) {
+    if (
+      input instanceof HTMLInputElement &&
+      !this.fieldContext &&
+      this.props.value !== undefined
+    ) {
       input.value = this.props.value;
     }
+    this.floatingCleanup?.();
+    this.floatingCleanup = undefined;
+    if (!this.state.open || !(root instanceof HTMLElement)) return;
+    const trigger = root.querySelector<HTMLElement>('.one-time-picker__input');
+    const panel = root.querySelector<HTMLElement>('.one-time-picker__panel');
+    if (!trigger || !panel) return;
+    this.floatingCleanup = bindOneFloatingPanel({
+      trigger,
+      panel,
+      onOutside: () => {
+        this.state.open = false;
+      },
+    });
   }
 
   protected beforeMount(): void {
@@ -384,6 +398,8 @@ export class OneTimePicker extends Component<
   }
 
   protected onUnmounted(): void {
+    this.floatingCleanup?.();
+    this.floatingCleanup = undefined;
     this.unsubscribe?.();
     this.unsubscribe = undefined;
     this.fieldContext = undefined;

@@ -1,4 +1,5 @@
 import { normalizeDocPath } from './types';
+import { stripDocBasePath, withDocBasePath } from './base';
 
 export type DocLocale = 'zh' | 'en';
 
@@ -73,23 +74,30 @@ export function localizeDocPath(
   const normalizedPath = normalizeDocPath(logicalPath);
   const prefix = DOC_LOCALE_CONFIGS[locale].pathPrefix;
 
-  if (prefix === '') {
-    return normalizedPath;
-  }
+  const localized =
+    prefix === ''
+      ? normalizedPath
+      : normalizedPath === '/'
+        ? `${prefix}/`
+        : `${prefix}${normalizedPath}`;
 
-  return normalizedPath === '/' ? `${prefix}/` : `${prefix}${normalizedPath}`;
+  return withDocBasePath(localized);
 }
 
 export function parseLocalizedDocPath(path: string): {
   locale: DocLocale;
   logicalPath: string;
 } {
-  if (path === '/en' || path.startsWith('/en/')) {
-    const logicalPath = path === '/en' ? '/' : path.slice('/en'.length);
+  const strippedPath = stripDocBasePath(path);
+
+  if (strippedPath === '/en' || strippedPath.startsWith('/en/')) {
+    const logicalPath =
+      strippedPath === '/en' ? '/' : strippedPath.slice('/en'.length);
+
     return { locale: 'en', logicalPath: normalizeDocPath(logicalPath) };
   }
 
-  return { locale: 'zh', logicalPath: normalizeDocPath(path) };
+  return { locale: 'zh', logicalPath: normalizeDocPath(strippedPath) };
 }
 
 export function switchDocLocale(path: string, targetLocale: DocLocale): string {

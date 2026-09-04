@@ -135,7 +135,7 @@ describe('public API documentation', () => {
     expect(englishReadme).toContain('content/en');
     expect(englishReadme).toContain('content/zh');
     expect(englishReadme).toContain(
-      'Chinese and English catalogs each contain exactly 14 logical routes'
+      'Chinese and English catalogs each contain exactly 15 logical routes'
     );
     expect(englishReadme).toMatch(
       /Add or\s+remove a route in both catalogs in the same change/u
@@ -149,7 +149,7 @@ describe('public API documentation', () => {
     );
     expect(chineseReadme).toContain('content/zh');
     expect(chineseReadme).toContain('content/en');
-    expect(chineseReadme).toContain('中英文 catalog 当前各包含 14 条逻辑路由');
+    expect(chineseReadme).toContain('中英文 catalog 当前各包含 15 条逻辑路由');
     expect(chineseReadme).toContain('新增或删除路由时必须同步修改两边');
     expect(chineseReadme).toContain('中英文逻辑路由必须一致');
     expect(chineseReadme).toContain('不要手写 `/en/`');
@@ -188,6 +188,8 @@ describe('public API documentation', () => {
       'computed',
       'isRef',
       'unref',
+      'nextTick',
+      'flushSync',
       'each',
       'createForm',
       'required',
@@ -264,6 +266,8 @@ describe('public API documentation', () => {
       'ref',
       'isRef',
       'unref',
+      'nextTick',
+      'flushSync',
       'version',
       'each',
       'createForm',
@@ -424,6 +428,12 @@ describe('public API documentation', () => {
     expect(readme).toContain(
       'CLI v1 has no config plugins, WebSocket, HMR, SSR'
     );
+
+    expect(readme).toContain('pages');
+    expect(readme).toContain("'/about': 'src/about.ts'");
+    expect(readme).toContain("'/docs/guide': 'src/guide.ts'");
+    expect(readme).toContain('one HTML document per page');
+    expect(readme).toContain('docs/guide.html');
   });
 
   it('mounts the exported app in the canonical CLI README entry', () => {

@@ -11,37 +11,33 @@
         "eslint": "^8.55.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.5",
-        "happy-dom": "^20.9.0",
         "prettier": "^3.1.1",
         "typescript": "^5.3.3",
       },
     },
     "packages/one": {
       "name": "@geektech/one",
-      "version": "0.1.0",
+      "version": "0.3.3",
       "devDependencies": {
         "@geektech/tsone": "workspace:*",
         "@geektech/tsone-cli": "workspace:*",
       },
       "peerDependencies": {
-        "@geektech/tsone": ">=0.1.0 <0.2.0",
+        "@geektech/tsone": ">=0.3.0 <0.4.0",
       },
     },
     "packages/tsone": {
       "name": "@geektech/tsone",
-      "version": "0.1.0",
+      "version": "0.3.0",
     },
     "packages/tsone-cli": {
       "name": "@geektech/tsone-cli",
-      "version": "0.0.1",
+      "version": "0.3.0",
       "bin": {
         "tsone": "bin/tsone.ts",
       },
       "dependencies": {
         "@geektech/tsone": "workspace:*",
-      },
-      "devDependencies": {
-        "happy-dom": "^20.9.0",
       },
     },
     "playground/admin-dashboard": {
@@ -51,6 +47,15 @@
       },
       "devDependencies": {
         "@geektech/tsone-cli": "workspace:*",
+      },
+    },
+    "playground/demo": {
+      "name": "demo",
+      "dependencies": {
+        "@geektech/tsone": "^0.2.1",
+      },
+      "devDependencies": {
+        "@geektech/tsone-cli": "^0.2.2",
       },
     },
     "playground/official-site": {
@@ -103,10 +108,6 @@
     "@types/node": ["@types/node@25.9.1", "http://offline.npm.juqitech.com/@types%2fnode/-/node-25.9.1.tgz", { "dependencies": { "undici-types": ">=7.24.0 <7.24.7" } }, "sha512-xfrlY7UD5rMJk3ZVJP8BNzS28J36YJg+xp+LPXV1TdWxr8uMH5A860QNxYDGQe/ylDSgjxE52Q9VnO7p75tJxg=="],
 
     "@types/semver": ["@types/semver@7.7.1", "http://offline.npm.juqitech.com/@types/semver/-/semver-7.7.1.tgz", {}, "sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA=="],
-
-    "@types/whatwg-mimetype": ["@types/whatwg-mimetype@3.0.2", "http://offline.npm.juqitech.com/@types%2fwhatwg-mimetype/-/whatwg-mimetype-3.0.2.tgz", {}, "sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA=="],
-
-    "@types/ws": ["@types/ws@8.18.1", "http://offline.npm.juqitech.com/@types%2fws/-/ws-8.18.1.tgz", { "dependencies": { "@types/node": "*" } }, "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg=="],
 
     "@typescript-eslint/eslint-plugin": ["@typescript-eslint/eslint-plugin@6.21.0", "http://offline.npm.juqitech.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-6.21.0.tgz", { "dependencies": { "@eslint-community/regexpp": "4.12.2", "@typescript-eslint/scope-manager": "6.21.0", "@typescript-eslint/type-utils": "6.21.0", "@typescript-eslint/utils": "6.21.0", "@typescript-eslint/visitor-keys": "6.21.0", "debug": "4.4.0", "graphemer": "1.4.0", "ignore": "5.3.2", "natural-compare": "1.4.0", "semver": "7.7.1", "ts-api-utils": "1.4.3" }, "optionalDependencies": { "typescript": "5.7.3" }, "peerDependencies": { "@typescript-eslint/parser": "6.21.0", "eslint": "8.57.1" } }, "sha512-oy9+hTPCUFpngkEZUSzbf9MxI65wbKFoQYsgPdILTfbUldp5ovUuphZVe4i30emU9M/kP+T64Di0mxl7dSw3MA=="],
 
@@ -164,11 +165,11 @@
 
     "deep-is": ["deep-is@0.1.4", "http://offline.npm.juqitech.com/deep-is/-/deep-is-0.1.4.tgz", {}, "sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ=="],
 
+    "demo": ["demo@workspace:playground/demo"],
+
     "dir-glob": ["dir-glob@3.0.1", "http://offline.npm.juqitech.com/dir-glob/-/dir-glob-3.0.1.tgz", { "dependencies": { "path-type": "4.0.0" } }, "sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA=="],
 
     "doctrine": ["doctrine@3.0.0", "http://offline.npm.juqitech.com/doctrine/-/doctrine-3.0.0.tgz", { "dependencies": { "esutils": "2.0.3" } }, "sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w=="],
-
-    "entities": ["entities@7.0.1", "http://offline.npm.juqitech.com/entities/-/entities-7.0.1.tgz", {}, "sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA=="],
 
     "escape-string-regexp": ["escape-string-regexp@4.0.0", "http://offline.npm.juqitech.com/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz", {}, "sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA=="],
 
@@ -225,8 +226,6 @@
     "globby": ["globby@11.1.0", "http://offline.npm.juqitech.com/globby/-/globby-11.1.0.tgz", { "dependencies": { "array-union": "2.1.0", "dir-glob": "3.0.1", "fast-glob": "3.3.3", "ignore": "5.3.2", "merge2": "1.4.1", "slash": "3.0.0" } }, "sha512-jhIXaOzy1sb8IyocaruWSn1TjmnBVs8Ayhcy83rmxNJ8q2uWKCAj3CnJY+KpGSXCueAPc0i05kVvVKtP1t9S3g=="],
 
     "graphemer": ["graphemer@1.4.0", "http://offline.npm.juqitech.com/graphemer/-/graphemer-1.4.0.tgz", {}, "sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag=="],
-
-    "happy-dom": ["happy-dom@20.9.0", "http://offline.npm.juqitech.com/happy-dom/-/happy-dom-20.9.0.tgz", { "dependencies": { "@types/node": ">=20.0.0", "@types/whatwg-mimetype": "^3.0.2", "@types/ws": "^8.18.1", "entities": "^7.0.1", "whatwg-mimetype": "^3.0.0", "ws": "^8.18.3" } }, "sha512-GZZ9mKe8r646NUAf/zemnGbjYh4Bt8/MqASJY+pSm5ZDtc3YQox+4gsLI7yi1hba6o+eCsGxpHn5+iEVn31/FQ=="],
 
     "has-flag": ["has-flag@4.0.0", "http://offline.npm.juqitech.com/has-flag/-/has-flag-4.0.0.tgz", {}, "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ=="],
 
@@ -346,15 +345,11 @@
 
     "uri-js": ["uri-js@4.4.1", "http://offline.npm.juqitech.com/uri-js/-/uri-js-4.4.1.tgz", { "dependencies": { "punycode": "2.3.1" } }, "sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg=="],
 
-    "whatwg-mimetype": ["whatwg-mimetype@3.0.0", "http://offline.npm.juqitech.com/whatwg-mimetype/-/whatwg-mimetype-3.0.0.tgz", {}, "sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q=="],
-
     "which": ["which@2.0.2", "http://offline.npm.juqitech.com/which/-/which-2.0.2.tgz", { "dependencies": { "isexe": "2.0.0" }, "bin": { "node-which": "./bin/node-which" } }, "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA=="],
 
     "word-wrap": ["word-wrap@1.2.5", "http://offline.npm.juqitech.com/word-wrap/-/word-wrap-1.2.5.tgz", {}, "sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA=="],
 
     "wrappy": ["wrappy@1.0.2", "http://offline.npm.juqitech.com/wrappy/-/wrappy-1.0.2.tgz", {}, "sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8="],
-
-    "ws": ["ws@8.21.0", "http://offline.npm.juqitech.com/ws/-/ws-8.21.0.tgz", {}, "sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g=="],
 
     "yocto-queue": ["yocto-queue@0.1.0", "http://offline.npm.juqitech.com/yocto-queue/-/yocto-queue-0.1.0.tgz", {}, "sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q=="],
 
@@ -363,6 +358,10 @@
     "@typescript-eslint/typescript-estree/debug": ["debug@4.4.3", "http://offline.npm.juqitech.com/debug/-/debug-4.4.3.tgz", { "dependencies": { "ms": "2.1.3" } }, "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA=="],
 
     "@typescript-eslint/typescript-estree/minimatch": ["minimatch@9.0.3", "http://offline.npm.juqitech.com/minimatch/-/minimatch-9.0.3.tgz", { "dependencies": { "brace-expansion": "2.0.1" } }, "sha512-RHiac9mvaRw0x3AYRgDC1CxAP7HTcNrrECeA8YYJeWnpo+2Q5CegtZjaotWTWxDG3UeGA1coE05iH1mPjT/2mg=="],
+
+    "demo/@geektech/tsone": ["@geektech/tsone@0.2.1", "http://offline.npm.juqitech.com/@geektech%2ftsone/-/tsone-0.2.1.tgz", {}, "sha512-bvsPR0MSv0XtIQGpnJ/idJLZSf1r1KAcc9Fv5q+9UNennIMVMrWO3FiZhLb8H+JakGNR/B1csR9NHeZelMA2HA=="],
+
+    "demo/@geektech/tsone-cli": ["@geektech/tsone-cli@0.2.2", "http://offline.npm.juqitech.com/@geektech%2ftsone-cli/-/tsone-cli-0.2.2.tgz", { "dependencies": { "@geektech/tsone": "0.2.1" }, "bin": { "tsone": "bin/tsone.ts" } }, "sha512-ggcWtFUS548nBmoyyunsB5fg8YZsjS4L51Dy7x/q9vt69gwlcIzheEoQ9OpnhPfecylTsUnbUVwH2wfPgp6LNw=="],
 
     "fast-glob/glob-parent": ["glob-parent@5.1.2", "http://offline.npm.juqitech.com/glob-parent/-/glob-parent-5.1.2.tgz", { "dependencies": { "is-glob": "4.0.3" } }, "sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow=="],
 

@@ -50,15 +50,16 @@ createApp({ root: App }).mount();
 
 ## 组件分类
 
-- 基础：`OneButton`
-- 表单：`OneForm`、`OneFormItem`、`OneInput`、`OneSelect`、`OneTimePicker`、
-  `OneCheckbox`、`OneCheckboxGroup`、`OneRadio`、`OneRadioGroup`、`OneSwitch`、
-  `OneSlider`、`OneRate`、`OneUpload`
-- 导航：`OneTabs`、`OneBreadcrumb`、`OnePagination`
+- 基础：`OneButton`、`OneDivider`、`OneSpace`
+- 表单：`OneForm`、`OneFormItem`、`OneInput`、`OneSelect`、`OneCascader`、
+  `OneTimePicker`、`OneCheckbox`、`OneCheckboxGroup`、`OneRadio`、
+  `OneRadioGroup`、`OneSwitch`、`OneSlider`、`OneRate`、`OneUpload`
+- 导航：`OneTabs`、`OneSteps`、`OneBreadcrumb`、`OnePagination`
 - 数据展示：`OneCard`、`OneTag`、`OneBadge`、`OneAvatar`、`OneProgress`、
-  `OneEmpty`、`OneTable`、`OneCollapse`、`OneSkeleton`
+  `OneEmpty`、`OneTable`、`OneCollapse`、`OneSkeleton`、`OneDescriptions`、
+  `OneTimeline`
 - 反馈与浮层：`OneAlert`、`OneMessage`、`OneDialog`、`OneTooltip`、
-  `OneLoading`
+  `OnePopover`、`OneLoading`
 
 ## 导航
 

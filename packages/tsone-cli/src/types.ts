@@ -16,6 +16,7 @@ export interface BuildConfig {
 
 export interface UserConfig {
   entry?: string;
+  pages?: Record<string, string>;
   server?: ServerConfig;
   build?: BuildConfig;
 }
@@ -40,6 +41,7 @@ export interface ResolvedConfig {
   root: string;
   configFile?: string;
   entry: string;
+  pages: Record<string, string>;
   server: {
     host: string;
     port: number;

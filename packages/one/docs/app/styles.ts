@@ -19,10 +19,17 @@ import { ONE_UPLOAD_STYLES } from '../../lib/upload/OneUpload';
 import { ONE_TABLE_STYLES } from '../../lib/table/OneTable';
 import { ONE_COLLAPSE_STYLES } from '../../lib/collapse/OneCollapse';
 import { ONE_SKELETON_STYLES } from '../../lib/skeleton/OneSkeleton';
+import { ONE_DIVIDER_STYLES } from '../../lib/divider/OneDivider';
+import { ONE_SPACE_STYLES } from '../../lib/space/OneSpace';
+import { ONE_STEPS_STYLES } from '../../lib/steps/OneSteps';
+import { ONE_DESCRIPTIONS_STYLES } from '../../lib/descriptions/OneDescriptions';
+import { ONE_TIMELINE_STYLES } from '../../lib/timeline/OneTimeline';
 import { ONE_ALERT_STYLES } from '../../lib/alert/OneAlert';
 import { ONE_DIALOG_STYLES } from '../../lib/dialog/DialogOverlay';
 import { ONE_MESSAGE_STYLES } from '../../lib/message/MessageOverlay';
 import { ONE_TOOLTIP_STYLES } from '../../lib/tooltip/TooltipBubble';
+import { ONE_POPOVER_STYLES } from '../../lib/popover/PopoverBubble';
+import { ONE_CASCADER_STYLES } from '../../lib/cascader/OneCascader';
 import { oneStylesToSheet } from '../../lib/styles/shared';
 
 const documentStyles: StyleSheet = [
@@ -182,34 +189,22 @@ const documentStyles: StyleSheet = [
     selector: '.one-docs-lang',
     properties: {
       alignItems: 'center',
-      borderLeft: '1px solid var(--one-docs-border)',
       display: 'flex',
       gap: '4px',
-      paddingLeft: '20px',
     },
   },
   {
-    selector: '.one-docs-lang a',
+    selector: '.one-docs-lang .one-select',
     properties: {
-      borderRadius: '6px',
-      color: 'var(--one-docs-muted)',
+      width: '108px',
+    },
+  },
+  {
+    selector: '.one-docs-lang .one-select__trigger',
+    properties: {
+      minHeight: '34px',
       fontSize: '13px',
-      fontWeight: 500,
       padding: '4px 8px',
-      textDecoration: 'none',
-    },
-  },
-  {
-    selector: '.one-docs-lang a:hover',
-    properties: {
-      color: 'var(--one-docs-green-strong)',
-    },
-  },
-  {
-    selector: '.one-docs-lang a.active',
-    properties: {
-      background: 'var(--one-docs-green-soft)',
-      color: 'var(--one-docs-green-strong)',
     },
   },
   {
@@ -798,10 +793,84 @@ const documentStyles: StyleSheet = [
     },
   },
   {
+    selector: '.one-docs-divider-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      width: '100%',
+    },
+  },
+  {
+    selector: '.one-docs-inline-divider-demo',
+    properties: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+    },
+  },
+  {
+    selector: '.one-docs-space-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+    },
+  },
+  {
+    selector: '.one-docs-steps-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      maxWidth: '560px',
+    },
+  },
+  {
+    selector: '.one-docs-descriptions-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
+    },
+  },
+  {
+    selector: '.one-docs-timeline-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+    },
+  },
+  {
+    selector: '.one-docs-popover-demo',
+    properties: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '12px',
+    },
+  },
+  {
+    selector: '.one-docs-cascader-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      maxWidth: '360px',
+    },
+  },
+  {
     atRule: '@keyframes one-skeleton-pulse',
     rules: [
       { selector: '0%, 100%', properties: { opacity: '1' } },
       { selector: '50%', properties: { opacity: '0.45' } },
+    ],
+  },
+  {
+    atRule: '@keyframes one-loading-spin',
+    rules: [
+      { selector: 'from', properties: { transform: 'rotate(0deg)' } },
+      { selector: 'to', properties: { transform: 'rotate(360deg)' } },
     ],
   },
 ];
@@ -831,5 +900,12 @@ export const oneDocsStyles: StyleSheet = [
   ...oneStylesToSheet(ONE_TABLE_STYLES),
   ...oneStylesToSheet(ONE_COLLAPSE_STYLES),
   ...oneStylesToSheet(ONE_SKELETON_STYLES),
+  ...oneStylesToSheet(ONE_DIVIDER_STYLES),
+  ...oneStylesToSheet(ONE_SPACE_STYLES),
+  ...oneStylesToSheet(ONE_STEPS_STYLES),
+  ...oneStylesToSheet(ONE_DESCRIPTIONS_STYLES),
+  ...oneStylesToSheet(ONE_TIMELINE_STYLES),
+  ...oneStylesToSheet(ONE_POPOVER_STYLES),
+  ...oneStylesToSheet(ONE_CASCADER_STYLES),
   ...documentStyles,
 ];

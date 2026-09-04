@@ -1,0 +1,65 @@
+{
+  "generatedAt": "2026-09-04T11:27:41.694Z",
+  "environment": {
+    "bun": "1.4.0",
+    "chrome": "152.0.7977.82",
+    "frameworks": {
+      "vue": "3.5.42",
+      "react": "19.2.8",
+      "react-dom": "19.2.8",
+      "playwright-core": "1.62.1"
+    },
+    "rounds": 3,
+    "opIterations": 5,
+    "initialItems": 1000
+  },
+  "sizes": {
+    "tsone": {
+      "raw": 35752,
+      "gzip": 10745,
+      "brotli": 9549,
+      "file": "/Users/max/Projects/geek/tsone/benchmarks/framework-comparison/dist/tsone/main.js"
+    },
+    "vue": {
+      "raw": 94851,
+      "gzip": 36834,
+      "brotli": 32837,
+      "file": "/Users/max/Projects/geek/tsone/benchmarks/framework-comparison/dist/vue/main.js"
+    },
+    "react": {
+      "raw": 187429,
+      "gzip": 59214,
+      "brotli": 51056,
+      "file": "/Users/max/Projects/geek/tsone/benchmarks/framework-comparison/dist/react/main.js"
+    }
+  },
+  "bench": {
+    "tsone": {
+      "framework": "tsone",
+      "mountMs": 17.4,
+      "add1000": 16.400000035762787,
+      "toggle1000": 18.19999998807907,
+      "remove1000": 17.799999952316284,
+      "toggleEach1000": 9.699999988079071,
+      "nodesAfter": 1000
+    },
+    "vue": {
+      "framework": "vue",
+      "mountMs": 22.4,
+      "add1000": 9.400000035762787,
+      "toggle1000": 6,
+      "remove1000": 5.899999976158142,
+      "toggleEach1000": 4.100000023841858,
+      "nodesAfter": 1000
+    },
+    "react": {
+      "framework": "react",
+      "mountMs": 67.8,
+      "add1000": 9.400000035762787,
+      "toggle1000": 6.199999988079071,
+      "remove1000": 4.799999952316284,
+      "toggleEach1000": 10.5,
+      "nodesAfter": 1000
+    }
+  }
+}

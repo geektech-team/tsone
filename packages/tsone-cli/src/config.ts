@@ -11,6 +11,7 @@ import type {
 
 interface MergedConfig {
   entry: string;
+  pages?: Record<string, string>;
   server: {
     host: string;
     port: number;
@@ -67,11 +68,13 @@ export async function resolveConfig(
   if (!existsSync(entry)) {
     throw new Error(`Entry file does not exist: ${entry}`);
   }
+  const pages = await resolvePages(root, entry, config.pages);
 
   return {
     root,
     ...(loadedConfig.exists ? { configFile } : {}),
     entry,
+    pages,
     server: {
       host: config.server.host,
       port: config.server.port,
@@ -81,6 +84,38 @@ export async function resolveConfig(
       outDir: resolve(root, config.build.outDir),
     },
   };
+}
+
+async function resolvePages(
+  root: string,
+  entry: string,
+  pages: Record<string, string> | undefined
+): Promise<Record<string, string>> {
+  const resolved: Record<string, string> = { '/': entry };
+  for (const [route, pageEntry] of Object.entries(pages ?? {})) {
+    const normalized = normalizePageRoute(route);
+    const absolute = resolve(root, pageEntry);
+    if (!existsSync(absolute)) {
+      throw new Error(
+        `Page entry file does not exist for "${normalized}": ${absolute}`
+      );
+    }
+    resolved[normalized] = absolute;
+  }
+  return resolved;
+}
+
+function normalizePageRoute(route: string): string {
+  if (route === '/') {
+    throw new Error(
+      'Config pages must not redefine the root page "/"; use config.entry instead'
+    );
+  }
+  const normalized = route.replace(/\/+$/, '');
+  if (normalized === '') {
+    throw new Error(`Page route must not be empty: ${route}`);
+  }
+  return normalized;
 }
 
 let configLoadSequence = 0;
@@ -126,6 +161,7 @@ function mergeConfig(...configs: UserConfig[]): MergedConfig {
 
     return {
       entry: config.entry ?? merged.entry,
+      pages: config.pages ?? merged.pages,
       server: {
         host: server?.host ?? merged.server.host,
         port: server?.port ?? merged.server.port,
@@ -147,11 +183,29 @@ function validateUserConfig(config: unknown): asserts config is UserConfig {
   if (config.entry !== undefined && typeof config.entry !== 'string') {
     throw new Error('Config entry must be a string');
   }
+  if (config.pages !== undefined) {
+    validatePagesConfig(config.pages);
+  }
   if (config.server !== undefined) {
     validateServerConfig(config.server);
   }
   if (config.build !== undefined) {
     validateBuildConfig(config.build);
+  }
+}
+
+function validatePagesConfig(
+  pages: unknown
+): asserts pages is Record<string, string> {
+  assertRecord(pages, 'Config pages');
+
+  for (const [route, entry] of Object.entries(pages)) {
+    if (!route.startsWith('/')) {
+      throw new Error(`Page route must start with "/": ${route}`);
+    }
+    if (typeof entry !== 'string') {
+      throw new Error(`Page entry for "${route}" must be a string`);
+    }
   }
 }
 

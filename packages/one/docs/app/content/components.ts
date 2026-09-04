@@ -1,6 +1,5 @@
 import {
   apiTable,
-  callout,
   codeBlock,
   demo,
   heading,
@@ -111,133 +110,128 @@ export const componentPages: OneDocPage[] = [
     ],
   },
   {
-    path: '/components/input/',
-    title: 'OneInput',
+    path: '/components/divider/',
+    title: 'OneDivider',
     description: t(
-      'OneInput 的受控和非受控模式、原生状态、事件与完整 props。',
-      'OneInput controlled and uncontrolled modes, native states, events and the full props reference.'
+      '分割内容区域的横线或竖线，支持带文字的居中分割。',
+      'A horizontal or vertical rule that separates content, with an optional centered label.'
     ),
     section: 'components',
     sectionOrder: 2,
     order: 1,
     body: [
-      heading(1, 'input', 'OneInput'),
+      heading(1, 'onedivider', 'OneDivider'),
       paragraph(
         t(
-          'OneInput 封装原生 input，同时保留明确的值控制边界。',
-          'OneInput wraps a native input while keeping a clear value-control boundary.'
+          'OneDivider 默认渲染水平分割线，传入 direction 可切换为垂直分隔。',
+          'OneDivider renders a horizontal rule by default; pass direction to switch to a vertical separator.'
         )
       ),
-      demo('input'),
-      heading(2, 'value-modes', t('受控与非受控', 'Controlled and uncontrolled')),
-      paragraph(
-        t('传入 ', 'Pass '),
-        inlineCode('value'),
-        t(' 使用受控模式；监听 input 后用 setProps 接受新值。只传 ', ' to use the controlled mode; listen to input and accept the new value via setProps. Pass only '),
-        inlineCode('defaultValue'),
-        t(' 时使用非受控模式，组件会维护内部值。', ' to use the uncontrolled mode, where the component keeps an internal value.')
-      ),
-      codeBlock(
-        'ts',
-        [
-          "import { OneInput, type OneInputValueEvent } from '@geektech/one';",
-          '',
-          "const controlled = new OneInput({ value: 'one', ariaLabel: '项目名称' });",
-          "controlled.on('input', (payload) => {",
-          '  const event = payload as OneInputValueEvent;',
-          '  controlled.setProps({ value: event.value });',
-          '});',
-          '',
-          "const uncontrolled = new OneInput({ defaultValue: 'draft', ariaLabel: '草稿名称' });",
-          "uncontrolled.on('change', (payload) => {",
-          '  const event = payload as OneInputValueEvent;',
-          '  console.log(event.value, event.originalEvent);',
-          '});',
-        ].join('\n')
-      ),
-      heading(2, 'native-states', t('原生状态', 'Native states')),
+      demo('divider'),
+      heading(2, 'text', t('文字分割线', 'Divider with text')),
       paragraph(
         t(
-          'type、name、placeholder、disabled、readonly 和 required 直接映射到原生 input；invalid 同时添加状态类并设置 aria-invalid。',
-          'type, name, placeholder, disabled, readonly and required map directly to the native input; invalid adds a state class and sets aria-invalid.'
+          '传入 text 后，OneDivider 以 flex 布局在两侧绘制线条并把文字居中；textAlign 可让文字靠左或靠右。',
+          'When text is provided OneDivider draws lines on both sides and centers the label; textAlign moves it to the left or right.'
         )
       ),
       heading(2, 'api', 'API'),
-      apiTable(t('OneInput 属性与事件', 'OneInput props and events'), [
+      apiTable(t('OneDivider 属性', 'OneDivider props'), [
         {
-          name: 'value',
-          signature: 'value?: string',
-          description: t('受控值；存在时输入后恢复最新 prop。', 'Controlled value; when present, input reverts to the latest prop.'),
-        },
-        {
-          name: 'defaultValue',
-          signature: 'defaultValue?: string',
-          description: t('非受控初始值。', 'Uncontrolled initial value.'),
-        },
-        {
-          name: 'type',
-          signature: 'type?: string',
-          description: t('原生 input 类型。', 'Native input type.'),
-        },
-        {
-          name: 'name',
-          signature: 'name?: string',
-          description: t('原生字段名。', 'Native field name.'),
-        },
-        {
-          name: 'placeholder',
-          signature: 'placeholder?: string',
-          description: t('输入提示。', 'Input placeholder.'),
-        },
-        {
-          name: 'size',
-          signature: 'size?: OneComponentSize',
+          name: 'direction',
+          signature: "direction?: 'horizontal' | 'vertical'",
           description: t(
-            "组件尺寸：'sm' | 'md' | 'lg'，默认 md。",
-            "Component size: 'sm' | 'md' | 'lg'; default md."
+            '分割线方向，默认 horizontal。',
+            'Rule direction; defaults to horizontal.'
           ),
         },
         {
-          name: 'disabled',
-          signature: 'disabled?: boolean',
-          description: t('原生禁用状态。', 'Native disabled state.'),
+          name: 'text',
+          signature: 'text?: string',
+          description: t(
+            '可选文字，显示在水平分割线中间。',
+            'Optional label shown in the middle of a horizontal rule.'
+          ),
         },
         {
-          name: 'readonly',
-          signature: 'readonly?: boolean',
-          description: t('原生只读状态。', 'Native read-only state.'),
-        },
-        {
-          name: 'required',
-          signature: 'required?: boolean',
-          description: t('原生必填状态。', 'Native required state.'),
-        },
-        {
-          name: 'invalid',
-          signature: 'invalid?: boolean',
-          description: t('无效样式与 aria-invalid。', 'Invalid styling and aria-invalid.'),
-        },
-        {
-          name: 'ariaLabel',
-          signature: 'ariaLabel?: string',
-          description: t('映射到 aria-label。', 'Mapped to aria-label.'),
-        },
-        {
-          name: 'input',
-          signature: '(payload: OneInputValueEvent) => void',
-          description: t('每次原生 input 事件发出。', 'Emitted on every native input event.'),
-        },
-        {
-          name: 'change',
-          signature: '(payload: OneInputValueEvent) => void',
-          description: t('每次原生 change 事件发出。', 'Emitted on every native change event.'),
+          name: 'textAlign',
+          signature: "textAlign?: 'left' | 'center' | 'right'",
+          description: t(
+            '文字对齐方式，默认 center。',
+            'Label alignment; defaults to center.'
+          ),
         },
       ]),
-      callout('note', 'OneInputValueEvent', [
-        inlineCode('value: string'),
-        t(' 是输入值，', ' is the input value and '),
-        inlineCode('originalEvent: Event'),
-        t(' 是对应的原生事件。', ' is the corresponding native event.'),
+    ],
+  },
+  {
+    path: '/components/space/',
+    title: 'OneSpace',
+    description: t(
+      '用统一间距排布子元素的布局容器。',
+      'A layout container that spaces child elements uniformly.'
+    ),
+    section: 'components',
+    sectionOrder: 2,
+    order: 2,
+    body: [
+      heading(1, 'onespace', 'OneSpace'),
+      paragraph(
+        t(
+          'OneSpace 把子元素按水平或垂直方向排布，并用统一间距分隔，避免手动设置 margin。',
+          'OneSpace lays children out horizontally or vertically with a uniform gap, avoiding manual margins.'
+        )
+      ),
+      demo('space'),
+      heading(2, 'sizes', t('间距与对齐', 'Sizes and alignment')),
+      paragraph(
+        t(
+          'size 接受 sm/md/lg 或像素数值；align 控制子元素对齐，wrap 允许换行。',
+          'size accepts sm/md/lg or a pixel number; align controls alignment and wrap enables wrapping.'
+        )
+      ),
+      heading(2, 'api', 'API'),
+      apiTable(t('OneSpace 属性', 'OneSpace props'), [
+        {
+          name: 'direction',
+          signature: "direction?: 'horizontal' | 'vertical'",
+          description: t(
+            '排列方向，默认 horizontal。',
+            'Layout direction; defaults to horizontal.'
+          ),
+        },
+        {
+          name: 'size',
+          signature: 'size?: OneComponentSize | number',
+          description: t(
+            '间距，sm/md/lg 或像素值，默认 md。',
+            'Gap as sm/md/lg or a pixel number; defaults to md.'
+          ),
+        },
+        {
+          name: 'wrap',
+          signature: 'wrap?: boolean',
+          description: t(
+            '允许子元素换行。',
+            'Allows children to wrap.'
+          ),
+        },
+        {
+          name: 'align',
+          signature: 'align?: OneSpaceAlign',
+          description: t(
+            '子元素对齐方式。',
+            'Child alignment.'
+          ),
+        },
+        {
+          name: 'children',
+          signature: 'children?: Array<VNode | string>',
+          description: t(
+            '排布的内容。',
+            'Children to lay out.'
+          ),
+        },
       ]),
     ],
   },
@@ -250,7 +244,7 @@ export const componentPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 2,
+    order: 3,
     body: [
       heading(1, 'card', 'OneCard'),
       paragraph(

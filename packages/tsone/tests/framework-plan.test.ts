@@ -4,6 +4,7 @@ import {
   Component,
   Div,
   each,
+  flushSync,
   InjectionKey,
   Input,
   P,
@@ -715,12 +716,14 @@ describe('framework public plan', () => {
       );
 
     expect(router.getCurrentRoute()?.path).toBe('/about');
+    flushSync();
     expect(container.querySelector('main')).toBeTruthy();
     expect(container.querySelector('#about')?.textContent).toBe('About');
     expect(listener).toHaveBeenCalledTimes(1);
 
     unsubscribe();
     router.push('/');
+    flushSync();
 
     expect(listener).toHaveBeenCalledTimes(1);
     expect(container.querySelector('#home')?.textContent).toBe('Home');
@@ -742,6 +745,7 @@ describe('framework public plan', () => {
       { id: 'a', label: 'Alpha' },
       { id: 'b', label: 'Beta' },
     ];
+    flushSync();
 
     const after = Array.from(container.querySelectorAll('li'));
 
@@ -795,6 +799,7 @@ describe('framework public plan', () => {
     );
 
     component.state.removeLeadingUnkeyedChild = true;
+    flushSync();
 
     const children = Array.from(container.querySelectorAll('li'));
     expect(children).toHaveLength(1);
@@ -853,6 +858,7 @@ describe('framework public plan', () => {
 
     component.mount(container);
     component.state.useFirst = false;
+    flushSync();
 
     const input = container.querySelector('input');
     expect(input).toBeInstanceOf(HTMLInputElement);
@@ -873,10 +879,12 @@ describe('framework public plan', () => {
     expect(ConditionalChild.mountedCount).toBe(1);
 
     component.state.visible = false;
+    flushSync();
     expect(container.querySelector('.conditional-child')).toBeNull();
     expect(ConditionalChild.unmountedCount).toBe(1);
 
     component.state.visible = true;
+    flushSync();
     expect(container.querySelector('.conditional-child')).toBeTruthy();
     expect(ConditionalChild.mountedCount).toBe(2);
   });
@@ -887,6 +895,7 @@ describe('framework public plan', () => {
 
     component.mount(container);
     component.state.visible = false;
+    flushSync();
     const updatesBeforeContextChange =
       ContextTrackingConditionalChild.contextUpdates;
 
@@ -927,9 +936,11 @@ describe('framework public plan', () => {
     expect(container.querySelector('.conditional-slot')).toBeTruthy();
 
     component.state.visible = false;
+    flushSync();
     expect(container.querySelector('.conditional-slot')).toBeNull();
 
     component.state.visible = true;
+    flushSync();
     expect(container.querySelector('.conditional-slot')).toBeTruthy();
   });
 
@@ -941,6 +952,7 @@ describe('framework public plan', () => {
     EventChild.latest?.save('first');
 
     component.state.useReplacementHandler = true;
+    flushSync();
     EventChild.latest?.save('second');
 
     expect(component.oldHandlerCalls).toEqual(['first']);
@@ -980,6 +992,7 @@ describe('framework public plan', () => {
 
     component.mount(container);
     component.state.label = 'After';
+    flushSync();
 
     expect(PropUpdateChild.updateCount).toBe(1);
     expect(container.textContent).toBe('After');
@@ -999,6 +1012,7 @@ describe('framework public plan', () => {
     }
     child.state.useSpan = true;
     component.state.label = 'After';
+    flushSync();
 
     expect(container.querySelectorAll('.root-changing-child')).toHaveLength(1);
     expect(container.querySelector('span')?.textContent).toBe('After');
@@ -1015,6 +1029,7 @@ describe('framework public plan', () => {
 
     component.mount(container);
     component.state.mode = 'new';
+    flushSync();
 
     expect(component.oldHandlerCalls).toEqual([]);
     expect(component.replacementHandlerCalls).toEqual(['new']);
@@ -1028,6 +1043,7 @@ describe('framework public plan', () => {
 
     expect(() => {
       component.state.duplicate = true;
+      flushSync(); // 批处理冲刷时抛错
     }).toThrow('Duplicate key "same"');
   });
 

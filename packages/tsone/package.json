@@ -1,6 +1,6 @@
 {
   "name": "@geektech/tsone",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "TSone 是轻量级纯 TypeScript 前端框架，提供响应式系统、类组件、策略化渲染和路由功能",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,6 +18,10 @@
     "./style": {
       "import": "./dist/style/index.js",
       "types": "./dist/style/index.d.ts"
+    },
+    "./dom": {
+      "import": "./dist/dom/index.js",
+      "types": "./dist/dom/index.d.ts"
     }
   },
   "scripts": {
@@ -39,6 +43,11 @@
     "router"
   ],
   "author": "Jimmie Max(Qianyu)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geektech-team/tsone.git",
+    "directory": "packages/tsone"
+  },
   "license": "MIT",
   "engines": {
     "bun": ">=1.3.0"

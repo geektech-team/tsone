@@ -1,5 +1,6 @@
 import {
   apiTable,
+  callout,
   codeBlock,
   demo,
   heading,
@@ -32,23 +33,25 @@ function page(
       demo(
         path.includes('/form/form')
           ? 'form'
-          : path.includes('select')
-            ? 'select'
-            : path.includes('checkbox')
-              ? 'checkbox'
-              : path.includes('switch')
-                ? 'switch'
-                : path.includes('radio')
-                  ? 'radio'
-                  : path.includes('time-picker')
-                    ? 'time-picker'
-                    : path.includes('slider')
-                      ? 'slider'
-                      : path.includes('rate')
-                        ? 'rate'
-                        : path.includes('upload')
-                          ? 'upload'
-                          : 'form'
+          : path.includes('cascader')
+            ? 'cascader'
+            : path.includes('select')
+              ? 'select'
+              : path.includes('checkbox')
+                ? 'checkbox'
+                : path.includes('switch')
+                  ? 'switch'
+                  : path.includes('radio')
+                    ? 'radio'
+                    : path.includes('time-picker')
+                      ? 'time-picker'
+                      : path.includes('slider')
+                        ? 'slider'
+                        : path.includes('rate')
+                          ? 'rate'
+                          : path.includes('upload')
+                            ? 'upload'
+                            : 'form'
       ),
       heading(2, 'api', 'API'),
       apiTable(caption, rows),
@@ -66,7 +69,7 @@ export const formPages: OneDocPage[] = [
     ),
     'form',
     t('表单组件', 'Form components'),
-    12,
+    15,
     [
       {
         name: 'OneForm',
@@ -95,6 +98,14 @@ export const formPages: OneDocPage[] = [
         description: t(
           '支持单选、多选与本地搜索的下拉选择。',
           'Dropdown select with single/multiple selection and local search.'
+        ),
+      },
+      {
+        name: 'OneCascader',
+        signature: 'new OneCascader(props)',
+        description: t(
+          '多级级联选择，路径数组为值。',
+          'Multi-level cascading selection with a path array value.'
         ),
       },
       {
@@ -147,7 +158,7 @@ export const formPages: OneDocPage[] = [
       ),
       'oneform',
       'OneForm API',
-      13,
+      16,
       []
     ),
     body: [
@@ -186,6 +197,138 @@ export const formPages: OneDocPage[] = [
       ]),
     ],
   },
+  {
+    path: '/components/form/input/',
+    title: 'OneInput',
+    description: t(
+      'OneInput 的受控和非受控模式、原生状态、事件与完整 props。',
+      'OneInput controlled and uncontrolled modes, native states, events and the full props reference.'
+    ),
+    section: 'components',
+    sectionOrder: 2,
+    order: 17,
+    body: [
+      heading(1, 'input', 'OneInput'),
+      paragraph(
+        t(
+          'OneInput 封装原生 input，同时保留明确的值控制边界。',
+          'OneInput wraps a native input while keeping a clear value-control boundary.'
+        )
+      ),
+      demo('input'),
+      heading(2, 'value-modes', t('受控与非受控', 'Controlled and uncontrolled')),
+      paragraph(
+        t('传入 ', 'Pass '),
+        inlineCode('value'),
+        t(' 使用受控模式；监听 input 后用 setProps 接受新值。只传 ', ' to use the controlled mode; listen to input and accept the new value via setProps. Pass only '),
+        inlineCode('defaultValue'),
+        t(' 时使用非受控模式，组件会维护内部值。', ' to use the uncontrolled mode, where the component keeps an internal value.')
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { OneInput, type OneInputValueEvent } from '@geektech/one';",
+          '',
+          "const controlled = new OneInput({ value: 'one', ariaLabel: '项目名称' });",
+          "controlled.on('input', (payload) => {",
+          '  const event = payload as OneInputValueEvent;',
+          '  controlled.setProps({ value: event.value });',
+          '});',
+          '',
+          "const uncontrolled = new OneInput({ defaultValue: 'draft', ariaLabel: '草稿名称' });",
+          "uncontrolled.on('change', (payload) => {",
+          '  const event = payload as OneInputValueEvent;',
+          '  console.log(event.value, event.originalEvent);',
+          '});',
+        ].join('\n')
+      ),
+      heading(2, 'native-states', t('原生状态', 'Native states')),
+      paragraph(
+        t(
+          'type、name、placeholder、disabled、readonly 和 required 直接映射到原生 input；invalid 同时添加状态类并设置 aria-invalid。',
+          'type, name, placeholder, disabled, readonly and required map directly to the native input; invalid adds a state class and sets aria-invalid.'
+        )
+      ),
+      heading(2, 'api', 'API'),
+      apiTable(t('OneInput 属性与事件', 'OneInput props and events'), [
+        {
+          name: 'value',
+          signature: 'value?: string',
+          description: t('受控值；存在时输入后恢复最新 prop。', 'Controlled value; when present, input reverts to the latest prop.'),
+        },
+        {
+          name: 'defaultValue',
+          signature: 'defaultValue?: string',
+          description: t('非受控初始值。', 'Uncontrolled initial value.'),
+        },
+        {
+          name: 'type',
+          signature: 'type?: string',
+          description: t('原生 input 类型。', 'Native input type.'),
+        },
+        {
+          name: 'name',
+          signature: 'name?: string',
+          description: t('原生字段名。', 'Native field name.'),
+        },
+        {
+          name: 'placeholder',
+          signature: 'placeholder?: string',
+          description: t('输入提示。', 'Input placeholder.'),
+        },
+        {
+          name: 'size',
+          signature: 'size?: OneComponentSize',
+          description: t(
+            "组件尺寸：'sm' | 'md' | 'lg'，默认 md。",
+            "Component size: 'sm' | 'md' | 'lg'; default md."
+          ),
+        },
+        {
+          name: 'disabled',
+          signature: 'disabled?: boolean',
+          description: t('原生禁用状态。', 'Native disabled state.'),
+        },
+        {
+          name: 'readonly',
+          signature: 'readonly?: boolean',
+          description: t('原生只读状态。', 'Native read-only state.'),
+        },
+        {
+          name: 'required',
+          signature: 'required?: boolean',
+          description: t('原生必填状态。', 'Native required state.'),
+        },
+        {
+          name: 'invalid',
+          signature: 'invalid?: boolean',
+          description: t('无效样式与 aria-invalid。', 'Invalid styling and aria-invalid.'),
+        },
+        {
+          name: 'ariaLabel',
+          signature: 'ariaLabel?: string',
+          description: t('映射到 aria-label。', 'Mapped to aria-label.'),
+        },
+        {
+          name: 'input',
+          signature: '(payload: OneInputValueEvent) => void',
+          description: t('每次原生 input 事件发出。', 'Emitted on every native input event.'),
+        },
+        {
+          name: 'change',
+          signature: '(payload: OneInputValueEvent) => void',
+          description: t('每次原生 change 事件发出。', 'Emitted on every native change event.'),
+        },
+      ]),
+      callout('note', 'OneInputValueEvent', [
+        inlineCode('value: string'),
+        t(' 是输入值，', ' is the input value and '),
+        inlineCode('originalEvent: Event'),
+        t(' 是对应的原生事件。', ' is the corresponding native event.'),
+      ]),
+    ],
+  },
+
   page(
     '/components/form/select/',
     'OneSelect',
@@ -195,7 +338,7 @@ export const formPages: OneDocPage[] = [
     ),
     'oneselect',
     'OneSelect API',
-    14,
+    18,
     [
       {
         name: 'multiple',
@@ -218,7 +361,7 @@ export const formPages: OneDocPage[] = [
     ),
     'onecheckbox',
     'OneCheckbox API',
-    15,
+    19,
     [
       {
         name: 'checked',
@@ -241,7 +384,7 @@ export const formPages: OneDocPage[] = [
     ),
     'oneswitch',
     'OneSwitch API',
-    16,
+    20,
     [
       {
         name: 'checked',
@@ -259,7 +402,7 @@ export const formPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 17,
+    order: 21,
     body: [
       heading(1, 'oneradio', t('OneRadio 与 OneRadioGroup', 'OneRadio and OneRadioGroup')),
       paragraph(
@@ -381,7 +524,7 @@ export const formPages: OneDocPage[] = [
     ),
     'onetimepicker',
     'OneTimePicker API',
-    18,
+    22,
     [
       {
         name: 'value',
@@ -417,7 +560,7 @@ export const formPages: OneDocPage[] = [
     ),
     'oneslider',
     'OneSlider API',
-    19,
+    23,
     [
       {
         name: 'value',
@@ -476,7 +619,7 @@ export const formPages: OneDocPage[] = [
     ),
     'onerate',
     'OneRate API',
-    20,
+    24,
     [
       {
         name: 'value',
@@ -532,7 +675,7 @@ export const formPages: OneDocPage[] = [
     ),
     'oneupload',
     'OneUpload API',
-    21,
+    25,
     [
       {
         name: 'accept',
@@ -581,6 +724,63 @@ export const formPages: OneDocPage[] = [
           '选择或移除文件后发出 files: OneUploadFile[] 与 originalEvent: Event。',
           'Emitted after files are selected or removed with files: OneUploadFile[] and originalEvent: Event.'
         ),
+      },
+    ]
+  ),
+  page(
+    '/components/form/cascader/',
+    'OneCascader',
+    t(
+      '多级级联选择，以分栏面板逐级展开，值为从根到叶的路径数组。',
+      'Multi-level cascading selection with column panels expanding level by level; the value is a root-to-leaf path array.'
+    ),
+    'onecascader',
+    'OneCascader API',
+    26,
+    [
+      {
+        name: 'options',
+        signature: 'options: OneCascaderOption[]',
+        description: t(
+          '级联树：value、label、disabled 与可选 children。',
+          'Cascading tree: value, label, disabled and optional children.'
+        ),
+      },
+      {
+        name: 'value',
+        signature: 'value?: readonly string[]',
+        description: t(
+          '受控路径数组，每项对应一级的 value。',
+          'Controlled path array; each item is a value at one level.'
+        ),
+      },
+      {
+        name: 'defaultValue',
+        signature: 'defaultValue?: readonly string[]',
+        description: t('非受控初始路径。', 'Uncontrolled initial path.'),
+      },
+      {
+        name: 'placeholder',
+        signature: 'placeholder?: string',
+        description: t('未选择时的提示文本。', 'Placeholder shown when nothing is selected.'),
+      },
+      {
+        name: 'changeOnSelect',
+        signature: 'changeOnSelect?: boolean',
+        description: t(
+          '选择任意层级立即生效，默认需选到叶子。',
+          'Commits on any level; by default a leaf is required.'
+        ),
+      },
+      {
+        name: 'disabled',
+        signature: 'disabled?: boolean',
+        description: t('禁用触发与选择。', 'Disables the trigger and selection.'),
+      },
+      {
+        name: 'invalid',
+        signature: 'invalid?: boolean',
+        description: t('标记输入无效。', 'Marks the input as invalid.'),
       },
     ]
   ),

@@ -66,12 +66,12 @@ describe('One UI docs build', () => {
     ).toBe(join(outDir, 'zh/components/button/index.html'));
   });
 
-  it('builds all seventy-two pages and the interactive client asset', async () => {
+  it('builds all eighty-six pages and the interactive client asset', async () => {
     const outDir = makeTemporaryDirectory('one-docs-build-');
 
     const result = await buildOneDocs({ outDir });
 
-    expect(result.pagesBuilt).toBe(72);
+    expect(result.pagesBuilt).toBe(86);
     expect(result.assetsBuilt).toEqual([
       join(outDir, 'assets/one-docs-client.js'),
     ]);

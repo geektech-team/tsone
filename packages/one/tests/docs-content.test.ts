@@ -23,7 +23,8 @@ const APPROVED_PATHS = [
   '/guide/getting-started/',
   '/guide/theming/',
   '/components/button/',
-  '/components/input/',
+  '/components/divider/',
+  '/components/space/',
   '/components/card/',
   '/components/data-display/',
   '/components/data-display/tag/',
@@ -34,8 +35,11 @@ const APPROVED_PATHS = [
   '/components/data-display/table/',
   '/components/data-display/collapse/',
   '/components/data-display/skeleton/',
+  '/components/data-display/descriptions/',
+  '/components/data-display/timeline/',
   '/components/form/',
   '/components/form/form/',
+  '/components/form/input/',
   '/components/form/select/',
   '/components/form/checkbox/',
   '/components/form/switch/',
@@ -44,8 +48,10 @@ const APPROVED_PATHS = [
   '/components/form/slider/',
   '/components/form/rate/',
   '/components/form/upload/',
+  '/components/form/cascader/',
   '/components/navigation/',
   '/components/navigation/tabs/',
+  '/components/navigation/steps/',
   '/components/navigation/breadcrumb/',
   '/components/navigation/pagination/',
   '/components/feedback/',
@@ -53,6 +59,7 @@ const APPROVED_PATHS = [
   '/components/feedback/message/',
   '/components/feedback/dialog/',
   '/components/feedback/tooltip/',
+  '/components/feedback/popover/',
   '/components/feedback/loading/',
 ];
 const packageRoot = join(import.meta.dir, '..');
@@ -102,7 +109,7 @@ function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
 }
 
 describe('One UI docs content', () => {
-  it('defines exactly the thirty-six approved routes in stable order', () => {
+  it('defines exactly the forty-three approved routes in stable order', () => {
     expect(oneDocPages.map((page) => page.path)).toEqual(APPROVED_PATHS);
   });
 
@@ -167,7 +174,7 @@ describe('One UI docs content', () => {
     expect(home).toContain('bun add @geektech/tsone @geektech/one');
     for (const path of [
       '/components/button/',
-      '/components/input/',
+      '/components/form/input/',
       '/components/card/',
     ]) {
       expect(home).toContain(path);
@@ -308,7 +315,7 @@ describe('One UI docs content', () => {
   });
 
   it('documents every OneInput prop, event, payload and state mode', () => {
-    const text = pageText('/components/input/');
+    const text = pageText('/components/form/input/');
     for (const fragment of [
       'value?: string',
       'defaultValue?: string',
@@ -330,11 +337,11 @@ describe('One UI docs content', () => {
     ]) {
       expect(text).toContain(fragment);
     }
-    expect(apiRowAt('/components/input/', 'size').signature).toBe(
+    expect(apiRowAt('/components/form/input/', 'size').signature).toBe(
       'size?: OneComponentSize'
     );
     expect(
-      localize(apiRowAt('/components/input/', 'size').description, 'zh')
+      localize(apiRowAt('/components/form/input/', 'size').description, 'zh')
     ).toContain("'sm' | 'md' | 'lg'");
   });
 
@@ -367,7 +374,7 @@ describe('One UI docs content', () => {
     expect(pageText('/guide/getting-started/')).toContain(
       "createComponent(OneInput, { placeholder: '项目名称', ariaLabel: '项目名称' })"
     );
-    const input = pageText('/components/input/');
+    const input = pageText('/components/form/input/');
     expect(input).toContain(
       "new OneInput({ value: 'one', ariaLabel: '项目名称' })"
     );
@@ -460,7 +467,7 @@ describe('One UI docs content', () => {
   it('gives every component page a real demo block', () => {
     for (const [path, component] of [
       ['/components/button/', 'button'],
-      ['/components/input/', 'input'],
+      ['/components/form/input/', 'input'],
       ['/components/card/', 'card'],
     ] as const) {
       expect(pageAt(path).body).toContainEqual(
@@ -529,9 +536,16 @@ describe('One UI docs content', () => {
         'slider',
         'rate',
         'upload',
+        'cascader',
         'table',
         'collapse',
         'skeleton',
+        'divider',
+        'space',
+        'steps',
+        'descriptions',
+        'timeline',
+        'popover',
       ])
     );
 

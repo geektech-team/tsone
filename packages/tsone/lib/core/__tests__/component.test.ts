@@ -1,5 +1,6 @@
 import { Component } from '../component';
 import { VNode } from '../vnode';
+import { flushSync } from '../reactive';
 import { describe, expect, it, beforeEach, afterEach, spyOn } from 'bun:test';
 
 class TestComponent extends Component {
@@ -65,8 +66,9 @@ describe('Component', () => {
       component.mount(container);
       const initialText = container.textContent;
 
-      // 通过修改响应式状态来触发更新
+      // 通过修改响应式状态来触发更新（批处理，需冲刷后生效）
       component.state.count = 1;
+      flushSync();
       expect(container.textContent).not.toBe(initialText);
       expect(container.textContent).toBe('Count: 1');
     });
@@ -77,6 +79,7 @@ describe('Component', () => {
       renderSpy.mockClear(); // 清除mount时的render调用
 
       component.state.count = 2;
+      flushSync();
       expect(renderSpy).toHaveBeenCalled();
     });
   });

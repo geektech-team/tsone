@@ -1,6 +1,8 @@
 import { Component, type VNode } from '@geektech/tsone';
 import type { OneFieldValueEvent, OneFormFieldContext } from '../form/context';
 import { ONE_FORM_FIELD_KEY } from '../form/context';
+import { bindOneFloatingPanel } from '../dropdown';
+import { OneInput, type OneInputValueEvent } from '../input';
 import {
   ONE_THEME_DEFAULTS,
   ONE_THEME_TYPOGRAPHY_PROPERTIES,
@@ -66,14 +68,13 @@ export const ONE_SELECT_STYLES: OneNamedStyle[] = [
     name: 'one-select-menu',
     selector: '.one-select__menu',
     properties: {
-      position: 'absolute',
-      zIndex: '1',
-      width: '100%',
-      marginTop: '4px',
+      position: 'fixed',
+      zIndex: '1000',
       padding: '4px',
       border: oneThemeBorder(),
       borderRadius: `var(--one-radius-md, ${ONE_THEME_DEFAULTS.radiusMd})`,
       backgroundColor: `var(--one-color-surface, ${ONE_THEME_DEFAULTS.colorSurface})`,
+      boxShadow: `var(--one-shadow-card, ${ONE_THEME_DEFAULTS.shadowCard})`,
     },
   },
   {
@@ -132,6 +133,7 @@ function matchesSearch(option: FlatOption, query: string): boolean {
 export class OneSelect extends Component<OneSelectProps, OneSelectState> {
   private fieldContext: OneFormFieldContext | undefined;
   private unsubscribe: (() => void) | undefined;
+  private floatingCleanup: (() => void) | undefined;
   protected initState(): OneSelectState {
     return {
       open: false,
@@ -164,7 +166,25 @@ export class OneSelect extends Component<OneSelectProps, OneSelectState> {
       this.state.revision += 1;
     });
   }
+  protected onUpdated(): void {
+    this.floatingCleanup?.();
+    this.floatingCleanup = undefined;
+    const root = this.getElement();
+    if (!this.state.open || !(root instanceof HTMLElement)) return;
+    const trigger = root.querySelector<HTMLElement>('.one-select__trigger');
+    const panel = root.querySelector<HTMLElement>('.one-select__menu');
+    if (!trigger || !panel) return;
+    this.floatingCleanup = bindOneFloatingPanel({
+      trigger,
+      panel,
+      onOutside: () => {
+        this.state.open = false;
+      },
+    });
+  }
   protected onUnmounted(): void {
+    this.floatingCleanup?.();
+    this.floatingCleanup = undefined;
     this.unsubscribe?.();
     this.unsubscribe = undefined;
     this.fieldContext = undefined;
@@ -228,17 +248,18 @@ export class OneSelect extends Component<OneSelectProps, OneSelectState> {
                   ...(this.props.searchable
                     ? [
                         {
-                          tag: 'input',
+                          component: OneInput,
                           props: {
-                            type: 'search',
                             value: this.state.query,
-                            'aria-label': '搜索选项',
+                            type: 'search',
+                            size: 'sm',
+                            placeholder: '搜索选项',
+                            ariaLabel: '搜索选项',
                           },
-                          listeners: {
-                            input: (event) => {
-                              const input = event.currentTarget;
-                              if (input instanceof HTMLInputElement)
-                                this.state.query = input.value;
+                          emitters: {
+                            input: (payload: unknown) => {
+                              const event = payload as OneInputValueEvent;
+                              this.state.query = event.value;
                             },
                           },
                         } as VNode,

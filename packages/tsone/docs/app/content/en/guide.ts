@@ -104,18 +104,40 @@ export const enGuidePages: DocPage[] = [
       },
       {
         type: 'heading',
+        level: 3,
+        text: 'Multi-Page Applications',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'Map additional routes to their own page entries with the pages option. Each page entry satisfies the same export const app contract as the root entry; keys must start with / and may nest, trailing slashes are normalized, and the root / route is always served by entry.',
+        ],
+      },
+      {
+        type: 'code',
+        language: 'ts',
+        code: "import { defineConfig } from '@geektech/tsone-cli';\n\nexport default defineConfig({\n  entry: 'src/main.ts',\n  pages: {\n    '/about': 'src/about.ts',\n    '/docs/guide': 'src/guide.ts',\n  },\n});",
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'During development each page is served at its route, and tsone build emits one HTML document per page (index.html, about.html, docs/guide.html) with asset URLs relative to each document.',
+        ],
+      },
+      {
+        type: 'heading',
         level: 2,
         text: 'Run the Application',
       },
       {
         type: 'code',
         language: 'bash',
-        code: 'tsone dev [--host <host>] [--port <port>] [--no-watch]\ntsone build [--out-dir <path>]',
+        code: 'tsone create\ntsone dev [--host <host>] [--port <port>] [--no-watch]\ntsone build [--out-dir <path>]',
       },
       {
         type: 'paragraph',
         content: [
-          'dev accepts host/port overrides plus a --no-watch flag, and build accepts only out-dir. Separated and equals forms such as --port 3000 and --port=3000 are supported. build.outDir must stay a child of the project root.',
+          'create scaffolds a basic TSone project (package.json, tsone.config.ts, tsconfig.json, .gitignore, and a src/main.ts homepage showing the TSone name and a GitHub link) into the current directory and refuses to overwrite existing files. dev accepts host/port overrides plus a --no-watch flag, and build accepts only out-dir. Separated and equals forms such as --port 3000 and --port=3000 are supported. build.outDir must stay a child of the project root.',
         ],
       },
       {
@@ -859,6 +881,16 @@ export const enGuidePages: DocPage[] = [
         type: 'code',
         language: 'ts',
         code: "this.state.count = 1;\nthis.state.user.name = 'Jane';\nthis.state.items.push('Item 4');",
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'State changes are merged through the scheduler and flushed on a microtask: a burst of synchronous mutations triggers a single re-render. Use ',
+          { type: 'code', text: 'flushSync()' },
+          ' to read the latest DOM synchronously, or ',
+          { type: 'code', text: 'await nextTick()' },
+          ' in async code.',
+        ],
       },
       {
         type: 'heading',

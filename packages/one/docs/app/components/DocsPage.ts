@@ -1,5 +1,6 @@
 import { Component, type VNode } from '@geektech/tsone';
 import { OneSwitch } from '../../../lib/switch/OneSwitch';
+import { OneSelect } from '../../../lib/select/OneSelect';
 import type { OneDocLocale, OneDocPage } from '../content';
 import { localeHref, pick } from '../locale';
 import { DocArticle } from './DocArticle';
@@ -11,6 +12,11 @@ export interface DocsPageProps {
   pages: OneDocPage[];
   locale: OneDocLocale;
 }
+
+const LANGUAGE_OPTIONS = [
+  { value: 'zh', label: '\u4e2d\u6587' },
+  { value: 'en', label: 'English' },
+];
 
 export class DocsPage extends Component<DocsPageProps> {
   protected initState(): object {
@@ -143,26 +149,18 @@ export class DocsPage extends Component<DocsPageProps> {
       tag: 'div',
       props: {
         className: 'one-docs-lang',
+        'data-one-lang': '',
+        'data-one-lang-path': page.path,
         'aria-label': pick('切换语言', 'Switch language', locale),
       },
       children: [
         {
-          tag: 'a',
+          component: OneSelect,
           props: {
-            href: localeHref(page.path, 'zh'),
-            'aria-current': locale === 'zh' ? 'true' : undefined,
-            className: locale === 'zh' ? 'active' : '',
+            options: LANGUAGE_OPTIONS,
+            value: locale,
+            ariaLabel: pick('切换语言', 'Switch language', locale),
           },
-          children: ['中文'],
-        },
-        {
-          tag: 'a',
-          props: {
-            href: localeHref(page.path, 'en'),
-            'aria-current': locale === 'en' ? 'true' : undefined,
-            className: locale === 'en' ? 'active' : '',
-          },
-          children: ['English'],
         },
       ],
     };

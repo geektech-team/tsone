@@ -53,7 +53,7 @@ class App extends Component<Record<string, never>, AppState> {
   protected initState(): AppState {
     return {
       count: 0,
-      version: '0.1.0',
+      version: '0.3.0',
     };
   }
 
@@ -95,9 +95,10 @@ console.log(status.value);
 
 ## 开发工具
 
-独立的 `@geektech/tsone-cli` 包提供 `tsone dev` 与 `tsone build`。默认入口为
-`src/main.ts`；入口模块必须通过 `export const app` 导出应用，并且该值必须提供
-`renderHtmlDocument()`。
+独立的 `@geektech/tsone-cli` 包提供 `tsone create`、`tsone dev` 与
+`tsone build`。`tsone create` 会在当前目录脚手架一个基础项目（包含一个展示
+TSone 名称与 GitHub 链接的首页）。CLI 的默认入口为 `src/main.ts`；入口模块必须
+通过 `export const app` 导出应用，并且该值必须提供 `renderHtmlDocument()`。
 
 可以在项目根目录创建可选的 `tsone.config.ts`：
 
@@ -121,16 +122,36 @@ export default defineConfig({
 ```
 
 代理也支持字符串简写，例如 `{ '/backend': 'http://localhost:4000' }`。默认值为
-入口 `src/main.ts`、主机 `127.0.0.1`、端口 `52211`、空的 `server.proxy` 和
-输出目录 `dist`。
+入口 `src/main.ts`、主机 `127.0.0.1`、端口 `52211`、空的 `server.proxy`、输出
+目录 `dist`，且没有额外页面。
+
+多页应用可在同一配置文件里把路由映射到页面入口；每个页面入口与根入口一样，
+都要通过 `export const app` 暴露带有 `renderHtmlDocument()` 的应用：
+
+```typescript
+export default defineConfig({
+  entry: 'src/main.ts',
+  pages: {
+    '/about': 'src/about.ts',
+    '/docs/guide': 'src/guide.ts',
+  },
+});
+```
+
+`pages` 的键必须以 `/` 开头并支持嵌套；根路径 `/` 由 `entry` 提供。开发时每个
+页面在其路由下提供服务，`tsone build` 会为每个页面输出一个 HTML 文档
+（`index.html`、`about.html`、`docs/guide.html`），资源 URL 相对各文档。
 
 ```text
-tsone dev [--host <host>] [--port <port>]
+tsone create
+tsone dev [--host <host>] [--port <port>] [--no-watch]
 tsone build [--out-dir <path>]
 ```
 
-`dev` 只接受主机和端口覆盖，`build` 只接受输出目录覆盖；`--port 3000` 和
-`--port=3000` 两种形式均可。构建输出必须是项目根目录内部的安全子目录。
+`create` 不接受任何选项。`dev` 接受主机、端口覆盖和 `--no-watch`；`build` 只
+接受输出目录覆盖；`--port 3000` 和 `--port=3000` 两种形式均可。`tsone dev`
+默认监听项目文件，文件变化时通过 `/__tsone/reload` 通知浏览器刷新。构建输出
+必须是项目根目录内部的安全子目录。
 
 编程式工具 API 来自 `@geektech/tsone-cli`，而不是框架主入口。该包导出
 `defineConfig`、`resolveConfig`、`startDevServer` 与 `build`。调用方负责开发
@@ -210,7 +231,7 @@ bun run dev:admin
 文档站点使用 typed content registry：中文内容维护在
 `packages/tsone/docs/app/content/zh/`，英文内容维护在
 `packages/tsone/docs/app/content/en/`，中英文逻辑路由必须一致。
-中英文 catalog 当前各包含 14 条逻辑路由；新增或删除路由时必须同步修改两边。
+中英文 catalog 当前各包含 15 条逻辑路由；新增或删除路由时必须同步修改两边。
 
 内容链接保持 locale-neutral，不要手写 `/en/`。中文公开路由不带前缀，英文公开
 路由使用 `/en/`。浏览器语言检测仅在 `/` 生效；手动选择优先并持久化，后续访问
@@ -223,6 +244,17 @@ bun run docs:build
 ```
 
 构建遇到缺失、多余、重复、空内容或混用语言的页面时会严格失败。
+
+需要把站点托管到某个子路径下（例如 GitHub Pages 项目页
+`https://<owner>.github.io/tsone/`）时，可以用 base path 构建：
+
+```bash
+bun run docs:build -- --base=/tsone/
+```
+
+也可以通过环境变量 `DOCS_BASE_PATH` 指定。配置 base path 后，产物中的所有
+链接与资源 URL 都会带上该前缀，语言引导脚本会从渲染后的文档读取 base path，
+站点即可在任意子路径下正常工作。
 
 基础 HTML 文档壳也可以放进 `createApp` 配置里生成。默认会输出 `#app`
 挂载节点；需要自定义挂载点时再传 `rootElement`。`body` 需要自定义时传入组件
@@ -283,7 +315,8 @@ const html = app.renderHtmlDocument({
 - `effect()` / `stop()`
 - `computed()`
 - `ref()` / `isRef()` / `unref()`
-- `version`，当前为 `0.1.0`
+- `nextTick()` / `flushSync()`
+- `version`，当前为 `0.3.0`
 
 ## 渲染、通信与表单
 

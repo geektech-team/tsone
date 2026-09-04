@@ -16,7 +16,7 @@ export type OneOverlayPlacement =
   | 'left'
   | 'left-end';
 
-export type OneOverlayKind = 'message' | 'dialog' | 'tooltip';
+export type OneOverlayKind = 'message' | 'dialog' | 'tooltip' | 'popover';
 
 export interface OneOverlayHandle<TOptions extends object> {
   readonly id: string;

@@ -34,6 +34,14 @@ import { UploadDemo } from './demos/UploadDemo';
 import { TableDemo } from './demos/TableDemo';
 import { CollapseDemo } from './demos/CollapseDemo';
 import { SkeletonDemo } from './demos/SkeletonDemo';
+import { DividerDemo } from './demos/DividerDemo';
+import { SpaceDemo } from './demos/SpaceDemo';
+import { StepsDemo } from './demos/StepsDemo';
+import { DescriptionsDemo } from './demos/DescriptionsDemo';
+import { TimelineDemo } from './demos/TimelineDemo';
+import { PopoverDemo } from './demos/PopoverDemo';
+import { LangSwitcher } from './components/LangSwitcher';
+import { CascaderDemo } from './demos/CascaderDemo';
 
 type DemoName =
   | 'button'
@@ -63,7 +71,14 @@ type DemoName =
   | 'upload'
   | 'table'
   | 'collapse'
-  | 'skeleton';
+  | 'skeleton'
+  | 'divider'
+  | 'space'
+  | 'steps'
+  | 'descriptions'
+  | 'timeline'
+  | 'popover'
+  | 'cascader';
 type DemoConstructor = ComponentConstructor<Record<string, never>, object>;
 
 const DEMOS: Record<DemoName, DemoConstructor> = {
@@ -95,14 +110,39 @@ const DEMOS: Record<DemoName, DemoConstructor> = {
   table: TableDemo,
   collapse: CollapseDemo,
   skeleton: SkeletonDemo,
+  divider: DividerDemo,
+  space: SpaceDemo,
+  steps: StepsDemo,
+  descriptions: DescriptionsDemo,
+  timeline: TimelineDemo,
+  popover: PopoverDemo,
+  cascader: CascaderDemo,
 };
 const mountedDemoRoots = new WeakSet<HTMLElement>();
 
 const handledThemeToggles = new WeakSet<HTMLElement>();
 
+function mountLanguageSwitcher(): void {
+  const langRoot = document.querySelector<HTMLElement>('[data-one-lang]');
+  if (!langRoot) {
+    return;
+  }
+  langRoot.textContent = '';
+  const langApp = createApp({
+    root: LangSwitcher as unknown as ComponentConstructor,
+    rootElement: langRoot,
+    rootProps: {
+      path: langRoot.dataset.oneLangPath ?? '/',
+      locale: resolveLocale(),
+    },
+  });
+  langApp.mount();
+}
+
 export function mountOneDocsClient(): void {
   setDemoLocale(resolveLocale());
   initThemeController();
+  mountLanguageSwitcher();
 
   const roots = document.querySelectorAll<HTMLElement>('[data-one-demo]');
 
@@ -221,7 +261,14 @@ function isDemoName(value: string | undefined): value is DemoName {
     value === 'upload' ||
     value === 'table' ||
     value === 'collapse' ||
-    value === 'skeleton'
+    value === 'skeleton' ||
+    value === 'divider' ||
+    value === 'space' ||
+    value === 'steps' ||
+    value === 'descriptions' ||
+    value === 'timeline' ||
+    value === 'popover' ||
+    value === 'cascader'
   );
 }
 

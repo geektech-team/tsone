@@ -261,6 +261,29 @@ export const docsStyles: StyleSheet = [
     },
   },
   {
+    selector: '.doc-table',
+    properties: {
+      borderCollapse: 'collapse',
+      width: '100%',
+    },
+  },
+  {
+    selector: '.doc-table th,\n.doc-table td',
+    properties: {
+      borderBottom: '1px solid var(--docs-border)',
+      padding: '10px',
+      textAlign: 'left',
+      verticalAlign: 'top',
+    },
+  },
+  {
+    selector: '.doc-table th',
+    properties: {
+      fontWeight: 600,
+      whiteSpace: 'nowrap',
+    },
+  },
+  {
     selector: '.doc-callout',
     properties: {
       border: '1px solid var(--docs-border)',

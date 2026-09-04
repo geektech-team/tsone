@@ -10,6 +10,7 @@ import {
   hasReactiveFlag,
   isObject,
 } from './reactive/types';
+import { ReactiveScheduler } from './reactive/scheduler';
 
 export type {
   ComputedRef,
@@ -19,6 +20,25 @@ export type {
 } from './reactive/types';
 
 let effectId = 0;
+
+// 全局批处理调度器：组件渲染等场景通过它合并同一批同步状态变更
+export const reactiveScheduler = new ReactiveScheduler();
+
+/**
+ * 等待当前批次的响应式 effect 全部执行完成（通常是组件重渲染）。
+ * 修改 state 后需要立即读取 DOM 时使用：await nextTick()。
+ */
+export function nextTick(): Promise<void> {
+  return reactiveScheduler.nextTick();
+}
+
+/**
+ * 同步冲刷待执行的响应式 effect，立即完成组件重渲染。
+ * 一般仅测试或需要同步读 DOM 的场景使用。
+ */
+export function flushSync(): void {
+  reactiveScheduler.flush();
+}
 
 // 响应式系统
 export class ReactiveSystem {

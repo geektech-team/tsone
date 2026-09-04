@@ -231,7 +231,7 @@ export const apiPages: DocPage[] = [
           signature:
             'resolveConfig(options?: ResolveConfigOptions): Promise<ResolvedConfig>',
           description:
-            '校验并合并默认值、tsone.config.ts、直接配置以及 host/port/outDir 覆盖；返回的 root、entry 与 outDir 路径为绝对路径。',
+            '校验并合并默认值、tsone.config.ts、直接配置以及 host/port/outDir 覆盖；返回的 root、entry、pages 与 outDir 路径为绝对路径。',
         },
         {
           name: 'startDevServer',
@@ -244,7 +244,14 @@ export const apiPages: DocPage[] = [
           name: 'build',
           signature: 'build(options?: BuildOptions): Promise<BuildResult>',
           description:
-            '输出浏览器资源和 index.html，返回绝对的 root/outDir 以及 assetsBuilt。',
+            '输出浏览器资源和每个页面一个 HTML 文档，返回绝对的 root/outDir 以及 assetsBuilt。',
+        },
+        {
+          name: 'createProject',
+          signature:
+            'createProject(options?: CreateProjectOptions): CreateProjectResult',
+          description:
+            '把基础 TSone 脚手架（package.json、tsone.config.ts、tsconfig.json、.gitignore、src/main.ts）写入 options.root，默认当前工作目录；拒绝覆盖已有文件。',
         },
       ]),
       codeBlock(
@@ -252,6 +259,7 @@ export const apiPages: DocPage[] = [
         [
           'import {',
           '  build,',
+          '  createProject,',
           '  defineConfig,',
           '  resolveConfig,',
           '  startDevServer,',
@@ -272,7 +280,7 @@ export const apiPages: DocPage[] = [
         ].join('\n')
       ),
       paragraph(
-        '配置文件只支持普通对象默认导出；不支持函数式配置或函数值配置。配置默认值为入口 src/main.ts、server host 127.0.0.1、端口 52211、空的 server.proxy，以及 build.outDir dist。入口必须使用 export const app，并提供 renderHtmlDocument()。'
+        '配置文件只支持普通对象默认导出；不支持函数式配置或函数值配置。配置默认值为入口 src/main.ts、pages {}、server host 127.0.0.1、端口 52211、空的 server.proxy，以及 build.outDir dist。入口必须使用 export const app，并提供 renderHtmlDocument()。pages 选项把路由映射到页面入口，每个入口满足相同的 export const app 契约；根路径 / 由 entry 提供。'
       ),
       paragraph(
         '开发服务器仅提供 HTTP。代理目标可以使用 HTTP 或 HTTPS。server.proxy 接受字符串规则或 { target, changeOrigin, rewrite } 对象规则。字面前缀按最长匹配优先；查询参数、请求体和端到端请求头会转发，上游连接失败时返回 502 Bad Gateway。'
@@ -591,6 +599,18 @@ export const apiPages: DocPage[] = [
           name: 'stop',
           signature: 'stop(effect: EffectRunner): void',
           description: '停止一个副作用函数继续响应更新。',
+        },
+        {
+          name: 'nextTick',
+          signature: 'nextTick(): Promise<void>',
+          description:
+            '等待当前批次的响应式 effect（组件重渲染）执行完成。修改 state 后需要读取最新 DOM 时使用。',
+        },
+        {
+          name: 'flushSync',
+          signature: 'flushSync(): void',
+          description:
+            '同步冲刷待执行的响应式 effect，立即完成组件重渲染。一般仅测试或需要同步读 DOM 的场景使用。',
         },
         {
           name: 'isReactive',

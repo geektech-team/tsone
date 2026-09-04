@@ -50,15 +50,16 @@ createApp({ root: App }).mount();
 
 ## Component categories
 
-- Basic: `OneButton`
-- Form: `OneForm`, `OneFormItem`, `OneInput`, `OneSelect`, `OneTimePicker`,
-  `OneCheckbox`, `OneCheckboxGroup`, `OneRadio`, `OneRadioGroup`, `OneSwitch`,
-  `OneSlider`, `OneRate`, `OneUpload`
-- Navigation: `OneTabs`, `OneBreadcrumb`, `OnePagination`
+- Basic: `OneButton`, `OneDivider`, `OneSpace`
+- Form: `OneForm`, `OneFormItem`, `OneInput`, `OneSelect`, `OneCascader`,
+  `OneTimePicker`, `OneCheckbox`, `OneCheckboxGroup`, `OneRadio`,
+  `OneRadioGroup`, `OneSwitch`, `OneSlider`, `OneRate`, `OneUpload`
+- Navigation: `OneTabs`, `OneSteps`, `OneBreadcrumb`, `OnePagination`
 - Data display: `OneCard`, `OneTag`, `OneBadge`, `OneAvatar`, `OneProgress`,
-  `OneEmpty`, `OneTable`, `OneCollapse`, `OneSkeleton`
+  `OneEmpty`, `OneTable`, `OneCollapse`, `OneSkeleton`, `OneDescriptions`,
+  `OneTimeline`
 - Feedback and overlays: `OneAlert`, `OneMessage`, `OneDialog`, `OneTooltip`,
-  `OneLoading`
+  `OnePopover`, `OneLoading`
 
 ## Navigation
 

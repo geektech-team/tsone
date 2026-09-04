@@ -1,4 +1,5 @@
 import { apiPages } from './api';
+import { benchmarkPages } from './benchmark';
 import { contributingPages } from './contributing';
 import { examplePages } from './examples';
 import { guidePages } from './guide';
@@ -10,4 +11,5 @@ export const zhSourcePages = [
   ...apiPages,
   ...examplePages,
   ...contributingPages,
+  ...benchmarkPages,
 ];

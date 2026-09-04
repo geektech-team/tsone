@@ -4,6 +4,7 @@ import { enContributingPages } from '../docs/app/content/en/contributing';
 import { enExamplePages } from '../docs/app/content/en/examples';
 import { enGuidePages } from '../docs/app/content/en/guide';
 import { enHomePages } from '../docs/app/content/en/home';
+import { setDocBasePath } from '../docs/app/content/base';
 import {
   docCatalogs,
   findLocalizedDocPage,
@@ -133,6 +134,12 @@ function docPageStructure(pages: DocPage[]) {
               signature,
             })),
           };
+        case 'table':
+          return {
+            type: block.type,
+            columns: block.columns,
+            rowCount: block.rows.length,
+          };
       }
     }),
   }));
@@ -158,6 +165,36 @@ describe('docs locales', () => {
     expect(localizeDocPath('en', '/')).toBe('/en/');
     expect(localizeDocPath('zh', '/api/app/')).toBe('/api/app/');
     expect(localizeDocPath('en', '/api/app/')).toBe('/en/api/app/');
+  });
+
+  it('applies a base path to localized routes and strips it when parsing', () => {
+    setDocBasePath('/tsone');
+    try {
+      expect(localizeDocPath('zh', '/')).toBe('/tsone/');
+      expect(localizeDocPath('en', '/')).toBe('/tsone/en/');
+      expect(localizeDocPath('zh', '/api/app/')).toBe('/tsone/api/app/');
+      expect(localizeDocPath('en', '/api/app/')).toBe('/tsone/en/api/app/');
+
+      expect(parseLocalizedDocPath('/tsone/en/api/app/')).toEqual({
+        locale: 'en',
+        logicalPath: '/api/app/',
+      });
+      expect(parseLocalizedDocPath('/tsone/guide/getting-started/')).toEqual({
+        locale: 'zh',
+        logicalPath: '/guide/getting-started/',
+      });
+      expect(switchDocLocale('/tsone/en/api/app/', 'zh')).toBe(
+        '/tsone/api/app/'
+      );
+      expect(switchDocLocale('/tsone/api/app/', 'en')).toBe(
+        '/tsone/en/api/app/'
+      );
+      expect(localizeDocHref('en', '/guide/router-system/')).toBe(
+        '/tsone/en/guide/router-system/'
+      );
+    } finally {
+      setDocBasePath('');
+    }
   });
 
   it('parses and switches localized routes without changing the logical page', () => {
@@ -471,8 +508,8 @@ describe('docs locales', () => {
   });
 
   it('keeps Chinese and English catalogs in strict route parity', () => {
-    expect(docCatalogs.zh.pages).toHaveLength(14);
-    expect(docCatalogs.en.pages).toHaveLength(14);
+    expect(docCatalogs.zh.pages).toHaveLength(15);
+    expect(docCatalogs.en.pages).toHaveLength(15);
     expect(docCatalogs.en.pages.map((page) => page.path)).toEqual(
       docCatalogs.zh.pages.map((page) => page.path)
     );

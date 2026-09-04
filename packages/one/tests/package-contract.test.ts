@@ -31,8 +31,8 @@ describe('One UI package contract', () => {
     };
 
     expect(manifest.name).toBe('@geektech/one');
-    expect(manifest.version).toBe('0.0.1');
-    expect(manifest.peerDependencies['@geektech/tsone']).toBe('>=0.0.2 <0.1.0');
+    expect(manifest.version).toBe('0.3.3');
+    expect(manifest.peerDependencies['@geektech/tsone']).toBe('>=0.3.0 <0.4.0');
     expect(manifest.dependencies ?? {}).toEqual({});
     expect(ONE_NAME).toBe(manifest.name);
     expect(ONE_VERSION).toBe(manifest.version);
@@ -84,5 +84,5 @@ describe('One UI package contract', () => {
         await rename(tsoneDistBackup, tsoneDist);
       }
     }
-  });
+  }, 60000);
 });

@@ -1,5 +1,5 @@
 import { StyleManager } from '../../style/StyleManager';
-import { ReactiveEffect, effect, reactive, stop } from '../reactive';
+import { ReactiveEffect, effect, reactive, reactiveScheduler, stop } from '../reactive';
 import {
   ComponentInstance,
   RenderRuntimeContext,
@@ -69,7 +69,13 @@ export abstract class Component<
           this.update();
         }
       },
-      { throwOnError: true }
+      {
+        throwOnError: true,
+        // 通过调度器合并同一批同步状态变更，避免逐次重渲染
+        scheduler: (updateEffect) => {
+          reactiveScheduler.enqueue(updateEffect);
+        },
+      }
     );
   }
 

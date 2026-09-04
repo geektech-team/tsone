@@ -18,7 +18,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 3,
+    order: 4,
     body: [
       heading(1, 'data-display', t('数据展示', 'Data display')),
       paragraph(
@@ -75,6 +75,16 @@ export const dataDisplayPages: OneDocPage[] = [
           signature: 'new OneSkeleton(props)',
           description: t('展示加载占位骨架。', 'Shows loading placeholder skeletons.'),
         },
+        {
+          name: 'OneDescriptions',
+          signature: 'new OneDescriptions(props)',
+          description: t('以标签-值对展示只读信息。', 'Presents read-only information as label-value pairs.'),
+        },
+        {
+          name: 'OneTimeline',
+          signature: 'new OneTimeline(props)',
+          description: t('按时间顺序展示事件流。', 'Shows an event stream in chronological order.'),
+        },
       ]),
     ],
   },
@@ -84,7 +94,7 @@ export const dataDisplayPages: OneDocPage[] = [
     description: t('展示状态、分类和可关闭的轻量标签。', 'Lightweight tags for status, category and dismissible labels.'),
     section: 'components',
     sectionOrder: 2,
-    order: 4,
+    order: 5,
     body: [
       heading(1, 'onetag', 'OneTag'),
       paragraph(
@@ -138,7 +148,7 @@ export const dataDisplayPages: OneDocPage[] = [
     description: t('展示数字、短文本、封顶计数和状态圆点。', 'Shows numbers, short text, capped counts and status dots.'),
     section: 'components',
     sectionOrder: 2,
-    order: 5,
+    order: 6,
     body: [
       heading(1, 'onebadge', 'OneBadge'),
       paragraph(
@@ -201,7 +211,7 @@ export const dataDisplayPages: OneDocPage[] = [
     description: t('展示无数据说明、图片与后续操作。', 'Shows an empty-state description, image and follow-up actions.'),
     section: 'components',
     sectionOrder: 2,
-    order: 6,
+    order: 7,
     body: [
       heading(1, 'oneempty', 'OneEmpty'),
       paragraph(
@@ -257,7 +267,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 7,
+    order: 8,
     body: [
       heading(1, 'oneavatar', 'OneAvatar'),
       paragraph(
@@ -329,7 +339,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 8,
+    order: 9,
     body: [
       heading(1, 'oneprogress', 'OneProgress'),
       paragraph(
@@ -381,7 +391,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 9,
+    order: 10,
     body: [
       heading(1, 'onetable', 'OneTable'),
       paragraph(
@@ -448,7 +458,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 10,
+    order: 11,
     body: [
       heading(1, 'onecollapse', 'OneCollapse'),
       paragraph(
@@ -513,7 +523,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 11,
+    order: 12,
     body: [
       heading(1, 'oneskeleton', 'OneSkeleton'),
       paragraph(
@@ -562,6 +572,93 @@ export const dataDisplayPages: OneDocPage[] = [
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
           description: t('加载语义，默认“加载中”。', 'Loading semantics; defaults to “加载中”.'),
+        },
+      ]),
+    ],
+  },
+  {
+    path: '/components/data-display/descriptions/',
+    title: 'OneDescriptions',
+    description: t(
+      '以标签-值对展示只读信息，支持多列、跨格和边框。',
+      'Presents read-only information as label-value pairs, with multi-column, span and borders.'
+    ),
+    section: 'components',
+    sectionOrder: 2,
+    order: 13,
+    body: [
+      heading(1, 'onedescriptions', 'OneDescriptions'),
+      paragraph(
+        t(
+          'OneDescriptions 用网格把 items 渲染为标签-值对；column 控制每行列数，span 让单项跨多列。',
+          'OneDescriptions renders items as label-value pairs in a grid; column controls columns per row and span lets an item span multiple columns.'
+        )
+      ),
+      demo('descriptions'),
+      heading(2, 'bordered', t('边框与布局', 'Borders and layout')),
+      paragraph(
+        t(
+          'bordered 会为每个单元格绘制边框并分色区分标签与内容。',
+          'bordered draws cell borders and visually separates labels from values.'
+        )
+      ),
+      heading(2, 'api', 'API'),
+      apiTable(t('OneDescriptions 属性', 'OneDescriptions props'), [
+        {
+          name: 'items',
+          signature: 'items: OneDescriptionsItem[]',
+          description: t('标签-值对：label、value 与可选 span。', 'Label-value pairs: label, value and optional span.'),
+        },
+        {
+          name: 'column',
+          signature: 'column?: number',
+          description: t('每行列数，1-4，默认 1。', 'Columns per row, 1-4; defaults to 1.'),
+        },
+        {
+          name: 'bordered',
+          signature: 'bordered?: boolean',
+          description: t('是否绘制单元格边框。', 'Whether to draw cell borders.'),
+        },
+        {
+          name: 'title',
+          signature: 'title?: string',
+          description: t('列表标题。', 'List title.'),
+        },
+      ]),
+    ],
+  },
+  {
+    path: '/components/data-display/timeline/',
+    title: 'OneTimeline',
+    description: t(
+      '按时间顺序展示事件流，圆点颜色表达状态。',
+      'Shows an event stream in chronological order, with dot colors expressing state.'
+    ),
+    section: 'components',
+    sectionOrder: 2,
+    order: 14,
+    body: [
+      heading(1, 'onetimeline', 'OneTimeline'),
+      paragraph(
+        t(
+          'OneTimeline 为每个事件渲染圆点、标题、可选时间与补充说明，并用垂直轨道串联。',
+          'OneTimeline renders a dot, title, optional time and detail for each event, connected by a vertical rail.'
+        )
+      ),
+      demo('timeline'),
+      heading(2, 'colors', t('圆点颜色', 'Dot colors')),
+      paragraph(
+        t(
+          'color 支持 primary、success、warning、danger 与 muted，默认 primary。',
+          'color supports primary, success, warning, danger and muted; defaults to primary.'
+        )
+      ),
+      heading(2, 'api', 'API'),
+      apiTable(t('OneTimeline 属性', 'OneTimeline props'), [
+        {
+          name: 'items',
+          signature: 'items: OneTimelineItem[]',
+          description: t('事件项：title、content、time 与可选 color。', 'Event items: title, content, time and optional color.'),
         },
       ]),
     ],

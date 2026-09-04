@@ -1,4 +1,5 @@
 import { enApiPages } from './api';
+import { enBenchmarkPages } from './benchmark';
 import { enContributingPages } from './contributing';
 import { enExamplePages } from './examples';
 import { enGuidePages } from './guide';
@@ -10,4 +11,5 @@ export const enSourcePages = [
   ...enApiPages,
   ...enExamplePages,
   ...enContributingPages,
+  ...enBenchmarkPages,
 ];

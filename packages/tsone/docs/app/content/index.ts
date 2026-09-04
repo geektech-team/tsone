@@ -42,6 +42,7 @@ export function findDocPage(path: string): DocPage | undefined {
   return findLocalizedDocPage('zh', path);
 }
 
+export * from './base';
 export * from './catalog';
 export * from './locales';
 export * from './types';

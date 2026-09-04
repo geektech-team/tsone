@@ -32,6 +32,38 @@ describe('docs locale bootstrap', () => {
     expect(test.replacements).toEqual(['/en/']);
   });
 
+  it('redirects the base root to the English locale with the base prefix', () => {
+    const test = environment({
+      pathname: '/tsone/',
+      basePath: '/tsone/',
+      storage: { getItem: () => 'en' },
+      languages: ['zh-CN'],
+    });
+    runDocsLocaleBootstrap(test.value);
+    expect(test.replacements).toEqual(['/tsone/en/']);
+  });
+
+  it('keeps the Chinese root under a base path', () => {
+    const test = environment({
+      pathname: '/tsone/',
+      basePath: '/tsone',
+      storage: undefined,
+      languages: ['zh-CN'],
+    });
+    runDocsLocaleBootstrap(test.value);
+    expect(test.replacements).toEqual([]);
+  });
+
+  it('ignores non-root pages under a base path', () => {
+    const test = environment({
+      pathname: '/tsone/guide/getting-started/',
+      basePath: '/tsone',
+      storage: { getItem: () => 'en' },
+    });
+    runDocsLocaleBootstrap(test.value);
+    expect(test.replacements).toEqual([]);
+  });
+
   it('uses browser language when storage throws', () => {
     const test = environment({
       storage: {

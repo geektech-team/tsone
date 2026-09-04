@@ -113,7 +113,7 @@ export const guidePages: DocPage[] = [
       ),
       heading(2, '配置开发与构建'),
       paragraph(
-        '配置文件只支持普通对象默认导出；不支持函数式配置或函数值配置。默认值为入口 src/main.ts、主机 127.0.0.1、端口 52211、空的 server.proxy，以及 build.outDir dist。'
+        '配置文件只支持普通对象默认导出；不支持函数式配置或函数值配置。默认值为入口 src/main.ts、无额外页面、主机 127.0.0.1、端口 52211、空的 server.proxy，以及 build.outDir dist。'
       ),
       codeBlock(
         'ts',
@@ -137,13 +137,24 @@ export const guidePages: DocPage[] = [
       paragraph(
         "代理也可以使用字符串简写 '/backend': 'http://localhost:4000'。开发服务器仅提供 HTTP。代理目标可以使用 HTTP 或 HTTPS。字面前缀按最长匹配优先；查询参数、请求体与端到端请求头会转发，changeOrigin 更新 Host，rewrite 修改路径，上游不可达时返回 502 Bad Gateway。"
       ),
+      heading(3, '多页应用'),
+      paragraph(
+        '通过 pages 选项把额外路由映射到各自的页面入口。每个页面入口与根入口一样，都必须通过 export const app 导出并提供 renderHtmlDocument()；键必须以 / 开头并支持嵌套，末尾斜杠会被归一化，根路径 / 始终由 entry 提供。'
+      ),
+      codeBlock(
+        'ts',
+        "import { defineConfig } from '@geektech/tsone-cli';\n\nexport default defineConfig({\n  entry: 'src/main.ts',\n  pages: {\n    '/about': 'src/about.ts',\n    '/docs/guide': 'src/guide.ts',\n  },\n});"
+      ),
+      paragraph(
+        '开发时每个页面在其路由下提供服务，tsone build 会为每个页面输出一个 HTML 文档（index.html、about.html、docs/guide.html），资源 URL 相对各文档。'
+      ),
       heading(2, '运行应用'),
       codeBlock(
         'bash',
-        'tsone dev [--host <host>] [--port <port>] [--no-watch]\ntsone build [--out-dir <path>]'
+        'tsone create\ntsone dev [--host <host>] [--port <port>] [--no-watch]\ntsone build [--out-dir <path>]'
       ),
       paragraph(
-        'dev 接受 host/port 覆盖以及 --no-watch 标志，build 只接受 out-dir；支持 --port 3000 与 --port=3000 两种形式。build.outDir 必须是项目根目录内部的子目录。'
+        'create 会在当前目录脚手架一个基础 TSone 项目（package.json、tsone.config.ts、tsconfig.json、.gitignore，以及展示 TSone 名称与 GitHub 链接的 src/main.ts 首页），并拒绝覆盖已有文件。dev 接受 host/port 覆盖以及 --no-watch 标志，build 只接受 out-dir；支持 --port 3000 与 --port=3000 两种形式。build.outDir 必须是项目根目录内部的子目录。'
       ),
       paragraph(
         'tsone dev 默认监听项目文件：源码、样式或配置变更时重建当前页面并通知已连接的浏览器刷新，tsone.config.ts 变更会以新配置重启开发服务器；传入 --no-watch 则退化为普通的按需构建服务器。'
@@ -687,6 +698,13 @@ export const guidePages: DocPage[] = [
           "this.state.user.name = 'Jane';",
           "this.state.items.push('Item 4');",
         ].join('\n')
+      ),
+      paragraph(
+        '状态变更会经调度器在微任务中批量合并：同一批同步修改只触发一次重渲染。需要同步读取最新 DOM 时使用 ',
+        inlineCode('flushSync()'),
+        '，或在异步代码中 ',
+        inlineCode('await nextTick()'),
+        '。',
       ),
       heading(2, '组件样式管理'),
       paragraph('每个组件实例都持有自己的 styleManager。'),

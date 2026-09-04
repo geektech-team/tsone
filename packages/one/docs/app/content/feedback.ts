@@ -21,7 +21,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 26,
+    order: 32,
     body: [
       heading(1, 'feedback', t('反馈与浮层', 'Feedback and overlays')),
       paragraph(
@@ -37,6 +37,7 @@ export const feedbackPages: OneDocPage[] = [
         [t('操作结果无需打断用户时使用 OneMessage。', 'Use OneMessage when the result does not need to interrupt the user.')],
         [t('必须确认或取消时使用 OneDialog。', 'Use OneDialog when confirmation or cancellation is required.')],
         [t('补充控件含义时使用 OneTooltip。', 'Use OneTooltip to clarify a control.')],
+        [t('在触发元素上展示更丰富的说明或操作时使用 OnePopover。', 'Use OnePopover for richer content or actions anchored to a trigger element.')],
         [t('表达异步加载状态时使用 OneLoading。', 'Use OneLoading to express an asynchronous loading state.')],
       ]),
       heading(2, 'components', t('组件', 'Components')),
@@ -62,6 +63,11 @@ export const feedbackPages: OneDocPage[] = [
           description: t('可定位的简短辅助说明。', 'Positionable short helper description.'),
         },
         {
+          name: 'OnePopover',
+          signature: 'new OnePopover(props)',
+          description: t('点击或悬停触发的浮层内容。', 'Floating content triggered by click or hover.'),
+        },
+        {
           name: 'OneLoading',
           signature: 'new OneLoading(props)',
           description: t('带状态语义的加载指示器。', 'Loading indicator with status semantics.'),
@@ -78,7 +84,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 27,
+    order: 33,
     body: [
       heading(1, 'onealert', 'OneAlert'),
       paragraph(
@@ -144,7 +150,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 28,
+    order: 34,
     body: [
       heading(1, 'onemessage', 'OneMessage'),
       paragraph(
@@ -256,7 +262,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 29,
+    order: 35,
     body: [
       heading(1, 'onedialog', 'OneDialog'),
       paragraph(
@@ -380,7 +386,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 30,
+    order: 36,
     body: [
       heading(1, 'onetooltip', 'OneTooltip'),
       paragraph(
@@ -480,6 +486,82 @@ export const feedbackPages: OneDocPage[] = [
     ],
   },
   {
+    path: '/components/feedback/popover/',
+    title: 'OnePopover',
+    description: t(
+      '在触发元素旁展示更丰富的浮层内容，支持点击或悬停触发。',
+      'Shows richer floating content next to a trigger element, triggered by click or hover.'
+    ),
+    section: 'components',
+    sectionOrder: 2,
+    order: 37,
+    body: [
+      heading(1, 'onepopover', 'OnePopover'),
+      paragraph(
+        t(
+          'OnePopover 与 OneTooltip 共用定位机制，但气泡使用白底卡片样式，可承载更丰富的内容并允许与内容交互。',
+          'OnePopover shares the positioning machinery with OneTooltip but uses a card-style bubble that can hold richer, interactive content.'
+        )
+      ),
+      demo('popover'),
+      heading(2, 'trigger', t('触发方式', 'Triggers')),
+      paragraph(
+        t(
+          '默认 click 切换并支持文档点击与 Escape 关闭；也可用 trigger=hover-focus 悬停展示，或 manual 完全受控。',
+          'Defaults to click with outside-click and Escape to close; use trigger=hover-focus for hover, or manual for fully controlled use.'
+        )
+      ),
+      heading(2, 'api', 'API'),
+      apiTable(t('OnePopover 属性与事件', 'OnePopover props and events'), [
+        {
+          name: 'content',
+          signature: 'content: VNode | string',
+          description: t('气泡内容。', 'Bubble content.'),
+        },
+        {
+          name: 'placement',
+          signature: 'placement?: OneOverlayPlacement',
+          description: t('气泡位置，默认 bottom。', 'Bubble placement; defaults to bottom.'),
+        },
+        {
+          name: 'trigger',
+          signature: "trigger?: 'click' | 'hover-focus' | 'manual'",
+          description: t('触发方式，默认 click。', 'Trigger mode; defaults to click.'),
+        },
+        {
+          name: 'open',
+          signature: 'open?: boolean',
+          description: t('受控展开状态。', 'Controlled open state.'),
+        },
+        {
+          name: 'defaultOpen',
+          signature: 'defaultOpen?: boolean',
+          description: t('非受控初始展开状态。', 'Uncontrolled initial open state.'),
+        },
+        {
+          name: 'arrow',
+          signature: 'arrow?: boolean',
+          description: t('是否显示箭头，默认 true。', 'Whether to show an arrow; defaults to true.'),
+        },
+        {
+          name: 'disabled',
+          signature: 'disabled?: boolean',
+          description: t('禁用弹层。', 'Disables the popover.'),
+        },
+        {
+          name: 'children',
+          signature: 'children?: Array<VNode | string>',
+          description: t('触发元素，必须是单个 HTMLElement。', 'Trigger element; must be a single HTMLElement.'),
+        },
+        {
+          name: 'openChange',
+          signature: '(open: boolean) => void',
+          description: t('展开状态变化时发出。', 'Emitted when the open state changes.'),
+        },
+      ]),
+    ],
+  },
+  {
     path: '/components/feedback/loading/',
     title: 'OneLoading',
     description: t(
@@ -488,7 +570,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 31,
+    order: 38,
     body: [
       heading(1, 'oneloading', 'OneLoading'),
       paragraph(

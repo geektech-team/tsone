@@ -1,13 +1,19 @@
 import { build } from './build';
+import { createProject } from './create';
 import { startDevServer } from './server';
 
 const USAGE = [
   'Usage:',
+  '  tsone create',
   '  tsone dev [--host <host>] [--port <port>] [--no-watch]',
   '  tsone build [--out-dir <path>]',
 ].join('\n');
 
 const FLAG_OPTIONS = new Set(['--no-watch']);
+
+export interface CreateCliArgs {
+  command: 'create';
+}
 
 export interface DevCliArgs {
   command: 'dev';
@@ -21,11 +27,11 @@ export interface BuildCliArgs {
   outDir?: string;
 }
 
-export type CliArgs = DevCliArgs | BuildCliArgs;
+export type CliArgs = CreateCliArgs | DevCliArgs | BuildCliArgs;
 
 export function parseCliArgs(argv: string[]): CliArgs {
   const command = argv[0];
-  if (command !== 'dev' && command !== 'build') {
+  if (command !== 'create' && command !== 'dev' && command !== 'build') {
     throw parseError(
       command === undefined ? 'Missing command' : `Unknown command: ${command}`
     );
@@ -59,6 +65,10 @@ export function parseCliArgs(argv: string[]): CliArgs {
     options.set(name, value);
   }
 
+  if (command === 'create') {
+    return { command };
+  }
+
   if (command === 'dev') {
     const port = options.get('--port');
     return {
@@ -79,6 +89,14 @@ export async function runCli(
   argv: string[] = process.argv.slice(2)
 ): Promise<void> {
   const args = parseCliArgs(argv);
+
+  if (args.command === 'create') {
+    const result = createProject();
+    console.log(
+      `TSone project created at ${result.root} (${result.files.length} files)`
+    );
+    return;
+  }
 
   if (args.command === 'dev') {
     const server = await startDevServer({
@@ -130,6 +148,7 @@ function assertSupportedOption(
   name: string
 ): void {
   const supported =
+    (command === 'create' && false) ||
     (command === 'dev' &&
       (name === '--host' || name === '--port' || name === '--no-watch')) ||
     (command === 'build' && name === '--out-dir');

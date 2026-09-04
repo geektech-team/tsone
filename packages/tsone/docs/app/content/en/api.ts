@@ -264,7 +264,7 @@ export const enApiPages: DocPage[] = [
           signature:
             'resolveConfig(options?: ResolveConfigOptions): Promise<ResolvedConfig>',
           description:
-            'Validates and merges defaults, tsone.config.ts, direct config, and host/port/outDir overrides. Resolved root, entry, and outDir paths are absolute.',
+            'Validates and merges defaults, tsone.config.ts, direct config, and host/port/outDir overrides. Resolved root, entry, pages, and outDir paths are absolute.',
         },
         {
           name: 'startDevServer',
@@ -277,7 +277,14 @@ export const enApiPages: DocPage[] = [
           name: 'build',
           signature: 'build(options?: BuildOptions): Promise<BuildResult>',
           description:
-            'Emits browser assets and index.html, then returns absolute root/outDir values and assetsBuilt.',
+            'Emits browser assets and one HTML document per page, then returns absolute root/outDir values and assetsBuilt.',
+        },
+        {
+          name: 'createProject',
+          signature:
+            'createProject(options?: CreateProjectOptions): CreateProjectResult',
+          description:
+            'Writes a basic TSone scaffold (package.json, tsone.config.ts, tsconfig.json, .gitignore, src/main.ts) into options.root, defaulting to the current working directory. Refuses to overwrite existing files.',
         },
       ]),
       codeBlock(
@@ -285,6 +292,7 @@ export const enApiPages: DocPage[] = [
         [
           'import {',
           '  build,',
+          '  createProject,',
           '  defineConfig,',
           '  resolveConfig,',
           '  startDevServer,',
@@ -305,7 +313,7 @@ export const enApiPages: DocPage[] = [
         ].join('\n')
       ),
       paragraph(
-        'The config file supports only a plain-object default export; functional or function-valued config is not supported. Configuration defaults are entry src/main.ts, server host 127.0.0.1, port 52211, an empty server.proxy, and build.outDir dist. The entry must use export const app and provide renderHtmlDocument().'
+        'The config file supports only a plain-object default export; functional or function-valued config is not supported. Configuration defaults are entry src/main.ts, pages {}, server host 127.0.0.1, port 52211, an empty server.proxy, and build.outDir dist. The entry must use export const app and provide renderHtmlDocument(). The pages option maps routes to page entries, each with the same export const app contract; the root / route is served by entry.'
       ),
       paragraph(
         'The development server serves HTTP only. Proxy targets may use HTTP or HTTPS. server.proxy accepts string or { target, changeOrigin, rewrite } rules. Literal prefixes use the longest match first; query strings, bodies, and end-to-end headers are forwarded, and failed upstream connections return 502 Bad Gateway.'
@@ -634,6 +642,18 @@ export const enApiPages: DocPage[] = [
           name: 'stop',
           signature: 'stop(effect: EffectRunner): void',
           description: 'Stops an effect from responding to further updates.',
+        },
+        {
+          name: 'nextTick',
+          signature: 'nextTick(): Promise<void>',
+          description:
+            'Resolves after the current batch of reactive effects (component re-renders) finishes. Use it when you need to read the latest DOM after changing state.',
+        },
+        {
+          name: 'flushSync',
+          signature: 'flushSync(): void',
+          description:
+            'Synchronously flushes pending reactive effects and completes component re-renders immediately. Mostly useful in tests or when reading the DOM synchronously.',
         },
         {
           name: 'isReactive',

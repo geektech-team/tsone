@@ -44,7 +44,7 @@ export const enContributingPages: DocPage[] = [
           '@geektech/tsone is the browser framework and must keep zero external runtime dependencies',
         ],
         [
-          '@geektech/tsone-cli owns defineConfig, resolveConfig, startDevServer, build, tsone dev, and tsone build',
+          '@geektech/tsone-cli owns defineConfig, resolveConfig, startDevServer, build, createProject, tsone create, tsone dev, and tsone build',
         ],
         [
           'Do not add a @geektech/tsone ./dev export; applications install @geektech/tsone-cli separately',
@@ -165,7 +165,7 @@ export const enContributingPages: DocPage[] = [
         inlineCode('packages/tsone/docs/app/content/zh/'),
         ', while English content lives in ',
         inlineCode('packages/tsone/docs/app/content/en/'),
-        '. Both use the typed content registry and structured block helpers, and every page must have the same logical route in both directories. Chinese and English catalogs each contain exactly 14 logical routes; add or remove a route in both catalogs in the same change.'
+        '. Both use the typed content registry and structured block helpers, and every page must have the same logical route in both directories. Chinese and English catalogs each contain exactly 15 logical routes; add or remove a route in both catalogs in the same change.'
       ),
       list([
         ['Keep content links locale-neutral and never write /en/ manually'],
@@ -175,6 +175,9 @@ export const enContributingPages: DocPage[] = [
         ],
         [
           'bun run docs:build fails strictly for missing, extra, duplicate, empty, or mixed-language pages',
+        ],
+        [
+          'To host under a sub-path, build with bun run docs:build -- --base=/tsone/ or the DOCS_BASE_PATH environment variable',
         ],
       ]),
       heading(2, 'Issue Reports'),

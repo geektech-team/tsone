@@ -2,6 +2,7 @@ import {
   runDocsLocaleBootstrap,
   type LocaleBootstrapEnvironment,
 } from './locale-bootstrap';
+import { readDocBaseFromDocument } from './content/base';
 
 export interface NavigatorLanguageSource {
   readonly languages?: readonly string[];
@@ -43,6 +44,7 @@ function getStorage(): LocaleBootstrapEnvironment['storage'] {
 
 runDocsLocaleBootstrap({
   pathname: window.location.pathname,
+  basePath: readDocBaseFromDocument(window.document),
   storage: getStorage(),
   languages: readNavigatorLanguages(window.navigator),
   replace: (href) => window.location.replace(href),

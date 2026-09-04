@@ -79,11 +79,14 @@ async function startWatchingDevServer(
   }
 
   async function rebuildAndReload(): Promise<void> {
-    instance.markDirty();
-    const bundle = await instance.getBundle();
-    if (bundle instanceof Response) {
-      console.error('TSone rebuild failed; keeping the last working page.');
-      return;
+    const routes = Object.keys(instance.config.pages);
+    instance.markDirty(routes);
+    for (const route of routes) {
+      const bundle = await instance.getBundle(route);
+      if (bundle instanceof Response) {
+        console.error('TSone rebuild failed; keeping the last working page.');
+        return;
+      }
     }
     instance.liveReload?.broadcast();
   }
@@ -120,8 +123,8 @@ function createProjectWatcher(
 interface DevServerInstance {
   server: DevServer;
   config: ResolvedConfig;
-  getBundle: () => Promise<DevelopmentBundle | Response>;
-  markDirty: () => void;
+  getBundle: (route: string) => Promise<DevelopmentBundle | Response>;
+  markDirty: (routes: string[]) => void;
   liveReload: LiveReloadHub | undefined;
 }
 
@@ -130,7 +133,9 @@ async function createServerInstance(
   watch: boolean
 ): Promise<DevServerInstance> {
   const config = await resolveConfig(options);
-  await renderProjectHtml(config, {});
+  for (const entry of Object.values(config.pages)) {
+    await renderProjectHtml(config, {}, entry);
+  }
   const developmentOutDir = resolve(config.root, '.tsone', 'dev');
   await assertSafeSubdirectory(
     config.root,
@@ -147,23 +152,26 @@ async function createServerInstance(
     sessionOutDir
   );
   const liveReload = watch ? createLiveReloadHub() : undefined;
-  let currentBundle: DevelopmentBundle | undefined;
-  let dirty = false;
+  const bundles = new Map<string, DevelopmentBundle>();
+  const dirtyRoutes = new Set<string>();
 
-  const getBundle = async (): Promise<DevelopmentBundle | Response> => {
-    if (watch && currentBundle !== undefined && !dirty) {
-      return currentBundle;
+  const getBundle = async (
+    route: string
+  ): Promise<DevelopmentBundle | Response> => {
+    const cached = bundles.get(route);
+    if (watch && cached !== undefined && !dirtyRoutes.has(route)) {
+      return cached;
     }
-    const bundle = await buildProject();
+    const bundle = await buildProject(route);
     if (bundle instanceof Response) {
       if (watch) {
-        dirty = true;
+        dirtyRoutes.add(route);
       }
       return bundle;
     }
     if (watch) {
-      currentBundle = bundle;
-      dirty = false;
+      bundles.set(route, bundle);
+      dirtyRoutes.delete(route);
     }
     return bundle;
   };
@@ -178,7 +186,14 @@ async function createServerInstance(
       }
       return (
         (await proxy(request)) ??
-        serveProjectRequest(request, config, getBundle, artifacts, liveReload)
+        serveProjectRequest(
+          request,
+          config,
+          config.pages,
+          getBundle,
+          artifacts,
+          liveReload
+        )
       );
     },
   });
@@ -187,8 +202,8 @@ async function createServerInstance(
     server,
     config,
     getBundle,
-    markDirty: () => {
-      dirty = true;
+    markDirty: (routes) => {
+      routes.forEach((route) => dirtyRoutes.add(route));
     },
     liveReload,
   };
@@ -221,36 +236,39 @@ function createServerHandle(
 async function serveProjectRequest(
   request: Request,
   config: ResolvedConfig,
-  getBundle: () => Promise<DevelopmentBundle | Response>,
+  pages: Record<string, string>,
+  getBundle: (route: string) => Promise<DevelopmentBundle | Response>,
   artifacts: Map<string, DevelopmentOutput>,
   liveReload: LiveReloadHub | undefined
 ): Promise<Response> {
   const pathname = new URL(request.url).pathname;
+  const route = pageRouteForPathname(pages, pathname);
 
-  if (pathname === '/' || pathname === '/index.html') {
-    const bundle = await getBundle();
+  if (route !== undefined) {
+    const bundle = await getBundle(route);
     if (bundle instanceof Response) {
       return bundle;
     }
 
     try {
-      const html = await renderProjectHtml(config, {
-        head: bundle.stylesheets.map(({ pathname: href }) => ({
-          tag: 'link',
-          attributes: { rel: 'stylesheet', href },
-        })),
-        scripts: [{ type: 'module', src: bundle.entry.pathname }],
-      });
-      publishDevelopmentBundle(bundle, artifacts);
-      return new Response(
-        liveReload ? injectLiveReloadScript(html) : html,
+      const html = await renderProjectHtml(
+        config,
         {
-          headers: {
-            'content-type': 'text/html; charset=utf-8',
-            'cache-control': 'no-store',
-          },
-        }
+          head: bundle.stylesheets.map(({ pathname: href }) => ({
+            tag: 'link',
+            attributes: { rel: 'stylesheet', href },
+          })),
+          scripts: [{ type: 'module', src: bundle.entry.pathname }],
+        },
+        pages[route]
       );
+      publishDevelopmentBundle(bundle, artifacts);
+      return new Response(liveReload ? injectLiveReloadScript(html) : html, {
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-store',
+        },
+      });
     } catch (error: unknown) {
       console.error(error);
       return buildFailureResponse();
@@ -258,7 +276,7 @@ async function serveProjectRequest(
   }
 
   if (pathname === '/bundle.js') {
-    const bundle = await getBundle();
+    const bundle = await getBundle('/');
     if (bundle instanceof Response) {
       return bundle;
     }
@@ -294,6 +312,35 @@ async function serveProjectRequest(
   });
 }
 
+function pageRouteForPathname(
+  pages: Record<string, string>,
+  pathname: string
+): string | undefined {
+  if (pages[pathname] !== undefined) {
+    return pathname;
+  }
+  if (pathname === '/index.html') {
+    return '/';
+  }
+  const candidate =
+    pathname.length > 1 && pathname.endsWith('/')
+      ? pathname.replace(/\/+$/, '')
+      : pathname;
+  if (pages[candidate] !== undefined) {
+    return candidate;
+  }
+  if (candidate.endsWith('/index.html')) {
+    const base = candidate.slice(0, candidate.length - '/index.html'.length);
+    if (base === '') {
+      return '/';
+    }
+    if (pages[base] !== undefined) {
+      return base;
+    }
+  }
+  return undefined;
+}
+
 function injectLiveReloadScript(html: string): string {
   if (html.includes(LIVE_RELOAD_PATH)) {
     return html;
@@ -319,7 +366,9 @@ function createLiveReloadHub(): LiveReloadHub {
       return undefined;
     }
 
-    let streamController: ReadableStreamDefaultController<Uint8Array> | undefined;
+    let streamController:
+      | ReadableStreamDefaultController<Uint8Array>
+      | undefined;
     const stream = new ReadableStream<Uint8Array>({
       start: (controller) => {
         streamController = controller;
@@ -411,12 +460,13 @@ function createDevelopmentBuilder(
   config: ResolvedConfig,
   sessionId: string,
   sessionOutDir: string
-): () => Promise<DevelopmentBundle | Response> {
+): (route: string) => Promise<DevelopmentBundle | Response> {
   let queue = Promise.resolve();
 
-  return () => {
+  return (route) => {
+    const entry = config.pages[route];
     const result = queue.then(() =>
-      buildProjectBundle(config, sessionId, sessionOutDir)
+      buildProjectBundle(entry, sessionId, sessionOutDir)
     );
     queue = result.then(
       () => undefined,
@@ -427,7 +477,7 @@ function createDevelopmentBuilder(
 }
 
 async function buildProjectBundle(
-  config: ResolvedConfig,
+  entry: string,
   sessionId: string,
   sessionOutDir: string
 ): Promise<DevelopmentBundle | Response> {
@@ -435,7 +485,7 @@ async function buildProjectBundle(
   const generationOutDir = resolve(sessionOutDir, generationId);
   const generationUrl = `${DEVELOPMENT_URL_PREFIX}/${sessionId}/${generationId}`;
   const buildOptions = {
-    entrypoints: [config.entry],
+    entrypoints: [entry],
     outdir: generationOutDir,
     target: 'browser' as const,
     format: 'esm' as const,

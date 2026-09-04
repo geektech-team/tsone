@@ -14,12 +14,15 @@ import {
   normalize,
   relative,
 } from 'node:path';
-import { Window } from 'happy-dom';
+import { createDomWindow, installDomGlobals } from '../lib/dom';
 import { createDocsPageApp } from '../docs/app/app';
 import {
   createDocCatalog,
   docCatalogs,
   localizeDocPath,
+  normalizeDocBasePath,
+  setDocBasePath,
+  stripDocBasePath,
   validateDocCatalogParity,
   type DocLocale,
   type DocPage as ContentDocPage,
@@ -28,6 +31,7 @@ import { normalizeDocPath } from '../docs/app/content/types';
 
 export interface DocsBuildOptions {
   outDir?: string;
+  basePath?: string;
 }
 
 export interface DocsBuildResult {
@@ -40,14 +44,21 @@ export interface DocsServerOptions {
   hostname: string;
   port: number;
   outDir: string;
+  basePath?: string;
 }
 
 const PACKAGE_ROOT = join(import.meta.dir, '..');
 const DEFAULT_OUT_DIR = join(PACKAGE_ROOT, 'docs/dist');
 const DOC_LOCALES = ['zh', 'en'] as const;
 
-export function routeToOutputPath(route: string, outDir: string): string {
-  const normalizedRoute = normalizeDocPath(route);
+export function routeToOutputPath(
+  route: string,
+  outDir: string,
+  basePath = ''
+): string {
+  const normalizedRoute = normalizeDocPath(
+    stripDocBasePath(route, normalizeDocBasePath(basePath))
+  );
 
   if (normalizedRoute === '/') {
     return join(outDir, 'index.html');
@@ -60,6 +71,7 @@ export async function buildDocs(
   options: DocsBuildOptions = {}
 ): Promise<DocsBuildResult> {
   const outDir = options.outDir ?? DEFAULT_OUT_DIR;
+  const basePath = normalizeDocBasePath(options.basePath ?? '');
 
   validateBuildCatalogs();
   await rm(outDir, { recursive: true, force: true });
@@ -72,9 +84,20 @@ export async function buildDocs(
     const catalog = docCatalogs[locale];
 
     for (const page of catalog.pages) {
-      const publicPath = localizeDocPath(locale, page.path);
-      const html = renderDocPage(locale, page, catalog.pages);
-      const outputPath = routeToOutputPath(publicPath, outDir);
+      let publicPath: string;
+      let html: string;
+
+      // The base path is only needed during synchronous rendering. Restore it
+      // right after so concurrent processes never observe a stale prefix.
+      setDocBasePath(basePath);
+      try {
+        publicPath = localizeDocPath(locale, page.path);
+        html = renderDocPage(locale, page, catalog.pages);
+      } finally {
+        setDocBasePath('');
+      }
+
+      const outputPath = routeToOutputPath(publicPath, outDir, basePath);
       await mkdir(dirname(outputPath), { recursive: true });
       await writeFile(outputPath, html);
       pagesBuilt += 1;
@@ -132,6 +155,7 @@ export function resolveDocsServerOptions(
     hostname: readOption(args, '--host') ?? env.HOST ?? '127.0.0.1',
     port: parsePort(readOption(args, '--port') ?? env.PORT ?? '5173'),
     outDir: resolveDocsOutDir(args, env),
+    basePath: readOption(args, '--base') ?? env.DOCS_BASE_PATH ?? '',
   };
 }
 
@@ -149,14 +173,15 @@ export async function startDocsServer(
 ): Promise<ReturnType<typeof Bun.serve>> {
   const indexPath = join(options.outDir, 'index.html');
   if (!(await fileExists(indexPath))) {
-    await buildDocs({ outDir: options.outDir });
+    await buildDocs({ outDir: options.outDir, basePath: options.basePath });
   }
 
   const realOutDir = await realpath(options.outDir);
   const server = Bun.serve({
     hostname: options.hostname,
     port: options.port,
-    fetch: (request) => serveDocsFile(request, options.outDir, realOutDir),
+    fetch: (request) =>
+      serveDocsFile(request, options.outDir, realOutDir, options.basePath),
   });
 
   console.log(`TSone docs: http://${options.hostname}:${server.port}/`);
@@ -209,10 +234,10 @@ async function buildBrowserBundles(outDir: string): Promise<string[]> {
 }
 
 function installBuildDom(route: string): void {
-  const window = new Window({
+  const windowRef = createDomWindow({
     url: `http://127.0.0.1${normalizeDocPath(route)}`,
   });
-  Object.assign(window, {
+  Object.assign(windowRef, {
     Error,
     EvalError,
     RangeError,
@@ -221,51 +246,21 @@ function installBuildDom(route: string): void {
     TypeError,
     URIError,
   });
-  const keys = [
-    'window',
-    'document',
-    'Node',
-    'Text',
-    'Comment',
-    'Element',
-    'HTMLElement',
-    'HTMLInputElement',
-    'HTMLTextAreaElement',
-    'HTMLSelectElement',
-    'HTMLButtonElement',
-    'DocumentFragment',
-    'Event',
-    'MouseEvent',
-    'KeyboardEvent',
-    'CustomEvent',
-    'EventTarget',
-    'history',
-    'location',
-    'navigator',
-    'localStorage',
-  ] as const;
-
-  const windowRecord = window as unknown as Record<string, unknown>;
-
-  keys.forEach((key) => {
-    Object.defineProperty(globalThis, key, {
-      configurable: true,
-      writable: true,
-      value: windowRecord[key],
-    });
-  });
+  installDomGlobals(windowRef);
 }
 
 async function serveDocsFile(
   request: Request,
   outDir: string,
-  realOutDir: string
+  realOutDir: string,
+  basePath = ''
 ): Promise<Response> {
   const url = new URL(request.url);
+  const base = normalizeDocBasePath(basePath);
 
   let pathname: string;
   try {
-    pathname = decodeURIComponent(url.pathname);
+    pathname = stripDocBasePath(decodeURIComponent(url.pathname), base);
   } catch {
     return new Response('Not found', { status: 404 });
   }
@@ -341,7 +336,9 @@ if (import.meta.main) {
 
   if (args.includes('--build')) {
     const outDir = resolveDocsOutDir(args, process.env);
-    await buildDocs({ outDir });
+    const basePath =
+      readOption(args, '--base') ?? process.env.DOCS_BASE_PATH ?? '';
+    await buildDocs({ outDir, basePath });
     console.log(`TSone docs built at ${outDir}`);
   } else {
     const options = resolveDocsServerOptions();
