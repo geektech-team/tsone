@@ -55,7 +55,7 @@ class App extends Component<Record<string, never>, AppState> {
   protected initState(): AppState {
     return {
       count: 0,
-      version: '0.3.0',
+      version: '0.4.0',
     };
   }
 
@@ -318,7 +318,7 @@ const html = app.renderHtmlDocument({
 - `computed()`
 - `ref()` / `isRef()` / `unref()`
 - `nextTick()` / `flushSync()`
-- `version`，当前为 `0.3.0`
+- `version`，当前为 `0.4.0`
 
 ## 渲染、通信与表单
 

@@ -1,6 +1,6 @@
 {
   "name": "@geektech/tsone-cli",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Bun-native development and build CLI for TSone applications",
   "type": "module",
   "exports": {

@@ -1,4 +1,5 @@
 import { Component, type VNode } from '../../../lib';
+import { withDocBasePath } from '../content/base';
 import type { DocLocaleMessages, SearchEntry } from '../content';
 
 export interface SearchBoxProps {
@@ -57,7 +58,7 @@ export class SearchBox extends Component<SearchBoxProps, SearchBoxState> {
             children: [
               {
                 tag: 'a',
-                props: { href: entry.path },
+                props: { href: withDocBasePath(entry.path) },
                 children: [`${entry.section} / ${entry.title}`],
               },
             ],

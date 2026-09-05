@@ -102,6 +102,41 @@ describe('TSone CLI docs server', () => {
     }
   });
 
+  it('rebuilds when the built output uses a different base path', async () => {
+    const outDir = mkdtempSync(
+      join(tmpdir(), 'cli-docs-server-base-mismatch-')
+    );
+    // 用带前缀的 base 构建产物，然后不带 base 启动 serve：
+    // 残留的 /tsone/cli 前缀会让 dev 根路径下的脚本 404，必须自动重建。
+    await buildCliDocs({ outDir, basePath: '/tsone/cli' });
+
+    const server = await startCliDocsServer({
+      hostname: '127.0.0.1',
+      port: 0,
+      outDir,
+    });
+    const origin = `http://127.0.0.1:${server.port}`;
+
+    try {
+      const home = await fetch(`${origin}/`);
+      expect(home.status).toBe(200);
+      const homeHtml = await home.text();
+      expect(homeHtml).toContain('/zh/');
+      expect(homeHtml).not.toContain('/tsone/cli/zh/');
+
+      const commands = await fetch(`${origin}/zh/commands/`);
+      expect(commands.status).toBe(200);
+      const commandsHtml = await commands.text();
+      expect(commandsHtml).not.toContain('data-doc-base="/tsone/cli"');
+
+      const client = await fetch(`${origin}/assets/cli-docs-client.js`);
+      expect(client.status).toBe(200);
+    } finally {
+      server.stop(true);
+      rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
   it('falls back locale-agnostic doc routes to the default zh locale', async () => {
     const outDir = mkdtempSync(join(tmpdir(), 'cli-docs-server-locale-'));
     await buildCliDocs({ outDir });

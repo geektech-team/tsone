@@ -180,4 +180,4 @@ export { OnePopover } from './popover';
 export type { OnePopoverProps, OnePopoverTrigger } from './popover';
 
 export const ONE_NAME = '@geektech/one';
-export const ONE_VERSION = '0.3.3';
+export const ONE_VERSION = '0.4.0';

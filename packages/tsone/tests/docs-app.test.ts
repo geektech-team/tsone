@@ -7,6 +7,7 @@ import {
   mountDocsClient,
 } from '../docs/app/app';
 import { applyDocLocaleSelection } from '../docs/app/components/LocaleSwitcher';
+import { setDocBasePath } from '../docs/app/content/base';
 import { docCatalogs } from '../docs/app/content';
 
 describe('docs app', () => {
@@ -14,6 +15,8 @@ describe('docs app', () => {
     history.replaceState({}, '', '/');
     document.body.innerHTML = '';
     document.documentElement.removeAttribute('data-theme');
+    document.documentElement.removeAttribute('data-doc-base');
+    setDocBasePath('');
     localStorage.clear();
   });
 
@@ -191,6 +194,28 @@ describe('docs app', () => {
     expect(
       document.querySelector('.docs-locale-select')?.getAttribute('aria-label')
     ).toBe('Documentation language');
+  });
+
+  it('prefixes search result links with the document base path', async () => {
+    history.replaceState({}, '', '/en/');
+    document.documentElement.setAttribute('data-doc-base', '/tsone');
+    document.body.innerHTML = '<div data-doc-search-root></div>';
+    mountDocsClient();
+
+    const input = document.querySelector<HTMLInputElement>('[type="search"]');
+    if (!input) throw new Error('Missing search input');
+
+    input.value = 'app';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    // Reactive effects flush on a microtask; wait for the re-render.
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const links = document.querySelectorAll('.docs-search-results a');
+    expect(links.length).toBeGreaterThan(0);
+    for (const link of links) {
+      expect(link.getAttribute('href')).toMatch(/^\/tsone\//);
+    }
   });
 
   it('keeps docs widget apps safe when their mount roots are absent', () => {

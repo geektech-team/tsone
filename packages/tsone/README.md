@@ -61,7 +61,7 @@ class App extends Component<Record<string, never>, AppState> {
   protected initState(): AppState {
     return {
       count: 0,
-      version: '0.3.0',
+      version: '0.4.0',
     };
   }
 
@@ -344,7 +344,7 @@ The main `@geektech/tsone` entry point exports:
 - `computed()`
 - `ref()` / `isRef()` / `unref()`
 - `nextTick()` / `flushSync()`
-- `version`, currently `0.3.0`
+- `version`, currently `0.4.0`
 
 ## Rendering, Communication, and Forms
 

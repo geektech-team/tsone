@@ -1,6 +1,6 @@
 {
   "name": "@geektech/one",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "One UI 是基于 TSone 的轻量级纯 TypeScript UI 组件库",
   "type": "module",
   "main": "./dist/index.js",
@@ -19,7 +19,7 @@
     "docs:build": "tsone build"
   },
   "peerDependencies": {
-    "@geektech/tsone": ">=0.3.0 <0.4.0"
+    "@geektech/tsone": ">=0.4.0 <0.5.0"
   },
   "devDependencies": {
     "@geektech/tsone": "workspace:*",

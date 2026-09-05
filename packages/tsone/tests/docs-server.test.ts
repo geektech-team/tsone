@@ -177,6 +177,35 @@ describe('TSone docs preview server', () => {
     }
   });
 
+  it('rebuilds when the built output uses a different base path', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'tsone-docs-server-'));
+    const port = getAvailablePort();
+
+    try {
+      // 用带前缀的 base 构建产物，然后不带 base 启动 serve：
+      // 残留的 /tsone 前缀会让 dev 根路径下的客户端脚本 404，必须自动重建。
+      await buildDocs({ outDir, basePath: '/tsone' });
+      server = await startDocsServer({
+        hostname: '127.0.0.1',
+        port,
+        outDir,
+      });
+
+      const home = await fetch(`http://127.0.0.1:${port}/en/`);
+      expect(home.status).toBe(200);
+      const homeHtml = await home.text();
+      expect(homeHtml).not.toContain('data-doc-base="/tsone"');
+      expect(homeHtml).toContain('src="/assets/docs-client.js"');
+
+      const clientAsset = await fetch(
+        `http://127.0.0.1:${port}/assets/docs-client.js`
+      );
+      expect(clientAsset.status).toBe(200);
+    } finally {
+      rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
   it('rejects symlink escapes outside the output directory', async () => {
     const outDir = mkdtempSync(join(tmpdir(), 'tsone-docs-server-'));
     const secretDir = mkdtempSync(join(tmpdir(), 'tsone-docs-secret-'));

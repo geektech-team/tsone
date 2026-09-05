@@ -69,7 +69,7 @@ describe('One UI package smoke', () => {
         tempDir,
         `${tsoneManifest.name.replace('@', '').replace('/', '-')}-${tsoneManifest.version}.tgz`
       );
-      const oneTarball = join(tempDir, 'geektech-one-0.3.3.tgz');
+      const oneTarball = join(tempDir, 'geektech-one-0.4.0.tgz');
       run(
         'bun',
         ['pm', 'pack', '--destination', tempDir, '--ignore-scripts', '--quiet'],
@@ -270,7 +270,7 @@ describe('One UI package smoke', () => {
           'const progress = new OneProgress(progressProps);',
           'const loading = new OneLoading(loadingProps);',
           "const packageName: '@geektech/one' = ONE_NAME;",
-          "const packageVersion: '0.3.3' = ONE_VERSION;",
+          "const packageVersion: '0.4.0' = ONE_VERSION;",
           "const primary: '#5fd956' = ONE_THEME_DEFAULTS.colorPrimary;",
           'void inputEvent;',
           'void button;',
@@ -446,7 +446,7 @@ describe('One UI package smoke', () => {
 
       expect(runtimeResult).toEqual({
         name: '@geektech/one',
-        version: '0.3.3',
+        version: '0.4.0',
         theme: {
           primary: '#5fd956',
           danger: '#b83232',

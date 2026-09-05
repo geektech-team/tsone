@@ -168,11 +168,30 @@ async function fileExists(filePath: string): Promise<boolean> {
   }
 }
 
+async function indexPathMatchesBase(
+  indexPath: string,
+  basePath: string | undefined
+): Promise<boolean> {
+  try {
+    const html = await readFile(indexPath, 'utf8');
+    const actual = html.match(/data-doc-base="([^"]*)"/)?.[1] ?? '';
+    return actual === normalizeDocBasePath(basePath ?? '');
+  } catch {
+    return false;
+  }
+}
+
 export async function startDocsServer(
   options = resolveDocsServerOptions()
 ): Promise<ReturnType<typeof Bun.serve>> {
   const indexPath = join(options.outDir, 'index.html');
-  if (!(await fileExists(indexPath))) {
+  if (
+    !(await fileExists(indexPath)) ||
+    !(await indexPathMatchesBase(indexPath, options.basePath))
+  ) {
+    // 产物不存在，或用其他 basePath 构建过（残留的 /tsone 前缀会让
+    // dev 根路径下的客户端脚本 404）。始终按当前 base 重建，保证
+    // serve 的 HTML 与脚本路径一致。
     await buildDocs({ outDir: options.outDir, basePath: options.basePath });
   }
 
