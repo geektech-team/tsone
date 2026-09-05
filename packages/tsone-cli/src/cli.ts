@@ -6,10 +6,10 @@ const USAGE = [
   'Usage:',
   '  tsone create',
   '  tsone dev [--host <host>] [--port <port>] [--no-watch]',
-  '  tsone build [--out-dir <path>]',
+  '  tsone build [--out-dir <path>] [--library]',
 ].join('\n');
 
-const FLAG_OPTIONS = new Set(['--no-watch']);
+const FLAG_OPTIONS = new Set(['--no-watch', '--library']);
 
 export interface CreateCliArgs {
   command: 'create';
@@ -25,6 +25,7 @@ export interface DevCliArgs {
 export interface BuildCliArgs {
   command: 'build';
   outDir?: string;
+  library?: boolean;
 }
 
 export type CliArgs = CreateCliArgs | DevCliArgs | BuildCliArgs;
@@ -82,6 +83,7 @@ export function parseCliArgs(argv: string[]): CliArgs {
   return {
     command,
     ...(options.has('--out-dir') ? { outDir: options.get('--out-dir') } : {}),
+    ...(options.has('--library') ? { library: true } : {}),
   };
 }
 
@@ -111,7 +113,9 @@ export async function runCli(
   }
 
   const result = await build(
-    args.outDir === undefined ? {} : { outDir: args.outDir }
+    args.outDir === undefined && !args.library
+      ? {}
+      : { outDir: args.outDir, library: args.library }
   );
   console.log(
     `TSone build completed: ${result.outDir} (${result.assetsBuilt.length} assets)`
@@ -135,7 +139,8 @@ function assertKnownOption(name: string): void {
     name === '--host' ||
     name === '--port' ||
     name === '--out-dir' ||
-    name === '--no-watch'
+    name === '--no-watch' ||
+    name === '--library'
   ) {
     return;
   }
@@ -151,7 +156,8 @@ function assertSupportedOption(
     (command === 'create' && false) ||
     (command === 'dev' &&
       (name === '--host' || name === '--port' || name === '--no-watch')) ||
-    (command === 'build' && name === '--out-dir');
+    (command === 'build' &&
+      (name === '--out-dir' || name === '--library'));
 
   if (!supported) {
     throw parseError(`Option ${name} is not supported for ${command}`);

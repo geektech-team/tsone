@@ -23,7 +23,8 @@ let projectDomQueue: Promise<void> = Promise.resolve();
 export async function renderProjectHtml(
   config: ResolvedConfig,
   options: AppDocumentRenderOptions,
-  entry: string = config.entry
+  entry: string = config.entry,
+  route = '/'
 ): Promise<string> {
   return withProjectDom(async () => {
     const module = await importProjectEntry(entry);
@@ -35,11 +36,17 @@ export async function renderProjectHtml(
     }
 
     return app.renderHtmlDocument(options);
-  });
+  }, route, config.build.basePath);
 }
 
-async function withProjectDom<T>(callback: () => Promise<T>): Promise<T> {
-  const task = projectDomQueue.then(() => runWithProjectDom(callback));
+async function withProjectDom<T>(
+  callback: () => Promise<T>,
+  route: string,
+  basePath: string
+): Promise<T> {
+  const task = projectDomQueue.then(() =>
+    runWithProjectDom(callback, route, basePath)
+  );
   projectDomQueue = task.then(
     () => undefined,
     () => undefined
@@ -48,8 +55,13 @@ async function withProjectDom<T>(callback: () => Promise<T>): Promise<T> {
   return task;
 }
 
-async function runWithProjectDom<T>(callback: () => Promise<T>): Promise<T> {
-  const windowRef = createDomWindow({ url: 'http://127.0.0.1/' });
+async function runWithProjectDom<T>(
+  callback: () => Promise<T>,
+  route: string,
+  basePath: string
+): Promise<T> {
+  const url = `http://127.0.0.1${basePath}${route === '/' ? '/' : route}`;
+  const windowRef = createDomWindow({ url });
   Object.assign(windowRef, {
     Error,
     EvalError,

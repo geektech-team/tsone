@@ -2,9 +2,11 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type {
   BuildConfig,
+  LibraryConfig,
   ProxyOptions,
   ResolveConfigOptions,
   ResolvedConfig,
+  ResolvedLibraryConfig,
   ServerConfig,
   UserConfig,
 } from './types';
@@ -19,7 +21,10 @@ interface MergedConfig {
   };
   build: {
     outDir: string;
+    basePath: string;
+    directoryPages: boolean;
   };
+  library?: LibraryConfig;
 }
 
 type ConfigFileLoadResult =
@@ -35,6 +40,8 @@ const DEFAULT_CONFIG: MergedConfig = {
   },
   build: {
     outDir: 'dist',
+    basePath: '',
+    directoryPages: false,
   },
 };
 
@@ -65,7 +72,7 @@ export async function resolveConfig(
   const config = mergeConfig(fileConfig, options.config ?? {}, inlineOverrides);
 
   const entry = resolve(root, config.entry);
-  if (!existsSync(entry)) {
+  if (!existsSync(entry) && !config.library) {
     throw new Error(`Entry file does not exist: ${entry}`);
   }
   const pages = await resolvePages(root, entry, config.pages);
@@ -82,8 +89,39 @@ export async function resolveConfig(
     },
     build: {
       outDir: resolve(root, config.build.outDir),
+      basePath: normalizeBasePath(config.build.basePath),
+      directoryPages: config.build.directoryPages,
     },
+    ...(config.library ? { library: resolveLibrary(root, config.library) } : {}),
   };
+}
+
+function resolveLibrary(
+  root: string,
+  library: LibraryConfig
+): ResolvedLibraryConfig {
+  return {
+    entry: resolve(root, library.entry ?? 'src/index.ts'),
+    outDir: resolve(root, library.outDir ?? 'dist'),
+    external: library.external ?? [],
+    tsconfigs: (library.tsconfigs ?? ['tsconfig.build.json']).map((path) =>
+      resolve(root, path)
+    ),
+    dts: library.dts ?? true,
+    splitting: library.splitting ?? true,
+    sourcemap: library.sourcemap ?? true,
+    minify: library.minify,
+  };
+}
+
+function normalizeBasePath(base: string | undefined): string {
+  const trimmed = (base ?? '').trim();
+  if (!trimmed || trimmed === '/') {
+    return '';
+  }
+
+  const withLeading = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  return withLeading.endsWith('/') ? withLeading.slice(0, -1) : withLeading;
 }
 
 async function resolvePages(
@@ -172,7 +210,11 @@ function mergeConfig(...configs: UserConfig[]): MergedConfig {
       },
       build: {
         outDir: build?.outDir ?? merged.build.outDir,
+        basePath: build?.basePath ?? merged.build.basePath,
+        directoryPages:
+          build?.directoryPages ?? merged.build.directoryPages,
       },
+      library: config.library ?? merged.library,
     };
   }, DEFAULT_CONFIG);
 }
@@ -191,6 +233,39 @@ function validateUserConfig(config: unknown): asserts config is UserConfig {
   }
   if (config.build !== undefined) {
     validateBuildConfig(config.build);
+  }
+  if (config.library !== undefined) {
+    validateLibraryConfig(config.library);
+  }
+}
+
+function validateLibraryConfig(library: unknown): asserts library is LibraryConfig {
+  assertRecord(library, 'Config library');
+  if (library.entry !== undefined && typeof library.entry !== 'string') {
+    throw new Error('Config library.entry must be a string');
+  }
+  if (library.outDir !== undefined && typeof library.outDir !== 'string') {
+    throw new Error('Config library.outDir must be a string');
+  }
+  if (library.external !== undefined) {
+    assertStringArray(library.external, 'Config library.external');
+  }
+  if (library.tsconfigs !== undefined) {
+    assertStringArray(library.tsconfigs, 'Config library.tsconfigs');
+  }
+  for (const key of ['dts', 'splitting', 'sourcemap', 'minify'] as const) {
+    if (library[key] !== undefined && typeof library[key] !== 'boolean') {
+      throw new Error(`Config library.${key} must be a boolean`);
+    }
+  }
+}
+
+function assertStringArray(value: unknown, name: string): void {
+  if (
+    !Array.isArray(value) ||
+    value.some((item) => typeof item !== 'string')
+  ) {
+    throw new Error(`${name} must be an array of strings`);
   }
 }
 
@@ -246,6 +321,15 @@ function validateBuildConfig(build: unknown): asserts build is BuildConfig {
   assertRecord(build, 'Config build');
   if (build.outDir !== undefined && typeof build.outDir !== 'string') {
     throw new Error('Config build.outDir must be a string');
+  }
+  if (build.basePath !== undefined && typeof build.basePath !== 'string') {
+    throw new Error('Config build.basePath must be a string');
+  }
+  if (
+    build.directoryPages !== undefined &&
+    typeof build.directoryPages !== 'boolean'
+  ) {
+    throw new Error('Config build.directoryPages must be a boolean');
   }
 }
 

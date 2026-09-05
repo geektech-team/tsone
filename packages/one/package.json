@@ -13,11 +13,10 @@
     }
   },
   "scripts": {
-    "build": "bun scripts/build.ts",
-    "build:types": "bunx tsc --project tsconfig.build.json",
+    "build": "tsone build --library",
     "test": "bun test",
-    "docs": "bun scripts/docs.ts",
-    "docs:build": "bun scripts/docs.ts --build"
+    "docs": "tsone dev",
+    "docs:build": "tsone build"
   },
   "peerDependencies": {
     "@geektech/tsone": ">=0.3.0 <0.4.0"

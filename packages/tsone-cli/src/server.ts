@@ -79,10 +79,10 @@ async function startWatchingDevServer(
   }
 
   async function rebuildAndReload(): Promise<void> {
-    const routes = Object.keys(instance.config.pages);
-    instance.markDirty(routes);
-    for (const route of routes) {
-      const bundle = await instance.getBundle(route);
+    const entries = [...new Set(Object.values(instance.config.pages))];
+    instance.markDirty(entries);
+    for (const entry of entries) {
+      const bundle = await instance.getBundle(entry);
       if (bundle instanceof Response) {
         console.error('TSone rebuild failed; keeping the last working page.');
         return;
@@ -123,8 +123,8 @@ function createProjectWatcher(
 interface DevServerInstance {
   server: DevServer;
   config: ResolvedConfig;
-  getBundle: (route: string) => Promise<DevelopmentBundle | Response>;
-  markDirty: (routes: string[]) => void;
+  getBundle: (entry: string) => Promise<DevelopmentBundle | Response>;
+  markDirty: (entries: string[]) => void;
   liveReload: LiveReloadHub | undefined;
 }
 
@@ -133,8 +133,8 @@ async function createServerInstance(
   watch: boolean
 ): Promise<DevServerInstance> {
   const config = await resolveConfig(options);
-  for (const entry of Object.values(config.pages)) {
-    await renderProjectHtml(config, {}, entry);
+  for (const [route, entry] of Object.entries(config.pages)) {
+    await renderProjectHtml(config, {}, entry, route);
   }
   const developmentOutDir = resolve(config.root, '.tsone', 'dev');
   await assertSafeSubdirectory(
@@ -146,32 +146,28 @@ async function createServerInstance(
   const sessionId = createGenerationId();
   const sessionOutDir = resolve(developmentOutDir, sessionId);
   const artifacts = new Map<string, DevelopmentOutput>();
-  const buildProject = createDevelopmentBuilder(
-    config,
-    sessionId,
-    sessionOutDir
-  );
+  const buildProject = createDevelopmentBuilder(sessionId, sessionOutDir);
   const liveReload = watch ? createLiveReloadHub() : undefined;
   const bundles = new Map<string, DevelopmentBundle>();
-  const dirtyRoutes = new Set<string>();
+  const dirtyEntries = new Set<string>();
 
   const getBundle = async (
-    route: string
+    entry: string
   ): Promise<DevelopmentBundle | Response> => {
-    const cached = bundles.get(route);
-    if (watch && cached !== undefined && !dirtyRoutes.has(route)) {
+    const cached = bundles.get(entry);
+    if (watch && cached !== undefined && !dirtyEntries.has(entry)) {
       return cached;
     }
-    const bundle = await buildProject(route);
+    const bundle = await buildProject(entry);
     if (bundle instanceof Response) {
       if (watch) {
-        dirtyRoutes.add(route);
+        dirtyEntries.add(entry);
       }
       return bundle;
     }
     if (watch) {
-      bundles.set(route, bundle);
-      dirtyRoutes.delete(route);
+      bundles.set(entry, bundle);
+      dirtyEntries.delete(entry);
     }
     return bundle;
   };
@@ -202,8 +198,8 @@ async function createServerInstance(
     server,
     config,
     getBundle,
-    markDirty: (routes) => {
-      routes.forEach((route) => dirtyRoutes.add(route));
+    markDirty: (entries) => {
+      entries.forEach((entry) => dirtyEntries.add(entry));
     },
     liveReload,
   };
@@ -237,7 +233,7 @@ async function serveProjectRequest(
   request: Request,
   config: ResolvedConfig,
   pages: Record<string, string>,
-  getBundle: (route: string) => Promise<DevelopmentBundle | Response>,
+  getBundle: (entry: string) => Promise<DevelopmentBundle | Response>,
   artifacts: Map<string, DevelopmentOutput>,
   liveReload: LiveReloadHub | undefined
 ): Promise<Response> {
@@ -245,7 +241,8 @@ async function serveProjectRequest(
   const route = pageRouteForPathname(pages, pathname);
 
   if (route !== undefined) {
-    const bundle = await getBundle(route);
+    const entry = pages[route];
+    const bundle = await getBundle(entry);
     if (bundle instanceof Response) {
       return bundle;
     }
@@ -260,7 +257,8 @@ async function serveProjectRequest(
           })),
           scripts: [{ type: 'module', src: bundle.entry.pathname }],
         },
-        pages[route]
+        entry,
+        route
       );
       publishDevelopmentBundle(bundle, artifacts);
       return new Response(liveReload ? injectLiveReloadScript(html) : html, {
@@ -276,7 +274,7 @@ async function serveProjectRequest(
   }
 
   if (pathname === '/bundle.js') {
-    const bundle = await getBundle('/');
+    const bundle = await getBundle(config.entry);
     if (bundle instanceof Response) {
       return bundle;
     }
@@ -457,14 +455,12 @@ interface DevelopmentBundle {
 }
 
 function createDevelopmentBuilder(
-  config: ResolvedConfig,
   sessionId: string,
   sessionOutDir: string
-): (route: string) => Promise<DevelopmentBundle | Response> {
+): (entry: string) => Promise<DevelopmentBundle | Response> {
   let queue = Promise.resolve();
 
-  return (route) => {
-    const entry = config.pages[route];
+  return (entry) => {
     const result = queue.then(() =>
       buildProjectBundle(entry, sessionId, sessionOutDir)
     );

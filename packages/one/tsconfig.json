@@ -3,6 +3,6 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["lib", "tests", "docs/app", "scripts"],
+  "include": ["lib", "tests", "docs/app"],
   "exclude": ["node_modules", "dist", "coverage"]
 }

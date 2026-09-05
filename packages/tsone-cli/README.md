@@ -3,6 +3,8 @@
 `@geektech/tsone-cli` is the Bun-native development and build CLI for TSone
 applications. It requires Bun `>=1.3.0`.
 
+**Documentation:** <https://geektech-team.github.io/tsone/cli/>
+
 ## Installation
 
 Install the framework and its development tooling together:
@@ -88,6 +90,8 @@ Defaults:
 - `server.port`: `52211`
 - `server.proxy`: `{}`
 - `build.outDir`: `dist`
+- `build.basePath`: `''`
+- `build.directoryPages`: `false`
 
 `build.outDir` must resolve to a child directory inside the project root. The
 project root itself, an outside path, and a path that escapes through a symlink
@@ -122,6 +126,56 @@ using the page route for the filename (`index.html` for `/`, `about.html` for
 `/about`, `docs/guide.html` for `/docs/guide`) with asset URLs relative to that
 document.
 
+Set `build.directoryPages` to emit every page as a directory with an
+`index.html` (`docs/guide/index.html`) instead of a flat `docs/guide.html`.
+Directory-style output suits static hosts that map URLs to folders, and is what
+you want when the same entry drives many data-driven pages.
+
+`build.basePath` prepends a URL prefix to every rendered document URL. It is
+intended for deploying the whole site under a sub-path (for example
+`/tsone/one` on GitHub Pages). The app receives the base path and page route
+through `window.location` during SSR, so base-path-aware links and the
+`data-doc-base`-style document attribute come out with the prefix, while thefile layout on disk stays under `outDir`.
+
+## Library Builds
+
+`tsone build` defaults to a site build (one browser bundle per entry plus HTML
+documents). Pass `--library` to build an npm library instead: it reads the
+`library` block of `tsone.config.ts`, emits a publishable ESM bundle plus
+`.d.ts` declarations, and does not touch the site output.
+
+```typescript
+import { defineConfig } from '@geektech/tsone-cli';
+
+export default defineConfig({
+  entry: 'src/main.ts', // site build entry, unrelated to the library
+  build: { outDir: 'dist-site' },
+  library: {
+    entry: 'lib/index.ts',
+    outDir: 'dist',
+    external: ['@geektech/tsone', '@geektech/tsone/style'],
+    tsconfigs: ['../framework/tsconfig.build.json', 'tsconfig.build.json'],
+  },
+});
+```
+
+Library options:
+
+- `entry`: bundle entry, default `src/index.ts`.
+- `outDir`: output directory, default `dist`.
+- `external`: package names kept as external imports instead of inlined.
+- `tsconfigs`: tsconfig files run in order with `tsc --project` to emit
+  `.d.ts`. Use this to compile a framework's declarations first when your
+  `paths` map to its `dist` output, then your own.
+- `dts`: emit declarations with tsc, default `true`. Set to `false` for a
+  bundle-only build.
+- `splitting`: code splitting, default `true`.
+- `sourcemap`: linked sourcemaps, default `true`.
+- `minify`: default controlled by `TSONE_MINIFY` (minified unless set to `0`).
+
+The bundle targets browsers (`target: 'browser'`, `format: 'esm'`). A library
+build does not require a site `entry`, so a library-only project can omit it.
+
 ## Command Line
 
 `tsone create` scaffolds a basic TSone project into the current directory:
@@ -134,13 +188,15 @@ Development and build options are deliberately separate:
 ```text
 tsone create
 tsone dev [--host <host>] [--port <port>] [--no-watch]
-tsone build [--out-dir <path>]
+tsone build [--out-dir <path>] [--library]
 ```
 
 `create` takes no options. `dev` accepts `--host`, `--port`, and `--no-watch`;
-`build` accepts only `--out-dir`. Options override `tsone.config.ts`. Both
-separated and equals forms work, for example `--port 3000`, `--port=3000`,
-`--out-dir output`, and `--out-dir=output`.
+`build` accepts `--out-dir` and `--library`. Options override
+`tsone.config.ts`. Both separated and equals forms work, for example
+`--port 3000`, `--port=3000`, `--out-dir output`, and `--out-dir=output`.
+`--library` switches `build` from a site build to the npm library build
+described above.
 
 `tsone dev` watches the project by default: when a source, style, or config
 file changes it rebuilds the current page and notifies connected browsers to
@@ -207,12 +263,14 @@ console.log(result.root, result.outDir, result.assetsBuilt);
 - `defineConfig(config)` returns the same typed config object.
 - `resolveConfig(options?)` validates and merges defaults, a config file,
   direct config, and host/port/outDir overrides. It returns absolute `root`,
-  `entry`, and `build.outDir` values, the resolved `pages` route map, plus the
-  resolved server configuration.
+  `entry`, and `build.outDir` values, the resolved `pages` route map, the
+  resolved server configuration, and the resolved `library` configuration when
+  one is declared.
 - `startDevServer(options?)` resolves the configuration and returns the Bun
   server. The caller owns its lifecycle and must call `server.stop()`.
 - `build(options?)` validates the entry and output path, then returns
-  `{ root, outDir, assetsBuilt }`; the paths in the result are absolute.
+  `{ root, outDir, assetsBuilt }`; the paths in the result are absolute. Pass
+  `{ library: true }` to run the library build instead of the site build.
 - `createProject(options?)` writes a basic TSone scaffold into `options.root`
   (defaults to the current working directory) and returns
   `{ root, files }`; it refuses to overwrite existing files.
@@ -222,6 +280,7 @@ console.log(result.root, result.outDir, result.assetsBuilt);
 The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.
 CLI v1 has no config plugins, WebSocket, HMR, SSR, functional config,
 `public/` directory copying, or public `minify` and `sourcemap`
-configuration. Development bundles use an internal inline source map, while
-`tsone build` minifies production output by default; minification and
-source-map controls are intentionally not configurable.
+configuration for site builds. Development bundles use an internal inline
+source map, and `tsone build` minifies production output by default. Library
+builds (`tsone build --library`) expose `minify` and `sourcemap` controls via
+the `library` config block.

@@ -109,6 +109,21 @@ describe('TSone CLI arguments', () => {
     });
   });
 
+  it('parses the library flag without consuming a value', () => {
+    expect(parseCliArgs(['build', '--library'])).toEqual({
+      command: 'build',
+      library: true,
+    });
+    expect(parseCliArgs(['build', '--library', '--out-dir', 'lib-dist'])).toEqual({
+      command: 'build',
+      library: true,
+      outDir: 'lib-dist',
+    });
+    expect(() => parseCliArgs(['dev', '--library'])).toThrow(
+      'Option --library is not supported for dev'
+    );
+  });
+
   it('rejects invalid commands and options with both usage lines', () => {
     expect(() => parseCliArgs(['preview'])).toThrow('Unknown command: preview');
     expect(() => parseCliArgs(['dev', '--open'])).toThrow(

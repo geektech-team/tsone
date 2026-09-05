@@ -10,7 +10,6 @@ const INVALID_OUTPUT_DIRECTORY_MESSAGE =
   'Build output must be a subdirectory of the project root';
 
 interface BuiltPage {
-  route: string;
   entry: string;
   assets: string[];
   javascriptAssets: string[];
@@ -19,8 +18,13 @@ interface BuiltPage {
 
 export async function build(options: BuildOptions = {}): Promise<BuildResult> {
   const config = await resolveConfig(options);
+  if (options.library) {
+    return buildLibrary(config);
+  }
 
-  for (const entry of Object.values(config.pages)) {
+  const entries = [...new Set(Object.values(config.pages))];
+
+  for (const entry of entries) {
     await assertSafeSubdirectoryDoesNotContain(
       config.root,
       config.build.outDir,
@@ -28,29 +32,34 @@ export async function build(options: BuildOptions = {}): Promise<BuildResult> {
       INVALID_OUTPUT_DIRECTORY_MESSAGE
     );
   }
-  for (const entry of Object.values(config.pages)) {
-    await renderProjectHtml(config, {}, entry);
+  for (const [route, entry] of Object.entries(config.pages)) {
+    await renderProjectHtml(config, {}, entry, route);
   }
 
   await rm(config.build.outDir, { recursive: true, force: true });
   await mkdir(config.build.outDir, { recursive: true });
 
-  const pages: BuiltPage[] = [];
+  const builtByEntry = new Map<string, BuiltPage>();
   const failures: string[] = [];
-  for (const [route, entry] of Object.entries(config.pages)) {
-    const built = await buildPage(config, route, entry);
+  for (const entry of entries) {
+    const built = await buildPage(config, entry);
     if (typeof built === 'string') {
       failures.push(built);
       continue;
     }
-    pages.push(built);
+    builtByEntry.set(entry, built);
   }
   if (failures.length > 0) {
     throw buildFailure(failures);
   }
 
   const assetsBuilt: string[] = [];
-  for (const page of pages) {
+  for (const [route, entry] of Object.entries(config.pages)) {
+    const page = builtByEntry.get(entry);
+    if (!page) {
+      throw new Error(`Missing built assets for entry: ${entry}`);
+    }
+    const pageHtmlPath = htmlPath(config, route);
     const html = await renderProjectHtml(
       config,
       {
@@ -58,25 +67,17 @@ export async function build(options: BuildOptions = {}): Promise<BuildResult> {
           tag: 'link',
           attributes: {
             rel: 'stylesheet',
-            href: toAssetUrl(
-              config.build.outDir,
-              htmlPath(config, page.route),
-              asset
-            ),
+            href: toAssetUrl(config.build.outDir, pageHtmlPath, asset),
           },
         })),
         scripts: page.javascriptAssets.map((asset) => ({
           type: 'module',
-          src: toAssetUrl(
-            config.build.outDir,
-            htmlPath(config, page.route),
-            asset
-          ),
+          src: toAssetUrl(config.build.outDir, pageHtmlPath, asset),
         })),
       },
-      page.entry
+      page.entry,
+      route
     );
-    const pageHtmlPath = htmlPath(config, page.route);
     await mkdir(dirname(pageHtmlPath), { recursive: true });
     await writeFile(pageHtmlPath, html);
     assetsBuilt.push(...page.assets, pageHtmlPath);
@@ -89,9 +90,65 @@ export async function build(options: BuildOptions = {}): Promise<BuildResult> {
   };
 }
 
+async function buildLibrary(
+  config: Awaited<ReturnType<typeof resolveConfig>>
+): Promise<BuildResult> {
+  const library = config.library;
+  if (!library) {
+    throw new Error('TSone library build requires config.library');
+  }
+
+  await rm(library.outDir, { recursive: true, force: true });
+  await mkdir(library.outDir, { recursive: true });
+
+  if (library.dts) {
+    for (const tsconfig of library.tsconfigs) {
+      await runTsc(config.root, tsconfig);
+    }
+  }
+
+  const minify = library.minify ?? process.env.TSONE_MINIFY !== '0';
+  const result = await Bun.build({
+    entrypoints: [library.entry],
+    outdir: library.outDir,
+    root: dirname(library.entry),
+    target: 'browser',
+    format: 'esm',
+    sourcemap: library.sourcemap ? 'linked' : undefined,
+    splitting: library.splitting,
+    minify,
+    external: library.external,
+    throw: false,
+  });
+
+  if (!result.success || result.outputs.length === 0) {
+    throw new Error(
+      `Failed to build TSone library:\n${result.logs
+        .map((log) => log.message)
+        .join('\n')}`
+    );
+  }
+
+  const assetsBuilt = result.outputs.map((output) => resolve(output.path));
+  return { root: config.root, outDir: library.outDir, assetsBuilt };
+}
+
+async function runTsc(root: string, tsconfig: string): Promise<void> {
+  const proc = Bun.spawn(['bunx', 'tsc', '--project', tsconfig], {
+    cwd: root,
+    stdout: 'inherit',
+    stderr: 'inherit',
+  });
+  const exitCode = await proc.exited;
+  if (exitCode !== 0) {
+    throw new Error(
+      `tsc --project ${tsconfig} failed with exit code ${exitCode}`
+    );
+  }
+}
+
 async function buildPage(
   config: Awaited<ReturnType<typeof resolveConfig>>,
-  route: string,
   entry: string
 ): Promise<BuiltPage | string> {
   let result: Awaited<ReturnType<typeof Bun.build>>;
@@ -107,7 +164,7 @@ async function buildPage(
       throw: false,
     });
   } catch (error: unknown) {
-    return pageFailureReason(route, [errorMessage(error)]);
+    return pageFailureReason(entry, [errorMessage(error)]);
   }
   const assets = result.outputs.map((output) => resolve(output.path));
   const javascriptAssets = result.outputs
@@ -119,7 +176,7 @@ async function buildPage(
 
   if (!result.success || assets.length === 0 || javascriptAssets.length === 0) {
     return pageFailureReason(
-      route,
+      entry,
       result.logs.map((log) => log.message),
       {
         success: result.success,
@@ -130,7 +187,6 @@ async function buildPage(
   }
 
   return {
-    route,
     entry,
     assets,
     javascriptAssets,
@@ -139,11 +195,10 @@ async function buildPage(
 }
 
 function pageFailureReason(
-  route: string,
+  entry: string,
   logs: string[],
   state?: { success: boolean; hasOutput: boolean; hasJavaScript: boolean }
 ): string {
-  const pageContext = route === '/' ? '' : `Page ${route}: `;
   const reasons = [
     state && !state.success ? 'Bun build reported failure' : '',
     state && !state.hasOutput ? 'Bun emitted no output files' : '',
@@ -151,7 +206,7 @@ function pageFailureReason(
     ...logs,
   ].filter((reason) => reason !== '');
 
-  return `${pageContext}${reasons.join('\n')}`;
+  return `${entry}: ${reasons.join('\n')}`;
 }
 
 function buildFailure(failures: string[]): Error {
@@ -172,7 +227,11 @@ function htmlPath(
   if (route === '/') {
     return resolve(config.build.outDir, 'index.html');
   }
-  return resolve(config.build.outDir, `${route.replace(/^\/+/, '')}.html`);
+  const relativeRoute = route.replace(/^\/+/, '');
+  if (config.build.directoryPages) {
+    return resolve(config.build.outDir, relativeRoute, 'index.html');
+  }
+  return resolve(config.build.outDir, `${relativeRoute}.html`);
 }
 
 function toAssetUrl(

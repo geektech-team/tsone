@@ -236,7 +236,7 @@ describe('TSone production build', () => {
     mockRejectedBuild(new Error('unexpected bundler rejection'));
 
     await expect(build({ root })).rejects.toThrow(
-      'Failed to build TSone application: unexpected bundler rejection'
+      /Failed to build TSone application: .*unexpected bundler rejection/
     );
     expect(existsSync(join(root, 'dist', 'index.html'))).toBe(false);
   });
@@ -445,5 +445,91 @@ describe('TSone production build', () => {
     );
 
     expectSentinelsToRemain(root, external);
+  });
+});
+
+describe('TSone library build', () => {
+  it('bundles a library with external dependencies and skips types when disabled', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'tsone-cli-lib-'));
+    roots.push(root);
+    mkdirSync(join(root, 'src'));
+    writeFileSync(join(root, 'src/index.ts'), 'export const value = 1;');
+    writeFileSync(
+      join(root, 'tsone.config.ts'),
+      [
+        'export default {',
+        '  library: {',
+        "    entry: 'src/index.ts',",
+        "    outDir: 'lib-dist',",
+        "    external: ['@geektech/tsone'],",
+        '    dts: false,',
+        '  },',
+        '};',
+      ].join('\n')
+    );
+
+    let captured: Record<string, unknown> | undefined;
+    const originalBuild = Bun.build;
+    Bun.build = (async (options) => {
+      captured = options as unknown as Record<string, unknown>;
+      const entryPath = join(root, 'lib-dist', 'index.js');
+      mkdirSync(join(root, 'lib-dist'), { recursive: true });
+      writeFileSync(entryPath, 'export const value = 1;');
+      return {
+        success: true,
+        logs: [],
+        outputs: [
+          createBuildOutput(
+            entryPath,
+            'export const value = 1;',
+            'entry-point',
+            'text/javascript;charset=utf-8'
+          ),
+        ],
+      };
+    }) as typeof Bun.build;
+    restorers.push(() => {
+      Bun.build = originalBuild;
+    });
+
+    const result = await build({ root, library: true });
+
+    expect(result.outDir).toBe(join(root, 'lib-dist'));
+    expect(captured?.entrypoints).toEqual([join(root, 'src/index.ts')]);
+    expect(captured?.external).toEqual(['@geektech/tsone']);
+    expect(captured?.splitting).toBe(true);
+    expect(captured?.sourcemap).toBe('linked');
+    expect(captured?.minify).toBe(true);
+    expect(existsSync(join(root, 'lib-dist', 'index.js'))).toBe(true);
+  });
+
+  it('rejects a library build when the project has no library config', async () => {
+    const root = makeRoot();
+    await expect(build({ root, library: true })).rejects.toThrow(
+      'TSone library build requires config.library'
+    );
+  });
+
+  it('runs tsc for declaration types and fails the build on a bad tsconfig', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'tsone-cli-lib-dts-'));
+    roots.push(root);
+    mkdirSync(join(root, 'src'));
+    writeFileSync(join(root, 'src/index.ts'), 'export const value = 1;');
+    writeFileSync(
+      join(root, 'tsone.config.ts'),
+      [
+        'export default {',
+        '  library: {',
+        "    entry: 'src/index.ts',",
+        "    tsconfigs: ['missing-tsconfig.json'],",
+        '    dts: true,',
+        '  },',
+        '};',
+      ].join('\n')
+    );
+
+    await expect(build({ root, library: true })).rejects.toThrow(
+      /tsc --project .* failed with exit code/
+    );
   });
 });

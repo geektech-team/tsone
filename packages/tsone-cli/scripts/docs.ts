@@ -1,77 +1,60 @@
-import {
-  access,
-  lstat,
-  mkdir,
-  readFile,
-  readdir,
-  realpath,
-  rm,
-  writeFile,
-} from 'node:fs/promises';
+import { access, lstat, mkdir, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import {
-  dirname,
-  extname,
-  isAbsolute,
-  join,
-  normalize,
-  parse,
-  relative,
-  resolve,
-  sep,
-} from 'node:path';
+import { dirname, extname, isAbsolute, join, normalize, parse, relative, resolve, sep } from 'node:path';
 import { Window } from 'happy-dom';
-import { createOneDocsPageApp } from '../docs/app/app';
+import { createCliDocsPageApp } from '../docs/app/app';
 import {
-  normalizeOneDocBasePath,
-  setOneDocBasePath,
-  stripOneDocBasePath,
-  withOneDocBasePath,
+  normalizeCliDocBasePath,
+  setCliDocBasePath,
+  stripCliDocBasePath,
+  withCliDocBasePath,
 } from '../docs/app/base';
 import {
-  normalizeOneDocPath,
-  ONE_DOC_DEFAULT_LOCALE,
-  ONE_DOC_LOCALES,
-  oneDocPages,
-  type OneDocLocale,
+  CLI_DOC_DEFAULT_LOCALE,
+  CLI_DOC_LOCALES,
+  cliDocPages,
+  normalizeCliDocPath,
+  type CliDocLocale,
 } from '../docs/app/content';
 
-export interface OneDocsBuildOptions {
+export interface CliDocsBuildOptions {
   outDir?: string;
   basePath?: string;
 }
 
-export interface OneDocsBuildResult {
+export interface CliDocsBuildResult {
   outDir: string;
   pagesBuilt: number;
   assetsBuilt: string[];
 }
 
-export interface OneDocsServerOptions {
+export interface CliDocsServerOptions {
   hostname: string;
   port: number;
   outDir: string;
   basePath?: string;
 }
 
-const PACKAGE_ROOT = join(import.meta.dir, '..');
-const REPOSITORY_ROOT = resolve(PACKAGE_ROOT, '../..');
+const PACKAGE_ROOT = resolve(import.meta.dir, '..');
+const REPOSITORY_ROOT = resolve(PACKAGE_ROOT, '..', '..');
 const DEFAULT_OUT_DIR = join(PACKAGE_ROOT, 'docs/dist');
-const CLIENT_ASSET_NAME = 'one-docs-client.js';
-const ONE_DOCS_BUILD_MARKER = '.one-docs-build';
-const ONE_DOCS_BUILD_MARKER_CONTENT = '@geektech/one docs build output\n';
-const UNSAFE_OUTPUT_DIRECTORY_MESSAGE = 'Unsafe One UI docs output directory';
+const CLIENT_ASSET_NAME = 'cli-docs-client.js';
+const CLI_DOCS_BUILD_MARKER = '.cli-docs-build';
+const CLI_DOCS_BUILD_MARKER_CONTENT = '@geektech/tsone-cli docs build output\n';
+const UNSAFE_OUTPUT_DIRECTORY_MESSAGE =
+  'Unsafe TSone CLI docs output directory';
 const TRUSTED_SYMLINK_ANCESTORS = [resolve(tmpdir())];
+
 let clientBundlePromise: Promise<string> | undefined;
 
-export function routeToOneDocsOutputPath(
+export function routeToCliDocsOutputPath(
   route: string,
-  locale: OneDocLocale,
+  locale: CliDocLocale,
   outDir: string,
   basePath = ''
 ): string {
-  const normalizedRoute = normalizeOneDocPath(
-    stripOneDocBasePath(route, normalizeOneDocBasePath(basePath))
+  const normalizedRoute = normalizeCliDocPath(
+    stripCliDocBasePath(route, normalizeCliDocBasePath(basePath))
   );
   if (normalizedRoute === '/') {
     return join(outDir, locale, 'index.html');
@@ -80,42 +63,42 @@ export function routeToOneDocsOutputPath(
   return join(outDir, locale, normalizedRoute.slice(1, -1), 'index.html');
 }
 
-export async function buildOneDocs(
-  options: OneDocsBuildOptions = {}
-): Promise<OneDocsBuildResult> {
-  const outDir = await assertSafeOneDocsOutputDirectory(
+export async function buildCliDocs(
+  options: CliDocsBuildOptions = {}
+): Promise<CliDocsBuildResult> {
+  const outDir = await assertSafeCliDocsOutputDirectory(
     options.outDir ?? DEFAULT_OUT_DIR
   );
-  const basePath = normalizeOneDocBasePath(options.basePath ?? '');
+  const basePath = normalizeCliDocBasePath(options.basePath ?? '');
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
   await writeFile(
-    join(outDir, ONE_DOCS_BUILD_MARKER),
-    ONE_DOCS_BUILD_MARKER_CONTENT
+    join(outDir, CLI_DOCS_BUILD_MARKER),
+    CLI_DOCS_BUILD_MARKER_CONTENT
   );
   await mkdir(join(outDir, 'assets'), { recursive: true });
 
   const assetsBuilt = await buildClientAsset(outDir);
 
-  for (const locale of ONE_DOC_LOCALES) {
-    for (const page of oneDocPages) {
+  for (const locale of CLI_DOC_LOCALES) {
+    for (const page of cliDocPages) {
       let html: string;
 
       // The base path is only needed during synchronous rendering. Restore it
       // right after so concurrent processes never observe a stale prefix.
-      setOneDocBasePath(basePath);
+      setCliDocBasePath(basePath);
       try {
         installBuildDom(localeHref(page.path, locale));
-        html = createOneDocsPageApp(
+        html = createCliDocsPageApp(
           page,
-          oneDocPages,
+          cliDocPages,
           locale
         ).renderHtmlDocument();
       } finally {
-        setOneDocBasePath('');
+        setCliDocBasePath('');
       }
 
-      const outputPath = routeToOneDocsOutputPath(
+      const outputPath = routeToCliDocsOutputPath(
         page.path,
         locale,
         outDir,
@@ -128,42 +111,44 @@ export async function buildOneDocs(
 
   await writeFile(
     join(outDir, 'index.html'),
-    renderRootRedirect(ONE_DOC_DEFAULT_LOCALE, basePath)
+    renderRootRedirect(CLI_DOC_DEFAULT_LOCALE, basePath)
   );
 
   return {
     outDir,
-    pagesBuilt: oneDocPages.length * ONE_DOC_LOCALES.length,
+    pagesBuilt: cliDocPages.length * CLI_DOC_LOCALES.length,
     assetsBuilt,
   };
 }
 
-function localeHref(path: string, locale: OneDocLocale): string {
-  return withOneDocBasePath(`/${locale}${path}`);
+function localeHref(path: string, locale: CliDocLocale): string {
+  return withCliDocBasePath(`/${locale}${path}`);
 }
 
 function renderRootRedirect(
-  locale: OneDocLocale,
+  locale: CliDocLocale,
   basePath = ''
 ): string {
-  const target = withOneDocBasePath(`/${locale}/`, normalizeOneDocBasePath(basePath));
+  const target = withCliDocBasePath(
+    `/${locale}/`,
+    normalizeCliDocBasePath(basePath)
+  );
 
-  return [
-    '<!doctype html>',
-    '<html lang="zh-CN">',
-    '  <head>',
-    '    <meta charset="utf-8" />',
-    `    <meta http-equiv="refresh" content="0; url=${target}" />`,
-    '    <title>One UI</title>',
-    '  </head>',
-    '  <body>',
-    `    <a href="${target}">One UI</a>`,
-    '  </body>',
-    '</html>',
-  ].join('\n');
+  return `<!doctype html>
+<html lang="${locale === 'en' ? 'en' : 'zh-CN'}">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="0; url=${target}" />
+    <title>TSone CLI</title>
+  </head>
+  <body>
+    <a href="${target}">TSone CLI</a>
+  </body>
+</html>
+`;
 }
 
-export async function assertSafeOneDocsOutputDirectory(
+export async function assertSafeCliDocsOutputDirectory(
   outDir: string
 ): Promise<string> {
   try {
@@ -221,7 +206,7 @@ export async function assertSafeOneDocsOutputDirectory(
       if (
         resolvedOutDir !== resolve(DEFAULT_OUT_DIR) &&
         entries.length > 0 &&
-        !(await hasOneDocsBuildMarker(resolvedOutDir))
+        !(await hasCliDocsBuildMarker(resolvedOutDir))
       ) {
         throw new Error(UNSAFE_OUTPUT_DIRECTORY_MESSAGE);
       }
@@ -259,15 +244,10 @@ async function assertNoUnexpectedSymlinkComponents(
 
 async function findExistingAncestor(path: string): Promise<string> {
   let candidate = path;
-
   while (true) {
-    try {
-      await lstat(candidate);
+    const candidateStat = await lstatIfExists(candidate);
+    if (candidateStat) {
       return candidate;
-    } catch (error: unknown) {
-      if (!isMissingPathError(error)) {
-        throw error;
-      }
     }
 
     const parent = parse(candidate).dir;
@@ -314,23 +294,23 @@ function isPathInsideOrSame(rootPath: string, candidatePath: string): boolean {
   );
 }
 
-async function hasOneDocsBuildMarker(outDir: string): Promise<boolean> {
-  const markerPath = join(outDir, ONE_DOCS_BUILD_MARKER);
+async function hasCliDocsBuildMarker(outDir: string): Promise<boolean> {
+  const markerPath = join(outDir, CLI_DOCS_BUILD_MARKER);
   const markerStat = await lstatIfExists(markerPath);
   if (!markerStat?.isFile() || markerStat.isSymbolicLink()) {
     return false;
   }
 
-  return (await readFile(markerPath, 'utf8')) === ONE_DOCS_BUILD_MARKER_CONTENT;
+  return (await readFile(markerPath, 'utf8')) === CLI_DOCS_BUILD_MARKER_CONTENT;
 }
 
-export async function startOneDocsServer(
-  options: OneDocsServerOptions = resolveOneDocsServerOptions()
+export async function startCliDocsServer(
+  options: CliDocsServerOptions = resolveCliDocsServerOptions()
 ): Promise<ReturnType<typeof Bun.serve>> {
   const hasIndex = await fileExists(join(options.outDir, 'index.html'));
-  const isManagedBuild = await hasOneDocsBuildMarker(options.outDir);
+  const isManagedBuild = await hasCliDocsBuildMarker(options.outDir);
   if (!hasIndex || isManagedBuild) {
-    await buildOneDocs({
+    await buildCliDocs({
       outDir: options.outDir,
       basePath: options.basePath,
     });
@@ -341,10 +321,10 @@ export async function startOneDocsServer(
     hostname: options.hostname,
     port: options.port,
     fetch: (request) =>
-      serveOneDocsFile(request, options.outDir, realOutDir, options.basePath),
+      serveCliDocsFile(request, options.outDir, realOutDir, options.basePath),
   });
 
-  console.log(`One UI docs: http://${options.hostname}:${server.port}/`);
+  console.log(`TSone CLI docs: http://${options.hostname}:${server.port}/`);
   return server;
 }
 
@@ -382,7 +362,7 @@ async function createClientBundle(): Promise<string> {
 
 function installBuildDom(route: string): void {
   const window = new Window({
-    url: `http://127.0.0.1${normalizeOneDocPath(route)}`,
+    url: `http://127.0.0.1${normalizeCliDocPath(route)}`,
   });
   Object.assign(window, {
     Error,
@@ -437,17 +417,17 @@ async function fileExists(filePath: string): Promise<boolean> {
   }
 }
 
-async function serveOneDocsFile(
+async function serveCliDocsFile(
   request: Request,
   outDir: string,
   realOutDir: string,
   basePath = ''
 ): Promise<Response> {
-  const base = normalizeOneDocBasePath(basePath);
+  const base = normalizeCliDocBasePath(basePath);
 
   let pathname: string;
   try {
-    pathname = stripOneDocBasePath(
+    pathname = stripCliDocBasePath(
       decodeURIComponent(new URL(request.url).pathname),
       base
     );
@@ -555,15 +535,15 @@ function readOption(args: string[], name: string): string | undefined {
 function parsePort(value: string): number {
   const port = Number(value);
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
-    throw new Error(`Invalid One UI docs server port: ${value}`);
+    throw new Error(`Invalid TSone CLI docs server port: ${value}`);
   }
   return port;
 }
 
-function resolveOneDocsServerOptions(
+function resolveCliDocsServerOptions(
   argv: string[] = Bun.argv,
   env: Record<string, string | undefined> = process.env
-): OneDocsServerOptions {
+): CliDocsServerOptions {
   const args = argv.slice(2);
   return {
     hostname: readOption(args, '--host') ?? env.HOST ?? '127.0.0.1',
@@ -583,9 +563,9 @@ if (import.meta.main) {
       DEFAULT_OUT_DIR;
     const basePath =
       readOption(args, '--base') ?? process.env.DOCS_BASE_PATH ?? '';
-    const result = await buildOneDocs({ outDir, basePath });
-    console.log(`One UI docs built at ${result.outDir}`);
+    const result = await buildCliDocs({ outDir, basePath });
+    console.log(`TSone CLI docs built at ${result.outDir}`);
   } else {
-    await startOneDocsServer(resolveOneDocsServerOptions());
+    await startCliDocsServer(resolveCliDocsServerOptions());
   }
 }

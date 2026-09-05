@@ -8,6 +8,8 @@ export type {
   BuildOptions,
   BuildResult,
   BuildConfig,
+  LibraryConfig,
+  ResolvedLibraryConfig,
   ProxyOptions,
   ResolveConfigOptions,
   ResolvedConfig,

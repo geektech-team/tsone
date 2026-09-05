@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'bun:test';
+import type { AppDocumentRenderOptions } from '@geektech/tsone';
 import { createOneDocsPageApp } from '../docs/app/app';
 import { oneDocPages } from '../docs/app/content';
 
-function render(path: string): string {
+function render(
+  path: string,
+  options?: AppDocumentRenderOptions
+): string {
   const page = oneDocPages.find((candidate) => candidate.path === path);
   if (!page) throw new Error(`Missing page: ${path}`);
-  return createOneDocsPageApp(page, oneDocPages).renderHtmlDocument();
+  return createOneDocsPageApp(page, oneDocPages).renderHtmlDocument(options);
 }
 
 describe('One UI docs app', () => {
@@ -31,7 +35,26 @@ describe('One UI docs app', () => {
     expect(html).toContain('>设计理念</a>');
     expect(html).toContain('>组件</a>');
     expect(html).toContain('>GitHub</a>');
-    expect(html).toContain('/assets/one-docs-client.js');
+    // 客户端 bundle 的 script 由 tsone-cli 构建时注入，SSR 骨架不自带。
+    expect(html).not.toContain('<script type="module"');
+  });
+
+  it('merges CLI-injected head and scripts into the rendered document', () => {
+    const html = render('/components/button/', {
+      head: [
+        {
+          tag: 'link',
+          attributes: { rel: 'stylesheet', href: '/assets/one-docs.css' },
+        },
+      ],
+      scripts: [{ type: 'module', src: '/assets/one-docs-client.js' }],
+    });
+    expect(html).toContain(
+      '<link rel="stylesheet" href="/assets/one-docs.css">'
+    );
+    expect(html).toContain(
+      '<script type="module" src="/assets/one-docs-client.js">'
+    );
   });
 
   it('renders a default theme switch and a no-flash bootstrap script', () => {

@@ -16,7 +16,9 @@
     "build": "bun scripts/build.ts",
     "build:types": "bunx tsc --project tsconfig.build.json",
     "lint": "eslint . --ext .ts",
-    "test": "bun test"
+    "test": "bun test",
+    "docs": "bun scripts/docs.ts",
+    "docs:build": "bun scripts/docs.ts --build"
   },
   "dependencies": {
     "@geektech/tsone": "workspace:*"
@@ -31,6 +33,10 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "homepage": "https://geektech-team.github.io/tsone/cli/",
+  "bugs": {
+    "url": "https://github.com/geektech-team/tsone/issues"
   },
   "repository": {
     "type": "git",

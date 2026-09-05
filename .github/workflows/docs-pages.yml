@@ -6,6 +6,7 @@ on:
     paths:
       - 'packages/tsone/**'
       - 'packages/one/**'
+      - 'packages/tsone-cli/**'
       - '.github/workflows/**'
   workflow_dispatch:
 
@@ -48,6 +49,12 @@ jobs:
         # https://<owner>.github.io/tsone/one/). The out-dir must be absolute
         # because the script resolves it against the package working dir.
         run: bun run docs:one:build -- --base=/${{ github.event.repository.name }}/one/ --out-dir=${{ github.workspace }}/packages/tsone/docs/dist/one
+
+      - name: Build TSone CLI documentation
+        # CLI docs are published under the same Pages site, merged into
+        # packages/tsone/docs/dist/cli/ (e.g.
+        # https://<owner>.github.io/tsone/cli/).
+        run: bun run docs:cli:build -- --base=/${{ github.event.repository.name }}/cli/ --out-dir=${{ github.workspace }}/packages/tsone/docs/dist/cli
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

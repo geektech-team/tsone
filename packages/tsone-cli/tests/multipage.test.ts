@@ -16,6 +16,7 @@ import type { UserConfig } from '../src/types';
 
 const roots: string[] = [];
 const servers: Array<ReturnType<typeof Bun.serve>> = [];
+const restorers: Array<() => void> = [];
 
 function projectEntry(title: string): string {
   return `
@@ -67,6 +68,10 @@ function serverUrl(server: ReturnType<typeof Bun.serve>): string {
 }
 
 afterEach(() => {
+  restorers
+    .splice(0)
+    .reverse()
+    .forEach((restore) => restore());
   servers.splice(0).forEach((server) => server.stop(true));
   roots
     .splice(0)
@@ -193,6 +198,97 @@ describe('TSone CLI multi-page', () => {
         join(root, 'dist', 'about.js'),
       ])
     );
+  });
+
+  it('builds directory pages and deduplicates a shared entry into one bundle', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'tsone-cli-directory-'));
+    roots.push(root);
+    mkdirSync(join(root, 'src'));
+    writeFileSync(join(root, 'src/main.ts'), projectEntry('Home Page'));
+    writeFileSync(join(root, 'src/shared.ts'), projectEntry('Shared Page'));
+    writeFileSync(
+      join(root, 'tsone.config.ts'),
+      `export default { pages: { '/about': 'src/shared.ts', '/docs/guide': 'src/shared.ts' }, build: { directoryPages: true } };`
+    );
+    let buildCalls = 0;
+    const originalBuild = Bun.build;
+    Bun.build = (async () => {
+      buildCalls += 1;
+      const entryPath = join(root, 'dist', 'shared.js');
+      mkdirSync(join(root, 'dist'), { recursive: true });
+      writeFileSync(entryPath, 'export const shared = true;');
+      return {
+        success: true,
+        logs: [],
+        outputs: [
+          Object.assign(
+            new Blob(['export const shared = true;'], {
+              type: 'text/javascript;charset=utf-8',
+            }),
+            {
+              path: entryPath,
+              kind: 'entry-point',
+              hash: 'shared',
+              sourcemap: null,
+            }
+          ),
+        ],
+      };
+    }) as unknown as typeof Bun.build;
+    restorers.push(() => {
+      Bun.build = originalBuild;
+    });
+
+    const result = await build({ root });
+
+    expect(buildCalls).toBe(2);
+    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(true);
+    expect(existsSync(join(root, 'dist', 'about', 'index.html'))).toBe(true);
+    expect(existsSync(join(root, 'dist', 'docs', 'guide', 'index.html'))).toBe(
+      true
+    );
+    expect(result.assetsBuilt).toEqual(
+      expect.arrayContaining([
+        join(root, 'dist', 'about', 'index.html'),
+        join(root, 'dist', 'docs', 'guide', 'index.html'),
+      ])
+    );
+  });
+
+  it('injects the page route and base path into the SSR document URL', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'tsone-cli-route-'));
+    roots.push(root);
+    mkdirSync(join(root, 'src'));
+    writeFileSync(
+      join(root, 'src/main.ts'),
+      `
+        export const app = {
+          renderHtmlDocument() {
+            return '<!doctype html><html><body>' +
+              window.location.pathname + '</body></html>';
+          },
+        };
+      `
+    );
+    writeFileSync(
+      join(root, 'tsone.config.ts'),
+      `
+        export default {
+          pages: { '/zh/guide': 'src/main.ts' },
+          build: { basePath: '/tsone/one', directoryPages: true },
+        };
+      `
+    );
+
+    await build({ root });
+
+    const rootHtml = readFileSync(join(root, 'dist', 'index.html'), 'utf8');
+    const guideHtml = readFileSync(
+      join(root, 'dist', 'zh', 'guide', 'index.html'),
+      'utf8'
+    );
+    expect(rootHtml).toContain('/tsone/one/');
+    expect(guideHtml).toContain('/tsone/one/zh/guide');
   });
 });
 

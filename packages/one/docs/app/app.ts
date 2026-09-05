@@ -1,5 +1,6 @@
 import {
   renderHtmlDocument,
+  type AppDocumentRenderOptions,
   type ComponentConstructor,
   type VNode,
 } from '@geektech/tsone';
@@ -10,12 +11,12 @@ import {
   type OneDocLocale,
   type OneDocPage,
 } from './content';
-import { getOneDocBasePath, withOneDocBasePath } from './base';
+import { getOneDocBasePath } from './base';
 import { oneDocsStyles } from './styles';
 import { ONE_DOCS_THEME_KEY } from './theme';
 
 export interface OneDocsPageRenderer {
-  renderHtmlDocument(): string;
+  renderHtmlDocument(options?: AppDocumentRenderOptions): string;
 }
 
 const ONE_DOCS_THEME_BOOTSTRAP = `<script>
@@ -45,7 +46,9 @@ export function createOneDocsPageApp(
   } satisfies VNode;
 
   return {
-    renderHtmlDocument: () =>
+    // 客户端 bundle 的 script/CSS 由 tsone-cli 构建时通过 options 注入，
+    // 这里只负责文档自身的 SSR 骨架。
+    renderHtmlDocument: (options = {}) =>
       injectThemeBootstrap(
         renderHtmlDocument({
           lang: locale === 'en' ? 'en' : 'zh-CN',
@@ -59,12 +62,8 @@ export function createOneDocsPageApp(
           description: localize(page.description, locale),
           body,
           styles: oneDocsStyles,
-          scripts: [
-            {
-              type: 'module',
-              src: withOneDocBasePath('/assets/one-docs-client.js'),
-            },
-          ],
+          head: options.head,
+          scripts: options.scripts,
         })
       ),
   };
