@@ -1,8 +1,7 @@
 import { access, lstat, mkdir, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, extname, isAbsolute, join, normalize, parse, relative, resolve, sep } from 'node:path';
-import { Window } from 'happy-dom';
-import { createCliDocsPageApp } from '../docs/app/app';
+import { createDomWindow, installDomGlobals } from '@geektech/tsone/dom';import { createCliDocsPageApp } from '../docs/app/app';
 import {
   normalizeCliDocBasePath,
   setCliDocBasePath,
@@ -361,10 +360,10 @@ async function createClientBundle(): Promise<string> {
 }
 
 function installBuildDom(route: string): void {
-  const window = new Window({
+  const windowRef = createDomWindow({
     url: `http://127.0.0.1${normalizeCliDocPath(route)}`,
   });
-  Object.assign(window, {
+  Object.assign(windowRef, {
     Error,
     EvalError,
     RangeError,
@@ -374,38 +373,7 @@ function installBuildDom(route: string): void {
     URIError,
   });
 
-  const keys = [
-    'window',
-    'document',
-    'Node',
-    'Text',
-    'Comment',
-    'Element',
-    'HTMLElement',
-    'HTMLInputElement',
-    'HTMLTextAreaElement',
-    'HTMLSelectElement',
-    'HTMLButtonElement',
-    'DocumentFragment',
-    'Event',
-    'MouseEvent',
-    'KeyboardEvent',
-    'CustomEvent',
-    'EventTarget',
-    'history',
-    'location',
-    'navigator',
-    'localStorage',
-  ] as const;
-  const windowRecord = window as unknown as Record<string, unknown>;
-
-  keys.forEach((key) => {
-    Object.defineProperty(globalThis, key, {
-      configurable: true,
-      writable: true,
-      value: windowRecord[key],
-    });
-  });
+  installDomGlobals(windowRef);
 }
 
 async function fileExists(filePath: string): Promise<boolean> {
