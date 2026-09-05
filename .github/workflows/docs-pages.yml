@@ -37,6 +37,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Build framework package
+        # Docs builds render through tsone-cli (source mode in CI, since dist
+        # is gitignored), which imports @geektech/tsone/dom and friends from
+        # the framework dist. Build the framework first.
+        run: bun run --cwd packages/tsone build
+
       - name: Build documentation
         # The docs site is served from a GitHub Pages project sub-path
         # (e.g. https://<owner>.github.io/tsone/), so the base path is the
@@ -46,15 +52,23 @@ jobs:
       - name: Build One UI documentation
         # One docs are published under the same Pages site, merged into
         # packages/tsone/docs/dist/one/ (e.g.
-        # https://<owner>.github.io/tsone/one/). The out-dir must be absolute
-        # because the script resolves it against the package working dir.
-        run: bun run docs:one:build -- --base=/${{ github.event.repository.name }}/one/ --out-dir=${{ github.workspace }}/packages/tsone/docs/dist/one
+        # https://<owner>.github.io/tsone/one/).
+        run: bun run docs:one:build -- --base=/${{ github.event.repository.name }}/one/
 
       - name: Build TSone CLI documentation
         # CLI docs are published under the same Pages site, merged into
         # packages/tsone/docs/dist/cli/ (e.g.
         # https://<owner>.github.io/tsone/cli/).
-        run: bun run docs:cli:build -- --base=/${{ github.event.repository.name }}/cli/ --out-dir=${{ github.workspace }}/packages/tsone/docs/dist/cli
+        run: bun run docs:cli:build -- --base=/${{ github.event.repository.name }}/cli/
+
+      - name: Merge documentation into the Pages site
+        # tsone build keeps its output inside the project root, so the One docs
+        # land in packages/one/docs/dist and the CLI docs in
+        # packages/tsone-cli/docs/dist. Merge both into the Pages deploy dir.
+        run: |
+          mkdir -p packages/tsone/docs/dist/one packages/tsone/docs/dist/cli
+          cp -r packages/one/docs/dist/. packages/tsone/docs/dist/one/
+          cp -r packages/tsone-cli/docs/dist/. packages/tsone/docs/dist/cli/
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

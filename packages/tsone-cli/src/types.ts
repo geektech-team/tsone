@@ -63,6 +63,8 @@ export interface ResolveConfigOptions {
   host?: string;
   port?: number;
   outDir?: string;
+  /** 部署基础路径前缀（如 /tsone/one），覆盖 config.build.basePath。 */
+  base?: string;
 }
 
 export interface BuildOptions extends ResolveConfigOptions {

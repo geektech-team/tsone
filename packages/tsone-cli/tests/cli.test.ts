@@ -124,6 +124,20 @@ describe('TSone CLI arguments', () => {
     );
   });
 
+  it('parses the base path flag for build and dev', () => {
+    expect(parseCliArgs(['build', '--base', '/tsone/one/'])).toEqual({
+      command: 'build',
+      base: '/tsone/one/',
+    });
+    expect(parseCliArgs(['dev', '--base=/tsone/'])).toEqual({
+      command: 'dev',
+      base: '/tsone/',
+    });
+    expect(() => parseCliArgs(['create', '--base', '/x'])).toThrow(
+      'Option --base is not supported for create'
+    );
+  });
+
   it('rejects invalid commands and options with both usage lines', () => {
     expect(() => parseCliArgs(['preview'])).toThrow('Unknown command: preview');
     expect(() => parseCliArgs(['dev', '--open'])).toThrow(
@@ -148,7 +162,7 @@ describe('TSone CLI arguments', () => {
       parseCliArgs(['build', '--out-dir', 'one', '--out-dir=two'])
     ).toThrow('Duplicate option: --out-dir');
     expect(() => parseCliArgs(['dev', '--open'])).toThrow(
-      'tsone dev [--host <host>] [--port <port>] [--no-watch]\n  tsone build [--out-dir <path>]'
+      'tsone dev [--host <host>] [--port <port>] [--base <path>] [--no-watch]\n  tsone build [--out-dir <path>] [--base <path>] [--library]'
     );
   });
 

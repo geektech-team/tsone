@@ -185,6 +185,9 @@ function toInlineOverrides(options: ResolveConfigOptions): UserConfig {
   if (options.outDir !== undefined) {
     build.outDir = options.outDir;
   }
+  if (options.base !== undefined) {
+    build.basePath = options.base;
+  }
 
   return {
     ...(Object.keys(server).length > 0 ? { server } : {}),

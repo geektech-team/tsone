@@ -5,8 +5,8 @@ import { startDevServer } from './server';
 const USAGE = [
   'Usage:',
   '  tsone create',
-  '  tsone dev [--host <host>] [--port <port>] [--no-watch]',
-  '  tsone build [--out-dir <path>] [--library]',
+  '  tsone dev [--host <host>] [--port <port>] [--base <path>] [--no-watch]',
+  '  tsone build [--out-dir <path>] [--base <path>] [--library]',
 ].join('\n');
 
 const FLAG_OPTIONS = new Set(['--no-watch', '--library']);
@@ -19,12 +19,14 @@ export interface DevCliArgs {
   command: 'dev';
   host?: string;
   port?: number;
+  base?: string;
   noWatch?: boolean;
 }
 
 export interface BuildCliArgs {
   command: 'build';
   outDir?: string;
+  base?: string;
   library?: boolean;
 }
 
@@ -76,6 +78,7 @@ export function parseCliArgs(argv: string[]): CliArgs {
       command,
       ...(options.has('--host') ? { host: options.get('--host') } : {}),
       ...(port === undefined ? {} : { port: parsePort(port) }),
+      ...(options.has('--base') ? { base: options.get('--base') } : {}),
       ...(options.has('--no-watch') ? { noWatch: true } : {}),
     };
   }
@@ -83,6 +86,7 @@ export function parseCliArgs(argv: string[]): CliArgs {
   return {
     command,
     ...(options.has('--out-dir') ? { outDir: options.get('--out-dir') } : {}),
+    ...(options.has('--base') ? { base: options.get('--base') } : {}),
     ...(options.has('--library') ? { library: true } : {}),
   };
 }
@@ -104,6 +108,7 @@ export async function runCli(
     const server = await startDevServer({
       ...(args.host === undefined ? {} : { host: args.host }),
       ...(args.port === undefined ? {} : { port: args.port }),
+      ...(args.base === undefined ? {} : { base: args.base }),
       watch: !args.noWatch,
     });
     console.log(
@@ -113,9 +118,9 @@ export async function runCli(
   }
 
   const result = await build(
-    args.outDir === undefined && !args.library
+    args.outDir === undefined && args.base === undefined && !args.library
       ? {}
-      : { outDir: args.outDir, library: args.library }
+      : { outDir: args.outDir, base: args.base, library: args.library }
   );
   console.log(
     `TSone build completed: ${result.outDir} (${result.assetsBuilt.length} assets)`
@@ -140,7 +145,8 @@ function assertKnownOption(name: string): void {
     name === '--port' ||
     name === '--out-dir' ||
     name === '--no-watch' ||
-    name === '--library'
+    name === '--library' ||
+    name === '--base'
   ) {
     return;
   }
@@ -155,9 +161,12 @@ function assertSupportedOption(
   const supported =
     (command === 'create' && false) ||
     (command === 'dev' &&
-      (name === '--host' || name === '--port' || name === '--no-watch')) ||
+      (name === '--host' ||
+        name === '--port' ||
+        name === '--base' ||
+        name === '--no-watch')) ||
     (command === 'build' &&
-      (name === '--out-dir' || name === '--library'));
+      (name === '--out-dir' || name === '--base' || name === '--library'));
 
   if (!supported) {
     throw parseError(`Option ${name} is not supported for ${command}`);

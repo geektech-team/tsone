@@ -141,6 +141,12 @@ describe('TSone CLI config', () => {
     );
   });
 
+  it('overrides build.basePath from the base option', async () => {
+    const root = makeRoot();
+    const result = await resolveConfig({ root, base: '/tsone/one/' });
+    expect(result.build.basePath).toBe('/tsone/one');
+  });
+
   it('resolves library config with defaults', async () => {
     const root = makeRoot();
     const result = await resolveConfig({

@@ -22,10 +22,11 @@ reactivity, class-based components, strategy-driven rendering, and routing.
 
 ## Repository Structure
 
-This repository is a Bun workspace monorepo with two published packages:
-`packages/tsone/` contains the browser framework `@geektech/tsone`, and
-`packages/tsone-cli/` contains the Bun-native development tooling
-`@geektech/tsone-cli`. Standalone example projects live in the root
+This repository is a Bun workspace monorepo with three published packages:
+`packages/tsone/` contains the browser framework `@geektech/tsone`,
+`packages/one/` contains the component library `@geektech/one` built on the
+framework, and `packages/tsone-cli/` contains the Bun-native development
+tooling `@geektech/tsone-cli`. Standalone example projects live in the root
 `playground/` directory.
 
 ## Installation
