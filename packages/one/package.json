@@ -36,6 +36,10 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "homepage": "https://geektech-team.github.io/tsone/one/",
+  "bugs": {
+    "url": "https://github.com/geektech-team/tsone/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/geektech-team/tsone.git",

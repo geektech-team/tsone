@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'packages/tsone/**'
+      - 'packages/one/**'
       - '.github/workflows/**'
   workflow_dispatch:
 
@@ -40,6 +41,13 @@ jobs:
         # (e.g. https://<owner>.github.io/tsone/), so the base path is the
         # repository name.
         run: bun run docs:build -- --base=/${{ github.event.repository.name }}/
+
+      - name: Build One UI documentation
+        # One docs are published under the same Pages site, merged into
+        # packages/tsone/docs/dist/one/ (e.g.
+        # https://<owner>.github.io/tsone/one/). The out-dir must be absolute
+        # because the script resolves it against the package working dir.
+        run: bun run docs:one:build -- --base=/${{ github.event.repository.name }}/one/ --out-dir=${{ github.workspace }}/packages/tsone/docs/dist/one
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

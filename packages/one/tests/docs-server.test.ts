@@ -79,6 +79,37 @@ describe('One UI docs server', () => {
     }
   });
 
+  it('serves documentation under a configured base path', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'one-docs-server-base-'));
+    await buildOneDocs({ outDir, basePath: '/tsone/one' });
+    const server = await startOneDocsServer({
+      hostname: '127.0.0.1',
+      port: 0,
+      outDir,
+      basePath: '/tsone/one',
+    });
+    const origin = `http://127.0.0.1:${server.port}`;
+
+    try {
+      const home = await fetch(`${origin}/tsone/one/`);
+      expect(home.status).toBe(200);
+      expect(await home.text()).toContain('/tsone/one/zh/');
+
+      const button = await fetch(`${origin}/tsone/one/zh/components/button/`);
+      expect(button.status).toBe(200);
+      expect(await button.text()).toContain('data-doc-base="/tsone/one"');
+
+      const client = await fetch(
+        `${origin}/tsone/one/assets/one-docs-client.js`
+      );
+      expect(client.status).toBe(200);
+      expect(client.headers.get('content-type')).toContain('text/javascript');
+    } finally {
+      server.stop(true);
+      rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
   it('falls back locale-agnostic doc routes to the default zh locale', async () => {
     const outDir = mkdtempSync(join(tmpdir(), 'one-docs-server-fallback-'));
     await buildOneDocs({ outDir });

@@ -113,6 +113,35 @@ describe('One UI docs build', () => {
     expect(buttonHtml).toContain('localStorage.getItem');
   });
 
+  it('builds pages with a base path prefix when configured', async () => {
+    const outDir = makeTemporaryDirectory('one-docs-base-');
+
+    const result = await buildOneDocs({ outDir, basePath: '/tsone/one' });
+
+    expect(result.pagesBuilt).toBe(86);
+
+    const homeHtml = readFileSync(join(outDir, 'index.html'), 'utf8');
+    expect(homeHtml).toContain('/tsone/one/zh/');
+
+    const zhHome = readFileSync(join(outDir, 'zh/index.html'), 'utf8');
+    expect(zhHome).toContain('data-doc-base="/tsone/one"');
+    expect(zhHome).toContain('href="/tsone/one/zh/');
+    expect(zhHome).toContain('src="/tsone/one/assets/one-docs-client.js"');
+
+    const enHome = readFileSync(join(outDir, 'en/index.html'), 'utf8');
+    expect(enHome).toContain('href="/tsone/one/en/');
+
+    const buttonHtml = readFileSync(
+      join(outDir, 'zh/components/button/index.html'),
+      'utf8'
+    );
+    expect(buttonHtml).toContain('href="/tsone/one/zh/components/button/"');
+
+    // The file layout stays under the output directory root (base is a URL
+    // prefix, not a directory).
+    expect(existsSync(join(outDir, 'tsone'))).toBe(false);
+  });
+
   it('allows new and empty custom directories and marks them as One-owned', async () => {
     const parentDir = makeTemporaryDirectory('one-docs-new-output-');
     const newOutDir = join(parentDir, 'new');

@@ -1,5 +1,6 @@
 import { createApp, type ComponentConstructor } from '@geektech/tsone';
 import type { OneDocLocale } from './content';
+import { readOneDocBaseFromDocument, setOneDocBasePath } from './base';
 import { setDemoLocale } from './demos/locale';
 import {
   isOneDocsTheme,
@@ -140,6 +141,7 @@ function mountLanguageSwitcher(): void {
 }
 
 export function mountOneDocsClient(): void {
+  setOneDocBasePath(readOneDocBaseFromDocument(document));
   setDemoLocale(resolveLocale());
   initThemeController();
   mountLanguageSwitcher();

@@ -4,6 +4,8 @@ One UI（`@geektech/one`）是面向 TSone 类组件框架的轻量级、无额�
 UI 组件库。TSone 是它的 peer dependency，使用 One UI 的应用必须同时安装
 TSone。
 
+**文档：** <https://geektech-team.github.io/tsone/one/>
+
 ## 安装
 
 ```bash

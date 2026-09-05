@@ -23,6 +23,12 @@ import {
 import { Window } from 'happy-dom';
 import { createOneDocsPageApp } from '../docs/app/app';
 import {
+  normalizeOneDocBasePath,
+  setOneDocBasePath,
+  stripOneDocBasePath,
+  withOneDocBasePath,
+} from '../docs/app/base';
+import {
   normalizeOneDocPath,
   ONE_DOC_DEFAULT_LOCALE,
   ONE_DOC_LOCALES,
@@ -32,6 +38,7 @@ import {
 
 export interface OneDocsBuildOptions {
   outDir?: string;
+  basePath?: string;
 }
 
 export interface OneDocsBuildResult {
@@ -44,6 +51,7 @@ export interface OneDocsServerOptions {
   hostname: string;
   port: number;
   outDir: string;
+  basePath?: string;
 }
 
 const PACKAGE_ROOT = join(import.meta.dir, '..');
@@ -59,9 +67,12 @@ let clientBundlePromise: Promise<string> | undefined;
 export function routeToOneDocsOutputPath(
   route: string,
   locale: OneDocLocale,
-  outDir: string
+  outDir: string,
+  basePath = ''
 ): string {
-  const normalizedRoute = normalizeOneDocPath(route);
+  const normalizedRoute = normalizeOneDocPath(
+    stripOneDocBasePath(route, normalizeOneDocBasePath(basePath))
+  );
   if (normalizedRoute === '/') {
     return join(outDir, locale, 'index.html');
   }
@@ -75,6 +86,7 @@ export async function buildOneDocs(
   const outDir = await assertSafeOneDocsOutputDirectory(
     options.outDir ?? DEFAULT_OUT_DIR
   );
+  const basePath = normalizeOneDocBasePath(options.basePath ?? '');
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
   await writeFile(
@@ -87,9 +99,28 @@ export async function buildOneDocs(
 
   for (const locale of ONE_DOC_LOCALES) {
     for (const page of oneDocPages) {
-      installBuildDom(localeHref(page.path, locale));
-      const html = createOneDocsPageApp(page, oneDocPages, locale).renderHtmlDocument();
-      const outputPath = routeToOneDocsOutputPath(page.path, locale, outDir);
+      let html: string;
+
+      // The base path is only needed during synchronous rendering. Restore it
+      // right after so concurrent processes never observe a stale prefix.
+      setOneDocBasePath(basePath);
+      try {
+        installBuildDom(localeHref(page.path, locale));
+        html = createOneDocsPageApp(
+          page,
+          oneDocPages,
+          locale
+        ).renderHtmlDocument();
+      } finally {
+        setOneDocBasePath('');
+      }
+
+      const outputPath = routeToOneDocsOutputPath(
+        page.path,
+        locale,
+        outDir,
+        basePath
+      );
       await mkdir(dirname(outputPath), { recursive: true });
       await writeFile(outputPath, html);
     }
@@ -97,7 +128,7 @@ export async function buildOneDocs(
 
   await writeFile(
     join(outDir, 'index.html'),
-    renderRootRedirect(ONE_DOC_DEFAULT_LOCALE)
+    renderRootRedirect(ONE_DOC_DEFAULT_LOCALE, basePath)
   );
 
   return {
@@ -108,11 +139,14 @@ export async function buildOneDocs(
 }
 
 function localeHref(path: string, locale: OneDocLocale): string {
-  return `/${locale}${path}`;
+  return withOneDocBasePath(`/${locale}${path}`);
 }
 
-function renderRootRedirect(locale: OneDocLocale): string {
-  const target = `/${locale}/`;
+function renderRootRedirect(
+  locale: OneDocLocale,
+  basePath = ''
+): string {
+  const target = withOneDocBasePath(`/${locale}/`, normalizeOneDocBasePath(basePath));
 
   return [
     '<!doctype html>',
@@ -296,14 +330,18 @@ export async function startOneDocsServer(
   const hasIndex = await fileExists(join(options.outDir, 'index.html'));
   const isManagedBuild = await hasOneDocsBuildMarker(options.outDir);
   if (!hasIndex || isManagedBuild) {
-    await buildOneDocs({ outDir: options.outDir });
+    await buildOneDocs({
+      outDir: options.outDir,
+      basePath: options.basePath,
+    });
   }
 
   const realOutDir = await realpath(options.outDir);
   const server = Bun.serve({
     hostname: options.hostname,
     port: options.port,
-    fetch: (request) => serveOneDocsFile(request, options.outDir, realOutDir),
+    fetch: (request) =>
+      serveOneDocsFile(request, options.outDir, realOutDir, options.basePath),
   });
 
   console.log(`One UI docs: http://${options.hostname}:${server.port}/`);
@@ -402,11 +440,17 @@ async function fileExists(filePath: string): Promise<boolean> {
 async function serveOneDocsFile(
   request: Request,
   outDir: string,
-  realOutDir: string
+  realOutDir: string,
+  basePath = ''
 ): Promise<Response> {
+  const base = normalizeOneDocBasePath(basePath);
+
   let pathname: string;
   try {
-    pathname = decodeURIComponent(new URL(request.url).pathname);
+    pathname = stripOneDocBasePath(
+      decodeURIComponent(new URL(request.url).pathname),
+      base
+    );
   } catch {
     return notFound();
   }
@@ -526,6 +570,7 @@ function resolveOneDocsServerOptions(
     port: parsePort(readOption(args, '--port') ?? env.PORT ?? '5173'),
     outDir:
       readOption(args, '--out-dir') ?? env.DOCS_OUT_DIR ?? DEFAULT_OUT_DIR,
+    basePath: readOption(args, '--base') ?? env.DOCS_BASE_PATH ?? '',
   };
 }
 
@@ -536,7 +581,9 @@ if (import.meta.main) {
       readOption(args, '--out-dir') ??
       process.env.DOCS_OUT_DIR ??
       DEFAULT_OUT_DIR;
-    const result = await buildOneDocs({ outDir });
+    const basePath =
+      readOption(args, '--base') ?? process.env.DOCS_BASE_PATH ?? '';
+    const result = await buildOneDocs({ outDir, basePath });
     console.log(`One UI docs built at ${result.outDir}`);
   } else {
     await startOneDocsServer(resolveOneDocsServerOptions());

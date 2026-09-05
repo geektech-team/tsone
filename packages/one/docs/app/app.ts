@@ -10,6 +10,7 @@ import {
   type OneDocLocale,
   type OneDocPage,
 } from './content';
+import { getOneDocBasePath, withOneDocBasePath } from './base';
 import { oneDocsStyles } from './styles';
 import { ONE_DOCS_THEME_KEY } from './theme';
 
@@ -48,12 +49,22 @@ export function createOneDocsPageApp(
       injectThemeBootstrap(
         renderHtmlDocument({
           lang: locale === 'en' ? 'en' : 'zh-CN',
-          htmlAttributes: { 'data-one-theme': 'default' },
+          htmlAttributes: {
+            'data-one-theme': 'default',
+            ...(getOneDocBasePath()
+              ? { 'data-doc-base': getOneDocBasePath() }
+              : {}),
+          },
           title: `${localize(page.title, locale)} - One UI`,
           description: localize(page.description, locale),
           body,
           styles: oneDocsStyles,
-          scripts: [{ type: 'module', src: '/assets/one-docs-client.js' }],
+          scripts: [
+            {
+              type: 'module',
+              src: withOneDocBasePath('/assets/one-docs-client.js'),
+            },
+          ],
         })
       ),
   };

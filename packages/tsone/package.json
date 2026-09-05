@@ -43,6 +43,10 @@
     "router"
   ],
   "author": "Jimmie Max(Qianyu)",
+  "homepage": "https://geektech-team.github.io/tsone/",
+  "bugs": {
+    "url": "https://github.com/geektech-team/tsone/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/geektech-team/tsone.git",

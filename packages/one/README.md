@@ -4,6 +4,8 @@ One UI (`@geektech/one`) is a lightweight, zero-runtime-dependency UI
 component library for the TSone class-component framework. TSone is a peer
 dependency and must be installed by the consuming application.
 
+**Documentation:** <https://geektech-team.github.io/tsone/one/>
+
 ## Installation
 
 ```bash

@@ -2,6 +2,8 @@
 
 [English](./README.md) | 简体中文
 
+**文档：** <https://geektech-team.github.io/tsone/>
+
 轻量级纯 TypeScript 前端框架，提供响应式系统、类组件、策略化渲染和路由能力。
 
 ## 特性
