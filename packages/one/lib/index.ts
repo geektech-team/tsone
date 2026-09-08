@@ -197,4 +197,4 @@ export type {
 } from './i18n';
 
 export const ONE_NAME = '@geektech/one';
-export const ONE_VERSION = '0.4.0';
+export const ONE_VERSION = '0.5.0';

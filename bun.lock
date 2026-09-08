@@ -17,7 +17,7 @@
     },
     "packages/one": {
       "name": "@geektech/one",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "devDependencies": {
         "@geektech/tsone": "workspace:*",
         "@geektech/tsone-cli": "workspace:*",
