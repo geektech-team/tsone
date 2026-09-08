@@ -120,6 +120,78 @@ export const guidePages: OneDocPage[] = [
     ],
   },
   {
+    path: '/guide/i18n/',
+    title: t('国际化', 'Internationalization'),
+    description: t(
+      '使用内置中英文字典切换组件默认文案，或合并自定义消息。',
+      'Switch component default text between built-in Chinese and English dictionaries, or merge custom messages.'
+    ),
+    section: 'guide',
+    sectionOrder: 1,
+    order: 2,
+    body: [
+      heading(1, 'i18n', t('国际化（i18n）', 'Internationalization (i18n)')),
+      paragraph(
+        t(
+          'One UI 内置 zh-CN 与 en 两套消息字典，覆盖占位符、aria 标签、校验消息、分页文本和空状态等组件默认文案。全局单例 oneI18n 默认使用 zh-CN。',
+          'One UI ships built-in zh-CN and en message dictionaries for component defaults such as placeholders, aria labels, validation messages, pagination text and empty states. The global oneI18n singleton starts in zh-CN.'
+        )
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { oneI18n } from '@geektech/one';",
+          '',
+          "oneI18n.setLocale('en');",
+        ].join('\n')
+      ),
+      paragraph(
+        t(
+          '切换语言后，已挂载组件的默认文案会自动重渲染为英文；显式传入的 props 始终优先于翻译后的默认值。',
+          'After a locale switch, mounted components re-render their defaults in English; explicit props always take precedence over translated defaults.'
+        )
+      ),
+      heading(2, 'translate', t('翻译组件默认文案', 'Translate component defaults')),
+      codeBlock(
+        'ts',
+        [
+          "import { OneEmpty, oneI18n } from '@geektech/one';",
+          '',
+          "const empty = new OneEmpty(); // 内置中文默认 / built-in zh-CN default",
+          "const custom = new OneEmpty({ description: 'No results' }); // prop 优先 / prop wins",
+          "oneI18n.setLocale('en');",
+        ].join('\n')
+      ),
+      heading(2, 'custom', t('自定义消息', 'Custom messages')),
+      paragraph(
+        t(
+          '通过 mergeMessages 合并进内置字典，或使用 createOneI18n 创建完全隔离的实例。',
+          'Merge into the built-in dictionary with mergeMessages, or create a fully isolated instance with createOneI18n.'
+        )
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { createOneI18n, oneI18n } from '@geektech/one';",
+          '',
+          'oneI18n.mergeMessages({',
+          "  'zh-CN': { 'app.greeting': '你好，{name}！' },",
+          "  en: { 'app.greeting': 'Hello, {name}!' },",
+          '});',
+          "console.log(oneI18n.t('app.greeting', { name: 'One' }));",
+          '',
+          "const custom = createOneI18n({ locale: 'en' }); // 隔离实例 / isolated instance",
+        ].join('\n')
+      ),
+      callout('tip', t('查找顺序', 'Lookup order'), [
+        t(
+          '消息解析顺序为：当前语言 → 回退语言（默认 zh-CN）→ key 本身；消息使用 {placeholder} 插值。表单校验消息在校验时解析，切换语言后重新校验即可看到新语言。',
+          'Messages resolve in the order: current locale → fallback locale (default zh-CN) → the key itself; messages use {placeholder} interpolation. Form validation messages resolve at validation time, so re-validate after a locale switch.'
+        ),
+      ]),
+    ],
+  },
+  {
     path: '/guide/theming/',
     title: t('主题定制', 'Theming'),
     description: t(
@@ -128,7 +200,7 @@ export const guidePages: OneDocPage[] = [
     ),
     section: 'guide',
     sectionOrder: 1,
-    order: 2,
+    order: 3,
     body: [
       heading(1, 'theming', t('主题定制', 'Theming')),
       paragraph(

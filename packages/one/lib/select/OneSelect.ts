@@ -1,4 +1,5 @@
-import { Component, type VNode } from '@geektech/tsone';
+import { type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import type { OneFieldValueEvent, OneFormFieldContext } from '../form/context';
 import { ONE_FORM_FIELD_KEY } from '../form/context';
 import { bindOneFloatingPanel } from '../dropdown';
@@ -108,9 +109,9 @@ function isGroup(
   return 'options' in option;
 }
 function flattenOptions(
-  options: readonly (OneSelectOption | OneSelectOptionGroup)[]
+  options: readonly (OneSelectOption | OneSelectOptionGroup)[] | undefined
 ): FlatOption[] {
-  return options.flatMap((option) =>
+  return (options ?? []).flatMap((option) =>
     isGroup(option)
       ? option.options.map((item) => ({ ...item, group: option.label }))
       : [option]
@@ -130,7 +131,10 @@ function normalizeSelectValue(
 function matchesSearch(option: FlatOption, query: string): boolean {
   return option.label.toLowerCase().includes(query.trim().toLowerCase());
 }
-export class OneSelect extends Component<OneSelectProps, OneSelectState> {
+export class OneSelect extends OneLocalizedComponent<
+  OneSelectProps,
+  OneSelectState
+> {
   private fieldContext: OneFormFieldContext | undefined;
   private unsubscribe: (() => void) | undefined;
   private floatingCleanup: (() => void) | undefined;
@@ -226,7 +230,11 @@ export class OneSelect extends Component<OneSelectProps, OneSelectState> {
             'aria-invalid': invalid ? 'true' : undefined,
             'aria-describedby': this.fieldContext?.describedBy,
           },
-          children: [labels.join(', ') || this.props.placeholder || '请选择'],
+          children: [
+            labels.join(', ') ||
+              this.props.placeholder ||
+              this.t('one.select.placeholder'),
+          ],
           listeners: {
             click: () => {
               if (!this.props.disabled) this.state.open = !this.state.open;
@@ -253,8 +261,8 @@ export class OneSelect extends Component<OneSelectProps, OneSelectState> {
                             value: this.state.query,
                             type: 'search',
                             size: 'sm',
-                            placeholder: '搜索选项',
-                            ariaLabel: '搜索选项',
+                            placeholder: this.t('one.select.search'),
+                            ariaLabel: this.t('one.select.search'),
                           },
                           emitters: {
                             input: (payload: unknown) => {

@@ -1,4 +1,5 @@
-import { Component, type VNode } from '@geektech/tsone';
+import { type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import {
   normalizeOneDataDisplayVariant,
   type OneDataDisplayVariant,
@@ -130,7 +131,7 @@ export const ONE_TAG_STYLES: OneNamedStyle[] = [
   },
 ];
 
-export class OneTag extends Component<OneTagProps, OneTagState> {
+export class OneTag extends OneLocalizedComponent<OneTagProps, OneTagState> {
   protected initState(): OneTagState {
     return { visible: true };
   }
@@ -166,7 +167,7 @@ export class OneTag extends Component<OneTagProps, OneTagState> {
                 props: {
                   className: 'one-tag__close',
                   type: 'button',
-                  'aria-label': '关闭标签',
+                  'aria-label': this.t('one.tag.close'),
                 },
                 listeners: { click: () => this.close() },
                 children: ['×'],

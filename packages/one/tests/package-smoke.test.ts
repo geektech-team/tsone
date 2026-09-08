@@ -60,7 +60,8 @@ describe('One UI package smoke', () => {
       run('bun', ['run', 'build']);
 
       const oneBundle = readFileSync(join(oneRoot, 'dist', 'index.js'), 'utf8');
-      expect(oneBundle).toMatch(/from ["']@geektech\/tsone["']/);
+      // minify 可能移除 `from` 与引号之间的空格，正则允许二者紧邻。
+      expect(oneBundle).toMatch(/from\s*["']@geektech\/tsone["']/);
 
       const tsoneManifest = JSON.parse(
         readFileSync(join(tsoneRoot, 'package.json'), 'utf8')

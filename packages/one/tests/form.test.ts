@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { flushSync } from '@geektech/tsone';
 import {
   OneForm,
   OneFormItem,
@@ -95,6 +96,7 @@ describe('OneForm', () => {
     input.value = 'Changed';
     input.dispatchEvent(new Event('input'));
     component.reset();
+    flushSync();
 
     expect((container.querySelector('input') as HTMLInputElement).value).toBe(
       'Initial'

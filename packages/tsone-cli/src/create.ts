@@ -14,9 +14,9 @@ export interface CreateProjectResult {
 }
 
 /** Published framework version referenced by generated projects. */
-export const TSONE_FRAMEWORK_VERSION = '0.2.1';
+export const TSONE_FRAMEWORK_VERSION = '0.4.0';
 /** Published CLI version referenced by generated projects. */
-export const TSONE_CLI_VERSION = '0.2.2';
+export const TSONE_CLI_VERSION = '0.4.0';
 
 export const GITHUB_URL = 'https://github.com/geektech-team/tsone';
 

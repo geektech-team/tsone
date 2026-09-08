@@ -165,6 +165,13 @@ export class ElementRenderStrategy<TNode extends HTMLNode = HTMLNode>
         element.removeAttribute('class');
       } else if (key === 'style') {
         element.removeAttribute('style');
+      } else if (
+        key === 'value' &&
+        typeof element === 'object' &&
+        element !== null &&
+        'value' in element
+      ) {
+        element.value = '';
       } else {
         element.removeAttribute(key);
       }
@@ -177,6 +184,19 @@ export class ElementRenderStrategy<TNode extends HTMLNode = HTMLNode>
 
       if (key === 'className' || key === 'class') {
         element.className = String(value ?? '');
+        return;
+      }
+
+      // 表单控件（input/textarea/select/option）的 value 必须写入 DOM
+      // property 而不是 attribute：setAttribute('value') 只更新默认值，
+      // 用户输入或程序修改后的当前值不会随之变化。
+      if (
+        key === 'value' &&
+        typeof element === 'object' &&
+        element !== null &&
+        'value' in element
+      ) {
+        element.value = String(value ?? '');
         return;
       }
 

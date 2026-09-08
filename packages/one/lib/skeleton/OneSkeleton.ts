@@ -1,4 +1,5 @@
-import { Component, type VNode } from '@geektech/tsone';
+import { type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import {
   ONE_THEME_DEFAULTS,
   ONE_THEME_TYPOGRAPHY_PROPERTIES,
@@ -71,7 +72,7 @@ export const ONE_SKELETON_STYLES: OneNamedStyle[] = [
   },
 ];
 
-export class OneSkeleton extends Component<OneSkeletonProps> {
+export class OneSkeleton extends OneLocalizedComponent<OneSkeletonProps> {
   protected initState(): object {
     return {};
   }
@@ -102,7 +103,7 @@ export class OneSkeleton extends Component<OneSkeletonProps> {
         ].join(' '),
         role: 'status',
         'aria-busy': 'true',
-        'aria-label': this.props.ariaLabel ?? '加载中',
+        'aria-label': this.props.ariaLabel ?? this.t('one.skeleton.aria'),
       },
       children: [
         ...(showAvatar

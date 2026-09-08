@@ -1,3 +1,4 @@
+import { oneI18n } from '../i18n';
 import type {
   OneFieldValue,
   OneFormInitialValues,
@@ -38,18 +39,18 @@ function getLength(value: OneFieldValue | undefined): number | undefined {
 
 function defaultRuleMessage(rule: OneValidationRule): string {
   if (rule.required) {
-    return '此字段为必填项';
+    return oneI18n.t('one.form.required');
   }
   if (rule.minLength !== undefined) {
-    return `长度不能少于 ${rule.minLength}`;
+    return oneI18n.t('one.form.minLength', { min: rule.minLength });
   }
   if (rule.maxLength !== undefined) {
-    return `长度不能超过 ${rule.maxLength}`;
+    return oneI18n.t('one.form.maxLength', { max: rule.maxLength });
   }
   if (rule.pattern) {
-    return '格式不正确';
+    return oneI18n.t('one.form.pattern');
   }
-  return '校验失败';
+  return oneI18n.t('one.form.invalid');
 }
 
 export class OneFormModel {
@@ -188,7 +189,7 @@ export class OneFormModel {
             messages.push(message);
           }
         } catch {
-          messages.push('校验器执行失败');
+          messages.push(oneI18n.t('one.form.validatorError'));
         }
       }
     });

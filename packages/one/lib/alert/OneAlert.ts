@@ -1,4 +1,5 @@
-import { Component, slot, type VNode } from '@geektech/tsone';
+import { slot, type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import type { OneFeedbackVariant } from '../overlay';
 import {
   ONE_THEME_DEFAULTS,
@@ -152,7 +153,7 @@ function hasDefaultSlot(children: Array<VNode | string>): boolean {
   );
 }
 
-export class OneAlert extends Component<OneAlertProps, OneAlertState> {
+export class OneAlert extends OneLocalizedComponent<OneAlertProps, OneAlertState> {
   protected initState(): OneAlertState {
     return { visible: true };
   }
@@ -237,7 +238,7 @@ export class OneAlert extends Component<OneAlertProps, OneAlertState> {
                           props: {
                             type: 'button',
                             className: 'one-alert__close',
-                            'aria-label': '关闭提示',
+                            'aria-label': this.t('one.alert.close'),
                           },
                           children: ['×'],
                           listeners: { click: () => this.close() },

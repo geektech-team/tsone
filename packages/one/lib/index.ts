@@ -178,6 +178,23 @@ export { OneLoading } from './loading';
 export type { OneLoadingProps } from './loading';
 export { OnePopover } from './popover';
 export type { OnePopoverProps, OnePopoverTrigger } from './popover';
+export {
+  ONE_DEFAULT_LOCALE,
+  ONE_FALLBACK_LOCALE,
+  ONE_I18N_MESSAGES,
+  OneI18n,
+  OneI18nConfigError,
+  OneLocalizedComponent,
+  createOneI18n,
+  oneI18n,
+} from './i18n';
+export type {
+  OneI18nLocale,
+  OneI18nMessages,
+  OneI18nOptions,
+  OneI18nParams,
+  OneI18nSubscriber,
+} from './i18n';
 
 export const ONE_NAME = '@geektech/one';
 export const ONE_VERSION = '0.4.0';

@@ -378,6 +378,56 @@ themes, persist the selected name, or follow the operating-system scheme.
 Invalid configuration throws `OneThemeConfigError`; unknown theme names throw
 `OneThemeNotFoundError`.
 
+## Internationalization (i18n)
+
+One UI ships built-in `zh-CN` and `en` message dictionaries for component
+defaults: placeholders, aria labels, validation messages, pagination text and
+empty states. The global `oneI18n` singleton starts in `zh-CN`. Switch the
+locale at runtime and mounted components update automatically.
+
+```ts
+import { oneI18n } from '@geektech/one';
+
+oneI18n.setLocale('en');
+
+// Defaults now render in English:
+// <OneEmpty /> → "No data", <OnePagination /> → "Previous / Next",
+// form validation → "This field is required".
+```
+
+Components that can show built-in text extend `OneLocalizedComponent` and
+resolve defaults through `this.t()`. Explicit props always take precedence
+over translated defaults:
+
+```ts
+import { OneEmpty, oneI18n } from '@geektech/one';
+
+const empty = new OneEmpty(); // renders "暂无数据"
+const custom = new OneEmpty({ description: 'No results' }); // prop wins
+oneI18n.setLocale('en'); // both components re-render; the prop stays
+```
+
+Translate your own messages by merging into the built-in dictionary, or create
+a fully isolated instance:
+
+```ts
+import { createOneI18n, oneI18n } from '@geektech/one';
+
+oneI18n.mergeMessages({
+  'zh-CN': { 'app.greeting': '你好，{name}！' },
+  en: { 'app.greeting': 'Hello, {name}!' },
+});
+console.log(oneI18n.t('app.greeting', { name: 'One' }));
+
+const custom = createOneI18n({ locale: 'en' }); // isolated instance
+```
+
+Lookup order is `locale → fallbackLocale (default zh-CN) → key`; messages use
+`{placeholder}` interpolation. `OneLocalizedComponent` instances subscribe on
+their first `t()` call and unsubscribe after unmount, so locale changes
+re-render only live components. Form validation messages are resolved at
+validation time — re-validate after a locale switch to see updated messages.
+
 ## CSS variable overrides
 
 One UI styles are scoped to `.one-*` selectors. Override public CSS variables

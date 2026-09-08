@@ -119,7 +119,7 @@ export class DocsNav extends Component<DocsNavProps> {
     pages: OneDocPage[],
     locale: OneDocLocale,
     fallbackLabel: string
-  ): VNode['children'] {
+  ): Array<VNode | string> {
     const categoryPathPage = pages.find((page) =>
       this.isComponentCategoryPage(page.path)
     );

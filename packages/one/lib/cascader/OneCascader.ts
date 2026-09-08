@@ -1,4 +1,5 @@
-import { Component, type VNode } from '@geektech/tsone';
+import { type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import type { OneFieldValueEvent, OneFormFieldContext } from '../form/context';
 import { ONE_FORM_FIELD_KEY } from '../form/context';
 import { bindOneFloatingPanel } from '../dropdown';
@@ -166,7 +167,10 @@ function normalizeCascaderValue(
   return valid;
 }
 
-export class OneCascader extends Component<OneCascaderProps, OneCascaderState> {
+export class OneCascader extends OneLocalizedComponent<
+  OneCascaderProps,
+  OneCascaderState
+> {
   private fieldContext: OneFormFieldContext | undefined;
   private unsubscribe: (() => void) | undefined;
   private floatingCleanup: (() => void) | undefined;
@@ -260,7 +264,9 @@ export class OneCascader extends Component<OneCascaderProps, OneCascaderState> {
             'aria-invalid': invalid ? 'true' : undefined,
             'aria-describedby': this.fieldContext?.describedBy,
           },
-          children: [label || this.props.placeholder || '请选择'],
+          children: [
+            label || this.props.placeholder || this.t('one.cascader.placeholder'),
+          ],
           listeners: {
             click: () => {
               if (!this.props.disabled) this.state.open = !this.state.open;

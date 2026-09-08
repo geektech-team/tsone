@@ -2,7 +2,6 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { isEntryJavaScriptOutput, isStylesheetOutput } from './build-output';
 import { resolveConfig } from './config';
-import { renderProjectHtml } from './project';
 import { assertSafeSubdirectoryDoesNotContain } from './safe-path';
 import type { BuildOptions, BuildResult } from './types';
 
@@ -32,6 +31,9 @@ export async function build(options: BuildOptions = {}): Promise<BuildResult> {
       INVALID_OUTPUT_DIRECTORY_MESSAGE
     );
   }
+  // 动态加载：project.ts 依赖 '@geektech/tsone/dom'（框架 dist 的 DOM 渲染
+  // 模块），仅在站点渲染路径需要。库构建（--library）不应被其拖累。
+  const { renderProjectHtml } = await import('./project');
   for (const [route, entry] of Object.entries(config.pages)) {
     await renderProjectHtml(config, {}, entry, route);
   }

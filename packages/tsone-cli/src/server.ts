@@ -9,7 +9,6 @@ import {
 } from 'node:path';
 import { isEntryJavaScriptOutput, isStylesheetOutput } from './build-output';
 import { resolveConfig } from './config';
-import { renderProjectHtml } from './project';
 import { createProxyHandler } from './proxy';
 import { assertSafeSubdirectory } from './safe-path';
 import { createFileWatcher, type FileWatcher } from './watch';
@@ -133,6 +132,9 @@ async function createServerInstance(
   watch: boolean
 ): Promise<DevServerInstance> {
   const config = await resolveConfig(options);
+  // 动态加载：project.ts 依赖 '@geektech/tsone/dom'（框架 dist 的 DOM 渲染
+  // 模块），仅在需要预渲染页面 HTML 时加载，避免 dev/build 其他路径被拖累。
+  const { renderProjectHtml } = await import('./project');
   for (const [route, entry] of Object.entries(config.pages)) {
     await renderProjectHtml(config, {}, entry, route);
   }
@@ -248,6 +250,7 @@ async function serveProjectRequest(
     }
 
     try {
+      const { renderProjectHtml } = await import('./project');
       const html = await renderProjectHtml(
         config,
         {

@@ -1,4 +1,5 @@
-import { Component, slot, type VNode } from '@geektech/tsone';
+import { slot, type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import { normalizePositiveInteger } from '../navigation';
 import {
   ONE_THEME_DEFAULTS,
@@ -119,7 +120,7 @@ export const ONE_BREADCRUMB_STYLES: OneNamedStyle[] = [
   },
 ];
 
-export class OneBreadcrumb extends Component<
+export class OneBreadcrumb extends OneLocalizedComponent<
   OneBreadcrumbProps,
   OneBreadcrumbState
 > {
@@ -142,7 +143,7 @@ export class OneBreadcrumb extends Component<
       tag: 'nav',
       props: {
         className: 'one-breadcrumb',
-        'aria-label': this.props.ariaLabel ?? '面包屑',
+        'aria-label': this.props.ariaLabel ?? this.t('one.breadcrumb.aria'),
       },
       children: [
         {
@@ -275,7 +276,7 @@ export class OneBreadcrumb extends Component<
       props: {
         className: 'one-breadcrumb__ellipsis',
         type: 'button',
-        'aria-label': '展开面包屑',
+        'aria-label': this.t('one.breadcrumb.expand'),
         'aria-expanded': 'false',
       },
       listeners: { click: () => (this.state.expanded = true) },

@@ -1,4 +1,5 @@
-import { Component, slot, type VNode } from '@geektech/tsone';
+import { slot, type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import {
   ONE_THEME_DEFAULTS,
   ONE_THEME_TYPOGRAPHY_PROPERTIES,
@@ -101,7 +102,7 @@ function hasDefaultSlot(children: Array<VNode | string>): boolean {
   );
 }
 
-export class OneEmpty extends Component<OneEmptyProps> {
+export class OneEmpty extends OneLocalizedComponent<OneEmptyProps> {
   protected initState(): object {
     return {};
   }
@@ -155,7 +156,7 @@ export class OneEmpty extends Component<OneEmptyProps> {
           props: { className: 'one-empty__description' },
           children: customDescription
             ? [slot('default')]
-            : [this.props.description ?? '暂无数据'],
+            : [this.props.description ?? this.t('one.empty.description')],
         },
         ...(customActions
           ? [

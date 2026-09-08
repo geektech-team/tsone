@@ -1,4 +1,5 @@
-import { Component, slot, type VNode } from '@geektech/tsone';
+import { slot, type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import {
   ONE_THEME_DEFAULTS,
   ONE_THEME_TYPOGRAPHY_PROPERTIES,
@@ -119,7 +120,7 @@ function hasSlot(
   });
 }
 
-export class DialogOverlay extends Component<
+export class DialogOverlay extends OneLocalizedComponent<
   DialogOverlayProps,
   DialogOverlayState
 > {
@@ -234,7 +235,9 @@ export class DialogOverlay extends Component<
                         className: 'one-dialog__cancel',
                         disabled: this.props.confirmLoading === true,
                       },
-                      children: [this.props.cancelText ?? '取消'],
+                      children: [
+                        this.props.cancelText ?? this.t('one.dialog.cancel'),
+                      ],
                       listeners: {
                         click: () => this.requestClose('cancel'),
                       },
@@ -251,8 +254,8 @@ export class DialogOverlay extends Component<
                       },
                       children: [
                         this.props.confirmLoading
-                          ? '处理中…'
-                          : (this.props.confirmText ?? '确认'),
+                          ? this.t('one.dialog.processing')
+                          : (this.props.confirmText ?? this.t('one.dialog.confirm')),
                       ],
                       listeners: {
                         click: () => this.requestClose('confirm'),

@@ -3,7 +3,6 @@ import {
   callout,
   codeBlock,
   heading,
-  inlineCode,
   list,
   paragraph,
   t,

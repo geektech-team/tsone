@@ -1,4 +1,5 @@
-import { Component, type VNode } from '@geektech/tsone';
+import { type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import type { OneFeedbackVariant } from '../overlay';
 import {
   ONE_THEME_DEFAULTS,
@@ -121,7 +122,7 @@ export const ONE_MESSAGE_STYLES: OneNamedStyle[] = [
 
 interface MessageOverlayState {}
 
-export class MessageOverlay extends Component<
+export class MessageOverlay extends OneLocalizedComponent<
   MessageOverlayProps,
   MessageOverlayState
 > {
@@ -185,7 +186,7 @@ export class MessageOverlay extends Component<
                 props: {
                   type: 'button',
                   className: 'one-message__close',
-                  'aria-label': '关闭消息',
+                  'aria-label': this.t('one.message.close'),
                 },
                 children: ['×'],
                 listeners: { click: () => this.props.requestClose() },

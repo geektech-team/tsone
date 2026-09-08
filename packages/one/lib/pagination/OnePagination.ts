@@ -1,4 +1,5 @@
-import { Component, type VNode } from '@geektech/tsone';
+import { type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import {
   normalizeNonNegativeInteger,
   normalizePositiveInteger,
@@ -145,7 +146,7 @@ export const ONE_PAGINATION_STYLES: OneNamedStyle[] = [
   },
 ];
 
-export class OnePagination extends Component<
+export class OnePagination extends OneLocalizedComponent<
   OnePaginationProps,
   OnePaginationState
 > {
@@ -180,19 +181,24 @@ export class OnePagination extends Component<
       tag: 'nav',
       props: {
         className: 'one-pagination',
-        'aria-label': this.props.ariaLabel ?? '分页',
+        'aria-label': this.props.ariaLabel ?? this.t('one.pagination.aria'),
       },
       children: [
         {
           tag: 'div',
           props: { className: 'one-pagination__pages' },
           children: [
-            this.renderPageButton('上一页', '‹', page - 1, page <= 1),
+            this.renderPageButton(
+              this.t('one.pagination.prev'),
+              '‹',
+              page - 1,
+              page <= 1
+            ),
             ...createOnePaginationTokens(pageCount, page, siblingCount).map(
               (token) =>
                 typeof token === 'number'
                   ? this.renderPageButton(
-                      `第 ${token} 页`,
+                      this.t('one.pagination.page', { page: token }),
                       String(token),
                       token,
                       false,
@@ -200,7 +206,12 @@ export class OnePagination extends Component<
                     )
                   : this.renderEllipsis(token)
             ),
-            this.renderPageButton('下一页', '›', page + 1, page >= pageCount),
+            this.renderPageButton(
+              this.t('one.pagination.next'),
+              '›',
+              page + 1,
+              page >= pageCount
+            ),
           ],
         },
         {
@@ -209,7 +220,7 @@ export class OnePagination extends Component<
             className: 'one-pagination__size',
             value: String(pageSize),
             disabled,
-            'aria-label': '每页条数',
+            'aria-label': this.t('one.pagination.pageSize'),
           },
           listeners: { change: (event) => this.handleSizeChange(event) },
           children: this.sizeOptions().map((option) => ({
@@ -218,7 +229,9 @@ export class OnePagination extends Component<
               value: String(option),
               selected: option === pageSize,
             },
-            children: [`${option} 条/页`],
+            children: [
+              this.t('one.pagination.pageSizeOption', { size: option }),
+            ],
           })),
         },
         ...(this.props.showQuickJumper
@@ -231,8 +244,8 @@ export class OnePagination extends Component<
                   inputmode: 'numeric',
                   value: this.state.jumpValue,
                   disabled,
-                  'aria-label': '快速跳转页码',
-                  placeholder: '跳至页码',
+                  'aria-label': this.t('one.pagination.jump'),
+                  placeholder: this.t('one.pagination.jumpPlaceholder'),
                 },
                 listeners: {
                   input: (event) => this.handleJumpInput(event),

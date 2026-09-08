@@ -1,4 +1,5 @@
-import { Component, type VNode } from '@geektech/tsone';
+import { type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import {
   ONE_THEME_DEFAULTS,
   ONE_THEME_TYPOGRAPHY_PROPERTIES,
@@ -172,7 +173,10 @@ export function formatOneFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export class OneUpload extends Component<OneUploadProps, OneUploadState> {
+export class OneUpload extends OneLocalizedComponent<
+  OneUploadProps,
+  OneUploadState
+> {
   protected initState(): OneUploadState {
     return { internalFiles: [...(this.props.defaultValue ?? [])] };
   }
@@ -189,7 +193,7 @@ export class OneUpload extends Component<OneUploadProps, OneUploadState> {
     const triggerLabel =
       this.props.children && this.props.children.length > 0
         ? this.props.children
-        : ['选择文件'];
+        : [this.t('one.upload.select')];
 
     return {
       tag: 'div',
@@ -248,7 +252,9 @@ export class OneUpload extends Component<OneUploadProps, OneUploadState> {
                       props: {
                         type: 'button',
                         className: 'one-upload__remove',
-                        'aria-label': `移除 ${file.name}`,
+                        'aria-label': this.t('one.upload.remove', {
+                          name: file.name,
+                        }),
                         disabled: this.props.disabled === true || undefined,
                       },
                       listeners: {

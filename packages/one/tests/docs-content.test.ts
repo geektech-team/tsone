@@ -21,6 +21,7 @@ const APPROVED_PATHS = [
   '/',
   '/guide/design/',
   '/guide/getting-started/',
+  '/guide/i18n/',
   '/guide/theming/',
   '/components/button/',
   '/components/divider/',
@@ -109,7 +110,7 @@ function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
 }
 
 describe('One UI docs content', () => {
-  it('defines exactly the forty-three approved routes in stable order', () => {
+  it('defines exactly the forty-four approved routes in stable order', () => {
     expect(oneDocPages.map((page) => page.path)).toEqual(APPROVED_PATHS);
   });
 

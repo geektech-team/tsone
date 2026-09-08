@@ -1,4 +1,5 @@
-import { Component, type VNode } from '@geektech/tsone';
+import { type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import {
   ONE_THEME_DEFAULTS,
   ONE_THEME_TYPOGRAPHY_PROPERTIES,
@@ -97,7 +98,7 @@ function isVNodeLike(value: object): boolean {
   return 'tag' in value || 'component' in value;
 }
 
-export class OneTable extends Component<OneTableProps> {
+export class OneTable extends OneLocalizedComponent<OneTableProps> {
   protected initState(): object {
     return {};
   }
@@ -152,7 +153,7 @@ export class OneTable extends Component<OneTableProps> {
                     className: 'one-table__empty',
                     colSpan: Math.max(columns.length, 1),
                   },
-                  children: [this.props.emptyText ?? '暂无数据'],
+                  children: [this.props.emptyText ?? this.t('one.table.empty')],
                 },
               ],
             },

@@ -1,4 +1,5 @@
-import { Component, type VNode } from '@geektech/tsone';
+import { type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import {
   normalizeOneSize,
   ONE_THEME_DEFAULTS,
@@ -211,7 +212,7 @@ function formatTime(parts: TimeParts, includeSeconds: boolean): string {
     : `${pad(parts.hour)}:${pad(parts.minute)}`;
 }
 
-export class OneTimePicker extends Component<
+export class OneTimePicker extends OneLocalizedComponent<
   OneTimePickerProps,
   OneTimePickerState
 > {
@@ -287,7 +288,7 @@ export class OneTimePicker extends Component<
             value: text,
             name: fieldContext?.name ?? this.props.name,
             id: fieldContext?.controlId,
-            placeholder: this.props.placeholder ?? '请选择时间',
+            placeholder: this.props.placeholder ?? this.t('one.timePicker.placeholder'),
             disabled,
             readonly,
             required: this.props.required === true,
@@ -315,18 +316,18 @@ export class OneTimePicker extends Component<
                 props: {
                   className: 'one-time-picker__panel',
                   role: 'dialog',
-                  'aria-label': '选择时间',
+                  'aria-label': this.t('one.timePicker.aria'),
                 },
                 children: [
                   this.buildColumn(
-                    '时',
+                    this.t('one.timePicker.hour'),
                     this.rangeValues(startHour, endHour, 1),
                     parts?.hour,
                     'hour',
                     false
                   ),
                   this.buildColumn(
-                    '分',
+                    this.t('one.timePicker.minute'),
                     this.rangeValues(minuteStart, minuteEnd, minuteIncrement),
                     parts?.minute,
                     'minute',
@@ -335,7 +336,7 @@ export class OneTimePicker extends Component<
                   ...(includeSeconds
                     ? [
                         this.buildColumn(
-                          '秒',
+                          this.t('one.timePicker.second'),
                           this.rangeValues(secondStart, secondEnd, step),
                           parts?.second,
                           'second',

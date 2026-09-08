@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import {
+  ONE_DEFAULT_LOCALE,
+  ONE_I18N_MESSAGES,
+  OneI18nConfigError,
+  OneLocalizedComponent,
+  createOneI18n,
+  oneI18n,
   ONE_DEFAULT_THEME,
   OneAlert,
   OneAvatar,
@@ -32,6 +38,9 @@ import {
   oneDialog,
   oneMessage,
   oneTheme,
+  type OneI18nLocale,
+  type OneI18nMessages,
+  type OneI18nParams,
   type OneAlertProps,
   type OneAvatarProps,
   type OneAvatarShape,
@@ -329,5 +338,21 @@ describe('public component types', () => {
     void invalidProgress;
     void invalidUpload;
     void invalidSlider;
+  });
+
+  it('exports i18n types and values with correct signatures', () => {
+    const i18n = createOneI18n({ locale: 'en' });
+    const translated: string = i18n.t('one.empty.description', {});
+    const locale: OneI18nLocale = oneI18n.getLocale();
+    const messages: OneI18nMessages = ONE_I18N_MESSAGES.en;
+    const params: OneI18nParams = { name: 'One' };
+    const error = new OneI18nConfigError('boom');
+
+    expect(translated).toBe('No data');
+    expect(locale).toBe(ONE_DEFAULT_LOCALE);
+    expect(messages['one.empty.description']).toBe('No data');
+    expect(params.name).toBe('One');
+    expect(error.message).toBe('boom');
+    void OneLocalizedComponent;
   });
 });

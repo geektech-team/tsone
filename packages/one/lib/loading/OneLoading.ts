@@ -1,4 +1,5 @@
-import { Component, type VNode } from '@geektech/tsone';
+import { type VNode } from '@geektech/tsone';
+import { OneLocalizedComponent } from '../i18n';
 import {
   normalizeOneDataDisplayVariant,
   type OneDataDisplayVariant,
@@ -11,12 +12,9 @@ import {
 } from '../styles/shared';
 import type { OneComponentSize } from '../types';
 
-const ensuredKeyframesDocuments = new WeakSet<Document>();
-
 function ensureOneLoadingKeyframes(): void {
-  if (ensuredKeyframesDocuments.has(document)) {
-    return;
-  }
+  // 每次挂载都重新检查 head：keyframes 可能被外部清空（如测试清理
+  // document.head），缓存"已注入"会让样式永久缺失。
   const hasKeyframes = Array.from(document.querySelectorAll('style')).some(
     (style) =>
       (style.textContent ?? '').includes('@keyframes one-loading-spin')
@@ -27,7 +25,6 @@ function ensureOneLoadingKeyframes(): void {
       '@keyframes one-loading-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
     document.head.appendChild(style);
   }
-  ensuredKeyframesDocuments.add(document);
 }
 
 export interface OneLoadingProps {
@@ -113,7 +110,7 @@ export const ONE_LOADING_STYLES: OneNamedStyle[] = [
   },
 ];
 
-export class OneLoading extends Component<OneLoadingProps> {
+export class OneLoading extends OneLocalizedComponent<OneLoadingProps> {
   protected initState(): object {
     return {};
   }
@@ -134,7 +131,7 @@ export class OneLoading extends Component<OneLoadingProps> {
       props: {
         className: `one-loading one-loading--${size}`,
         role: 'status',
-        'aria-label': this.props.label ?? '加载中',
+        'aria-label': this.props.label ?? this.t('one.loading.label'),
       },
       children: [
         {

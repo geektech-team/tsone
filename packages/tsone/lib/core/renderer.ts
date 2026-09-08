@@ -332,13 +332,47 @@ export class SlotRenderStrategy implements RenderStrategy<SlotProvider> {
     newVNode: SlotProvider,
     context: RenderRuntimeContext
   ): void {
-    this.unmountSlotChildren(element, context);
-    element.textContent = '';
-    this.mountSlotChildren(
-      element,
-      this.resolveChildren(newVNode, context),
-      context
-    );
+    const oldChildren = this.renderedChildren.get(element) ?? [];
+    const newChildren = this.resolveChildren(newVNode, context);
+    const sharedLength = Math.min(oldChildren.length, newChildren.length);
+
+    // 复用已有节点逐个 patch，避免 slot 内容整体重建导致
+    // 组件实例与 DOM 元素（含焦点）丢失。
+    for (let index = 0; index < sharedLength; index += 1) {
+      const childNode = element.childNodes[index];
+      if (!childNode) {
+        element.appendChild(
+          context.renderer.mount(newChildren[index], context)
+        );
+        continue;
+      }
+      context.renderer.patch(
+        oldChildren[index],
+        newChildren[index],
+        childNode,
+        context
+      );
+    }
+
+    for (let index = sharedLength; index < newChildren.length; index += 1) {
+      element.appendChild(context.renderer.mount(newChildren[index], context));
+    }
+
+    for (
+      let index = oldChildren.length - 1;
+      index >= newChildren.length;
+      index -= 1
+    ) {
+      const childNode = element.childNodes[index];
+      if (childNode) {
+        context.renderer.unmount(oldChildren[index], childNode, context);
+        if (childNode.parentNode === element) {
+          element.removeChild(childNode);
+        }
+      }
+    }
+
+    this.renderedChildren.set(element, newChildren);
   }
 
   private mountSlotChildren(

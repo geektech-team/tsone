@@ -371,6 +371,52 @@ console.log(oneTheme.currentTheme, ONE_DEFAULT_THEME.colors.primary);
 名称或跟随系统配色。无效配置会抛出 `OneThemeConfigError`，未知主题名称会抛出
 `OneThemeNotFoundError`。
 
+## 国际化（i18n）
+
+One UI 内置 `zh-CN` 和 `en` 两套消息字典，覆盖组件默认文案：占位符、aria
+标签、校验消息、分页文本和空状态。全局单例 `oneI18n` 默认使用 `zh-CN`，
+运行时切换语言，已挂载的组件会自动重渲染。
+
+```ts
+import { oneI18n } from '@geektech/one';
+
+oneI18n.setLocale('en');
+
+// 默认文案现在显示英文：
+// <OneEmpty /> → "No data"，<OnePagination /> → "Previous / Next"，
+// 表单校验 → "This field is required"。
+```
+
+可展示内置文案的组件继承自 `OneLocalizedComponent`，通过 `this.t()` 解析
+默认文案。显式传入的 props 永远优先于翻译后的默认值：
+
+```ts
+import { OneEmpty, oneI18n } from '@geektech/one';
+
+const empty = new OneEmpty(); // 渲染 "暂无数据"
+const custom = new OneEmpty({ description: 'No results' }); // prop 优先
+oneI18n.setLocale('en'); // 两个组件都会重渲染；prop 内容保持不变
+```
+
+自定义消息可以合并进内置字典，也可以创建完全隔离的实例：
+
+```ts
+import { createOneI18n, oneI18n } from '@geektech/one';
+
+oneI18n.mergeMessages({
+  'zh-CN': { 'app.greeting': '你好，{name}！' },
+  en: { 'app.greeting': 'Hello, {name}!' },
+});
+console.log(oneI18n.t('app.greeting', { name: 'One' }));
+
+const custom = createOneI18n({ locale: 'en' }); // 隔离实例
+```
+
+查找顺序为 `当前语言 → 回退语言（默认 zh-CN）→ key 本身`；消息使用
+`{placeholder}` 插值。`OneLocalizedComponent` 实例在首次调用 `t()` 时订阅
+语言变化，卸载后自动退订，因此语言切换只会重渲染存活组件。表单校验消息在
+校验时解析——切换语言后重新校验即可看到新语言的消息。
+
 ## CSS 变量覆盖
 
 One UI 样式限定在 `.one-*` 选择器中。可以在应用容器或 `:root` 上覆盖公开
