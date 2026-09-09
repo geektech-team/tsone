@@ -51,6 +51,8 @@ export class ReactiveSystem {
   >();
   private reactiveMap = new WeakMap<object, object>();
   private readonlyMap = new WeakMap<object, object>();
+  /** 反向映射：响应式代理 -> 原始对象，供 toRawValue 反查 */
+  private proxyMap = new WeakMap<object, object>();
 
   private constructor() {}
 
@@ -152,7 +154,20 @@ export class ReactiveSystem {
 
     // 存储响应式对象的映射关系
     this.reactiveMap.set(target, proxy);
+    this.proxyMap.set(proxy, target);
     return proxy;
+  }
+
+  /**
+   * 将响应式代理反查为原始对象；非代理值原样返回。
+   * 用于数组 includes/indexOf/lastIndexOf 的对比，让用户传入
+   * 原始对象也能命中数组中的响应式元素。
+   */
+  private toRawValue(value: unknown): unknown {
+    if (isObject(value) && this.proxyMap.has(value)) {
+      return this.proxyMap.get(value);
+    }
+    return value;
   }
 
   /**
@@ -178,6 +193,34 @@ export class ReactiveSystem {
         this.track(target, key);
 
         const value = Reflect.get(target, key);
+
+        // 搜索类方法：数组元素是响应式代理，需把参数与元素都转回原始值
+        // 后再对比，保证 includes(rawObject) / indexOf(rawObject) 能命中。
+        if (
+          typeof key === 'string' &&
+          (key === 'includes' || key === 'indexOf' || key === 'lastIndexOf')
+        ) {
+          // 数组内容（长度与索引）变化会改变搜索方法的返回结果
+          this.track(target, 'length');
+          for (let i = 0; i < target.length; i++) {
+            this.track(target, String(i));
+          }
+          const method = value as (...methodArgs: unknown[]) => unknown;
+          return (...args: unknown[]) => {
+            const result = method.apply(target, args);
+            if (result === false || result === -1) {
+              const rawElements = target.map((item) => this.toRawValue(item));
+              const fallbackMethod = rawElements[key] as (
+                ...methodArgs: unknown[]
+              ) => unknown;
+              return fallbackMethod.apply(
+                rawElements,
+                args.map((arg) => this.toRawValue(arg))
+              );
+            }
+            return result;
+          };
+        }
 
         // 处理数组的变异方法
         if (
@@ -256,6 +299,7 @@ export class ReactiveSystem {
 
     // 存储响应式对象的映射关系
     this.reactiveMap.set(target, proxy);
+    this.proxyMap.set(proxy, target);
     return proxy;
   }
 
@@ -349,6 +393,22 @@ export class ReactiveSystem {
     }
 
     return effectFn;
+  }
+
+  /**
+   * 在指定 effect 的上下文中运行 fn，使 fn 内的响应式访问被收集到该 effect，
+   * 而不是当前外层 effect。组件渲染用它隔离依赖：子组件在父组件渲染期间
+   * 执行自身 render 时，子 state 的访问不会污染父组件的 effect。
+   */
+  public runWithEffect<T>(effect: ReactiveEffect, fn: () => T): T {
+    this.effectStack.push(effect);
+    this.activeEffect = effect;
+    try {
+      return fn();
+    } finally {
+      this.effectStack.pop();
+      this.activeEffect = this.effectStack[this.effectStack.length - 1] ?? null;
+    }
   }
 
   public computed<T>(getter: () => T): ComputedRef<T> {
@@ -485,6 +545,116 @@ export function unref<T>(value: T | Ref<T>): T {
 
 export function stop(effect: ReactiveEffect): void {
   ReactiveSystem.getInstance().stop(effect);
+}
+
+export interface WatchSource<T> {
+  value: T;
+}
+
+export type WatchCallback<T> = (
+  value: T,
+  oldValue: T | undefined,
+  onCleanup: (cleanup: () => void) => void
+) => void;
+
+export interface WatchOptions {
+  /** 建立后立即执行一次回调（此时 oldValue 为 undefined） */
+  immediate?: boolean;
+  /** 深度追踪 getter 返回值的嵌套属性变化 */
+  deep?: boolean;
+  /** 变化发生时同步回调（默认随调度器批处理，同一批变化只回调一次） */
+  sync?: boolean;
+}
+
+/**
+ * 深度遍历响应式值，在 effect 上下文中访问全部 key 以收集嵌套依赖。
+ */
+function traverseReactive(value: unknown, seen: Set<object>): void {
+  if (!isObject(value) || seen.has(value)) {
+    return;
+  }
+
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => traverseReactive(item, seen));
+    return;
+  }
+
+  Object.keys(value).forEach((key) => {
+    traverseReactive((value as Record<string, unknown>)[key], seen);
+  });
+}
+
+/**
+ * 侦听响应式源（getter 或 ref）的变化并执行回调。
+ * 返回一个用于停止侦听的函数。
+ */
+export function watch<T>(
+  source: WatchSource<T> | (() => T),
+  callback: WatchCallback<T>,
+  options: WatchOptions = {}
+): () => void {
+  const system = ReactiveSystem.getInstance();
+  const getter = isRef(source)
+    ? (): T => (source as Ref<T>).value
+    : (source as () => T);
+
+  let oldValue: T | undefined;
+  let cleanup: (() => void) | null = null;
+
+  const run = (): void => {
+    if (!job.active) {
+      return;
+    }
+    cleanup?.();
+    cleanup = null;
+    // runner 为 lazy effect，active 时调用必然返回 getter 值
+    const newValue = runner() as T;
+    callback(newValue, oldValue, (fn) => {
+      cleanup = fn;
+    });
+    oldValue = newValue;
+  };
+
+  const runner = effect(
+    (): T => {
+      const value = getter();
+      if (options.deep && isObject(value)) {
+        traverseReactive(value, new Set<object>());
+      }
+      return value;
+    },
+    {
+      lazy: true,
+      scheduler: () => {
+        if (options.sync) {
+          run();
+        } else {
+          reactiveScheduler.enqueue(job);
+        }
+      },
+    }
+  );
+
+  // 批处理队列中的执行单元：调度器 flush 时通过它完成求值与回调
+  const job = effect(
+    () => {
+      run();
+    },
+    { lazy: true }
+  );
+
+  if (options.immediate) {
+    run();
+  } else {
+    oldValue = runner();
+  }
+
+  return () => {
+    system.stop(runner);
+    system.stop(job);
+  };
 }
 
 // 工具函数：判断是否是响应式对象

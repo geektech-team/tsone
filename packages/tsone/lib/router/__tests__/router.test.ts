@@ -53,6 +53,38 @@ class TestUserComponent extends Component {
   }
 }
 
+class TestNotFoundComponent extends Component {
+  protected initState(): object {
+    return {};
+  }
+
+  protected initStyles(): void {}
+
+  render(): VNode {
+    return {
+      tag: 'div',
+      props: { id: 'not-found' },
+      children: ['Not Found'],
+    };
+  }
+}
+
+class TestRedirectTargetComponent extends Component {
+  protected initState(): object {
+    return {};
+  }
+
+  protected initStyles(): void {}
+
+  render(): VNode {
+    return {
+      tag: 'div',
+      props: { id: 'redirect-target' },
+      children: ['Redirect Target'],
+    };
+  }
+}
+
 describe('Router', () => {
   let router: Router;
   let app: OneApp;
@@ -175,6 +207,173 @@ describe('Router', () => {
       });
 
       hashRouter.destroy();
+    });
+  });
+
+  describe('导航守卫', () => {
+    beforeEach(() => {
+      router.install(app);
+    });
+
+    it('beforeEach 返回 false 时取消导航', () => {
+      router.beforeEach(() => false);
+
+      router.push('/about');
+
+      expect(pushStateSpy).not.toHaveBeenCalled();
+      expect(router.getCurrentRoute()?.path).toBe('/');
+    });
+
+    it('beforeEach 返回字符串时重定向到目标路径', () => {
+      router.beforeEach((to) => {
+        if (to.path === '/about') {
+          return '/users/42';
+        }
+        return true;
+      });
+
+      router.push('/about');
+
+      expect(pushStateSpy).toHaveBeenCalledWith({}, '', '/users/42');
+      expect(router.getCurrentRouteRecord()?.component).toBe(TestUserComponent);
+    });
+
+    it('beforeEach 守卫按注册顺序执行且可移除', () => {
+      const order: string[] = [];
+      const first = router.beforeEach(() => {
+        order.push('first');
+        return true;
+      });
+      const second = router.beforeEach(() => {
+        order.push('second');
+        return false;
+      });
+
+      router.push('/about');
+      expect(order).toEqual(['first', 'second']);
+      expect(pushStateSpy).not.toHaveBeenCalled();
+
+      order.length = 0;
+      second();
+      router.push('/about');
+      expect(order).toEqual(['first']);
+      expect(pushStateSpy).toHaveBeenCalled();
+
+      first();
+    });
+
+    it('afterEach 在导航提交后调用', () => {
+      const after = mock();
+      router.afterEach(after);
+
+      router.push('/about');
+
+      expect(after).toHaveBeenCalledTimes(1);
+      expect(after.mock.calls[0][0].path).toBe('/about');
+      expect(after.mock.calls[0][1].path).toBe('/');
+    });
+  });
+
+  describe('redirect', () => {
+    it('push 到 redirect 路由时跳转到目标并更新 URL', () => {
+      const redirectRouter = createRouter({
+        routes: [
+          { path: '/', component: TestHomeComponent },
+          { path: '/old', redirect: '/new' },
+          { path: '/new', component: TestRedirectTargetComponent },
+        ],
+      });
+      redirectRouter.install(app);
+
+      redirectRouter.push('/old');
+
+      expect(pushStateSpy).toHaveBeenCalledWith({}, '', '/new');
+      expect(redirectRouter.getCurrentRoute()?.path).toBe('/new');
+      expect(redirectRouter.getCurrentRouteRecord()?.component).toBe(
+        TestRedirectTargetComponent
+      );
+      redirectRouter.destroy();
+    });
+
+    it('初始 URL 命中 redirect 路由时解析到目标', () => {
+      window.history.replaceState({}, '', '/old');
+
+      const redirectRouter = createRouter({
+        routes: [
+          { path: '/', component: TestHomeComponent },
+          { path: '/old', redirect: '/new' },
+          { path: '/new', component: TestRedirectTargetComponent },
+        ],
+      });
+      redirectRouter.install(app);
+
+      expect(redirectRouter.getCurrentRouteRecord()?.component).toBe(
+        TestRedirectTargetComponent
+      );
+      redirectRouter.destroy();
+    });
+
+    it('redirect 循环时抛出错误', () => {
+      const loopRouter = createRouter({
+        routes: [
+          { path: '/a', redirect: '/b' },
+          { path: '/b', redirect: '/a' },
+        ],
+      });
+      loopRouter.install(app);
+
+      expect(() => loopRouter.push('/a')).toThrow('Redirect loop detected');
+      loopRouter.destroy();
+    });
+  });
+
+  describe('catch-all 路由', () => {
+    it('未匹配路径落到 * 通配路由并携带 pathMatch 参数', () => {
+      window.history.replaceState({}, '', '/no/such/page');
+
+      const wildcardRouter = createRouter({
+        routes: [
+          { path: '/', component: TestHomeComponent },
+          { path: '*', component: TestNotFoundComponent },
+        ],
+      });
+      wildcardRouter.install(app);
+
+      expect(wildcardRouter.getCurrentRouteRecord()?.component).toBe(
+        TestNotFoundComponent
+      );
+      expect(wildcardRouter.getCurrentRoute()?.params).toEqual({
+        pathMatch: '/no/such/page',
+      });
+      wildcardRouter.destroy();
+    });
+
+    it('编程导航到未匹配路径时使用通配路由', () => {
+      const wildcardRouter = createRouter({
+        routes: [
+          { path: '/', component: TestHomeComponent },
+          { path: '*', component: TestNotFoundComponent },
+        ],
+      });
+      wildcardRouter.install(app);
+
+      wildcardRouter.push('/missing');
+
+      expect(pushStateSpy).toHaveBeenCalledWith({}, '', '/missing');
+      expect(wildcardRouter.getCurrentRouteRecord()?.component).toBe(
+        TestNotFoundComponent
+      );
+      wildcardRouter.destroy();
+    });
+
+    it('同路径 push 不做重复入栈', () => {
+      router.install(app);
+
+      router.push('/');
+      router.push('/');
+      router.push('/');
+
+      expect(pushStateSpy).not.toHaveBeenCalled();
     });
   });
 });

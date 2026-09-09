@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import {
   Button,
   Component,
@@ -1075,4 +1075,38 @@ describe('framework public plan', () => {
 
     expect(InjectionLeaf.latest?.missingValue).toBe('fallback');
   });
+
+  it('skips rewriting props whose values did not change during patch', () => {
+    const container = document.createElement('div');
+    const host = new PropDiffHost();
+
+    host.mount(container);
+    const setAttributeSpy = spyOn(Element.prototype, 'setAttribute');
+    try {
+      host.state.label = 'B';
+      flushSync();
+
+      // 只有变化的 data-x 被重写，静态 id 不被触碰
+      expect(setAttributeSpy).toHaveBeenCalledTimes(1);
+      expect(setAttributeSpy).toHaveBeenCalledWith('data-x', 'B');
+    } finally {
+      setAttributeSpy.mockRestore();
+    }
+  });
 });
+
+class PropDiffHost extends Component<object, { label: string }> {
+  protected initState(): { label: string } {
+    return { label: 'A' };
+  }
+
+  protected initStyles(): void {}
+
+  protected render(): VNode {
+    return {
+      tag: 'div',
+      props: { id: 'static', 'data-x': this.state.label },
+      children: [],
+    };
+  }
+}

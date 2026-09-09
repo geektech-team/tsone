@@ -19,10 +19,22 @@ export function matchRoute(
   const normalizedPath = normalizePath(path.split('?')[0]);
 
   for (const route of routes) {
+    if (route.path === '*') {
+      continue;
+    }
     const params = matchRoutePath(route.path, normalizedPath);
     if (params) {
       return { route, params };
     }
+  }
+
+  // catch-all 通配路由：匹配任意未命中路径
+  const wildcard = routes.find((route) => route.path === '*');
+  if (wildcard) {
+    return {
+      route: wildcard,
+      params: { pathMatch: normalizedPath },
+    };
   }
 
   const fallback = routes.find((route) => route.path === '/');

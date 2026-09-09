@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-09-04T11:27:41.694Z",
+  "generatedAt": "2026-09-09T08:50:29.566Z",
   "environment": {
     "bun": "1.4.0",
-    "chrome": "152.0.7977.82",
+    "chrome": "152.0.7977.83",
     "frameworks": {
       "vue": "3.5.42",
       "react": "19.2.8",
@@ -15,9 +15,9 @@
   },
   "sizes": {
     "tsone": {
-      "raw": 35752,
-      "gzip": 10745,
-      "brotli": 9549,
+      "raw": 37381,
+      "gzip": 11142,
+      "brotli": 9911,
       "file": "/Users/max/Projects/geek/tsone/benchmarks/framework-comparison/dist/tsone/main.js"
     },
     "vue": {
@@ -36,29 +36,29 @@
   "bench": {
     "tsone": {
       "framework": "tsone",
-      "mountMs": 17.4,
-      "add1000": 16.400000035762787,
-      "toggle1000": 18.19999998807907,
-      "remove1000": 17.799999952316284,
-      "toggleEach1000": 9.699999988079071,
+      "mountMs": 19.9,
+      "add1000": 16.599999994039536,
+      "toggle1000": 18.799999982118607,
+      "remove1000": 18.80000001192093,
+      "toggleEach1000": 8.099999994039536,
       "nodesAfter": 1000
     },
     "vue": {
       "framework": "vue",
-      "mountMs": 22.4,
-      "add1000": 9.400000035762787,
-      "toggle1000": 6,
-      "remove1000": 5.899999976158142,
-      "toggleEach1000": 4.100000023841858,
+      "mountMs": 43,
+      "add1000": 11.5,
+      "toggle1000": 6.5,
+      "remove1000": 6.0999999940395355,
+      "toggleEach1000": 4.600000023841858,
       "nodesAfter": 1000
     },
     "react": {
       "framework": "react",
-      "mountMs": 67.8,
-      "add1000": 9.400000035762787,
-      "toggle1000": 6.199999988079071,
-      "remove1000": 4.799999952316284,
-      "toggleEach1000": 10.5,
+      "mountMs": 62,
+      "add1000": 10.099999994039536,
+      "toggle1000": 5.4000000059604645,
+      "remove1000": 5.100000023841858,
+      "toggleEach1000": 10.199999988079071,
       "nodesAfter": 1000
     }
   }

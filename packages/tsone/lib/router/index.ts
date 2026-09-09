@@ -7,7 +7,7 @@ import {
   getBrowserLocation,
   navigateBrowser,
 } from './history';
-import { matchRoute } from './matcher';
+import { matchRoute, RouteMatch } from './matcher';
 
 export { useRouter } from './instance';
 
@@ -15,7 +15,8 @@ export type RouteMeta = Record<string, unknown>;
 
 export interface RouteRecord {
   path: string;
-  component: AnyComponentConstructor;
+  component?: AnyComponentConstructor;
+  redirect?: string;
   name?: string;
   meta?: RouteMeta;
 }
@@ -40,6 +41,43 @@ export type RouteChangeListener = (
   from: RouteLocation | null
 ) => void;
 
+interface RedirectResult {
+  route: RouteRecord;
+  params: Record<string, string>;
+  path: string;
+}
+
+function parseQueryFromPath(fullPath: string): Record<string, string> {
+  const queryStart = fullPath.indexOf('?');
+  if (queryStart < 0) {
+    return {};
+  }
+
+  const queryString = fullPath.slice(queryStart + 1);
+  const query: Record<string, string> = {};
+  if (!queryString) {
+    return query;
+  }
+
+  queryString.split('&').forEach((param) => {
+    const [key, value] = param.split('=');
+    if (key) {
+      query[decodeURIComponent(key)] = value ? decodeURIComponent(value) : '';
+    }
+  });
+
+  return query;
+}
+
+/**
+ * 导航守卫。返回 false 取消导航；返回字符串表示重定向到该路径；
+ * 返回 true 或 undefined 放行。
+ */
+export type NavigationGuard = (
+  to: RouteLocation,
+  from: RouteLocation | null
+) => boolean | void | string;
+
 export class Router {
   protected currentRoute: RouteRecord | null = null;
   protected currentLocation: RouteLocation | null = null;
@@ -48,6 +86,8 @@ export class Router {
   private readonly mode: 'history' | 'hash';
   private readonly base: string;
   private readonly routeChangeListeners: RouteChangeListener[] = [];
+  private readonly beforeGuards: NavigationGuard[] = [];
+  private readonly afterHooks: RouteChangeListener[] = [];
   private removeWindowListener?: () => void;
 
   constructor(options: RouterOptions | RouteRecord[]) {
@@ -119,6 +159,34 @@ export class Router {
     };
   }
 
+  /**
+   * 注册全局前置守卫；返回移除该守卫的函数。
+   */
+  public beforeEach(guard: NavigationGuard): () => void {
+    this.beforeGuards.push(guard);
+
+    return () => {
+      const index = this.beforeGuards.indexOf(guard);
+      if (index > -1) {
+        this.beforeGuards.splice(index, 1);
+      }
+    };
+  }
+
+  /**
+   * 注册导航完成后钩子；返回移除该钩子的函数。
+   */
+  public afterEach(hook: RouteChangeListener): () => void {
+    this.afterHooks.push(hook);
+
+    return () => {
+      const index = this.afterHooks.indexOf(hook);
+      if (index > -1) {
+        this.afterHooks.splice(index, 1);
+      }
+    };
+  }
+
   public getRoutes(): RouteRecord[] {
     return [...this.routes];
   }
@@ -154,8 +222,99 @@ export class Router {
       throw new Error('Path must be a non-empty string');
     }
 
-    navigateBrowser(path, replace, this.mode, this.base);
-    this.handleRouteChange();
+    const from = this.currentLocation;
+    const target = this.resolveTarget(path);
+    if (!target) {
+      return;
+    }
+
+    const to = target.location;
+
+    // 前置守卫：返回 false 取消导航，返回字符串重定向
+    for (const guard of this.beforeGuards) {
+      const result = guard(to, from);
+      if (result === false) {
+        return;
+      }
+      if (typeof result === 'string' && result !== path) {
+        this.navigate(result, replace);
+        return;
+      }
+    }
+
+    // 同路径导航不做重复入栈
+    if (from && this.isSameLocation(from, to)) {
+      return;
+    }
+
+    navigateBrowser(target.path, replace, this.mode, this.base);
+    this.currentRoute = target.route;
+    this.currentLocation = to;
+    this.triggerRouteChangeListeners(to, from);
+    this.afterHooks.forEach((hook) => {
+      try {
+        hook(to, from);
+      } catch (error) {
+        console.error('Route afterEach error:', error);
+      }
+    });
+  }
+
+  /**
+   * 解析导航目标：应用 redirect 链后返回最终路径、路由与 location。
+   */
+  private resolveTarget(
+    path: string
+  ): { path: string; route: RouteRecord; location: RouteLocation } | null {
+    const match = matchRoute(this.routes, path.split('?')[0]);
+    if (!match) {
+      return null;
+    }
+
+    const redirected = this.applyRedirect(match);
+    const finalPath = redirected?.path ?? path;
+    const route = redirected?.route ?? match.route;
+
+    return {
+      path: finalPath,
+      route,
+      location: {
+        path: finalPath.split('?')[0],
+        query: parseQueryFromPath(finalPath),
+        params: redirected?.params ?? match.params,
+        fullPath: finalPath,
+        name: route?.name,
+        meta: route?.meta,
+      },
+    };
+  }
+
+  /**
+   * 沿 redirect 链解析到最终路由（防循环）。
+   */
+  private applyRedirect(match: RouteMatch): RedirectResult | null {
+    const visited = new Set<string>();
+    let current = match;
+    let finalPath = '';
+
+    while (current.route.redirect) {
+      if (visited.has(current.route.path)) {
+        throw new Error(
+          `Redirect loop detected for route: ${current.route.path}`
+        );
+      }
+      visited.add(current.route.path);
+      finalPath = current.route.redirect;
+      const next = matchRoute(this.routes, finalPath.split('?')[0]);
+      if (!next) {
+        return null;
+      }
+      current = next;
+    }
+
+    return finalPath
+      ? { route: current.route, params: current.params, path: finalPath }
+      : null;
   }
 
   private validateRoutes(): void {
@@ -165,6 +324,11 @@ export class Router {
 
     const paths = new Set<string>();
     this.routes.forEach((route) => {
+      if (!route.component && !route.redirect) {
+        throw new Error(
+          `Route ${route.path} must define a component or redirect`
+        );
+      }
       if (paths.has(route.path)) {
         throw new Error(`Duplicate route path: ${route.path}`);
       }
@@ -200,12 +364,18 @@ export class Router {
   private resolveCurrentRoute(): RouteLocation {
     const location = this.getCurrentLocation();
     const match = matchRoute(this.routes, location.path);
-    const route = match?.route ?? null;
+    const redirected = match ? this.applyRedirect(match) : null;
+    const route = redirected?.route ?? match?.route ?? null;
+
+    // URL 与重定向目标不一致时修正历史记录（replaceState 不触发 popstate）
+    if (redirected && redirected.path !== location.path) {
+      navigateBrowser(redirected.path, true, this.mode, this.base);
+    }
 
     this.currentRoute = route;
     this.currentLocation = {
       ...location,
-      params: match?.params ?? {},
+      params: redirected?.params ?? match?.params ?? {},
       name: route?.name,
       meta: route?.meta,
     };
@@ -343,7 +513,9 @@ export class RouterView extends Component<object, RouterViewState> {
     return {
       tag: 'div',
       props: { 'data-router-view': '' },
-      children: routeRecord ? [{ component: routeRecord.component }] : [],
+      children: routeRecord?.component
+        ? [{ component: routeRecord.component }]
+        : [],
     };
   }
 }

@@ -1,5 +1,12 @@
 import { StyleManager } from '../../style/StyleManager';
-import { ReactiveEffect, effect, reactive, reactiveScheduler, stop } from '../reactive';
+import {
+  ReactiveEffect,
+  ReactiveSystem,
+  effect,
+  reactive,
+  reactiveScheduler,
+  stop,
+} from '../reactive';
 import {
   ComponentInstance,
   RenderRuntimeContext,
@@ -35,8 +42,7 @@ export type AnyComponentConstructor = new (
 export abstract class Component<
   TProps extends ComponentProps = ComponentProps,
   TState extends ComponentState = ComponentState,
-> implements ComponentInstance
-{
+> implements ComponentInstance {
   private vnode: VNode | null = null;
   private el: Node | null = null;
   private readonly renderer = new RendererContext();
@@ -49,8 +55,7 @@ export abstract class Component<
   private appContext: unknown = null;
   private parentComponent: ComponentInstance | null = null;
   private elementChangeListener:
-    | ((previousElement: Node, nextElement: Node) => void)
-    | null = null;
+    ((previousElement: Node, nextElement: Node) => void) | null = null;
 
   protected styleManager: StyleManager;
   public state: TState;
@@ -64,9 +69,16 @@ export abstract class Component<
 
     this.updateEffect = effect(
       () => {
-        this.trackStateProperties();
+        // 依赖在 render 期间按需收集（细粒度）：只对 render 实际访问的
+        // state 属性建立依赖，未访问的属性变化不会触发重渲染
         if (this.mounted) {
-          this.update();
+          try {
+            this.update();
+          } catch (error) {
+            if (!this.dispatchError(error)) {
+              throw error;
+            }
+          }
         }
       },
       {
@@ -102,8 +114,23 @@ export abstract class Component<
     }
 
     this.beforeMount();
-    this.vnode = this.render();
-    this.el = this.renderer.mount(this.vnode, this.createRenderContext());
+    // 渲染与挂载在组件自身 effect 上下文中执行，避免子组件渲染
+    // 把 state 依赖收集到父组件的 effect 上（跨组件依赖污染）。
+    this.el = ReactiveSystem.getInstance().runWithEffect(
+      this.updateEffect,
+      () => {
+        try {
+          this.vnode = this.render();
+          return this.renderer.mount(this.vnode, this.createRenderContext());
+        } catch (error) {
+          // 渲染或子组件挂载失败：先交给祖先错误边界，未处理才向外抛出
+          if (this.dispatchError(error)) {
+            return document.createComment('error-boundary');
+          }
+          throw error;
+        }
+      }
+    );
     this.mounted = true;
     this.onMounted();
     return this.el;
@@ -115,18 +142,26 @@ export abstract class Component<
     }
 
     this.beforeUpdate();
-    const newVNode = this.render();
-    const previousElement = this.el;
-    this.el = this.renderer.patch(
-      this.vnode,
-      newVNode,
-      this.el,
-      this.createRenderContext()
+    const currentVNode = this.vnode;
+    const currentElement = this.el;
+    // 与 mountToNode 同理：render 期间的响应式访问只收集到自身 effect。
+    this.el = ReactiveSystem.getInstance().runWithEffect(
+      this.updateEffect,
+      () => {
+        const newVNode = this.render();
+        const nextElement = this.renderer.patch(
+          currentVNode,
+          newVNode,
+          currentElement,
+          this.createRenderContext()
+        );
+        this.vnode = newVNode;
+        return nextElement;
+      }
     );
-    if (previousElement !== this.el) {
-      this.elementChangeListener?.(previousElement, this.el);
+    if (currentElement !== this.el) {
+      this.elementChangeListener?.(currentElement, this.el);
     }
-    this.vnode = newVNode;
     this.onUpdated();
   }
 
@@ -170,7 +205,8 @@ export abstract class Component<
     };
 
     if (this.mounted) {
-      this.update();
+      // 与 state 更新走同一调度器：同一批多次 setProps 合并为一次更新
+      reactiveScheduler.enqueue(this.updateEffect);
     }
   }
 
@@ -187,6 +223,10 @@ export abstract class Component<
 
   public setParentComponent(parent: ComponentInstance | null): void {
     this.parentComponent = parent;
+  }
+
+  public getParentComponent(): ComponentInstance | null {
+    return this.parentComponent;
   }
 
   public setElementChangeListener(
@@ -233,6 +273,35 @@ export abstract class Component<
   protected beforeUnmount(): void {}
 
   protected onUnmounted(): void {}
+
+  /**
+   * 错误边界钩子：后代组件渲染或更新抛错时被调用。
+   * 返回 false 表示错误已被处理并停止继续向上传播；
+   * 返回 true 或 undefined 时错误继续冒泡到更外层边界。
+   */
+  protected onErrorCaptured?(
+    error: unknown,
+    instance: ComponentInstance
+  ): boolean | void;
+
+  /**
+   * 沿组件父链寻找最近的错误边界。返回 true 表示错误已被边界处理。
+   */
+  private dispatchError(error: unknown): boolean {
+    let current: ComponentInstance | null = this.getParentComponent();
+    while (current) {
+      // 同类实例可访问 protected 生命周期钩子
+      const boundary = current as unknown as Component;
+      if (typeof boundary.onErrorCaptured === 'function') {
+        const handled = boundary.onErrorCaptured(error, this);
+        if (handled === false) {
+          return true;
+        }
+      }
+      current = current.getParentComponent?.() ?? null;
+    }
+    return false;
+  }
 
   protected getContext(): unknown {
     return this.appContext;
@@ -315,10 +384,6 @@ export abstract class Component<
     return clone as VNode;
   }
 
-  private trackStateProperties(): void {
-    this.trackReactiveValue(this.state, new Set<object>());
-  }
-
   private getRouterFrom(value: unknown): unknown {
     if (!value || typeof value !== 'object' || !('router' in value)) {
       return undefined;
@@ -348,22 +413,5 @@ export abstract class Component<
     ).app;
 
     return app?.resolveInjection?.(key) ?? { found: false, value: undefined };
-  }
-
-  private trackReactiveValue(value: unknown, seen: Set<object>): void {
-    if (!value || typeof value !== 'object' || seen.has(value)) {
-      return;
-    }
-
-    seen.add(value);
-
-    if (Array.isArray(value)) {
-      value.length;
-    }
-
-    Object.keys(value).forEach((key) => {
-      const child = (value as Record<string, unknown>)[key];
-      this.trackReactiveValue(child, seen);
-    });
   }
 }

@@ -506,6 +506,42 @@ export const apiPages: DocPage[] = [
       paragraph(
         '可用类型包括 fade、slide-up、slide-down、slide-left、slide-right 和 scale。tag 默认 div，type 默认 fade，duration 默认 300 毫秒，缓动固定为 ease。直属子节点必须具有唯一 key。组件遵循 prefers-reduced-motion，Web Animations 不可用时也会跳过动画。重排只移动保留节点，不播放重排或 FLIP 动画。'
       ),
+      heading(2, '单元素过渡与组件缓存'),
+      paragraph(
+        inlineCode('Transition'),
+        ' 在 show 切换时为单个元素播放过渡，应用 ',
+        inlineCode('{name}-enter-from'),
+        ' / ',
+        inlineCode('{name}-enter-to'),
+        ' 与 ',
+        inlineCode('{name}-leave-from'),
+        ' / ',
+        inlineCode('{name}-leave-to'),
+        ' CSS class（各配套一个 -active class），并在离开开始 duration 毫秒后移除元素。',
+        inlineCode('KeepAlive'),
+        ' 让所有带 key 的子组件保持挂载（状态与 DOM 保留），仅活跃项可见，适合 tab 切换等需要保留状态的场景。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { KeepAlive, Transition, createComponent } from '@geektech/tsone';",
+          '',
+          'const dialog = {',
+          '  component: Transition,',
+          "  props: { show: this.state.open, name: 'fade', duration: 300 },",
+          "  children: [Dialog({ children: ['设置'] })],",
+          '};',
+          '',
+          'const tabs = {',
+          '  component: KeepAlive,',
+          '  props: { activeKey: this.state.activeTab },',
+          '  children: [',
+          "    createComponent(Editor, {}, [], 'editor'),",
+          "    createComponent(Preview, {}, [], 'preview'),",
+          '  ],',
+          '};',
+        ].join('\n')
+      ),
       heading(2, '表单校验'),
       codeBlock(
         'ts',
@@ -611,6 +647,12 @@ export const apiPages: DocPage[] = [
           signature: 'flushSync(): void',
           description:
             '同步冲刷待执行的响应式 effect，立即完成组件重渲染。一般仅测试或需要同步读 DOM 的场景使用。',
+        },
+        {
+          name: 'watch',
+          signature: 'watch(source, callback, options?): () => void',
+          description:
+            '侦听响应式源（getter 或 ref）的变化并执行回调，支持 immediate（建立后立即回调）、deep（深度追踪嵌套属性）与 sync（同步回调）选项；返回停止侦听的函数。',
         },
         {
           name: 'isReactive',
@@ -769,6 +811,42 @@ export const apiPages: DocPage[] = [
         '最小配置可以写成 ',
         inlineCode('createRouter({ routes: [...] })'),
         '。'
+      ),
+      heading(2, '导航守卫、重定向与通配路由'),
+      paragraph(
+        inlineCode('router.beforeEach(guard)'),
+        ' 注册全局前置守卫：返回 false 取消导航，返回字符串重定向到该路径，返回 true 或 undefined 放行；',
+        inlineCode('router.afterEach(hook)'),
+        ' 在导航提交后调用。守卫仅在编程式导航（push/replace）时执行。',
+        inlineCode('RouteRecord.redirect'),
+        ' 让路由解析到目标路径（防循环）；',
+        inlineCode("path: '*'"),
+        ' 匹配所有未命中路径，剩余路径通过 ',
+        inlineCode('params.pathMatch'),
+        ' 获取。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { createRouter } from '@geektech/tsone/router';",
+          '',
+          'const router = createRouter({',
+          '  routes: [',
+          "    { path: '/', component: HomePage },",
+          "    { path: '/old', redirect: '/new' },",
+          "    { path: '/new', component: NewPage },",
+          "    { path: '*', component: NotFoundPage },",
+          '  ],',
+          '});',
+          '',
+          'router.beforeEach((to, from) => {',
+          "  if (to.path === '/admin') return false;",
+          '  return true;',
+          '});',
+          'router.afterEach((to) => {',
+          "  document.title = String(to.meta?.title ?? '');",
+          '});',
+        ].join('\n')
       ),
       heading(2, 'RouterOptions'),
       codeBlock(

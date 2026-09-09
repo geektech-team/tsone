@@ -547,6 +547,42 @@ export const enApiPages: DocPage[] = [
       paragraph(
         'Available types are fade, slide-up, slide-down, slide-left, slide-right, and scale. Defaults are tag div, type fade, duration 300 ms, and ease easing. Direct children require unique keys. The component respects prefers-reduced-motion and skips animation when Web Animations is unavailable. Reordering moves retained nodes without a reorder or FLIP animation.'
       ),
+      heading(2, 'Single-element transitions and component caching'),
+      paragraph(
+        inlineCode('Transition'),
+        ' plays a transition for a single element as show flips, applying ',
+        inlineCode('{name}-enter-from'),
+        ' / ',
+        inlineCode('{name}-enter-to'),
+        ' and ',
+        inlineCode('{name}-leave-from'),
+        ' / ',
+        inlineCode('{name}-leave-to'),
+        ' CSS classes (each paired with a -active class) and removing the element after the leave starts plus duration ms. ',
+        inlineCode('KeepAlive'),
+        ' keeps every keyed child component mounted (state and DOM are preserved) while showing only the active one, useful for tab switches and other state-preserving scenarios.'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { KeepAlive, Transition, createComponent } from '@geektech/tsone';",
+          '',
+          'const dialog = {',
+          '  component: Transition,',
+          "  props: { show: this.state.open, name: 'fade', duration: 300 },",
+          "  children: [Dialog({ children: ['Settings'] })],",
+          '};',
+          '',
+          'const tabs = {',
+          '  component: KeepAlive,',
+          '  props: { activeKey: this.state.activeTab },',
+          '  children: [',
+          "    createComponent(Editor, {}, [], 'editor'),",
+          "    createComponent(Preview, {}, [], 'preview'),",
+          '  ],',
+          '};',
+        ].join('\n')
+      ),
       heading(2, 'Form Validation'),
       codeBlock(
         'ts',
@@ -654,6 +690,12 @@ export const enApiPages: DocPage[] = [
           signature: 'flushSync(): void',
           description:
             'Synchronously flushes pending reactive effects and completes component re-renders immediately. Mostly useful in tests or when reading the DOM synchronously.',
+        },
+        {
+          name: 'watch',
+          signature: 'watch(source, callback, options?): () => void',
+          description:
+            'Watches a reactive source (getter or ref) and runs a callback on change. Supports immediate (fire once on setup), deep (track nested properties), and sync (synchronous callback) options; returns a stop function.',
         },
         {
           name: 'isReactive',
@@ -814,6 +856,42 @@ export const enApiPages: DocPage[] = [
         'A minimal configuration can be written as ',
         inlineCode('createRouter({ routes: [...] })'),
         '.'
+      ),
+      heading(2, 'Navigation guards, redirects, and catch-all routes'),
+      paragraph(
+        inlineCode('router.beforeEach(guard)'),
+        ' registers a global before guard: returning false cancels the navigation, returning a string redirects to that path, and returning true or undefined allows it. ',
+        inlineCode('router.afterEach(hook)'),
+        ' runs after the navigation is committed. Guards run on programmatic navigation (push/replace) only. ',
+        inlineCode('RouteRecord.redirect'),
+        ' resolves a route to its target path (loop-protected), and ',
+        inlineCode("path: '*'"),
+        ' matches every otherwise unmatched path, with the remaining path available as ',
+        inlineCode('params.pathMatch'),
+        '.'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { createRouter } from '@geektech/tsone/router';",
+          '',
+          'const router = createRouter({',
+          '  routes: [',
+          "    { path: '/', component: HomePage },",
+          "    { path: '/old', redirect: '/new' },",
+          "    { path: '/new', component: NewPage },",
+          "    { path: '*', component: NotFoundPage },",
+          '  ],',
+          '});',
+          '',
+          'router.beforeEach((to, from) => {',
+          "  if (to.path === '/admin') return false;",
+          '  return true;',
+          '});',
+          'router.afterEach((to) => {',
+          "  document.title = String(to.meta?.title ?? '');",
+          '});',
+        ].join('\n')
       ),
       heading(2, 'RouterOptions'),
       codeBlock(

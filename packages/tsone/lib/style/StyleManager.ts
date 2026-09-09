@@ -6,12 +6,11 @@ export interface StyleOptions {
 }
 
 export class StyleManager {
-  public styleElement: HTMLStyleElement;
+  public styleElement: HTMLStyleElement | null = null;
   public styles: Map<string, StyleOptions> = new Map();
 
   constructor() {
-    this.styleElement = document.createElement('style');
-    document.head.appendChild(this.styleElement);
+    // style 元素延迟到首次 addStyle 时创建，避免无样式组件产生空 <style> 节点
   }
 
   public addStyle(name: string, options: StyleOptions): void {
@@ -26,12 +25,26 @@ export class StyleManager {
 
   public clearStyles(): void {
     this.styles.clear();
-    this.styleElement.textContent = '';
+    if (this.styleElement) {
+      this.styleElement.textContent = '';
+    }
   }
 
   public destroy(): void {
     this.clearStyles();
-    this.styleElement.remove();
+    if (this.styleElement) {
+      this.styleElement.remove();
+      this.styleElement = null;
+    }
+  }
+
+  private ensureStyleElement(): HTMLStyleElement {
+    if (!this.styleElement) {
+      const element = document.createElement('style');
+      document.head.appendChild(element);
+      this.styleElement = element;
+    }
+    return this.styleElement;
   }
 
   private convertToCSS(properties: Record<string, string | number>): string {
@@ -44,6 +57,14 @@ export class StyleManager {
   }
 
   private updateStyles(): void {
+    if (this.styles.size === 0) {
+      if (this.styleElement) {
+        this.styleElement.textContent = '';
+      }
+      return;
+    }
+
+    const element = this.ensureStyleElement();
     let cssText = '';
 
     this.styles.forEach((style) => {
@@ -63,6 +84,6 @@ export class StyleManager {
       }
     });
 
-    this.styleElement.textContent = cssText;
+    element.textContent = cssText;
   }
 }

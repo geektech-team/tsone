@@ -10,6 +10,7 @@ export interface ComponentInstance {
   setProps(props: Partial<ComponentProps>): void;
   setAppContext?(context: unknown): void;
   setParentComponent?(parent: ComponentInstance | null): void;
+  getParentComponent?(): ComponentInstance | null;
   setElementChangeListener?(
     listener: (previousElement: Node, nextElement: Node) => void
   ): void;

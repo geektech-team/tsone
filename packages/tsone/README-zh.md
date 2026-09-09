@@ -201,12 +201,29 @@ const router = createRouter({
   mode: 'history',
   routes: [
     { path: '/', component: HomePage },
+    { path: '/old', redirect: '/new' },
+    { path: '/new', component: NewPage },
     { path: '/users/:id', component: UserPage, meta: { title: '用户详情' } },
+    { path: '*', component: NotFoundPage },
   ],
+});
+
+router.beforeEach((to, from) => {
+  if (to.path === '/admin' && !isAuthenticated) {
+    return false;
+  }
+  return true;
+});
+router.afterEach((to) => {
+  document.title = to.meta?.title ?? 'TSone';
 });
 
 createApp({ root: Layout }).use(router).mount();
 ```
+
+守卫仅在编程式导航时执行。返回 `false` 取消导航，返回字符串则重定向到该路径。
+`redirect` 路由会解析到其目标；`*` 路由匹配所有未命中的路径，剩余路径可通过
+`params.pathMatch` 获取。
 
 ## 开发命令
 
@@ -296,6 +313,10 @@ const html = app.renderHtmlDocument({
 - `createApp({ root, rootProps })`
 - `Component<Props, State>`
 - `TransitionGroup` / `TransitionGroupProps` / `TransitionAnimationType`
+- `Transition` / `TransitionProps`——基于 CSS class 的进入/退出过渡
+- `KeepAlive` / `KeepAliveProps`——在 `activeKey` 切换时保持子组件挂载
+- 路由守卫：`Router.beforeEach` / `Router.afterEach`，以及
+  `RouteRecord.redirect` 与 `*` 通配路由
 - `VNode`
 - `h()` / `createComponent()` / `slot()` / `each()`
 - `Tag(tag, options)`，用于创建任意 HTML 元素
@@ -317,6 +338,8 @@ const html = app.renderHtmlDocument({
 - `effect()` / `stop()`
 - `computed()`
 - `ref()` / `isRef()` / `unref()`
+- `watch(source, callback, options)`——响应式侦听，支持 `immediate`、`deep`、
+  `sync` 选项
 - `nextTick()` / `flushSync()`
 - `version`，当前为 `0.4.0`
 
@@ -361,6 +384,33 @@ const items = each(
 子节点会播放进入动画，移除的子节点会保留到退出动画结束。系统启用
 `prefers-reduced-motion: reduce` 或 Web Animations 不可用时，TSone 会自动跳过
 动画。列表重排只复用并移动已有节点，不播放重排或 FLIP 动画。
+
+`Transition` 在 `show` 切换时为单个元素播放过渡。它依次应用
+`{name}-enter-from` / `{name}-enter-to` 和 `{name}-leave-from` /
+`{name}-leave-to` CSS class（各配套一个 `-active` class），离开开始
+`duration` 毫秒后才移除元素：
+
+```typescript
+{
+  component: Transition,
+  props: { show: this.state.open, name: 'fade', duration: 300 },
+  children: [Dialog({ children: ['设置'] })],
+}
+```
+
+`KeepAlive` 让所有带 key 的子组件保持挂载（状态与 DOM 均保留），非活跃项通过
+`display: none` 隐藏：
+
+```typescript
+{
+  component: KeepAlive,
+  props: { activeKey: this.state.activeTab },
+  children: [
+    createComponent(Editor, {}, [], 'editor'),
+    createComponent(Preview, {}, [], 'preview'),
+  ],
+}
+```
 
 组件事件可订阅并用返回的函数取消订阅；组件 VNode 可通过 `emitters` 声明父级监听器。
 

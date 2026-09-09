@@ -10,6 +10,8 @@ import {
   ref,
   isRef,
   unref,
+  watch,
+  flushSync,
 } from '../reactive';
 
 describe('ReactiveSystem', () => {
@@ -154,6 +156,200 @@ describe('ReactiveSystem', () => {
       expect(dummy).toBe(2);
       expect(unref(count)).toBe(2);
       expect(unref('plain')).toBe('plain');
+    });
+  });
+
+  describe('数组搜索方法', () => {
+    it('includes/indexOf/lastIndexOf 应命中数组中的响应式元素', () => {
+      const rawItem = { id: 1 };
+      const rawItem2 = { id: 2 };
+      const observed = reactive([rawItem, rawItem2]);
+
+      // 传入原始对象也应命中（元素是响应式代理）
+      expect(observed.includes(rawItem)).toBe(true);
+      expect(observed.includes(rawItem2)).toBe(true);
+      expect(observed.indexOf(rawItem2)).toBe(1);
+      expect(observed.lastIndexOf(rawItem)).toBe(0);
+    });
+
+    it('includes 应命中传入的响应式对象', () => {
+      const proxyItem = reactive({ id: 1 });
+      const observed = reactive([proxyItem]);
+
+      expect(observed.includes(proxyItem)).toBe(true);
+      expect(observed.indexOf(proxyItem)).toBe(0);
+    });
+
+    it('不存在的对象应返回 false/-1', () => {
+      const observed = reactive([{ id: 1 }]);
+
+      expect(observed.includes({ id: 1 })).toBe(false);
+      expect(observed.indexOf({ id: 1 })).toBe(-1);
+    });
+
+    it('通过索引赋值存入的元素（响应式代理）应能被原始对象命中', () => {
+      const rawItem = { id: 2 };
+      const observed = reactive([{ id: 1 }]);
+
+      observed[0] = rawItem;
+
+      expect(observed.includes(rawItem)).toBe(true);
+      expect(observed.indexOf(rawItem)).toBe(0);
+    });
+
+    it('数组内容变化后应重新运行依赖搜索方法的 effect', () => {
+      const rawItem = { id: 1 };
+      const observed = reactive<{ id: number }[]>([]);
+      let found = false;
+
+      effect(() => {
+        found = observed.includes(rawItem);
+      });
+
+      expect(found).toBe(false);
+      observed.push(rawItem);
+      expect(found).toBe(true);
+    });
+  });
+
+  describe('watch', () => {
+    it('追踪 getter 源并在变化时回调', () => {
+      const observed = reactive({ count: 0 });
+      const calls: Array<[number, number | undefined]> = [];
+
+      watch(
+        () => observed.count,
+        (value, oldValue) => {
+          calls.push([value, oldValue]);
+        }
+      );
+
+      observed.count = 1;
+      flushSync();
+
+      expect(calls).toEqual([[1, 0]]);
+    });
+
+    it('支持 ref 源', () => {
+      const count = ref(0);
+      const calls: number[] = [];
+
+      watch(count, (value) => {
+        calls.push(value);
+      });
+
+      count.value = 2;
+      flushSync();
+
+      expect(calls).toEqual([2]);
+    });
+
+    it('immediate 时立即回调一次', () => {
+      let calls = 0;
+
+      watch(
+        () => 0,
+        () => {
+          calls += 1;
+        },
+        { immediate: true }
+      );
+
+      expect(calls).toBe(1);
+    });
+
+    it('同一批多次变化只回调一次', () => {
+      const observed = reactive({ count: 0 });
+      const calls: Array<[number, number | undefined]> = [];
+
+      watch(
+        () => observed.count,
+        (value, oldValue) => {
+          calls.push([value, oldValue]);
+        }
+      );
+
+      observed.count = 1;
+      observed.count = 2;
+      flushSync();
+
+      expect(calls).toEqual([[2, 0]]);
+    });
+
+    it('sync 选项下变化立即回调', () => {
+      const observed = reactive({ count: 0 });
+      const calls: number[] = [];
+
+      watch(
+        () => observed.count,
+        (value) => {
+          calls.push(value);
+        },
+        { sync: true }
+      );
+
+      observed.count = 1;
+      expect(calls).toEqual([1]);
+    });
+
+    it('deep 选项追踪嵌套属性变化', () => {
+      const observed = reactive({ nested: { count: 0 } });
+      const calls: number[] = [];
+
+      watch(
+        () => observed.nested,
+        (value) => {
+          calls.push(value.count);
+        },
+        { deep: true }
+      );
+
+      observed.nested.count = 1;
+      flushSync();
+
+      expect(calls).toEqual([1]);
+    });
+
+    it('返回的 stop 函数停止追踪', () => {
+      const observed = reactive({ count: 0 });
+      const calls: number[] = [];
+      const stopWatch = watch(
+        () => observed.count,
+        (value) => {
+          calls.push(value);
+        }
+      );
+
+      observed.count = 1;
+      flushSync();
+      stopWatch();
+
+      observed.count = 2;
+      flushSync();
+
+      expect(calls).toEqual([1]);
+    });
+
+    it('onCleanup 在下次回调前执行', () => {
+      const observed = reactive({ count: 0 });
+      const order: string[] = [];
+
+      watch(
+        () => observed.count,
+        (_value, _oldValue, onCleanup) => {
+          order.push('callback');
+          onCleanup(() => {
+            order.push('cleanup');
+          });
+        }
+      );
+
+      observed.count = 1;
+      flushSync();
+      observed.count = 2;
+      flushSync();
+
+      expect(order).toEqual(['callback', 'cleanup', 'callback']);
     });
   });
 

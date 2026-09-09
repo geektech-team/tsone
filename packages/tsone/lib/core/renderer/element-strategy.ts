@@ -16,9 +16,9 @@ import {
 } from './props';
 import type { RenderRuntimeContext, RenderStrategy, Renderable } from './types';
 
-export class ElementRenderStrategy<TNode extends HTMLNode = HTMLNode>
-  implements RenderStrategy<TNode>
-{
+export class ElementRenderStrategy<
+  TNode extends HTMLNode = HTMLNode,
+> implements RenderStrategy<TNode> {
   private readonly listeners = new WeakMap<
     HTMLElement,
     Map<string, { eventName: string; listener: EventListener }>
@@ -179,6 +179,11 @@ export class ElementRenderStrategy<TNode extends HTMLNode = HTMLNode>
 
     Object.entries(newProps).forEach(([key, value]) => {
       if (isEventProp(key)) {
+        return;
+      }
+
+      // 值未变化时跳过 DOM 更新，避免每次 patch 全量重写属性
+      if (oldProps[key] === value) {
         return;
       }
 

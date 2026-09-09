@@ -217,16 +217,34 @@ const router = createRouter({
   mode: 'history',
   routes: [
     { path: '/', component: HomePage },
+    { path: '/old', redirect: '/new' },
+    { path: '/new', component: NewPage },
     {
       path: '/users/:id',
       component: UserPage,
       meta: { title: 'User Details' },
     },
+    { path: '*', component: NotFoundPage },
   ],
+});
+
+router.beforeEach((to, from) => {
+  if (to.path === '/admin' && !isAuthenticated) {
+    return false;
+  }
+  return true;
+});
+router.afterEach((to) => {
+  document.title = to.meta?.title ?? 'TSone';
 });
 
 createApp({ root: Layout }).use(router).mount();
 ```
+
+Guards run on programmatic navigation only. Returning `false` cancels the
+navigation, returning a string redirects to that path. `redirect` routes
+resolve to their target, and a `*` route matches every otherwise unmatched
+path with the remaining path available as `params.pathMatch`.
 
 ## Development Commands
 
@@ -322,6 +340,11 @@ The main `@geektech/tsone` entry point exports:
 - `createApp({ root, rootProps })`
 - `Component<Props, State>`
 - `TransitionGroup` / `TransitionGroupProps` / `TransitionAnimationType`
+- `Transition` / `TransitionProps` — enter/leave CSS class transitions
+- `KeepAlive` / `KeepAliveProps` — keep child components mounted across
+  `activeKey` switches
+- Router guards: `Router.beforeEach` / `Router.afterEach`, plus
+  `RouteRecord.redirect` and `*` catch-all routes
 - `VNode`
 - `h()` / `createComponent()` / `slot()` / `each()`
 - `Tag(tag, options)` for arbitrary HTML elements
@@ -343,6 +366,8 @@ The main `@geektech/tsone` entry point exports:
 - `effect()` / `stop()`
 - `computed()`
 - `ref()` / `isRef()` / `unref()`
+- `watch(source, callback, options)` — reactive watching with `immediate`,
+  `deep`, and `sync` options
 - `nextTick()` / `flushSync()`
 - `version`, currently `0.4.0`
 
@@ -390,6 +415,33 @@ children animate in, and removed children stay mounted until their exit ends.
 TSone automatically disables these animations for
 `prefers-reduced-motion: reduce` or when Web Animations is unavailable.
 Reordering reuses and moves existing nodes without a reorder or FLIP animation.
+
+`Transition` animates a single element as `show` flips. It applies
+`{name}-enter-from` / `{name}-enter-to` and `{name}-leave-from` /
+`{name}-leave-to` CSS classes (each paired with a `-active` class) and keeps
+the element mounted until `duration` ms after the leave starts:
+
+```typescript
+{
+  component: Transition,
+  props: { show: this.state.open, name: 'fade', duration: 300 },
+  children: [Dialog({ children: ['Settings'] })],
+}
+```
+
+`KeepAlive` keeps every keyed child component mounted (state and DOM are
+preserved) while hiding inactive ones with `display: none`:
+
+```typescript
+{
+  component: KeepAlive,
+  props: { activeKey: this.state.activeTab },
+  children: [
+    createComponent(Editor, {}, [], 'editor'),
+    createComponent(Preview, {}, [], 'preview'),
+  ],
+}
+```
 
 Component events return an unsubscribe function, while component VNodes can
 declare parent listeners through `emitters`:
