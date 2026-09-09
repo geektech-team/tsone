@@ -498,6 +498,36 @@ export const guidePages: DocPage[] = [
         [inlineCode('beforeUnmount()'), ': 组件从 DOM 卸载前调用'],
         [inlineCode('onUnmounted()'), ': 组件从 DOM 卸载后调用'],
       ]),
+      heading(3, '错误处理（错误边界）'),
+      paragraph(
+        '在 ',
+        inlineCode('onErrorCaptured(error, instance)'),
+        ' 中捕获后代组件渲染或更新期间抛出的错误。返回 false 表示错误已被处理并停止继续向上传播；返回 true 或 undefined 时错误继续冒泡到更外层的边界。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          'class ErrorBoundary extends Component<object, { failed: boolean }> {',
+          '  protected initState() {',
+          '    return { failed: false };',
+          '  }',
+          '',
+          '  protected initStyles(): void {}',
+          '',
+          '  protected onErrorCaptured(): boolean {',
+          '    this.state.failed = true;',
+          '    return false;',
+          '  }',
+          '',
+          '  protected render(): VNode {',
+          '    if (this.state.failed) {',
+          "      return { tag: 'p', children: ['子组件出错了，已由边界接管'] };",
+          '    }',
+          "    return { tag: 'div', children: this.props.children ?? [] };",
+          '  }',
+          '}',
+        ].join('\n')
+      ),
       heading(3, '生命周期示例'),
       codeBlock(
         'ts',
@@ -737,6 +767,56 @@ export const guidePages: DocPage[] = [
           'this.styleManager.clearStyles();',
         ].join('\n')
       ),
+      heading(2, '过渡与组件缓存'),
+      paragraph(
+        inlineCode('Transition'),
+        ' 在 ',
+        inlineCode('show'),
+        ' 切换时为单个元素播放进入/离开过渡：进入时应用 ',
+        inlineCode('{name}-enter-from'),
+        ' / ',
+        inlineCode('{name}-enter-to'),
+        '（各配套一个 -active class），离开时应用 ',
+        inlineCode('{name}-leave-from'),
+        ' / ',
+        inlineCode('{name}-leave-to'),
+        '，并在离开开始 ',
+        inlineCode('duration'),
+        ' 毫秒后移除元素。默认 name 为 transition、duration 为 300。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { Transition } from '@geektech/tsone';",
+          '',
+          '{',
+          '  component: Transition,',
+          "  props: { show: this.state.open, name: 'fade', duration: 300 },",
+          "  children: [{ tag: 'div', children: ['内容'] }],",
+          '}',
+        ].join('\n')
+      ),
+      paragraph(
+        inlineCode('KeepAlive'),
+        ' 让所有带 key 的子组件保持挂载：切换 ',
+        inlineCode('activeKey'),
+        ' 时非活跃项通过 display:none 隐藏，状态与 DOM 均保留，适合 tab 切换等需要保留状态的场景。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { KeepAlive } from '@geektech/tsone';",
+          '',
+          '{',
+          '  component: KeepAlive,',
+          "  props: { activeKey: this.state.activeTab },",
+          '  children: [',
+          "    { key: 'tab-a', component: PanelA },",
+          "    { key: 'tab-b', component: PanelB },",
+          '  ],',
+          '}',
+        ].join('\n')
+      ),
       heading(2, '组件上下文'),
       paragraph(
         '组件可以通过应用上下文读取全局配置，也可以通过 router getter 访问路由。'
@@ -945,6 +1025,38 @@ export const guidePages: DocPage[] = [
           'stop(runner);',
         ].join('\n')
       ),
+      heading(3, 'watch 侦听器'),
+      paragraph(
+        inlineCode('watch(source, callback, options)'),
+        ' 侦听响应式源（getter 或 ref）的变化并执行回调，返回停止侦听的函数。回调收到新值、旧值和一个注册清理函数的 ',
+        inlineCode('onCleanup'),
+        ' 参数；默认随调度器批处理，同一批变化只回调一次。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { reactive, ref, watch } from '@geektech/tsone';",
+          '',
+          'const count = ref(0);',
+          '',
+          'const stop = watch(count, (value, oldValue) => {',
+          '  console.log(`count: ${oldValue} -> ${value}`);',
+          '});',
+          '',
+          "const state = reactive({ profile: { name: 'John' } });",
+          '',
+          "watch(() => state.profile.name, (name) => {",
+          "  console.log('name changed to', name);",
+          '}, { deep: true });',
+          '',
+          'stop();',
+        ].join('\n')
+      ),
+      list([
+        [inlineCode('immediate'), ': 建立后立即执行一次回调（此时 oldValue 为 undefined）'],
+        [inlineCode('deep'), ': 深度追踪 getter 返回值嵌套属性的变化'],
+        [inlineCode('sync'), ': 变化发生时同步回调（默认随调度器批处理）'],
+      ]),
       heading(2, '最佳实践'),
       heading(3, '状态设计'),
       list([
@@ -1067,6 +1179,48 @@ export const guidePages: DocPage[] = [
         [inlineCode('/user/:id'), ': 动态路径参数'],
         [inlineCode('*'), ': 通配符兜底'],
       ]),
+      heading(3, '导航守卫'),
+      paragraph(
+        inlineCode('router.beforeEach(guard)'),
+        ' 注册全局前置守卫：返回 false 取消导航，返回字符串重定向到该路径，返回 true 或 undefined 放行；',
+        inlineCode('router.afterEach(hook)'),
+        ' 在导航提交后调用。守卫仅在编程式导航（push/replace）时执行。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "router.beforeEach((to) => {",
+          "  if (!isLoggedIn() && to.path !== '/login') return '/login';",
+          '  return true;',
+          '});',
+          '',
+          "router.afterEach((to) => {",
+          "  document.title = String(to.meta?.title ?? '');",
+          '});',
+        ].join('\n')
+      ),
+      heading(3, '重定向与通配路由'),
+      paragraph(
+        inlineCode('RouteRecord.redirect'),
+        ' 让路由解析到目标路径（自带循环防护）；',
+        inlineCode("path: '*'"),
+        ' 匹配所有未命中路径，剩余路径片段可通过 ',
+        inlineCode('params.pathMatch'),
+        ' 读取，常用于 404 页面。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          'const router = createRouter({',
+          '  routes: [',
+          "    { path: '/', component: HomeComponent },",
+          "    { path: '/old', redirect: '/new' },",
+          "    { path: '/new', component: NewComponent },",
+          "    { path: '*', component: NotFoundComponent },",
+          '  ],',
+          '});',
+        ].join('\n')
+      ),
       heading(2, '路由导航'),
       heading(3, '编程式导航'),
       codeBlock(

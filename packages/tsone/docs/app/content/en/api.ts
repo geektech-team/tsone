@@ -408,6 +408,10 @@ export const enApiPages: DocPage[] = [
         [inlineCode('onUpdated()'), ': after the patch is complete'],
         [inlineCode('beforeUnmount()'), ': before unmounting'],
         [inlineCode('onUnmounted()'), ': after unmounting'],
+        [
+          inlineCode('onErrorCaptured(error, instance)'),
+          ': catches errors thrown by descendant renders or updates; return false to stop propagation',
+        ],
       ]),
       heading(2, 'State and Props'),
       codeBlock(
@@ -910,7 +914,8 @@ export const enApiPages: DocPage[] = [
         [
           'interface RouteRecord {',
           '  path: string;',
-          '  component: ComponentConstructor;',
+          '  component?: ComponentConstructor;',
+          '  redirect?: string;',
           '  name?: string;',
           '  meta?: Record<string, unknown>;',
           '}',

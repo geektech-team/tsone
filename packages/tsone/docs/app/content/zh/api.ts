@@ -372,6 +372,10 @@ export const apiPages: DocPage[] = [
         [inlineCode('onUpdated()'), ': patch 完成后'],
         [inlineCode('beforeUnmount()'), ': 卸载前'],
         [inlineCode('onUnmounted()'), ': 卸载后'],
+        [
+          inlineCode('onErrorCaptured(error, instance)'),
+          ': 捕获后代组件渲染或更新抛出的错误，返回 false 停止传播',
+        ],
       ]),
       heading(2, '状态和属性'),
       codeBlock(
@@ -865,7 +869,8 @@ export const apiPages: DocPage[] = [
         [
           'interface RouteRecord {',
           '  path: string;',
-          '  component: ComponentConstructor;',
+          '  component?: ComponentConstructor;',
+          '  redirect?: string;',
           '  name?: string;',
           '  meta?: Record<string, unknown>;',
           '}',

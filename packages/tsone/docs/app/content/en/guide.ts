@@ -790,6 +790,27 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'heading',
         level: 3,
+        text: 'Error Handling (Error Boundaries)',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'Use ',
+          {
+            type: 'code',
+            text: 'onErrorCaptured(error, instance)',
+          },
+          ' to catch errors thrown while a descendant component renders or updates. Return false to mark the error as handled and stop it from propagating; return true or undefined to let it bubble up to an outer boundary.',
+        ],
+      },
+      {
+        type: 'code',
+        language: 'ts',
+        code: "class ErrorBoundary extends Component<object, { failed: boolean }> {\n  protected initState() {\n    return { failed: false };\n  }\n\n  protected initStyles(): void {}\n\n  protected onErrorCaptured(): boolean {\n    this.state.failed = true;\n    return false;\n  }\n\n  protected render(): VNode {\n    if (this.state.failed) {\n      return { tag: 'p', children: ['A child failed; the boundary took over.'] };\n    }\n    return { tag: 'div', children: this.props.children ?? [] };\n  }\n}",
+      },
+      {
+        type: 'heading',
+        level: 3,
         text: 'Lifecycle Example',
       },
       {
@@ -920,6 +941,76 @@ export const enGuidePages: DocPage[] = [
         type: 'code',
         language: 'ts',
         code: "this.styleManager.removeStyle('.button');\nthis.styleManager.clearStyles();",
+      },
+      {
+        type: 'heading',
+        level: 2,
+        text: 'Transitions and Component Caching',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'code',
+            text: 'Transition',
+          },
+          ' plays an enter/leave transition for a single element while ',
+          {
+            type: 'code',
+            text: 'show',
+          },
+          ' toggles: on enter it applies ',
+          {
+            type: 'code',
+            text: '{name}-enter-from',
+          },
+          ' / ',
+          {
+            type: 'code',
+            text: '{name}-enter-to',
+          },
+          ' (each with an -active class), on leave ',
+          {
+            type: 'code',
+            text: '{name}-leave-from',
+          },
+          ' / ',
+          {
+            type: 'code',
+            text: '{name}-leave-to',
+          },
+          ', and the element is removed ',
+          {
+            type: 'code',
+            text: 'duration',
+          },
+          ' ms after leave starts. Default name is transition and duration is 300.',
+        ],
+      },
+      {
+        type: 'code',
+        language: 'ts',
+        code: "import { Transition } from '@geektech/tsone';\n\n{\n  component: Transition,\n  props: { show: this.state.open, name: 'fade', duration: 300 },\n  children: [{ tag: 'div', children: ['content'] }],\n}",
+      },
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'code',
+            text: 'KeepAlive',
+          },
+          ' keeps every keyed child component mounted: when ',
+          {
+            type: 'code',
+            text: 'activeKey',
+          },
+          ' changes, inactive children stay hidden via display:none with state and DOM preserved, which fits tab switching and other state-preserving scenarios.',
+        ],
+      },
+      {
+        type: 'code',
+        language: 'ts',
+        code: "import { KeepAlive } from '@geektech/tsone';\n\n{\n  component: KeepAlive,\n  props: { activeKey: this.state.activeTab },\n  children: [\n    { key: 'tab-a', component: PanelA },\n    { key: 'tab-b', component: PanelB },\n  ],\n}",
       },
       {
         type: 'heading',
@@ -1185,6 +1276,57 @@ export const enGuidePages: DocPage[] = [
       },
       {
         type: 'heading',
+        level: 3,
+        text: 'watch Listeners',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'code',
+            text: 'watch(source, callback, options)',
+          },
+          ' listens to a reactive source (a getter or a ref) and runs a callback when it changes, returning a stop function. The callback receives the new value, the old value, and an ',
+          {
+            type: 'code',
+            text: 'onCleanup',
+          },
+          ' parameter for registering cleanup. By default callbacks are batched with the scheduler, so multiple changes in one batch run the callback once.',
+        ],
+      },
+      {
+        type: 'code',
+        language: 'ts',
+        code: "import { reactive, ref, watch } from '@geektech/tsone';\n\nconst count = ref(0);\n\nconst stop = watch(count, (value, oldValue) => {\n  console.log(`count: ${oldValue} -> ${value}`);\n});\n\nconst state = reactive({ profile: { name: 'John' } });\n\nwatch(() => state.profile.name, (name) => {\n  console.log('name changed to', name);\n}, { deep: true });\n\nstop();",
+      },
+      {
+        type: 'list',
+        items: [
+          [
+            {
+              type: 'code',
+              text: 'immediate',
+            },
+            ': run the callback once right away (oldValue is undefined)',
+          ],
+          [
+            {
+              type: 'code',
+              text: 'deep',
+            },
+            ': track nested property changes of the getter result',
+          ],
+          [
+            {
+              type: 'code',
+              text: 'sync',
+            },
+            ': invoke the callback synchronously on change (default is scheduler batching)',
+          ],
+        ],
+      },
+      {
+        type: 'heading',
         level: 2,
         text: 'Best Practices',
       },
@@ -1412,6 +1554,61 @@ export const enGuidePages: DocPage[] = [
             ': wildcard fallback',
           ],
         ],
+      },
+      {
+        type: 'heading',
+        level: 3,
+        text: 'Navigation Guards',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'code',
+            text: 'router.beforeEach(guard)',
+          },
+          ' registers a global before guard: return false to cancel navigation, return a string to redirect to that path, or return true/undefined to proceed. ',
+          {
+            type: 'code',
+            text: 'router.afterEach(hook)',
+          },
+          ' runs after navigation is committed. Guards only run for programmatic navigation (push/replace).',
+        ],
+      },
+      {
+        type: 'code',
+        language: 'ts',
+        code: "router.beforeEach((to) => {\n  if (!isLoggedIn() && to.path !== '/login') return '/login';\n  return true;\n});\n\nrouter.afterEach((to) => {\n  document.title = String(to.meta?.title ?? '');\n});",
+      },
+      {
+        type: 'heading',
+        level: 3,
+        text: 'Redirects and Wildcard Routes',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'code',
+            text: 'RouteRecord.redirect',
+          },
+          ' resolves a route to a target path (with loop protection); ',
+          {
+            type: 'code',
+            text: "path: '*'",
+          },
+          ' matches every unmatched path and exposes the remaining segments through ',
+          {
+            type: 'code',
+            text: 'params.pathMatch',
+          },
+          ', typically used for a 404 page.',
+        ],
+      },
+      {
+        type: 'code',
+        language: 'ts',
+        code: "const router = createRouter({\n  routes: [\n    { path: '/', component: HomeComponent },\n    { path: '/old', redirect: '/new' },\n    { path: '/new', component: NewComponent },\n    { path: '*', component: NotFoundComponent },\n  ],\n});",
       },
       {
         type: 'heading',
