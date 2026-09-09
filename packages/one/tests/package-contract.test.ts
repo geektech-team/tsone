@@ -32,7 +32,7 @@ describe('One UI package contract', () => {
 
     expect(manifest.name).toBe('@geektech/one');
     expect(manifest.version).toBe('0.5.0');
-    expect(manifest.peerDependencies['@geektech/tsone']).toBe('>=0.4.0 <0.5.0');
+    expect(manifest.peerDependencies['@geektech/tsone']).toBe('>=0.5.0 <0.6.0');
     expect(manifest.dependencies ?? {}).toEqual({});
     expect(ONE_NAME).toBe(manifest.name);
     expect(ONE_VERSION).toBe(manifest.version);

@@ -1912,7 +1912,7 @@ export class Storage {
 }
 
 export class Navigator {
-  public readonly userAgent = 'TSone/0.4.0';
+  public readonly userAgent = 'TSone/0.5.0';
   public readonly platform = 'TSone';
   public readonly language = 'zh-CN';
   public readonly languages = ['zh-CN'];

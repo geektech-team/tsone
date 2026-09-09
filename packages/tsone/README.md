@@ -61,7 +61,7 @@ class App extends Component<Record<string, never>, AppState> {
   protected initState(): AppState {
     return {
       count: 0,
-      version: '0.4.0',
+      version: '0.5.0',
     };
   }
 
@@ -369,7 +369,7 @@ The main `@geektech/tsone` entry point exports:
 - `watch(source, callback, options)` — reactive watching with `immediate`,
   `deep`, and `sync` options
 - `nextTick()` / `flushSync()`
-- `version`, currently `0.4.0`
+- `version`, currently `0.5.0`
 
 ## Rendering, Communication, and Forms
 
