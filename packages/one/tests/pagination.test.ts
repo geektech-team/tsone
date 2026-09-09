@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { flushSync } from '@geektech/tsone';
 import {
   OnePagination,
   createOnePaginationTokens,
@@ -165,6 +166,7 @@ describe('OnePagination', () => {
     expect(input.disabled).toBe(true);
     expect(container.querySelectorAll('button:not(:disabled)')).toHaveLength(0);
     component.setProps({ disabled: false });
+    flushSync();
     const enabledInput = container.querySelector(
       '[aria-label="快速跳转页码"]'
     ) as HTMLInputElement;

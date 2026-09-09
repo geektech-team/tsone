@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { flushSync } from '@geektech/tsone';
 import { OneInput, type OneInputProps, type OneInputValueEvent } from '../lib';
 
 describe('OneInput', () => {
@@ -42,6 +43,7 @@ describe('OneInput', () => {
     expect(changes[0].originalEvent.type).toBe('change');
 
     component.setProps({ defaultValue: 'replacement' });
+    flushSync();
     expect(input.value).toBe('next');
   });
 
@@ -60,6 +62,7 @@ describe('OneInput', () => {
     expect(input.value).toBe('locked');
 
     component.setProps({ value: 'accepted' });
+    flushSync();
     expect(input.value).toBe('accepted');
   });
 

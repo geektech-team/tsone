@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { flushSync } from '@geektech/tsone';
 import { OneButton, type OneButtonProps } from '../lib';
 
 describe('OneButton', () => {
@@ -27,6 +28,7 @@ describe('OneButton', () => {
     expect(button?.textContent).toContain('Save');
 
     component.setProps({ variant: 'danger', size: 'lg', type: 'submit' });
+    flushSync();
     expect(button?.className).toContain('one-button--danger');
     expect(button?.className).toContain('one-button--lg');
     expect(button?.getAttribute('type')).toBe('submit');
@@ -43,6 +45,7 @@ describe('OneButton', () => {
     expect(events).toHaveLength(1);
 
     component.setProps({ loading: true });
+    flushSync();
     expect(button.disabled).toBe(true);
     expect(button.getAttribute('aria-busy')).toBe('true');
     expect(button.querySelector('.one-button__spinner')).toBeTruthy();
@@ -50,6 +53,7 @@ describe('OneButton', () => {
     expect(events).toHaveLength(1);
 
     component.setProps({ loading: false, disabled: true });
+    flushSync();
     expect(button.disabled).toBe(true);
     expect(button.hasAttribute('aria-busy')).toBe(false);
     button.dispatchEvent(new MouseEvent('click'));

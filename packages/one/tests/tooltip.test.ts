@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { flushSync } from '@geektech/tsone';
 import {
   OneFloatingPositioner,
   OneTooltipTriggerError,
@@ -148,6 +149,7 @@ describe('OneTooltip', () => {
     expect(changes).toEqual([false]);
     expect(document.querySelector('[role="tooltip"]')).toBeTruthy();
     component.setProps({ open: false });
+    flushSync();
     expect(document.querySelector('[role="tooltip"]')).toBeNull();
   });
 

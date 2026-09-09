@@ -14,7 +14,7 @@ export interface CreateProjectResult {
 }
 
 /** Published framework version referenced by generated projects. */
-export const TSONE_FRAMEWORK_VERSION = '0.4.0';
+export const TSONE_FRAMEWORK_VERSION = '0.5.0';
 /** Published CLI version referenced by generated projects. */
 export const TSONE_CLI_VERSION = '0.4.0';
 

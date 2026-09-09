@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { flushSync } from '@geektech/tsone';
 import { OneTabs, type OneTabsChangeEvent } from '../lib/tabs';
 
 describe('OneTabs', () => {
@@ -68,6 +69,7 @@ describe('OneTabs', () => {
     ).toBe('B');
 
     component.setProps({ value: 'a' });
+    flushSync();
     (
       container.querySelectorAll('[role="tab"]')[1] as HTMLButtonElement
     ).click();
@@ -134,6 +136,7 @@ describe('OneTabs', () => {
     component.setProps({
       items: [{ value: 'disabled', label: 'Disabled', disabled: true }],
     });
+    flushSync();
     expect(container.querySelector('[aria-selected="true"]')).toBeNull();
   });
 

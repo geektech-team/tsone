@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { flushSync } from '@geektech/tsone';
 import { OneBadge } from '../lib/badge';
 
 describe('OneBadge', () => {
@@ -24,6 +25,7 @@ describe('OneBadge', () => {
     );
 
     component.setProps({ value: 11, max: 10, children: ['收件箱'] });
+    flushSync();
     expect(container.querySelector('.one-badge__content')?.textContent).toBe(
       '10+'
     );
@@ -35,6 +37,7 @@ describe('OneBadge', () => {
     expect(container.querySelector('.one-badge__content')).toBeNull();
 
     component.setProps({ value: 0, showZero: true, children: ['通知'] });
+    flushSync();
     expect(container.querySelector('.one-badge__content')?.textContent).toBe(
       '0'
     );
@@ -44,6 +47,7 @@ describe('OneBadge', () => {
       ariaLabel: '有新通知',
       children: ['通知'],
     });
+    flushSync();
     expect(
       container
         .querySelector('.one-badge__content--dot')

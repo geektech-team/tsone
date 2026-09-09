@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { flushSync } from '@geektech/tsone';
 import { OneDialog, createOneDialogService } from '../lib/dialog';
 import { DomOneOverlayHost } from '../lib/overlay';
 
@@ -71,6 +72,7 @@ describe('OneDialog', () => {
     expect(changes).toEqual([false]);
     expect(document.querySelector('[role="dialog"]')).toBeTruthy();
     component.setProps({ open: false });
+    flushSync();
     expect(document.querySelector('[role="dialog"]')).toBeNull();
   });
 
@@ -92,6 +94,7 @@ describe('OneDialog', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(document.querySelector('[role="dialog"]')).toBeTruthy();
     component.setProps({ closeOnOverlay: true });
+    flushSync();
     (document.querySelector('.one-dialog__backdrop') as HTMLElement).click();
 
     expect(reasons).toEqual(['overlay']);
@@ -185,11 +188,13 @@ describe('OneDialogService', () => {
       document.querySelector('.one-dialog__confirm') as HTMLButtonElement
     ).click();
     await Promise.resolve();
+    flushSync();
     expect(document.querySelector('[role="dialog"]')).toBeTruthy();
     (
       document.querySelector('.one-dialog__cancel') as HTMLButtonElement
-    ).click();
+    ).dispatchEvent(new MouseEvent('click'));
     expect(await kept).toBe(false);
+    flushSync();
 
     const closed = service.confirm({
       title: 'Save',
@@ -197,8 +202,9 @@ describe('OneDialogService', () => {
     });
     (
       document.querySelector('.one-dialog__confirm') as HTMLButtonElement
-    ).click();
+    ).dispatchEvent(new MouseEvent('click'));
     expect(await closed).toBe(true);
+    flushSync();
     expect(document.querySelector('[role="dialog"]')).toBeNull();
   });
 
@@ -269,11 +275,14 @@ describe('OneDialogService', () => {
     service.open({ title: 'Second' });
 
     first.update({ title: 'Updated' });
+    flushSync();
     expect(document.body.textContent).toContain('Updated');
     service.close(first.id);
     service.close(first.id);
+    flushSync();
     expect(document.body.textContent).not.toContain('Updated');
     service.closeAll();
+    flushSync();
     expect(document.querySelector('[role="dialog"]')).toBeNull();
     expect(document.body.textContent).toContain('Keep message');
     message.close();
@@ -289,6 +298,7 @@ describe('OneDialogService', () => {
     const second = service.confirm({ title: 'Second' });
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(await second).toBe(false);
+    flushSync();
     expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(await first).toBe(false);

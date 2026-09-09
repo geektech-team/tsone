@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { flushSync } from '@geektech/tsone';
 import { DomOneOverlayHost } from '../lib/overlay';
 import { OneMessage, createOneMessageService } from '../lib/message';
 import { OneMessageTimer, type OneTimerScheduler } from '../lib/message/timer';
@@ -93,10 +94,12 @@ describe('OneMessage', () => {
       'Saved'
     );
     component.setProps({ content: 'Updated' });
+    flushSync();
     expect(document.body.querySelector('.one-message')?.textContent).toContain(
       'Updated'
     );
     component.setProps({ closable: true });
+    flushSync();
     expect(document.body.querySelector('.one-message')?.textContent).toContain(
       'Updated'
     );
@@ -120,6 +123,7 @@ describe('OneMessage', () => {
     expect(changes).toEqual([false]);
     expect(document.querySelector('.one-message')).toBeTruthy();
     component.setProps({ open: false });
+    flushSync();
     expect(document.querySelector('.one-message')).toBeNull();
   });
 
@@ -147,12 +151,15 @@ describe('OneMessage', () => {
     expect(group.classList.contains('one-overlay-group--message')).toBe(true);
     expect(group.dataset.oneMessagePlacement).toBe('top');
     first.update({ content: 'Updated' });
+    flushSync();
     expect(document.body.textContent).toContain('Updated');
     service.close(first.id);
     service.close(first.id);
+    flushSync();
     expect(document.body.textContent).not.toContain('Updated');
     expect(document.body.textContent).toContain('Careful');
     service.closeAll();
+    flushSync();
     expect(document.querySelector('.one-message')).toBeNull();
     expect(document.body.textContent).toContain('Keep dialog');
     second.close();

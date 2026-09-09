@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { flushSync } from '@geektech/tsone';
 import { OneProgress } from '../lib';
 
 describe('OneProgress', () => {
@@ -26,6 +27,7 @@ describe('OneProgress', () => {
     ).toBe('100');
 
     component.setProps({ percent: -5 });
+    flushSync();
     expect(
       (container.querySelector('.one-progress__bar') as HTMLElement).style.width
     ).toBe('0%');
@@ -61,6 +63,7 @@ describe('OneProgress', () => {
     ).toContain('one-progress__bar--error');
 
     component.setProps({ variant: 'unknown' as 'primary' });
+    flushSync();
     expect(
       container.querySelector('.one-progress__bar')?.className
     ).toContain('one-progress__bar--primary');

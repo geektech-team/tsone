@@ -108,6 +108,9 @@ export class OneDialogService {
             if (result === false) {
               pending = false;
               updateOverlay();
+              // 确认被拒绝：保持对话框打开，但将本次确认结算为 false，
+              // 调用方无需等待后续关闭即可感知拒绝结果。
+              settle?.(false);
               return;
             }
             if (settle) {
