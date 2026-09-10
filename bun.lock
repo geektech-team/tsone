@@ -15,6 +15,14 @@
         "typescript": "^5.3.3",
       },
     },
+    "packages/backone": {
+      "name": "@geektech/backone",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@geektech/tsone": "workspace:*",
+        "@geektech/tsone-cli": "workspace:*",
+      },
+    },
     "packages/one": {
       "name": "@geektech/one",
       "version": "0.5.0",
@@ -76,6 +84,8 @@
     "@eslint/eslintrc": ["@eslint/eslintrc@2.1.4", "http://offline.npm.juqitech.com/@eslint/eslintrc/-/eslintrc-2.1.4.tgz", { "dependencies": { "ajv": "^6.12.4", "debug": "^4.3.2", "espree": "^9.6.0", "globals": "^13.19.0", "ignore": "^5.2.0", "import-fresh": "^3.2.1", "js-yaml": "^4.1.0", "minimatch": "^3.1.2", "strip-json-comments": "^3.1.1" } }, "sha512-269Z39MS6wVJtsoUl10L60WdkhJVdPG24Q4eZTH3nnF6lpvSShEK3wQjDX9JRWAUPvPh7COouPpU9IrqaZFvtQ=="],
 
     "@eslint/js": ["@eslint/js@8.57.1", "http://offline.npm.juqitech.com/@eslint/js/-/js-8.57.1.tgz", {}, "sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q=="],
+
+    "@geektech/backone": ["@geektech/backone@workspace:packages/backone"],
 
     "@geektech/one": ["@geektech/one@workspace:packages/one"],
 

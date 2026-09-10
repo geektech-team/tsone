@@ -54,6 +54,14 @@ export interface TableBlock {
   rows: string[][];
 }
 
+export interface FigureBlock {
+  type: 'figure';
+  /** 位于构建产物 /assets 下的资源文件名 */
+  src: string;
+  alt: string;
+  caption?: string;
+}
+
 export type DocBlock =
   | HeadingBlock
   | ParagraphBlock
@@ -61,7 +69,8 @@ export type DocBlock =
   | CodeBlock
   | CalloutBlock
   | ApiTableBlock
-  | TableBlock;
+  | TableBlock
+  | FigureBlock;
 
 export interface DocPage {
   path: string;
@@ -119,6 +128,10 @@ export function apiTable(rows: ApiTableBlock['rows']): DocBlock {
 
 export function table(columns: string[], rows: string[][]): DocBlock {
   return { type: 'table', columns, rows };
+}
+
+export function figure(src: string, alt: string, caption?: string): DocBlock {
+  return { type: 'figure', src, alt, caption };
 }
 
 const DOC_ROUTE_WITH_TRAILING_SLASH = /^\/?[a-z0-9-]+(?:\/[a-z0-9-]+)*(?:\/)?$/;
@@ -254,6 +267,8 @@ function blockText(block: DocBlock): string {
         block.columns.join(' '),
         ...block.rows.map((row) => row.join(' ')),
       ].join(' ');
+    case 'figure':
+      return [block.alt, block.caption ?? ''].join(' ');
   }
 }
 

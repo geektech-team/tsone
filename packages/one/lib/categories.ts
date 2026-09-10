@@ -1,12 +1,18 @@
 export type OneComponentCategory =
   | 'basic'
+  | 'layout'
   | 'form'
   | 'navigation'
   | 'data-display'
   | 'feedback';
 
 export const ONE_COMPONENT_CATEGORIES = [
-  { id: 'basic', label: '基础', components: ['OneButton', 'OneDivider', 'OneSpace'] },
+  { id: 'basic', label: '基础', components: ['OneButton', 'OneSpace'] },
+  {
+    id: 'layout',
+    label: '布局',
+    components: ['OneDivider', 'OneRow', 'OneCol'],
+  },
   {
     id: 'form',
     label: '表单',
@@ -14,6 +20,7 @@ export const ONE_COMPONENT_CATEGORIES = [
       'OneForm',
       'OneFormItem',
       'OneInput',
+      'OneTextarea',
       'OneSelect',
       'OneCascader',
       'OneTimePicker',

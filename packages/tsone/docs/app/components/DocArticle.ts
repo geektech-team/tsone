@@ -1,6 +1,8 @@
 import { Component, type VNode } from '../../../lib';
 import {
+  getDocBasePath,
   localizeDocHref,
+  resolveDocAssetPath,
   type DocBlock,
   type DocInline,
   type DocLocale,
@@ -155,6 +157,23 @@ export class DocArticle extends Component<DocArticleProps> {
                 })),
               })),
             },
+          ],
+        };
+      case 'figure':
+        return {
+          tag: 'figure',
+          props: { className: 'doc-figure' },
+          children: [
+            {
+              tag: 'img',
+              props: {
+                src: resolveDocAssetPath(block.src, getDocBasePath()),
+                alt: block.alt,
+              },
+            },
+            ...(block.caption
+              ? [{ tag: 'figcaption', children: [block.caption] }]
+              : []),
           ],
         };
     }

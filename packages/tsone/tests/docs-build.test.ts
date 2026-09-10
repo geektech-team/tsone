@@ -134,12 +134,13 @@ describe('docs static build', () => {
     try {
       const result = await buildDocs({ outDir });
 
-      expect(result.pagesBuilt).toBe(30);
+      expect(result.pagesBuilt).toBe(32);
       expect(result.assetsBuilt).toEqual([
         join(outDir, 'assets/docs-client.js'),
         join(outDir, 'assets/docs-locale.js'),
+        join(outDir, 'assets/architecture.svg'),
       ]);
-      expect(collectHtmlFiles(outDir)).toHaveLength(30);
+      expect(collectHtmlFiles(outDir)).toHaveLength(32);
       expect(existsSync(join(outDir, 'index.html'))).toBe(true);
       expect(existsSync(join(outDir, 'api/component/index.html'))).toBe(true);
       expect(existsSync(join(outDir, 'en/index.html'))).toBe(true);
@@ -168,6 +169,7 @@ describe('docs static build', () => {
       const localizedRoutes = [
         ['/', '/en/'],
         ['/guide/getting-started/', '/en/guide/getting-started/'],
+        ['/guide/architecture/', '/en/guide/architecture/'],
         ['/guide/core-concepts/', '/en/guide/core-concepts/'],
         ['/guide/component-system/', '/en/guide/component-system/'],
         ['/guide/reactive-system/', '/en/guide/reactive-system/'],
@@ -180,7 +182,10 @@ describe('docs static build', () => {
         ['/api/style/', '/en/api/style/'],
         ['/examples/basic/', '/en/examples/basic/'],
         ['/contributing/', '/en/contributing/'],
-        ['/benchmark/framework-comparison/', '/en/benchmark/framework-comparison/'],
+        [
+          '/benchmark/framework-comparison/',
+          '/en/benchmark/framework-comparison/',
+        ],
       ] as const;
 
       expect(docCatalogs.zh.pages.map((page) => page.path)).toEqual(
@@ -262,7 +267,7 @@ describe('docs static build', () => {
     try {
       const result = await buildDocs({ outDir, basePath: '/tsone' });
 
-      expect(result.pagesBuilt).toBe(30);
+      expect(result.pagesBuilt).toBe(32);
 
       const home = readFileSync(join(outDir, 'index.html'), 'utf8');
       expect(home).toContain('data-doc-base="/tsone"');

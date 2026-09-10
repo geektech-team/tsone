@@ -10,6 +10,7 @@ import {
   OneForm,
   OneFormItem,
   OneInput,
+  OneTextarea,
   OneEmpty,
   OneLoading,
   OneProgress,
@@ -29,6 +30,8 @@ import {
   OneSkeleton,
   OneDivider,
   OneSpace,
+  OneRow,
+  OneCol,
   OneSteps,
   OneDescriptions,
   OneTimeline,
@@ -339,6 +342,24 @@ export class DocArticle extends Component<DocArticleProps> {
               required: true,
               invalid: true,
               ariaLabel: pick('无效输入', 'Invalid input', locale),
+            },
+          },
+        ];
+      case 'textarea':
+        return [
+          {
+            component: OneTextarea,
+            props: {
+              defaultValue: pick('多行文本内容', 'Multi-line text', locale),
+              ariaLabel: pick('备注', 'Notes', locale),
+            },
+          },
+          {
+            component: OneTextarea,
+            props: {
+              rows: 5,
+              placeholder: pick('请输入补充说明', 'Type additional notes', locale),
+              ariaLabel: pick('补充说明', 'Additional notes', locale),
             },
           },
         ];
@@ -868,6 +889,54 @@ export class DocArticle extends Component<DocArticleProps> {
                 component: OneButton,
                 props: { variant: 'danger', size: 'sm' },
                 children: [pick('删除', 'Delete', locale)],
+              },
+            ],
+          },
+        ];
+      case 'grid':
+        return [
+          {
+            component: OneRow,
+            props: { gutter: [16, 16] },
+            children: [
+              {
+                component: OneCol,
+                props: { span: 12 },
+                children: [
+                  {
+                    tag: 'div',
+                    props: { className: 'one-docs-grid-box' },
+                    children: ['12'],
+                  },
+                ],
+              },
+              {
+                component: OneCol,
+                props: { span: 12 },
+                children: [
+                  {
+                    tag: 'div',
+                    props: { className: 'one-docs-grid-box' },
+                    children: ['12'],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            component: OneRow,
+            props: { gutter: [16, 16] },
+            children: [
+              {
+                component: OneCol,
+                props: { span: 8, offset: 8 },
+                children: [
+                  {
+                    tag: 'div',
+                    props: { className: 'one-docs-grid-box' },
+                    children: [pick('8 偏移 8', '8 + offset 8', locale)],
+                  },
+                ],
               },
             ],
           },

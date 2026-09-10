@@ -33,8 +33,10 @@ function page(
       demo(
         path.includes('/form/form')
           ? 'form'
-          : path.includes('cascader')
-            ? 'cascader'
+          : path.includes('textarea')
+            ? 'textarea'
+            : path.includes('cascader')
+              ? 'cascader'
             : path.includes('select')
               ? 'select'
               : path.includes('checkbox')
@@ -69,7 +71,7 @@ export const formPages: OneDocPage[] = [
     ),
     'form',
     t('表单组件', 'Form components'),
-    15,
+    17,
     [
       {
         name: 'OneForm',
@@ -158,7 +160,7 @@ export const formPages: OneDocPage[] = [
       ),
       'oneform',
       'OneForm API',
-      16,
+      18,
       []
     ),
     body: [
@@ -206,7 +208,7 @@ export const formPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 17,
+    order: 19,
     body: [
       heading(1, 'input', 'OneInput'),
       paragraph(
@@ -338,7 +340,7 @@ export const formPages: OneDocPage[] = [
     ),
     'oneselect',
     'OneSelect API',
-    18,
+    20,
     [
       {
         name: 'multiple',
@@ -361,7 +363,7 @@ export const formPages: OneDocPage[] = [
     ),
     'onecheckbox',
     'OneCheckbox API',
-    19,
+    21,
     [
       {
         name: 'checked',
@@ -384,7 +386,7 @@ export const formPages: OneDocPage[] = [
     ),
     'oneswitch',
     'OneSwitch API',
-    20,
+    22,
     [
       {
         name: 'checked',
@@ -402,7 +404,7 @@ export const formPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 21,
+    order: 23,
     body: [
       heading(1, 'oneradio', t('OneRadio 与 OneRadioGroup', 'OneRadio and OneRadioGroup')),
       paragraph(
@@ -524,7 +526,7 @@ export const formPages: OneDocPage[] = [
     ),
     'onetimepicker',
     'OneTimePicker API',
-    22,
+    24,
     [
       {
         name: 'value',
@@ -560,7 +562,7 @@ export const formPages: OneDocPage[] = [
     ),
     'oneslider',
     'OneSlider API',
-    23,
+    25,
     [
       {
         name: 'value',
@@ -619,7 +621,7 @@ export const formPages: OneDocPage[] = [
     ),
     'onerate',
     'OneRate API',
-    24,
+    26,
     [
       {
         name: 'value',
@@ -675,7 +677,7 @@ export const formPages: OneDocPage[] = [
     ),
     'oneupload',
     'OneUpload API',
-    25,
+    27,
     [
       {
         name: 'accept',
@@ -736,7 +738,7 @@ export const formPages: OneDocPage[] = [
     ),
     'onecascader',
     'OneCascader API',
-    26,
+    28,
     [
       {
         name: 'options',
@@ -781,6 +783,87 @@ export const formPages: OneDocPage[] = [
         name: 'invalid',
         signature: 'invalid?: boolean',
         description: t('标记输入无效。', 'Marks the input as invalid.'),
+      },
+    ]
+  ),
+  page(
+    '/components/form/textarea/',
+    'OneTextarea',
+    t(
+      '多行文本输入：受控与非受控模式、原生状态与 rows。',
+      'Multi-line text input: controlled and uncontrolled modes, native states and rows.'
+    ),
+    'onetextarea',
+    'OneTextarea API',
+    29,
+    [
+      {
+        name: 'value',
+        signature: 'value?: string',
+        description: t('受控值；存在时输入后恢复最新 prop。', 'Controlled value; when present, input reverts to the latest prop.'),
+      },
+      {
+        name: 'defaultValue',
+        signature: 'defaultValue?: string',
+        description: t('非受控初始值。', 'Uncontrolled initial value.'),
+      },
+      {
+        name: 'name',
+        signature: 'name?: string',
+        description: t('原生字段名。', 'Native field name.'),
+      },
+      {
+        name: 'placeholder',
+        signature: 'placeholder?: string',
+        description: t('输入提示。', 'Input placeholder.'),
+      },
+      {
+        name: 'rows',
+        signature: 'rows?: number',
+        description: t('可见行数（1-10），默认 3。', 'Visible rows (1-10); default 3.'),
+      },
+      {
+        name: 'size',
+        signature: 'size?: OneComponentSize',
+        description: t(
+          "组件尺寸：'sm' | 'md' | 'lg'，默认 md。",
+          "Component size: 'sm' | 'md' | 'lg'; default md."
+        ),
+      },
+      {
+        name: 'disabled',
+        signature: 'disabled?: boolean',
+        description: t('原生禁用状态。', 'Native disabled state.'),
+      },
+      {
+        name: 'readonly',
+        signature: 'readonly?: boolean',
+        description: t('原生只读状态。', 'Native read-only state.'),
+      },
+      {
+        name: 'required',
+        signature: 'required?: boolean',
+        description: t('原生必填状态。', 'Native required state.'),
+      },
+      {
+        name: 'invalid',
+        signature: 'invalid?: boolean',
+        description: t('无效样式与 aria-invalid。', 'Invalid styling and aria-invalid.'),
+      },
+      {
+        name: 'ariaLabel',
+        signature: 'ariaLabel?: string',
+        description: t('映射到 aria-label。', 'Mapped to aria-label.'),
+      },
+      {
+        name: 'input',
+        signature: '(payload: OneTextareaValueEvent) => void',
+        description: t('每次原生 input 事件发出。', 'Emitted on every native input event.'),
+      },
+      {
+        name: 'change',
+        signature: '(payload: OneTextareaValueEvent) => void',
+        description: t('每次原生 change 事件发出。', 'Emitted on every native change event.'),
       },
     ]
   ),

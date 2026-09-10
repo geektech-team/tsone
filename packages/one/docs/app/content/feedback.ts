@@ -21,7 +21,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 32,
+    order: 35,
     body: [
       heading(1, 'feedback', t('反馈与浮层', 'Feedback and overlays')),
       paragraph(
@@ -84,7 +84,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 33,
+    order: 36,
     body: [
       heading(1, 'onealert', 'OneAlert'),
       paragraph(
@@ -150,7 +150,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 34,
+    order: 37,
     body: [
       heading(1, 'onemessage', 'OneMessage'),
       paragraph(
@@ -262,7 +262,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 35,
+    order: 38,
     body: [
       heading(1, 'onedialog', 'OneDialog'),
       paragraph(
@@ -386,7 +386,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 36,
+    order: 39,
     body: [
       heading(1, 'onetooltip', 'OneTooltip'),
       paragraph(
@@ -494,7 +494,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 37,
+    order: 40,
     body: [
       heading(1, 'onepopover', 'OnePopover'),
       paragraph(
@@ -570,7 +570,7 @@ export const feedbackPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 38,
+    order: 41,
     body: [
       heading(1, 'oneloading', 'OneLoading'),
       paragraph(

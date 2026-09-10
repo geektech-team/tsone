@@ -5,6 +5,7 @@ import { feedbackPages } from './feedback';
 import { guidePages } from './guide';
 import { homePage } from './home';
 import { navigationPages } from './navigation';
+import { layoutPages } from './layout';
 import { validateOneDocPages } from './types';
 
 export const oneDocPages = validateOneDocPages([
@@ -15,6 +16,7 @@ export const oneDocPages = validateOneDocPages([
   ...formPages,
   ...navigationPages,
   ...feedbackPages,
+  ...layoutPages,
 ]);
 
 export { oneThemeTokens } from './theme-tokens';

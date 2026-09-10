@@ -161,6 +161,14 @@ export const enGuidePages: DocPage[] = [
         type: 'list',
         items: [
           [
+            'Start with ',
+            {
+              type: 'link',
+              text: 'Architecture Overview',
+              href: '/guide/architecture/',
+            },
+          ],
+          [
             'Learn about ',
             {
               type: 'link',
@@ -205,13 +213,354 @@ export const enGuidePages: DocPage[] = [
     ],
   },
   {
+    path: '/guide/architecture/',
+    title: 'Architecture Overview',
+    description:
+      'Understand the layered architecture, runtime data flow, and design patterns behind TSone.',
+    section: 'Guide',
+    sectionOrder: 1,
+    order: 2,
+    body: [
+      {
+        type: 'heading',
+        level: 1,
+        text: 'Architecture Overview',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'This chapter introduces the layered architecture and runtime data flow of TSone, giving you a global picture before you dive into each subsystem.',
+        ],
+      },
+      {
+        type: 'heading',
+        level: 2,
+        text: 'Design Goals',
+      },
+      {
+        type: 'list',
+        items: [
+          [
+            'Lightweight: the core package has zero runtime dependencies and relies only on standard browser DOM interfaces.',
+          ],
+          [
+            'Object-oriented: the framework and application code are organized around class components with explicit object relationships.',
+          ],
+          [
+            'Strategy-based rendering: render behavior is dispatched to dedicated strategies by VNode type, so new capabilities are added by extending strategies.',
+          ],
+          [
+            'Bun-native: development, testing, building, and documentation are all driven by Bun.',
+          ],
+        ],
+      },
+      {
+        type: 'heading',
+        level: 2,
+        text: 'Layered Architecture',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'The TSone runtime is organized from top to bottom into an app layer, a component layer, a render layer, and runtime infrastructure, accompanied by a dedicated Bun-native toolchain:',
+        ],
+      },
+      {
+        type: 'figure',
+        src: 'architecture.svg',
+        alt: 'TSone layered architecture diagram',
+        caption:
+          'TSone runtime architecture: app layer → component layer → render layer → runtime infrastructure, with the Bun-native toolchain on the right',
+      },
+      {
+        type: 'heading',
+        level: 3,
+        text: 'App Layer',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'The ',
+          { type: 'code', text: 'createApp()' },
+          ' function creates a ',
+          { type: 'code', text: 'OneApp' },
+          ' instance, the single entry point of an application. It is responsible for:',
+        ],
+      },
+      {
+        type: 'list',
+        items: [
+          [
+            'Mounting the root component and injecting ',
+            { type: 'code', text: 'AppContext' },
+            ' (config, version, router) into it.',
+          ],
+          [
+            'Installing plugins through ',
+            { type: 'code', text: 'use(plugin)' },
+            ' and calling their hooks during the app lifecycle.',
+          ],
+          [
+            'Providing global ',
+            { type: 'code', text: 'provide/inject' },
+            ', global state, and configuration.',
+          ],
+          [
+            'Generating an HTML document shell through ',
+            { type: 'code', text: 'renderHtmlDocument()' },
+            ' for the CLI dev/build pipeline.',
+          ],
+        ],
+      },
+      {
+        type: 'heading',
+        level: 3,
+        text: 'Component Layer',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'All UI is expressed with class components that extend ',
+          { type: 'code', text: 'Component<Props, State>' },
+          '. Each component owns reactive state, a local ',
+          { type: 'code', text: 'styleManager' },
+          ', and a ',
+          { type: 'code', text: 'templateEngine' },
+          ', declares its structure in ',
+          { type: 'code', text: 'render(): VNode' },
+          ', and hooks into the full lifecycle, events (emit/on), dependency injection, and error boundaries.',
+        ],
+      },
+      {
+        type: 'heading',
+        level: 3,
+        text: 'Render Layer',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'The ',
+          { type: 'code', text: 'RendererContext' },
+          ' dispatches VNodes to five render strategies (text, element, component, slot, and transition group) using the strategy pattern, and exposes a unified mount / patch / unmount interface. On component updates it diffs the old and new VNodes and converges changes into minimal DOM operations.',
+        ],
+      },
+      {
+        type: 'heading',
+        level: 3,
+        text: 'Runtime Infrastructure',
+      },
+      {
+        type: 'list',
+        items: [
+          [
+            { type: 'code', text: 'ReactiveSystem' },
+            ': Proxy-based dependency tracking and dispatch, paired with ',
+            { type: 'code', text: 'ReactiveScheduler' },
+            ' to merge a batch of state changes into a single re-render.',
+          ],
+          [
+            { type: 'code', text: 'Router' },
+            ': route matching, history/hash modes, redirects, and navigation guards; RouterView renders the matched component.',
+          ],
+          [
+            { type: 'code', text: 'StyleManager' },
+            ': one instance per component, compiling style rules into CSS text and injecting a ',
+            { type: 'code', text: '<style>' },
+            ' element.',
+          ],
+        ],
+      },
+      {
+        type: 'heading',
+        level: 3,
+        text: 'Toolchain',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          '@geektech/tsone-cli provides tsone dev, tsone build, and the development proxy, configured through tsone.config.ts. It reuses ',
+          { type: 'code', text: 'renderHtmlDocument()' },
+          ' to produce entry pages and performs the first render of the component tree inside a DOM-like document.',
+        ],
+      },
+      {
+        type: 'heading',
+        level: 2,
+        text: 'Runtime Data Flow',
+      },
+      {
+        type: 'heading',
+        level: 3,
+        text: 'Mount Flow',
+      },
+      {
+        type: 'list',
+        items: [
+          [
+            'createApp builds a OneApp; mount() resolves the mount point and constructs the root component instance.',
+          ],
+          [
+            'The root component initializes reactive state, styles, and the template engine, then calls render() to produce a VNode after beforeMount.',
+          ],
+          [
+            'RendererContext mounts the VNode into the real DOM through its strategies, then onMounted fires.',
+          ],
+          [
+            'Plugins and global state are injected at the app layer; components access global capabilities through getContext() and the router getter.',
+          ],
+        ],
+      },
+      {
+        type: 'heading',
+        level: 3,
+        text: 'Update Flow',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'Component state is a reactive object; properties read during render become dependencies of the component updateEffect. When state changes, ReactiveScheduler enqueues updateEffect into the microtask queue for batched execution: render() runs again to produce a new VNode, and RendererContext applies DOM diffs. Use ',
+          { type: 'code', text: 'flushSync()' },
+          ' to read the DOM synchronously, or ',
+          { type: 'code', text: 'await nextTick()' },
+          ' in async code.',
+        ],
+      },
+      {
+        type: 'heading',
+        level: 3,
+        text: 'Unmount Flow',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'unmount walks the VNode tree recursively: beforeUnmount fires first, then child components are unmounted, events and slots are cleared, the styleManager and template bindings are destroyed, the updateEffect is stopped, and onUnmounted fires last.',
+        ],
+      },
+      {
+        type: 'heading',
+        level: 2,
+        text: 'Design Patterns and Object Relationships',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'The framework is organized around SOLID principles, with explicit relationships between classes and modules:',
+        ],
+      },
+      {
+        type: 'table',
+        columns: ['Pattern', 'Location', 'Description'],
+        rows: [
+          [
+            'Strategy',
+            'RendererContext → RenderStrategy',
+            'Render behavior is dispatched by VNode type; new rendering capabilities only need a new strategy',
+          ],
+          [
+            'Singleton',
+            'ReactiveSystem.getInstance()',
+            'A single global dependency-tracking and dispatch center',
+          ],
+          [
+            'Observer',
+            'effect / updateEffect + ReactiveScheduler',
+            'State changes automatically schedule component re-renders',
+          ],
+          [
+            'Composition',
+            'Component holds StyleManager and TemplateEngine',
+            'Style and template capabilities are composed into components on demand',
+          ],
+          [
+            'Dependency injection',
+            'app.provide / component.provide + inject',
+            'Capabilities resolve up the component parent chain, decoupling consumers from providers',
+          ],
+          [
+            'Implementation',
+            'RenderStrategy interface + five strategy classes',
+            'Render strategies depend on an abstraction rather than concrete implementations',
+          ],
+        ],
+      },
+      {
+        type: 'heading',
+        level: 2,
+        text: 'Public Surface and Package Structure',
+      },
+      {
+        type: 'paragraph',
+        content: ['The TSone public surface stays small and clear:'],
+      },
+      {
+        type: 'list',
+        items: [
+          [
+            '@geektech/tsone: core APIs (createApp, Component, the reactive family, VNode, renderHtmlDocument, StyleSheet, Transition, TransitionGroup, KeepAlive).',
+          ],
+          [
+            '@geektech/tsone/router: createRouter, Router, RouterView, RouterLink, useRouter.',
+          ],
+          [
+            '@geektech/tsone-cli: defineConfig, tsone dev, tsone build, and the development proxy.',
+          ],
+        ],
+      },
+      {
+        type: 'callout',
+        kind: 'note',
+        title: 'Boundaries',
+        body: [
+          'CLI v1 ships without config plugins, WebSocket, HMR, SSR, or functional config; the framework core keeps zero runtime dependencies, and SSR is exposed through the HTML document shell produced by renderHtmlDocument.',
+        ],
+      },
+      {
+        type: 'heading',
+        level: 2,
+        text: 'Summary',
+      },
+      {
+        type: 'paragraph',
+        content: [
+          'TSone organizes its runtime with the vertical layering of app → component → render, supported horizontally by the reactive system, router, and style management. Continue with ',
+          {
+            type: 'link',
+            text: 'Core Concepts',
+            href: '/guide/core-concepts/',
+          },
+          ', ',
+          {
+            type: 'link',
+            text: 'Component System',
+            href: '/guide/component-system/',
+          },
+          ', ',
+          {
+            type: 'link',
+            text: 'Reactive System',
+            href: '/guide/reactive-system/',
+          },
+          ', ',
+          { type: 'link', text: 'Routing', href: '/guide/router-system/' },
+          ', and ',
+          {
+            type: 'link',
+            text: 'Style Management',
+            href: '/guide/style-management/',
+          },
+          ' for the concrete implementations.',
+        ],
+      },
+    ],
+  },
+  {
     path: '/guide/core-concepts/',
     title: 'Core Concepts',
     description:
       'Understand how application instances, class components, reactivity, routing, and style management work together.',
     section: 'Guide',
     sectionOrder: 1,
-    order: 2,
+    order: 3,
     body: [
       {
         type: 'heading',
@@ -626,7 +975,13 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'paragraph',
         content: [
-          "Together, these concepts form TSone's application model. Continue with ",
+          'Start with the ',
+          {
+            type: 'link',
+            text: 'Architecture Overview',
+            href: '/guide/architecture/',
+          },
+          ' to see how the layers fit together. Together, these concepts form TSone\u2019s application model. Continue with ',
           {
             type: 'link',
             text: 'Component System',
@@ -656,7 +1011,7 @@ export const enGuidePages: DocPage[] = [
       'Learn class components based on Component<Props, State>, lifecycle hooks, events, and slots.',
     section: 'Guide',
     sectionOrder: 1,
-    order: 3,
+    order: 4,
     body: [
       {
         type: 'heading',
@@ -1098,7 +1453,7 @@ export const enGuidePages: DocPage[] = [
     description: 'Master reactive, effect, computed, readonly, ref, and stop.',
     section: 'Guide',
     sectionOrder: 1,
-    order: 4,
+    order: 5,
     body: [
       {
         type: 'heading',
@@ -1405,7 +1760,7 @@ export const enGuidePages: DocPage[] = [
       'Build multi-page frontend experiences with createRouter, RouterView, and RouterLink.',
     section: 'Guide',
     sectionOrder: 1,
-    order: 5,
+    order: 6,
     body: [
       {
         type: 'heading',
@@ -1888,7 +2243,7 @@ export const enGuidePages: DocPage[] = [
       'Learn about StyleManager, component style injection, dynamic styles, and global style practices.',
     section: 'Guide',
     sectionOrder: 1,
-    order: 6,
+    order: 7,
     body: [
       {
         type: 'heading',

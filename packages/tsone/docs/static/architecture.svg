@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 930" width="1024" height="930" role="img" aria-labelledby="title desc">
+  <title id="title">TSone runtime architecture</title>
+  <desc id="desc">Layered architecture of the TSone framework: app entry, component layer, render layer, runtime infrastructure (reactive system, router, style manager) and the Bun-native CLI toolchain.</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .layer-label { fill: #64748b; font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+    .card { fill: #ffffff; stroke: #d9e2ec; stroke-width: 1; }
+    .accent { fill: #5fd956; }
+    .title { fill: #162033; font-size: 15px; font-weight: 700; }
+    .line { fill: #5f6b7a; font-size: 12px; }
+    .code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+    .chip { fill: #f0fdf4; stroke: #86efac; stroke-width: 1; }
+    .chip-text { fill: #166534; font-size: 11px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+    .arrow { fill: none; stroke: #64748b; stroke-width: 1.5; }
+    .dashed { fill: none; stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .a-label { fill: #64748b; font-size: 11px; }
+    .divider { stroke: #e2e8f0; stroke-width: 1; }
+    .dom-badge { fill: #162033; }
+    .dom-text { fill: #ffffff; font-size: 12px; font-weight: 700; }
+    .legend { fill: #64748b; font-size: 11px; }
+  </style>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-rev" viewBox="0 0 8 8" refX="1" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L8 4 L0 8 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-dashed" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- Layer labels -->
+  <text class="layer-label" x="56" y="46">APP LAYER</text>
+  <text class="layer-label" x="56" y="206">COMPONENT LAYER</text>
+  <text class="layer-label" x="56" y="386">RENDER LAYER</text>
+  <text class="layer-label" x="56" y="586">RUNTIME INFRASTRUCTURE</text>
+  <text class="layer-label" x="56" y="814">TOOLCHAIN</text>
+
+  <!-- Row 1: App layer -->
+  <rect class="card" x="56" y="56" width="600" height="112" rx="12"/>
+  <rect class="accent" x="56" y="56" width="6" height="112" rx="3"/>
+  <text class="title" x="80" y="86">OneApp — createApp()</text>
+  <text class="line" x="80" y="110">mount() · unmount() · update() · use(plugin)</text>
+  <text class="line" x="80" y="130">provide / inject · global state · config · updateRootComponent()</text>
+  <text class="line" x="80" y="150">renderHtmlDocument() → HTML document shell</text>
+
+  <rect class="card" x="688" y="56" width="280" height="112" rx="12"/>
+  <rect class="accent" x="688" y="56" width="6" height="112" rx="3"/>
+  <text class="title" x="712" y="86">AppContext</text>
+  <text class="line" x="712" y="112">config · version · router · app</text>
+  <text class="line" x="712" y="134">injected into the root component</text>
+  <line class="dashed" x1="656" y1="112" x2="688" y2="112"/>
+
+  <!-- Row 2: Component layer -->
+  <rect class="card" x="56" y="216" width="600" height="130" rx="12"/>
+  <rect class="accent" x="56" y="216" width="6" height="130" rx="3"/>
+  <text class="title" x="80" y="246">Component&lt;Props, State&gt;</text>
+  <text class="line" x="80" y="270">initState() · initStyles() · render(): VNode</text>
+  <text class="line" x="80" y="290">beforeMount / onMounted / beforeUpdate / onUpdated</text>
+  <text class="line" x="80" y="310">beforeUnmount / onUnmounted · emit / on · error boundary</text>
+  <text class="line" x="80" y="330">styleManager · templateEngine · updateEffect (reactive)</text>
+
+  <rect class="card" x="688" y="216" width="280" height="130" rx="12"/>
+  <rect class="accent" x="688" y="216" width="6" height="130" rx="3"/>
+  <text class="title" x="712" y="246">Built-in Components</text>
+  <text class="line" x="712" y="274">RouterLink · RouterView</text>
+  <text class="line" x="712" y="296">Transition · TransitionGroup</text>
+  <text class="line" x="712" y="318">KeepAlive</text>
+
+  <!-- Row 3: Render layer -->
+  <rect class="card" x="56" y="396" width="912" height="150" rx="12"/>
+  <rect class="accent" x="56" y="396" width="6" height="150" rx="3"/>
+  <text class="title" x="80" y="424">RendererContext — strategy dispatch</text>
+  <text class="line" x="80" y="448">mount(vnode, ctx) · patch(old, next, node, ctx) · unmount(vnode, node, ctx)</text>
+  <rect class="chip" x="80" y="462" width="132" height="26" rx="6"/>
+  <text class="chip-text" x="146" y="479" text-anchor="middle">TextRenderStrategy</text>
+  <rect class="chip" x="224" y="462" width="150" height="26" rx="6"/>
+  <text class="chip-text" x="299" y="479" text-anchor="middle">ElementRenderStrategy</text>
+  <rect class="chip" x="386" y="462" width="172" height="26" rx="6"/>
+  <text class="chip-text" x="472" y="479" text-anchor="middle">ComponentRenderStrategy</text>
+  <rect class="chip" x="570" y="462" width="130" height="26" rx="6"/>
+  <text class="chip-text" x="635" y="479" text-anchor="middle">SlotRenderStrategy</text>
+  <rect class="chip" x="712" y="462" width="190" height="26" rx="6"/>
+  <text class="chip-text" x="807" y="479" text-anchor="middle">TransitionGroupRenderStrategy</text>
+  <text class="line" x="80" y="512">VNode: HTMLNode | ComponentNode | SlotProvider | SlotInjector</text>
+  <text class="line" x="80" y="532">directions: if · show · model  |  each(keyed) · slots</text>
+
+  <!-- Browser DOM badge -->
+  <rect class="dom-badge" x="736" y="556" width="232" height="30" rx="8"/>
+  <text class="dom-text" x="852" y="576" text-anchor="middle">Browser DOM</text>
+
+  <!-- Row 4: Runtime infrastructure -->
+  <rect class="card" x="56" y="596" width="290" height="190" rx="12"/>
+  <rect class="accent" x="56" y="596" width="6" height="190" rx="3"/>
+  <text class="title" x="80" y="624">Reactive System</text>
+  <text class="line code" x="80" y="650">ReactiveSystem · Proxy singleton</text>
+  <text class="line" x="80" y="672">reactive · readonly · effect</text>
+  <text class="line" x="80" y="692">computed · ref · watch · stop</text>
+  <text class="line" x="80" y="712">dependency tracking: targetMap</text>
+  <line class="divider" x1="80" y1="726" x2="326" y2="726"/>
+  <text class="line" x="80" y="746">ReactiveScheduler</text>
+  <text class="line" x="80" y="766">batch updates · nextTick() · flushSync()</text>
+
+  <rect class="card" x="378" y="596" width="290" height="190" rx="12"/>
+  <rect class="accent" x="378" y="596" width="6" height="190" rx="3"/>
+  <text class="title" x="402" y="624">Router</text>
+  <text class="line" x="402" y="650">createRouter({ routes, mode, base })</text>
+  <text class="line" x="402" y="672">matcher: static / dynamic / wildcard</text>
+  <text class="line" x="402" y="692">history · hash · redirect (loop-safe)</text>
+  <text class="line" x="402" y="712">beforeEach · afterEach guards</text>
+  <line class="divider" x1="402" y1="726" x2="648" y2="726"/>
+  <text class="line" x="402" y="746">onRouteChange · getCurrentRoute()</text>
+  <text class="line" x="402" y="766">RouterView / RouterLink</text>
+
+  <rect class="card" x="700" y="596" width="268" height="190" rx="12"/>
+  <rect class="accent" x="700" y="596" width="6" height="190" rx="3"/>
+  <text class="title" x="724" y="624">StyleManager</text>
+  <text class="line" x="724" y="650">one instance per component</text>
+  <text class="line" x="724" y="672">addStyle · removeStyle · clearStyles</text>
+  <text class="line" x="724" y="692">hover / media queries</text>
+  <line class="divider" x1="724" y1="726" x2="948" y2="726"/>
+  <text class="line" x="724" y="746">generates CSS text</text>
+  <text class="line" x="724" y="766">injects &lt;style&gt; into document.head</text>
+
+  <!-- Row 5: Toolchain -->
+  <rect class="card" x="56" y="824" width="912" height="66" rx="12"/>
+  <rect class="accent" x="56" y="824" width="6" height="66" rx="3"/>
+  <text class="title" x="80" y="852">@geektech/tsone-cli — Bun-native toolchain</text>
+  <text class="line" x="80" y="876">tsone dev · tsone build · proxy · tsone.config.ts → renderHtmlDocument + DOM-like document shell</text>
+
+  <!-- Arrows -->
+  <!-- OneApp -> Component -->
+  <line class="arrow" x1="356" y1="168" x2="356" y2="216" marker-end="url(#arrow)"/>
+  <text class="a-label" x="366" y="196">mount root · setAppContext</text>
+
+  <!-- Component -> Renderer -->
+  <line class="arrow" x1="356" y1="346" x2="356" y2="396" marker-end="url(#arrow)"/>
+  <text class="a-label" x="366" y="375">render(): VNode</text>
+
+  <!-- Renderer -> Browser DOM -->
+  <line class="arrow" x1="850" y1="546" x2="850" y2="556" marker-end="url(#arrow)"/>
+  <text class="a-label" x="862" y="553">patch</text>
+
+  <!-- StyleManager -> Browser DOM -->
+  <line class="arrow" x1="850" y1="596" x2="850" y2="586" marker-end="url(#arrow)"/>
+  <text class="a-label" x="862" y="593">&lt;style&gt;</text>
+
+  <!-- Component <-> Reactive (left margin) -->
+  <path class="arrow" d="M 56 270 L 24 270 L 24 668 L 56 668" marker-start="url(#arrow-rev)" marker-end="url(#arrow)"/>
+  <text class="a-label" x="14" y="480" transform="rotate(-90 14 480)" text-anchor="middle">state (reactive) · updateEffect → re-render</text>
+
+  <!-- Router -> Renderer (dashed) -->
+  <line class="dashed" x1="523" y1="596" x2="523" y2="546" marker-end="url(#arrow-dashed)"/>
+  <text class="a-label" x="533" y="574">RouterView → matched component</text>
+
+  <!-- CLI -> AppContext (dashed) -->
+  <path class="dashed" d="M 968 855 L 1002 855 L 1002 112 L 968 112" marker-end="url(#arrow-dashed)"/>
+  <text class="a-label" x="1012" y="480" transform="rotate(90 1012 480)" text-anchor="middle">renderHtmlDocument · document shell</text>
+
+  <!-- Legend -->
+  <line class="arrow" x1="56" y1="912" x2="96" y2="912"/>
+  <text class="legend" x="104" y="916">runtime data flow</text>
+  <line class="dashed" x1="208" y1="912" x2="248" y2="912"/>
+  <text class="legend" x="256" y="916">optional / toolchain dependency</text>
+</svg>

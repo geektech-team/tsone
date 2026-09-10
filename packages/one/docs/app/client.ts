@@ -14,6 +14,7 @@ import { CheckboxDemo } from './demos/CheckboxDemo';
 import { EmptyDemo } from './demos/EmptyDemo';
 import { FormDemo } from './demos/FormDemo';
 import { InputDemo } from './demos/InputDemo';
+import { TextareaDemo } from './demos/TextareaDemo';
 import { SelectDemo } from './demos/SelectDemo';
 import { SwitchDemo } from './demos/SwitchDemo';
 import { RadioDemo } from './demos/RadioDemo';
@@ -37,6 +38,7 @@ import { CollapseDemo } from './demos/CollapseDemo';
 import { SkeletonDemo } from './demos/SkeletonDemo';
 import { DividerDemo } from './demos/DividerDemo';
 import { SpaceDemo } from './demos/SpaceDemo';
+import { GridDemo } from './demos/GridDemo';
 import { StepsDemo } from './demos/StepsDemo';
 import { DescriptionsDemo } from './demos/DescriptionsDemo';
 import { TimelineDemo } from './demos/TimelineDemo';
@@ -47,6 +49,7 @@ import { CascaderDemo } from './demos/CascaderDemo';
 type DemoName =
   | 'button'
   | 'input'
+  | 'textarea'
   | 'card'
   | 'tag'
   | 'badge'
@@ -75,6 +78,7 @@ type DemoName =
   | 'skeleton'
   | 'divider'
   | 'space'
+  | 'grid'
   | 'steps'
   | 'descriptions'
   | 'timeline'
@@ -85,6 +89,7 @@ type DemoConstructor = ComponentConstructor<Record<string, never>, object>;
 const DEMOS: Record<DemoName, DemoConstructor> = {
   button: ButtonDemo,
   input: InputDemo,
+  textarea: TextareaDemo,
   card: CardDemo,
   tag: TagDemo,
   badge: BadgeDemo,
@@ -113,6 +118,7 @@ const DEMOS: Record<DemoName, DemoConstructor> = {
   skeleton: SkeletonDemo,
   divider: DividerDemo,
   space: SpaceDemo,
+  grid: GridDemo,
   steps: StepsDemo,
   descriptions: DescriptionsDemo,
   timeline: TimelineDemo,
@@ -238,6 +244,7 @@ function isDemoName(value: string | undefined): value is DemoName {
   return (
     value === 'button' ||
     value === 'input' ||
+    value === 'textarea' ||
     value === 'card' ||
     value === 'tag' ||
     value === 'badge' ||
@@ -266,6 +273,7 @@ function isDemoName(value: string | undefined): value is DemoName {
     value === 'skeleton' ||
     value === 'divider' ||
     value === 'space' ||
+    value === 'grid' ||
     value === 'steps' ||
     value === 'descriptions' ||
     value === 'timeline' ||

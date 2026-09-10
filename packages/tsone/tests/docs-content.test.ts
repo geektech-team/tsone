@@ -262,6 +262,7 @@ describe('docs content registry', () => {
     expect(docPages.map((page) => page.path)).toEqual([
       '/',
       '/guide/getting-started/',
+      '/guide/architecture/',
       '/guide/core-concepts/',
       '/guide/component-system/',
       '/guide/reactive-system/',
@@ -325,15 +326,15 @@ describe('docs content registry', () => {
     const chineseText = docText(contributing);
     const englishText = docText(englishContributing);
 
-    expect(docCatalogs.zh.pages).toHaveLength(15);
-    expect(docCatalogs.en.pages).toHaveLength(15);
+    expect(docCatalogs.zh.pages).toHaveLength(16);
+    expect(docCatalogs.en.pages).toHaveLength(16);
     expect(chineseText).not.toContain('Markdown 格式');
     expect(chineseText).not.toContain(
       'https://github.com/yourusername/tsone.git'
     );
     expect(chineseText).toContain('packages/tsone/docs/app/content/zh/');
     expect(chineseText).toContain('packages/tsone/docs/app/content/en/');
-    expect(chineseText).toContain('中英文 catalog 当前各包含 15 条逻辑路由');
+    expect(chineseText).toContain('中英文 catalog 当前各包含 16 条逻辑路由');
     expect(chineseText).toContain('新增或删除路由时必须同步修改两边');
     expect(chineseText).toContain('中英文逻辑路由必须一致');
     expect(chineseText).toContain('不要手写 /en/');
@@ -341,7 +342,7 @@ describe('docs content registry', () => {
     expect(englishText).toContain('packages/tsone/docs/app/content/en/');
     expect(englishText).toContain('packages/tsone/docs/app/content/zh/');
     expect(englishText).toContain(
-      'Chinese and English catalogs each contain exactly 15 logical routes'
+      'Chinese and English catalogs each contain exactly 16 logical routes'
     );
     expect(englishText).toContain(
       'add or remove a route in both catalogs in the same change'

@@ -110,61 +110,6 @@ export const componentPages: OneDocPage[] = [
     ],
   },
   {
-    path: '/components/divider/',
-    title: 'OneDivider',
-    description: t(
-      '分割内容区域的横线或竖线，支持带文字的居中分割。',
-      'A horizontal or vertical rule that separates content, with an optional centered label.'
-    ),
-    section: 'components',
-    sectionOrder: 2,
-    order: 1,
-    body: [
-      heading(1, 'onedivider', 'OneDivider'),
-      paragraph(
-        t(
-          'OneDivider 默认渲染水平分割线，传入 direction 可切换为垂直分隔。',
-          'OneDivider renders a horizontal rule by default; pass direction to switch to a vertical separator.'
-        )
-      ),
-      demo('divider'),
-      heading(2, 'text', t('文字分割线', 'Divider with text')),
-      paragraph(
-        t(
-          '传入 text 后，OneDivider 以 flex 布局在两侧绘制线条并把文字居中；textAlign 可让文字靠左或靠右。',
-          'When text is provided OneDivider draws lines on both sides and centers the label; textAlign moves it to the left or right.'
-        )
-      ),
-      heading(2, 'api', 'API'),
-      apiTable(t('OneDivider 属性', 'OneDivider props'), [
-        {
-          name: 'direction',
-          signature: "direction?: 'horizontal' | 'vertical'",
-          description: t(
-            '分割线方向，默认 horizontal。',
-            'Rule direction; defaults to horizontal.'
-          ),
-        },
-        {
-          name: 'text',
-          signature: 'text?: string',
-          description: t(
-            '可选文字，显示在水平分割线中间。',
-            'Optional label shown in the middle of a horizontal rule.'
-          ),
-        },
-        {
-          name: 'textAlign',
-          signature: "textAlign?: 'left' | 'center' | 'right'",
-          description: t(
-            '文字对齐方式，默认 center。',
-            'Label alignment; defaults to center.'
-          ),
-        },
-      ]),
-    ],
-  },
-  {
     path: '/components/space/',
     title: 'OneSpace',
     description: t(
@@ -173,7 +118,7 @@ export const componentPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 2,
+    order: 1,
     body: [
       heading(1, 'onespace', 'OneSpace'),
       paragraph(
@@ -244,7 +189,7 @@ export const componentPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 3,
+    order: 2,
     body: [
       heading(1, 'card', 'OneCard'),
       paragraph(

@@ -250,7 +250,7 @@ bun run dev:admin
 文档站点使用 typed content registry：中文内容维护在
 `packages/tsone/docs/app/content/zh/`，英文内容维护在
 `packages/tsone/docs/app/content/en/`，中英文逻辑路由必须一致。
-中英文 catalog 当前各包含 15 条逻辑路由；新增或删除路由时必须同步修改两边。
+中英文 catalog 当前各包含 16 条逻辑路由；新增或删除路由时必须同步修改两边。
 
 内容链接保持 locale-neutral，不要手写 `/en/`。中文公开路由不带前缀，英文公开
 路由使用 `/en/`。浏览器语言检测仅在 `/` 生效；手动选择优先并持久化，后续访问

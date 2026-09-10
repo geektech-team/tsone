@@ -13,6 +13,7 @@ import {
   OneBreadcrumb,
   OneButton,
   OneCard,
+  OneCol,
   OneDialog,
   OneEmpty,
   OneInput,
@@ -22,8 +23,10 @@ import {
   OneProgress,
   OneRadio,
   OneRadioGroup,
+  OneRow,
   OneTag,
   OneTabs,
+  OneTextarea,
   OneTimePicker,
   OneTooltip,
   OneSlider,
@@ -48,6 +51,7 @@ import {
   type OneBreadcrumbProps,
   type OneButtonProps,
   type OneCardProps,
+  type OneColProps,
   type OneDataDisplayVariant,
   type OneDialogProps,
   type OneEmptyProps,
@@ -60,6 +64,7 @@ import {
   type OneProgressProps,
   type OneRadioGroupProps,
   type OneRadioProps,
+  type OneRowProps,
   type OneTagProps,
   type OneTabsProps,
   type OneTimePickerProps,
@@ -74,6 +79,8 @@ import {
   type OneTableProps,
   type OneTableRow,
   type OneTableColumn,
+  type OneTextareaProps,
+  type OneTextareaValueEvent,
   type OneCollapseProps,
   type OneCollapseItem,
   type OneCollapseChangeEvent,
@@ -177,6 +184,17 @@ const collapseProps: OneCollapseProps = {
 };
 const collapseItem: OneCollapseItem = { value: 'a', title: '基础' };
 const skeletonProps: OneSkeletonProps = { rows: 2, avatar: true };
+const rowProps: OneRowProps = {
+  gutter: [16, 16],
+  align: 'center',
+  justify: 'space-between',
+};
+const colProps: OneColProps = { span: 8, offset: 8 };
+const textareaProps: OneTextareaProps = { rows: 5, defaultValue: 'bio' };
+const textareaValue: OneTextareaValueEvent = {
+  value: 'updated',
+  originalEvent: new Event('input'),
+};
 const themeDefinition: OneThemeDefinition = {
   colors: { primary: '#112233' },
   typography: { lineHeight: '1.7' },
@@ -230,6 +248,10 @@ const invalidProgress: OneProgressProps = { variant: 'info' };
 const invalidUpload: OneUploadProps = { defaultValue: [{ id: 'a' }] };
 // @ts-expect-error slider max must be a number
 const invalidSlider: OneSliderProps = { max: '100' };
+// @ts-expect-error unsupported row align
+const invalidRow: OneRowProps = { align: 'middle' };
+// @ts-expect-error unsupported row justify
+const invalidJustify: OneRowProps = { justify: 'space-split' };
 
 describe('public component types', () => {
   it('exports constructors and approved prop shapes', () => {
@@ -258,6 +280,9 @@ describe('public component types', () => {
     expect(typeof OneTable).toBe('function');
     expect(typeof OneCollapse).toBe('function');
     expect(typeof OneSkeleton).toBe('function');
+    expect(typeof OneRow).toBe('function');
+    expect(typeof OneCol).toBe('function');
+    expect(typeof OneTextarea).toBe('function');
     expect(typeof oneMessage.success).toBe('function');
     expect(typeof oneDialog.confirm).toBe('function');
     expect(typeof oneTheme.init).toBe('function');
@@ -293,6 +318,9 @@ describe('public component types', () => {
     expect(new OneTable(tableProps)).toBeInstanceOf(OneTable);
     expect(new OneCollapse(collapseProps)).toBeInstanceOf(OneCollapse);
     expect(new OneSkeleton(skeletonProps)).toBeInstanceOf(OneSkeleton);
+    expect(new OneRow(rowProps)).toBeInstanceOf(OneRow);
+    expect(new OneCol(colProps)).toBeInstanceOf(OneCol);
+    expect(new OneTextarea(textareaProps)).toBeInstanceOf(OneTextarea);
     expect(uploadFile.name).toBe('报告.pdf');
     expect(tableRow.name).toBe('林晚');
     expect(tableColumn.title).toBe('角色');
@@ -317,6 +345,7 @@ describe('public component types', () => {
     expect(rateValue.value).toBe(5);
     expect(uploadChange.files).toHaveLength(0);
     expect(collapseChange.value).toEqual([]);
+    expect(textareaValue.value).toBe('updated');
     expect(messagePlacement).toBe('top-end');
     expect(overlayPlacement).toBe('right-start');
     expect(avatarShape).toBe('circle');
@@ -338,6 +367,8 @@ describe('public component types', () => {
     void invalidProgress;
     void invalidUpload;
     void invalidSlider;
+    void invalidRow;
+    void invalidJustify;
   });
 
   it('exports i18n types and values with correct signatures', () => {

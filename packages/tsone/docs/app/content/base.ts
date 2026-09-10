@@ -48,8 +48,14 @@ export function stripDocBasePath(
   return path.startsWith(prefix) ? path.slice(base.length) : path;
 }
 
-export function readDocBaseFromDocument(
-  doc: Document | undefined
+export function resolveDocAssetPath(
+  name: string,
+  base: string = docBasePath
 ): string {
+  const cleanName = name.replace(/^\/+/, '');
+  return base ? `${base}/assets/${cleanName}` : `/assets/${cleanName}`;
+}
+
+export function readDocBaseFromDocument(doc: Document | undefined): string {
   return doc?.documentElement?.getAttribute('data-doc-base') ?? '';
 }

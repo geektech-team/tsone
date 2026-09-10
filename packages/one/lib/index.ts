@@ -14,8 +14,37 @@ export type {
   OneSpaceProps,
   OneSpaceSize,
 } from './space';
+export {
+  OneRow,
+  OneCol,
+  ONE_GRID_COLUMNS,
+  normalizeOneColOffset,
+  normalizeOneColSpan,
+  normalizeOneRowGutter,
+  resolveOneColLayout,
+  ONE_GRID_BREAKPOINT_DEFAULTS,
+  ONE_GRID_BREAKPOINT_ORDER,
+  ONE_GRID_BREAKPOINT_VARS,
+  readOneGridBreakpoints,
+  resolveOneGridBreakpoint,
+} from './grid';
+export type {
+  OneColBreakpointProp,
+  OneColProps,
+  OneColResponsiveValue,
+  OneGridBreakpoint,
+  OneGridBreakpointValue,
+  OneGridResponsiveContext,
+  OneRowAlign,
+  OneRowGutter,
+  OneRowGutterValue,
+  OneRowJustify,
+  OneRowProps,
+} from './grid';
 export { OneInput } from './input';
 export type { OneInputProps, OneInputValueEvent } from './input';
+export { OneTextarea, normalizeOneTextareaRows } from './textarea';
+export type { OneTextareaProps, OneTextareaValueEvent } from './textarea';
 export { OneForm, OneFormItem, OneFormModel } from './form';
 export type {
   OneFieldValue,

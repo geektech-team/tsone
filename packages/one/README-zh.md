@@ -52,8 +52,9 @@ createApp({ root: App }).mount();
 
 ## 组件分类
 
-- 基础：`OneButton`、`OneDivider`、`OneSpace`
-- 表单：`OneForm`、`OneFormItem`、`OneInput`、`OneSelect`、`OneCascader`、
+- 基础：`OneButton`、`OneSpace`
+- 布局：`OneDivider`、`OneRow`、`OneCol`
+- 表单：`OneForm`、`OneFormItem`、`OneInput`、`OneTextarea`、`OneSelect`、`OneCascader`、
   `OneTimePicker`、`OneCheckbox`、`OneCheckboxGroup`、`OneRadio`、
   `OneRadioGroup`、`OneSwitch`、`OneSlider`、`OneRate`、`OneUpload`
 - 导航：`OneTabs`、`OneSteps`、`OneBreadcrumb`、`OnePagination`
@@ -62,6 +63,52 @@ createApp({ root: App }).mount();
   `OneTimeline`
 - 反馈与浮层：`OneAlert`、`OneMessage`、`OneDialog`、`OneTooltip`、
   `OnePopover`、`OneLoading`
+
+## 栅格
+
+`OneRow` 与 `OneCol` 把可用宽度等分为 24 栅格。每个列通过 `span`（1-24）
+指定占用份数并自由组合；`offset` 让列向右偏移，`gutter` 设置水平和垂直间距。
+
+```ts
+import { OneRow, OneCol } from '@geektech/one';
+
+new OneRow({
+  gutter: [16, 16],
+  children: [
+    { component: OneCol, props: { span: 12 }, children: ['12'] },
+    { component: OneCol, props: { span: 12 }, children: ['12'] },
+  ],
+});
+
+new OneRow({
+  gutter: [16, 16],
+  children: [
+    {
+      component: OneCol,
+      props: { span: 8, offset: 8 },
+      children: ['8 偏移 8'],
+    },
+  ],
+});
+```
+
+`OneCol` 还支持 `xs` / `sm` / `md` / `lg` / `xl` / `xxl` 六档响应式断点，
+每档可传数字（仅 span）或 `{ span, offset }` 对象；小断点的设置会级联
+继承到更大的断点，直到被显式覆盖。
+
+```ts
+new OneRow({
+  gutter: [16, 16],
+  children: [
+    { component: OneCol, props: { xs: 24, md: 12 }, children: ['A'] },
+    { component: OneCol, props: { xs: 24, md: 12 }, children: ['B'] },
+  ],
+});
+```
+
+默认断点：xs < 576px，sm >= 576px，md >= 768px，lg >= 992px，
+xl >= 1200px，xxl >= 1600px。可通过主题 CSS 变量
+`--one-grid-breakpoint-sm` / `md` / `lg` / `xl` / `xxl` 自定义。
 
 ## 导航
 
@@ -259,6 +306,25 @@ const uncontrolled = new OneInput({
 uncontrolled.on('change', (payload) => {
   const event = payload as OneInputValueEvent;
   console.log(event.value, event.originalEvent);
+});
+```
+
+## 多行文本域
+
+`OneTextarea` 与 `OneInput` 使用相同的受控/非受控边界，并额外支持 `rows`
+控制可见行数；与 `OneFormItem` 组合时可参与表单校验。
+
+```ts
+import { OneTextarea, type OneTextareaValueEvent } from '@geektech/one';
+
+const textarea = new OneTextarea({
+  rows: 5,
+  placeholder: '请输入补充说明',
+  ariaLabel: '补充说明',
+});
+textarea.on('input', (payload) => {
+  const event = payload as OneTextareaValueEvent;
+  console.log(event.value);
 });
 ```
 

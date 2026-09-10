@@ -165,7 +165,7 @@ export const enContributingPages: DocPage[] = [
         inlineCode('packages/tsone/docs/app/content/zh/'),
         ', while English content lives in ',
         inlineCode('packages/tsone/docs/app/content/en/'),
-        '. Both use the typed content registry and structured block helpers, and every page must have the same logical route in both directories. Chinese and English catalogs each contain exactly 15 logical routes; add or remove a route in both catalogs in the same change.'
+        '. Both use the typed content registry and structured block helpers, and every page must have the same logical route in both directories. Chinese and English catalogs each contain exactly 16 logical routes; add or remove a route in both catalogs in the same change.'
       ),
       list([
         ['Keep content links locale-neutral and never write /en/ manually'],

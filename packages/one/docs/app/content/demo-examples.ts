@@ -1,6 +1,7 @@
 export type OneDocDemoName =
   | 'button'
   | 'input'
+  | 'textarea'
   | 'card'
   | 'form'
   | 'select'
@@ -29,6 +30,7 @@ export type OneDocDemoName =
   | 'skeleton'
   | 'divider'
   | 'space'
+  | 'grid'
   | 'steps'
   | 'descriptions'
   | 'timeline'
@@ -60,6 +62,22 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
       "const input = new OneInput({ placeholder: '请输入名称', ariaLabel: '名称' });",
       "input.on('input', (payload) => {",
       '  const event = payload as OneInputValueEvent;',
+      '  console.log(event.value);',
+      '});',
+    ].join('\n'),
+  },
+  textarea: {
+    language: 'ts',
+    code: [
+      "import { OneTextarea, type OneTextareaValueEvent } from '@geektech/one';",
+      '',
+      'const textarea = new OneTextarea({',
+      "  rows: 5,",
+      "  placeholder: '请输入补充说明',",
+      "  ariaLabel: '补充说明',",
+      '});',
+      "textarea.on('input', (payload) => {",
+      '  const event = payload as OneTextareaValueEvent;',
       '  console.log(event.value);',
       '});',
     ].join('\n'),
@@ -412,6 +430,24 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
       "  { component: OneButton, props: { variant: 'primary' }, children: ['保存'] },",
       "  { component: OneButton, props: {}, children: ['取消'] },",
       ']);',
+    ].join('\n'),
+  },
+  grid: {
+    language: 'ts',
+    code: [
+      "import { OneRow, OneCol } from '@geektech/one';",
+      '',
+      'new OneRow({ gutter: [16, 16], children: [',
+      "  { component: OneCol, props: { span: 12 }, children: ['12'] },",
+      "  { component: OneCol, props: { span: 12 }, children: ['12'] },",
+      ']});',
+      'new OneRow({ gutter: [16, 16], children: [',
+      "  { component: OneCol, props: { span: 8, offset: 8 }, children: ['8 偏移 8'] },",
+      ']});',
+      'new OneRow({ gutter: [16, 16], children: [',
+      "  { component: OneCol, props: { xs: 24, md: 12 }, children: ['响应式'] },",
+      "  { component: OneCol, props: { xs: 24, md: 12 }, children: ['响应式'] },",
+      ']});',
     ].join('\n'),
   },
   steps: {

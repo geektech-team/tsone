@@ -7,7 +7,12 @@ describe('ONE_COMPONENT_CATEGORIES', () => {
       {
         id: 'basic',
         label: '基础',
-        components: ['OneButton', 'OneDivider', 'OneSpace'],
+        components: ['OneButton', 'OneSpace'],
+      },
+      {
+        id: 'layout',
+        label: '布局',
+        components: ['OneDivider', 'OneRow', 'OneCol'],
       },
       {
         id: 'form',
@@ -16,6 +21,7 @@ describe('ONE_COMPONENT_CATEGORIES', () => {
           'OneForm',
           'OneFormItem',
           'OneInput',
+          'OneTextarea',
           'OneSelect',
           'OneCascader',
           'OneTimePicker',

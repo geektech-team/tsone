@@ -247,6 +247,7 @@ describe('docs locales', () => {
     expect(pages.map((page) => page.path)).toEqual([
       '/',
       '/guide/getting-started/',
+      '/guide/architecture/',
       '/guide/core-concepts/',
       '/guide/component-system/',
       '/guide/reactive-system/',
@@ -508,8 +509,8 @@ describe('docs locales', () => {
   });
 
   it('keeps Chinese and English catalogs in strict route parity', () => {
-    expect(docCatalogs.zh.pages).toHaveLength(15);
-    expect(docCatalogs.en.pages).toHaveLength(15);
+    expect(docCatalogs.zh.pages).toHaveLength(16);
+    expect(docCatalogs.en.pages).toHaveLength(16);
     expect(docCatalogs.en.pages.map((page) => page.path)).toEqual(
       docCatalogs.zh.pages.map((page) => page.path)
     );
@@ -533,7 +534,7 @@ describe('docs locales', () => {
       'Locale en is missing documentation route: /guide/getting-started/'
     );
     expect(() => validateDocCatalogParity(reference, extra)).toThrow(
-      'Locale en has extra documentation route: /guide/core-concepts/'
+      'Locale en has extra documentation route: /guide/architecture/'
     );
   });
 

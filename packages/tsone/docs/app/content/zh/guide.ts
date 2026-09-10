@@ -1,10 +1,13 @@
 import {
+  callout,
   codeBlock,
+  figure,
   heading,
   inlineCode,
   link,
   list,
   paragraph,
+  table,
   type DocPage,
 } from '../types';
 
@@ -164,6 +167,7 @@ export const guidePages: DocPage[] = [
       ),
       heading(2, '下一步'),
       list([
+        ['了解 ', link('架构总览', '/guide/architecture/')],
         ['了解 ', link('核心概念', '/guide/core-concepts/')],
         ['学习 ', link('组件系统', '/guide/component-system/')],
         ['探索 ', link('响应式系统', '/guide/reactive-system/')],
@@ -173,12 +177,202 @@ export const guidePages: DocPage[] = [
     ],
   },
   {
+    path: '/guide/architecture/',
+    title: '架构总览',
+    description: '从分层架构、运行时数据流与设计模式理解 TSone 的整体结构。',
+    section: guideSection,
+    sectionOrder: guideSectionOrder,
+    order: 2,
+    body: [
+      heading(1, '架构总览'),
+      paragraph(
+        '本章从整体视角介绍 TSone 的分层架构与运行时数据流，帮助您在深入各子系统之前建立全局认识。'
+      ),
+      heading(2, '设计目标'),
+      list([
+        ['轻量：核心包运行时零外部依赖，只依赖浏览器标准 DOM 接口'],
+        ['面向对象：以类组件与明确的对象关系组织框架与业务代码'],
+        [
+          '策略化渲染：渲染行为按 VNode 类型分发到独立策略，新增能力只需扩展策略',
+        ],
+        ['Bun 原生：开发、测试、构建与文档均由 Bun 驱动'],
+      ]),
+      heading(2, '分层架构'),
+      paragraph(
+        'TSone 运行时自顶向下分为应用层、组件层、渲染层与运行时基础设施，并配套独立的 Bun 原生工具链：'
+      ),
+      figure(
+        'architecture.svg',
+        'TSone 分层架构图',
+        'TSone 运行时架构：应用层 → 组件层 → 渲染层 → 运行时基础设施，右侧为 Bun 原生工具链'
+      ),
+      heading(3, '应用层（App Layer）'),
+      paragraph(
+        inlineCode('createApp()'),
+        ' 创建 ',
+        inlineCode('OneApp'),
+        ' 实例，是应用的唯一入口，负责：'
+      ),
+      list([
+        [
+          '挂载根组件，并把 ',
+          inlineCode('AppContext'),
+          '（config、version、router）注入根组件',
+        ],
+        [
+          '通过 ',
+          inlineCode('use(plugin)'),
+          ' 安装插件，并在应用生命周期内回调插件钩子',
+        ],
+        ['提供全局 ', inlineCode('provide/inject'), ' 与全局状态、配置'],
+        [
+          '通过 ',
+          inlineCode('renderHtmlDocument()'),
+          ' 生成 HTML 文档壳，供 CLI 的 dev/build 产出入口页面',
+        ],
+      ]),
+      heading(3, '组件层（Component Layer）'),
+      paragraph(
+        '所有 UI 通过继承 ',
+        inlineCode('Component<Props, State>'),
+        ' 的类组件表达。组件持有响应式 state、局部 ',
+        inlineCode('styleManager'),
+        ' 与 ',
+        inlineCode('templateEngine'),
+        '，在 ',
+        inlineCode('render(): VNode'),
+        ' 中声明 UI 结构，并接入完整生命周期、事件（emit/on）、依赖注入与错误边界。'
+      ),
+      heading(3, '渲染层（Render Layer）'),
+      paragraph(
+        inlineCode('RendererContext'),
+        ' 按策略模式把 VNode 分发给文本、元素、组件、插槽与过渡组五种渲染策略，统一提供 mount / patch / unmount 入口。组件更新时对新旧 VNode 执行差异更新，把变化收敛为最小 DOM 操作。'
+      ),
+      heading(3, '运行时基础设施（Runtime Infrastructure）'),
+      list([
+        [
+          inlineCode('ReactiveSystem'),
+          '：基于 Proxy 的依赖收集与派发，配合 ',
+          inlineCode('ReactiveScheduler'),
+          ' 将同一批状态变更合并为一次重渲染',
+        ],
+        [
+          inlineCode('Router'),
+          '：路由匹配、history/hash 模式、重定向与导航守卫，RouterView 渲染匹配到的组件',
+        ],
+        [
+          inlineCode('StyleManager'),
+          '：每个组件一个实例，把样式规则编译为 CSS 文本并注入 ',
+          inlineCode('<style>'),
+          ' 元素',
+        ],
+      ]),
+      heading(3, '工具链（Toolchain）'),
+      paragraph(
+        '@geektech/tsone-cli 提供 tsone dev、tsone build 与开发代理，通过 tsone.config.ts 配置。它复用框架的 ',
+        inlineCode('renderHtmlDocument()'),
+        ' 生成入口页面，并借助 DOM-like document 在服务端完成组件树的首次渲染。'
+      ),
+      heading(2, '运行时数据流'),
+      heading(3, '挂载流程'),
+      list([
+        ['createApp 创建 OneApp，mount() 解析挂载点并创建根组件实例'],
+        [
+          '根组件初始化响应式 state、样式与模板引擎，调用 beforeMount 后执行 render() 得到 VNode',
+        ],
+        ['RendererContext 按策略把 VNode 挂载到真实 DOM，随后触发 onMounted'],
+        [
+          '插件与全局状态在应用层注入，组件通过 getContext() 与 router getter 访问全局能力',
+        ],
+      ]),
+      heading(3, '更新流程'),
+      paragraph(
+        '组件 state 是响应式对象，render 期间访问的属性会被收集为组件 updateEffect 的依赖。修改 state 时，ReactiveScheduler 将 updateEffect 放入微任务队列批量执行：重跑 render() 得到新 VNode，再由 RendererContext 完成 DOM 差异更新。需要同步读取最新 DOM 时使用 ',
+        inlineCode('flushSync()'),
+        '，或在异步代码中 ',
+        inlineCode('await nextTick()'),
+        '。'
+      ),
+      heading(3, '卸载流程'),
+      paragraph(
+        'unmount 沿 VNode 树递归执行：先触发 beforeUnmount，再卸载子组件、清理事件与插槽、销毁 styleManager 与模板绑定、停止 updateEffect，最后触发 onUnmounted。'
+      ),
+      heading(2, '设计模式与对象关系'),
+      paragraph('框架按 SOLID 原则组织，类与模块之间保持了明确的对象关系：'),
+      table(
+        ['模式', '位置', '说明'],
+        [
+          [
+            '策略模式',
+            'RendererContext → RenderStrategy',
+            '渲染行为按 VNode 类型分发，新增渲染能力只需实现策略',
+          ],
+          [
+            '单例模式',
+            'ReactiveSystem.getInstance()',
+            '全局唯一的依赖收集与派发中心',
+          ],
+          [
+            '观察者模式',
+            'effect / updateEffect + ReactiveScheduler',
+            '状态变化自动调度组件重渲染',
+          ],
+          [
+            '组合',
+            'Component 持有 StyleManager、TemplateEngine',
+            '样式与模板能力按需组合进组件',
+          ],
+          [
+            '依赖注入',
+            'app.provide / component.provide + inject',
+            '能力沿组件父链向上解析，组件与提供方解耦',
+          ],
+          [
+            '实现',
+            'RenderStrategy 接口 + 五个策略类',
+            '渲染策略依赖抽象接口而非具体实现',
+          ],
+        ]
+      ),
+      heading(2, '发布面与包结构'),
+      paragraph('TSone 的发布面保持小而清晰：'),
+      list([
+        [
+          '@geektech/tsone：核心 API（createApp、Component、reactive 系列、VNode、renderHtmlDocument、StyleSheet、Transition、TransitionGroup、KeepAlive）',
+        ],
+        [
+          '@geektech/tsone/router：createRouter、Router、RouterView、RouterLink、useRouter',
+        ],
+        [
+          '@geektech/tsone-cli：defineConfig、tsone dev、tsone build 与开发代理',
+        ],
+      ]),
+      callout('note', '边界', [
+        'CLI 首版不提供 plugins、WebSocket、HMR、SSR 与函数式配置；框架核心保持零运行时依赖，SSR 以 renderHtmlDocument 生成文档壳的形式提供。',
+      ]),
+      heading(2, '总结'),
+      paragraph(
+        'TSone 用「应用 → 组件 → 渲染」的纵向分层组织运行时，用响应式、路由与样式管理三个基础设施横向支撑各层。接下来可继续阅读 ',
+        link('核心概念', '/guide/core-concepts/'),
+        '、',
+        link('组件系统', '/guide/component-system/'),
+        '、',
+        link('响应式系统', '/guide/reactive-system/'),
+        '、',
+        link('路由系统', '/guide/router-system/'),
+        ' 与 ',
+        link('样式管理', '/guide/style-management/'),
+        ' 查看具体实现。'
+      ),
+    ],
+  },
+  {
     path: '/guide/core-concepts/',
     title: '核心概念',
     description: '理解应用实例、类组件、响应式系统、路由和样式管理之间的关系。',
     section: guideSection,
     sectionOrder: guideSectionOrder,
-    order: 2,
+    order: 3,
     body: [
       heading(1, '核心概念'),
       paragraph(
@@ -413,7 +607,9 @@ export const guidePages: DocPage[] = [
       ),
       heading(2, '总结'),
       paragraph(
-        '以上概念共同组成 TSone 的应用模型；继续阅读 ',
+        '先阅读 ',
+        link('架构总览', '/guide/architecture/'),
+        ' 从整体上理解各层关系；以上概念共同组成 TSone 的应用模型，继续阅读 ',
         link('组件系统', '/guide/component-system/'),
         '、',
         link('响应式系统', '/guide/reactive-system/'),
@@ -430,7 +626,7 @@ export const guidePages: DocPage[] = [
       '学习基于 Component<Props, State> 的类组件、生命周期、事件和插槽。',
     section: guideSection,
     sectionOrder: guideSectionOrder,
-    order: 3,
+    order: 4,
     body: [
       heading(1, '组件系统'),
       paragraph('TSone 的组件系统允许您将 UI 拆分为独立、可复用的类组件。'),
@@ -734,7 +930,7 @@ export const guidePages: DocPage[] = [
         inlineCode('flushSync()'),
         '，或在异步代码中 ',
         inlineCode('await nextTick()'),
-        '。',
+        '。'
       ),
       heading(2, '组件样式管理'),
       paragraph('每个组件实例都持有自己的 styleManager。'),
@@ -809,7 +1005,7 @@ export const guidePages: DocPage[] = [
           '',
           '{',
           '  component: KeepAlive,',
-          "  props: { activeKey: this.state.activeTab },",
+          '  props: { activeKey: this.state.activeTab },',
           '  children: [',
           "    { key: 'tab-a', component: PanelA },",
           "    { key: 'tab-b', component: PanelB },",
@@ -866,7 +1062,7 @@ export const guidePages: DocPage[] = [
       '掌握 reactive、effect、computed、readonly、ref 和 stop 的使用方式。',
     section: guideSection,
     sectionOrder: guideSectionOrder,
-    order: 4,
+    order: 5,
     body: [
       heading(1, '响应式系统'),
       paragraph(
@@ -1045,7 +1241,7 @@ export const guidePages: DocPage[] = [
           '',
           "const state = reactive({ profile: { name: 'John' } });",
           '',
-          "watch(() => state.profile.name, (name) => {",
+          'watch(() => state.profile.name, (name) => {',
           "  console.log('name changed to', name);",
           '}, { deep: true });',
           '',
@@ -1053,7 +1249,10 @@ export const guidePages: DocPage[] = [
         ].join('\n')
       ),
       list([
-        [inlineCode('immediate'), ': 建立后立即执行一次回调（此时 oldValue 为 undefined）'],
+        [
+          inlineCode('immediate'),
+          ': 建立后立即执行一次回调（此时 oldValue 为 undefined）',
+        ],
         [inlineCode('deep'), ': 深度追踪 getter 返回值嵌套属性的变化'],
         [inlineCode('sync'), ': 变化发生时同步回调（默认随调度器批处理）'],
       ]),
@@ -1110,7 +1309,7 @@ export const guidePages: DocPage[] = [
       '使用 createRouter、RouterView 和 RouterLink 构建多页面前端体验。',
     section: guideSection,
     sectionOrder: guideSectionOrder,
-    order: 5,
+    order: 6,
     body: [
       heading(1, '路由系统'),
       paragraph('TSone 内置了路由系统，用于通过不同 URL 路径显示不同内容。'),
@@ -1189,12 +1388,12 @@ export const guidePages: DocPage[] = [
       codeBlock(
         'ts',
         [
-          "router.beforeEach((to) => {",
+          'router.beforeEach((to) => {',
           "  if (!isLoggedIn() && to.path !== '/login') return '/login';",
           '  return true;',
           '});',
           '',
-          "router.afterEach((to) => {",
+          'router.afterEach((to) => {',
           "  document.title = String(to.meta?.title ?? '');",
           '});',
         ].join('\n')
@@ -1393,7 +1592,7 @@ export const guidePages: DocPage[] = [
     description: '了解 StyleManager、组件内样式注入、动态样式和全局样式实践。',
     section: guideSection,
     sectionOrder: guideSectionOrder,
-    order: 6,
+    order: 7,
     body: [
       heading(1, '样式管理'),
       paragraph(

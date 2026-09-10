@@ -12,7 +12,8 @@
       "@geektech/tsone": ["packages/tsone/lib/index.ts"],
       "@geektech/tsone/router": ["packages/tsone/lib/router/index.ts"],
       "@geektech/tsone/style": ["packages/tsone/lib/style/index.ts"],
-      "@geektech/tsone-cli": ["packages/tsone-cli/src/index.ts"]
+      "@geektech/tsone-cli": ["packages/tsone-cli/src/index.ts"],
+      "@geektech/backone": ["packages/backone/lib/index.ts"]
     },
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
@@ -37,7 +38,10 @@
     "packages/tsone/docs/app",
     "packages/tsone/scripts",
     "packages/tsone-cli/src",
-    "packages/tsone-cli/tests"
+    "packages/tsone-cli/tests",
+    "packages/backone/lib",
+    "packages/backone/tests",
+    "packages/backone/docs/app"
   ],
   "exclude": [
     "node_modules",

@@ -293,6 +293,33 @@ export const docsStyles: StyleSheet = [
     },
   },
   {
+    selector: '.doc-figure',
+    properties: {
+      background: 'var(--docs-surface)',
+      border: '1px solid var(--docs-border)',
+      borderRadius: '12px',
+      margin: '28px 0',
+      padding: '20px',
+    },
+  },
+  {
+    selector: '.doc-figure img',
+    properties: {
+      display: 'block',
+      height: 'auto',
+      maxWidth: '100%',
+    },
+  },
+  {
+    selector: '.doc-figure figcaption',
+    properties: {
+      color: 'var(--docs-muted)',
+      fontSize: '13px',
+      marginTop: '12px',
+      textAlign: 'center',
+    },
+  },
+  {
     selector: '.docs-search input',
     properties: {
       border: '1px solid var(--docs-border)',

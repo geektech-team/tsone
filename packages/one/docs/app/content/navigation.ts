@@ -20,7 +20,7 @@ export const navigationPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 27,
+    order: 30,
     body: [
       heading(1, 'navigation', t('导航组件', 'Navigation')),
       paragraph(
@@ -71,7 +71,7 @@ export const navigationPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 28,
+    order: 31,
     body: [
       heading(1, 'onetabs', 'OneTabs'),
       paragraph(
@@ -150,7 +150,7 @@ export const navigationPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 29,
+    order: 32,
     body: [
       heading(1, 'onesteps', 'OneSteps'),
       paragraph(
@@ -213,7 +213,7 @@ export const navigationPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 30,
+    order: 33,
     body: [
       heading(1, 'onebreadcrumb', 'OneBreadcrumb'),
       paragraph(
@@ -289,7 +289,7 @@ export const navigationPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 31,
+    order: 34,
     body: [
       heading(1, 'onepagination', 'OnePagination'),
       paragraph(

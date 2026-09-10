@@ -52,8 +52,9 @@ createApp({ root: App }).mount();
 
 ## Component categories
 
-- Basic: `OneButton`, `OneDivider`, `OneSpace`
-- Form: `OneForm`, `OneFormItem`, `OneInput`, `OneSelect`, `OneCascader`,
+- Basic: `OneButton`, `OneSpace`
+- Layout: `OneDivider`, `OneRow`, `OneCol`
+- Form: `OneForm`, `OneFormItem`, `OneInput`, `OneTextarea`, `OneSelect`, `OneCascader`,
   `OneTimePicker`, `OneCheckbox`, `OneCheckboxGroup`, `OneRadio`,
   `OneRadioGroup`, `OneSwitch`, `OneSlider`, `OneRate`, `OneUpload`
 - Navigation: `OneTabs`, `OneSteps`, `OneBreadcrumb`, `OnePagination`
@@ -62,6 +63,53 @@ createApp({ root: App }).mount();
   `OneTimeline`
 - Feedback and overlays: `OneAlert`, `OneMessage`, `OneDialog`, `OneTooltip`,
   `OnePopover`, `OneLoading`
+
+## Grid
+
+`OneRow` and `OneCol` divide the available width into 24 columns. Give each
+column a `span` (1-24) and combine them freely; `offset` shifts a column right,
+and `gutter` sets the horizontal/vertical spacing.
+
+```ts
+import { OneRow, OneCol } from '@geektech/one';
+
+new OneRow({
+  gutter: [16, 16],
+  children: [
+    { component: OneCol, props: { span: 12 }, children: ['12'] },
+    { component: OneCol, props: { span: 12 }, children: ['12'] },
+  ],
+});
+
+new OneRow({
+  gutter: [16, 16],
+  children: [
+    {
+      component: OneCol,
+      props: { span: 8, offset: 8 },
+      children: ['8 + offset 8'],
+    },
+  ],
+});
+```
+
+`OneCol` also supports responsive breakpoints `xs` / `sm` / `md` / `lg` / `xl` /
+`xxl`. Each accepts a number (span only) or `{ span, offset }`; smaller
+breakpoint values cascade to larger ones until overridden.
+
+```ts
+new OneRow({
+  gutter: [16, 16],
+  children: [
+    { component: OneCol, props: { xs: 24, md: 12 }, children: ['A'] },
+    { component: OneCol, props: { xs: 24, md: 12 }, children: ['B'] },
+  ],
+});
+```
+
+Default breakpoints: xs < 576px, sm >= 576px, md >= 768px, lg >= 992px,
+xl >= 1200px, xxl >= 1600px. Override them with theme CSS variables
+`--one-grid-breakpoint-sm` / `md` / `lg` / `xl` / `xxl`.
 
 ## Navigation
 
@@ -262,6 +310,26 @@ const uncontrolled = new OneInput({
 uncontrolled.on('change', (payload) => {
   const event = payload as OneInputValueEvent;
   console.log(event.value, event.originalEvent);
+});
+```
+
+## Multi-line textarea
+
+`OneTextarea` shares the same controlled/uncontrolled boundary as `OneInput`
+and adds `rows` for the visible line count; combined with `OneFormItem` it
+participates in form validation.
+
+```ts
+import { OneTextarea, type OneTextareaValueEvent } from '@geektech/one';
+
+const textarea = new OneTextarea({
+  rows: 5,
+  placeholder: 'Type additional notes',
+  ariaLabel: 'Additional notes',
+});
+textarea.on('input', (payload) => {
+  const event = payload as OneTextareaValueEvent;
+  console.log(event.value);
 });
 ```
 

@@ -24,9 +24,11 @@ const APPROVED_PATHS = [
   '/guide/i18n/',
   '/guide/theming/',
   '/components/button/',
-  '/components/divider/',
   '/components/space/',
   '/components/card/',
+  '/components/layout/',
+  '/components/layout/divider/',
+  '/components/layout/grid/',
   '/components/data-display/',
   '/components/data-display/tag/',
   '/components/data-display/badge/',
@@ -50,6 +52,7 @@ const APPROVED_PATHS = [
   '/components/form/rate/',
   '/components/form/upload/',
   '/components/form/cascader/',
+  '/components/form/textarea/',
   '/components/navigation/',
   '/components/navigation/tabs/',
   '/components/navigation/steps/',
@@ -110,7 +113,7 @@ function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
 }
 
 describe('One UI docs content', () => {
-  it('defines exactly the forty-four approved routes in stable order', () => {
+  it('defines exactly the forty-seven approved routes in stable order', () => {
     expect(oneDocPages.map((page) => page.path)).toEqual(APPROVED_PATHS);
   });
 
@@ -514,6 +517,7 @@ describe('One UI docs content', () => {
       new Set([
         'button',
         'input',
+        'textarea',
         'card',
         'form',
         'select',
@@ -543,6 +547,7 @@ describe('One UI docs content', () => {
         'skeleton',
         'divider',
         'space',
+        'grid',
         'steps',
         'descriptions',
         'timeline',

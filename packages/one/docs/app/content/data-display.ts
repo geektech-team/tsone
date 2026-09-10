@@ -18,7 +18,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 4,
+    order: 6,
     body: [
       heading(1, 'data-display', t('数据展示', 'Data display')),
       paragraph(
@@ -94,7 +94,7 @@ export const dataDisplayPages: OneDocPage[] = [
     description: t('展示状态、分类和可关闭的轻量标签。', 'Lightweight tags for status, category and dismissible labels.'),
     section: 'components',
     sectionOrder: 2,
-    order: 5,
+    order: 7,
     body: [
       heading(1, 'onetag', 'OneTag'),
       paragraph(
@@ -148,7 +148,7 @@ export const dataDisplayPages: OneDocPage[] = [
     description: t('展示数字、短文本、封顶计数和状态圆点。', 'Shows numbers, short text, capped counts and status dots.'),
     section: 'components',
     sectionOrder: 2,
-    order: 6,
+    order: 8,
     body: [
       heading(1, 'onebadge', 'OneBadge'),
       paragraph(
@@ -211,7 +211,7 @@ export const dataDisplayPages: OneDocPage[] = [
     description: t('展示无数据说明、图片与后续操作。', 'Shows an empty-state description, image and follow-up actions.'),
     section: 'components',
     sectionOrder: 2,
-    order: 7,
+    order: 9,
     body: [
       heading(1, 'oneempty', 'OneEmpty'),
       paragraph(
@@ -267,7 +267,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 8,
+    order: 10,
     body: [
       heading(1, 'oneavatar', 'OneAvatar'),
       paragraph(
@@ -339,7 +339,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 9,
+    order: 11,
     body: [
       heading(1, 'oneprogress', 'OneProgress'),
       paragraph(
@@ -391,7 +391,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 10,
+    order: 12,
     body: [
       heading(1, 'onetable', 'OneTable'),
       paragraph(
@@ -458,7 +458,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 11,
+    order: 13,
     body: [
       heading(1, 'onecollapse', 'OneCollapse'),
       paragraph(
@@ -523,7 +523,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 12,
+    order: 14,
     body: [
       heading(1, 'oneskeleton', 'OneSkeleton'),
       paragraph(
@@ -585,7 +585,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 13,
+    order: 15,
     body: [
       heading(1, 'onedescriptions', 'OneDescriptions'),
       paragraph(
@@ -636,7 +636,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 14,
+    order: 16,
     body: [
       heading(1, 'onetimeline', 'OneTimeline'),
       paragraph(

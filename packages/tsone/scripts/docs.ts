@@ -1,11 +1,13 @@
 import {
   access,
   mkdir,
+  readdir,
   readFile,
   realpath,
   rm,
   writeFile,
 } from 'node:fs/promises';
+import type { Dirent } from 'node:fs';
 import {
   dirname,
   extname,
@@ -50,6 +52,7 @@ export interface DocsServerOptions {
 const PACKAGE_ROOT = join(import.meta.dir, '..');
 const DEFAULT_OUT_DIR = join(PACKAGE_ROOT, 'docs/dist');
 const DOC_LOCALES = ['zh', 'en'] as const;
+const STATIC_ASSETS_DIR = join(PACKAGE_ROOT, 'docs', 'static');
 
 export function routeToOutputPath(
   route: string,
@@ -77,7 +80,10 @@ export async function buildDocs(
   await rm(outDir, { recursive: true, force: true });
   await mkdir(join(outDir, 'assets'), { recursive: true });
 
-  const assetsBuilt = await buildBrowserBundles(outDir);
+  const assetsBuilt = [
+    ...(await buildBrowserBundles(outDir)),
+    ...(await copyStaticAssets(outDir)),
+  ];
   let pagesBuilt = 0;
 
   for (const locale of DOC_LOCALES) {
@@ -217,6 +223,40 @@ export function renderDocPage(
   return createDocsPageApp(locale, page, pages).renderHtmlDocument();
 }
 
+/**
+ * 把 docs/static 下的静态资源复制到构建产物的 assets 目录，
+ * 供文档中的 figure 块等按 /assets/<name> 引用。
+ */
+async function copyStaticAssets(outDir: string): Promise<string[]> {
+  let entries: Dirent[];
+
+  try {
+    entries = await readdir(STATIC_ASSETS_DIR, { withFileTypes: true });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return [];
+    }
+    throw error;
+  }
+
+  const copied: string[] = [];
+
+  for (const entry of entries) {
+    if (!entry.isFile()) {
+      continue;
+    }
+
+    const target = join(outDir, 'assets', entry.name);
+    await writeFile(
+      target,
+      await readFile(join(STATIC_ASSETS_DIR, entry.name))
+    );
+    copied.push(target);
+  }
+
+  return copied;
+}
+
 async function buildBrowserBundles(outDir: string): Promise<string[]> {
   const bundles = [
     {
@@ -346,6 +386,9 @@ function contentType(filePath: string): string {
   }
   if (filePath.endsWith('.json')) {
     return 'application/json; charset=utf-8';
+  }
+  if (filePath.endsWith('.svg')) {
+    return 'image/svg+xml; charset=utf-8';
   }
   return 'text/plain; charset=utf-8';
 }

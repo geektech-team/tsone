@@ -2,6 +2,7 @@ import type { StyleSheet } from '@geektech/tsone';
 import { ONE_BUTTON_STYLES } from '../../lib/button/OneButton';
 import { ONE_CARD_STYLES } from '../../lib/card/OneCard';
 import { ONE_INPUT_STYLES } from '../../lib/input/OneInput';
+import { ONE_TEXTAREA_STYLES } from '../../lib/textarea/OneTextarea';
 import { ONE_CHECKBOX_STYLES } from '../../lib/checkbox/OneCheckbox';
 import { ONE_FORM_ITEM_STYLES } from '../../lib/form/OneFormItem';
 import { ONE_FORM_STYLES } from '../../lib/form/OneForm';
@@ -21,6 +22,8 @@ import { ONE_COLLAPSE_STYLES } from '../../lib/collapse/OneCollapse';
 import { ONE_SKELETON_STYLES } from '../../lib/skeleton/OneSkeleton';
 import { ONE_DIVIDER_STYLES } from '../../lib/divider/OneDivider';
 import { ONE_SPACE_STYLES } from '../../lib/space/OneSpace';
+import { ONE_ROW_STYLES } from '../../lib/grid/OneRow';
+import { ONE_COL_STYLES } from '../../lib/grid/OneCol';
 import { ONE_STEPS_STYLES } from '../../lib/steps/OneSteps';
 import { ONE_DESCRIPTIONS_STYLES } from '../../lib/descriptions/OneDescriptions';
 import { ONE_TIMELINE_STYLES } from '../../lib/timeline/OneTimeline';
@@ -818,6 +821,30 @@ const documentStyles: StyleSheet = [
     },
   },
   {
+    selector: '.one-docs-grid-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      width: '100%',
+    },
+  },
+  {
+    selector: '.one-docs-grid-box',
+    properties: {
+      boxSizing: 'border-box',
+      height: '40px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 'var(--one-radius-sm, 4px)',
+      border: '1px solid var(--one-docs-border)',
+      background: 'var(--one-docs-green-soft)',
+      color: 'var(--one-docs-text)',
+      fontSize: 'var(--one-font-size-sm, 12px)',
+    },
+  },
+  {
     selector: '.one-docs-steps-demo',
     properties: {
       display: 'flex',
@@ -860,6 +887,15 @@ const documentStyles: StyleSheet = [
     },
   },
   {
+    selector: '.one-docs-textarea-demo',
+    properties: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+      maxWidth: '480px',
+    },
+  },
+  {
     atRule: '@keyframes one-skeleton-pulse',
     rules: [
       { selector: '0%, 100%', properties: { opacity: '1' } },
@@ -878,6 +914,7 @@ const documentStyles: StyleSheet = [
 export const oneDocsStyles: StyleSheet = [
   ...oneStylesToSheet(ONE_BUTTON_STYLES),
   ...oneStylesToSheet(ONE_INPUT_STYLES),
+  ...oneStylesToSheet(ONE_TEXTAREA_STYLES),
   ...oneStylesToSheet(ONE_CARD_STYLES),
   ...oneStylesToSheet(ONE_FORM_STYLES),
   ...oneStylesToSheet(ONE_FORM_ITEM_STYLES),
@@ -902,6 +939,8 @@ export const oneDocsStyles: StyleSheet = [
   ...oneStylesToSheet(ONE_SKELETON_STYLES),
   ...oneStylesToSheet(ONE_DIVIDER_STYLES),
   ...oneStylesToSheet(ONE_SPACE_STYLES),
+  ...oneStylesToSheet(ONE_ROW_STYLES),
+  ...oneStylesToSheet(ONE_COL_STYLES),
   ...oneStylesToSheet(ONE_STEPS_STYLES),
   ...oneStylesToSheet(ONE_DESCRIPTIONS_STYLES),
   ...oneStylesToSheet(ONE_TIMELINE_STYLES),
