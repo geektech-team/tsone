@@ -18,7 +18,7 @@ export const contextPage: BackOneDocPage = {
   ),
   section: 'guide',
   sectionOrder: 1,
-  order: 1,
+  order: 2,
   body: [
     heading(1, 'context', t('Context', 'Context')),
     paragraph(
@@ -47,7 +47,20 @@ app.post('/users', async (ctx) => {
 app.post('/raw', async (ctx) => {
   const text = await ctx.bodyText(); // 惰性文本请求体
   return ctx.text(text);
+});
+
+app.post('/upload', async (ctx) => {
+  const form = await ctx.bodyForm(); // multipart / urlencoded
+  return ctx.json({ name: form.get('name') });
 });`
+    ),
+    paragraph(
+      t('JSON 解析失败会抛出 ', 'A failed JSON parse throws '),
+      inlineCode('HttpError(400)'),
+      t(
+        '，由框架统一转为 400 响应，不会落到 500。',
+        ', turned into a uniform 400 response instead of a 500.'
+      )
     ),
     heading(2, 'responding', t('构建响应', 'Building responses')),
     codeBlock(
@@ -112,6 +125,13 @@ app.post('/login', (ctx) => {
       [
         inlineCode('ctx.status'),
         t('：响应状态码，默认 200。', ': response status, defaults to 200.'),
+      ],
+      [
+        inlineCode('ctx.state'),
+        t(
+          '：中间件与处理器之间共享的可变数据。',
+          ': mutable data shared between middleware and handlers.'
+        ),
       ],
     ]),
     callout('tip', t('直接返回 Response', 'Return a Response directly'), [

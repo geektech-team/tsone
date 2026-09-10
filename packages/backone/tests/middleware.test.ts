@@ -57,9 +57,24 @@ describe('compose', () => {
 });
 
 describe('logger', () => {
-  it('输出 method path status 耗时', async () => {
+  it('行首输出时间 method path status 耗时', async () => {
     const lines: string[] = [];
     const handler = logger({ out: (line) => lines.push(line) });
+    await handler(
+      new Context(makeRequest('/hello')),
+      async () => new Response('ok')
+    );
+    expect(lines[0]).toMatch(
+      /^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] GET \/hello 200 \d+(\.\d+)?ms$/
+    );
+  });
+
+  it('timestamp:false 时省略时间前缀', async () => {
+    const lines: string[] = [];
+    const handler = logger({
+      out: (line) => lines.push(line),
+      timestamp: false,
+    });
     await handler(
       new Context(makeRequest('/hello')),
       async () => new Response('ok')

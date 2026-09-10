@@ -11,10 +11,15 @@ static file serving.
 - TypeScript-first with zero runtime dependencies
 - Bun-native: built on `Bun.serve`, streaming responses, zero-copy static files
 - Segment radix-tree router with `:param` and `*` wildcard support
+- Typed routes: generic params give IDE autocompletion and type checking
 - Onion-model middleware chain with a typed per-request `Context`
 - Lazy query / body parsing with caching
 - Return a `Response` directly for zero-overhead passthrough
-- Built-in middleware: `logger`, `cors`, `serveStatic`
+- Built-in middleware: `logger`, `cors`, `gzip`, `serveStatic`, `timeout`, `helmet`
+- Static files with ETag, Last-Modified, If-None-Match 304 and Range 206
+- WebSocket support via `app.ws(path, handler)` on Bun native upgrade
+- Route groups with `app.group(prefix, callback)` for shared prefixes
+- Graceful shutdown: wait for in-flight requests, force-close after timeout
 
 ## Requirements
 
@@ -49,6 +54,24 @@ expose messages in error responses), `maxRequestBodySize`, `idleTimeout`.
 register handlers. Paths support static segments, `:param`, and `*` wildcards.
 Multiple handlers on one route run in order.
 
+All route methods accept a generic type for typed params:
+
+```ts
+app.get<{ id: string }>('/users/:id', (ctx) => {
+  // ctx.params.id is typed as string
+  return ctx.json({ id: ctx.params.id });
+});
+```
+
+Route groups register multiple routes under a shared prefix:
+
+```ts
+app.group('/api/v1', (api) => {
+  api.get('/users', handler);
+  api.post('/users', handler);
+});
+```
+
 ### Context
 
 Each request gets a `Context`:
@@ -65,8 +88,32 @@ which the framework serializes.
 ### Middleware
 
 `app.use(...handlers)` installs middleware; the chain follows the onion model.
-Built-in: `logger`, `cors`, `serveStatic` (also available as `app.useLogger()`,
-`app.useCors()`, `app.serveStatic()`).
+Built-in: `logger`, `cors`, `gzip`, `timeout`, `helmet`, `serveStatic` (also
+available as `app.useLogger()`, `app.useCors()`, `app.useGzip()`,
+`app.useTimeout()`, `app.useHelmet()`, `app.serveStatic()`).
+
+`serveStatic` serves files via `Bun.file` with zero-copy streaming. Responses
+carry `ETag`, `Last-Modified` and `Accept-Ranges: bytes`; `If-None-Match` /
+`If-Modified-Since` return `304`, and `Range` requests return `206` partial
+content.
+
+`helmet` sets common security headers (X-Content-Type-Options, X-Frame-Options,
+Referrer-Policy, etc.), each overridable or disablable via options. `timeout`
+returns `504` when a handler exceeds the specified milliseconds.
+
+### WebSocket
+
+Register a WebSocket handler on a path with `app.ws(path, handler)`. Requests
+with `Upgrade: websocket` on a registered path are automatically upgraded via
+Bun native `server.upgrade()`.
+
+```ts
+app.ws('/echo', {
+  open(ws) { ws.send('connected'); },
+  message(ws, message) { ws.send(`echo: ${message}`); },
+  close(ws, code, reason) { console.log('closed', code, reason); },
+});
+```
 
 ### Errors
 

@@ -3,9 +3,13 @@
  * 返回值从内向外逐层冒泡。
  */
 
+import type { Context } from '../context';
 import type { Handler, Next } from '../types';
 
-export function compose(handlers: readonly Handler[]): Handler {
+/** 预编译后的中间件链：链尾 next 可为任意 Handler（含路由处理器） */
+export type ComposedHandler = (ctx: Context, next?: Handler) => unknown;
+
+export function compose(handlers: readonly Handler[]): ComposedHandler {
   return (ctx, next) => {
     let index = -1;
 

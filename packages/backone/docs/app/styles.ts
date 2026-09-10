@@ -473,6 +473,41 @@ const documentStyles: StyleSheet = [
     },
   },
   {
+    selector: '.backone-docs-diagram',
+    properties: {
+      margin: '20px 0',
+    },
+  },
+  {
+    selector: '.backone-docs-diagram-canvas',
+    properties: {
+      background: 'var(--backone-docs-bg)',
+      border: '1px solid var(--backone-docs-border)',
+      borderRadius: '10px',
+      padding: '10px',
+      overflowX: 'auto',
+    },
+  },
+  {
+    selector: '.backone-docs-diagram-canvas svg',
+    properties: {
+      display: 'block',
+      width: '100%',
+      height: 'auto',
+      fontFamily:
+        "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    },
+  },
+  {
+    selector: '.backone-docs-diagram figcaption',
+    properties: {
+      marginTop: '8px',
+      textAlign: 'center',
+      fontSize: '13px',
+      color: 'var(--backone-docs-muted)',
+    },
+  },
+  {
     selector: '.backone-docs-toc-nav strong',
     properties: {
       display: 'block',

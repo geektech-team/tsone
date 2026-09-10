@@ -17,13 +17,15 @@ export type RouteMethod = HttpMethod | 'ALL';
 export type Next = () => unknown;
 
 /**
- * 处理器统一签名。返回值支持：
+ * 处理器统一签名。泛型 P 用于类型化路径参数（ctx.params）。
+ * 返回值支持：
  * - Response：直接透传（零开销）
  * - string / number / boolean：按文本响应
  * - object：按 JSON 响应
  * - undefined / null：无内容（204）
  */
-export type Handler = (ctx: Context, next: Next) => unknown;
+export type Handler<P extends Record<string, string> = Record<string, string>> =
+  (ctx: Context & { params: Readonly<P> }, next: Next) => unknown;
 
 /** 中间件与处理器使用同一签名 */
 export type Middleware = Handler;
@@ -49,4 +51,25 @@ export interface CookieOptions {
   secure?: boolean;
   sameSite?: 'Strict' | 'Lax' | 'None';
   expires?: Date;
+}
+
+/**
+ * 表单数据（标准 FormData 的方法子集）。
+ * 避免在公开签名中直接引用 DOM lib 或 undici 内部类型，保持零运行时依赖、
+ * 类型自包含；值与 Blob（File 是其子类）组合，覆盖常用表单读取场景。
+ */
+export interface BackOneFormData {
+  append(name: string, value: string | Blob, filename?: string): void;
+  delete(name: string): void;
+  get(name: string): string | Blob | null;
+  getAll(name: string): Array<string | Blob>;
+  has(name: string): boolean;
+  set(name: string, value: string | Blob, filename?: string): void;
+  entries(): IterableIterator<[string, string | Blob]>;
+  keys(): IterableIterator<string>;
+  values(): IterableIterator<string | Blob>;
+  forEach(
+    callback: (value: string | Blob, key: string, form: BackOneFormData) => void
+  ): void;
+  [Symbol.iterator](): IterableIterator<[string, string | Blob]>;
 }

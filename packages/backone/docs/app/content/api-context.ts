@@ -76,6 +76,14 @@ export const contextApiPage: BackOneDocPage = {
           'Response status, default 200, readable and writable.'
         ),
       },
+      {
+        name: 'state',
+        signature: 'Record<string, unknown>',
+        description: t(
+          '中间件与处理器之间共享的可变数据。',
+          'Mutable data shared between middleware and handlers.'
+        ),
+      },
     ]),
     heading(2, 'readers', t('请求读取', 'Request readers')),
     apiTable(t('读取方法', 'Reader methods'), [
@@ -101,8 +109,8 @@ export const contextApiPage: BackOneDocPage = {
         name: 'bodyJson',
         signature: 'bodyJson<T>(): Promise<T>',
         description: t(
-          '惰性解析并缓存 JSON 请求体。',
-          'Lazily parses and caches the JSON body.'
+          '惰性解析并缓存 JSON 请求体；解析失败抛 HttpError(400)。',
+          'Lazily parses and caches the JSON body; throws HttpError(400) on parse failure.'
         ),
       },
       {
@@ -111,6 +119,14 @@ export const contextApiPage: BackOneDocPage = {
         description: t(
           '惰性解析并缓存文本请求体。',
           'Lazily parses and caches the text body.'
+        ),
+      },
+      {
+        name: 'bodyForm',
+        signature: 'bodyForm(): Promise<BackOneFormData>',
+        description: t(
+          '惰性解析并缓存表单请求体（multipart/form-data 或 urlencoded）。',
+          'Lazily parses and caches the form body (multipart/form-data or urlencoded).'
         ),
       },
     ]),

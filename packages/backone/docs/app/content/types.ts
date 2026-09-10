@@ -59,6 +59,13 @@ export type BackOneDocInline =
   | { type: 'code'; text: string }
   | { type: 'link'; text: BackOneDocText; href: string };
 
+/** SVG 节点树：content 层不依赖框架运行时，DocArticle 渲染时转成 VNode。 */
+export interface BackOneDocDiagramNode {
+  tag: string;
+  props?: Record<string, string | number | boolean | null | undefined>;
+  children?: Array<BackOneDocDiagramNode | string>;
+}
+
 export type BackOneDocBlock =
   | { type: 'heading'; level: 1 | 2 | 3; id: string; text: BackOneDocText }
   | { type: 'paragraph'; content: BackOneDocInline[] }
@@ -78,7 +85,8 @@ export type BackOneDocBlock =
         signature: string;
         description: BackOneDocText;
       }>;
-    };
+    }
+  | { type: 'diagram'; title: BackOneDocText; svg: BackOneDocDiagramNode };
 
 export interface BackOneDocPage {
   path: string;
@@ -213,6 +221,23 @@ export function apiTable(
   return { type: 'api-table', caption, rows };
 }
 
+/** 构造一个 SVG 节点（供 diagram 使用）。 */
+export function svgEl(
+  tag: string,
+  props: BackOneDocDiagramNode['props'] = {},
+  children: BackOneDocDiagramNode['children'] = []
+): BackOneDocDiagramNode {
+  return { tag, props, children };
+}
+
+/** 构造一张内嵌 SVG 架构图（随 SSR 输出，明暗主题通过 CSS 变量适配）。 */
+export function diagram(
+  title: BackOneDocText,
+  svg: BackOneDocDiagramNode
+): BackOneDocBlock {
+  return { type: 'diagram', title, svg };
+}
+
 function hasTextContent(text: BackOneDocText): boolean {
   return typeof text === 'string'
     ? text.trim().length > 0
@@ -237,6 +262,8 @@ function blockHasContent(block: BackOneDocBlock): boolean {
       );
     case 'api-table':
       return block.rows.length > 0;
+    case 'diagram':
+      return block.svg.tag === 'svg' && (block.svg.children?.length ?? 0) > 0;
   }
 }
 

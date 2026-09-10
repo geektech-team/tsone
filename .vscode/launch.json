@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // 调试 playground/backone-demo 示例服务器。
+      // 需要安装 Bun 官方 VS Code 扩展（Oven.bun-vscode）后使用。
+      "type": "bun",
+      "request": "launch",
+      "name": "Debug BackOne playground (backone-demo)",
+      // 入口文件：与 `bun run dev` 一致
+      "program": "${workspaceFolder}/playground/backone-demo/src/index.ts",
+      // cwd 必须是示例目录：serveStatic('./public') 按 cwd 解析
+      "cwd": "${workspaceFolder}/playground/backone-demo",
+      "stopOnEntry": false,
+      "smartStep": true,
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "internalConsoleOptions": "openOnSessionStart"
+    }
+  ]
+}

@@ -18,7 +18,7 @@ export const errorsPage: BackOneDocPage = {
   ),
   section: 'guide',
   sectionOrder: 1,
-  order: 3,
+  order: 5,
   body: [
     heading(1, 'errors', t('错误处理', 'Error handling')),
     paragraph(

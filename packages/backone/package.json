@@ -19,7 +19,8 @@
     "format": "prettier --write . --ignore-path .gitignore",
     "test": "bun test",
     "docs": "tsone dev",
-    "docs:build": "tsone build"
+    "docs:build": "tsone build",
+    "bench": "bun scripts/bench.ts"
   },
   "devDependencies": {
     "@geektech/tsone": "workspace:*",

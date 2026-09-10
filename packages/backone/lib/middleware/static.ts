@@ -76,6 +76,68 @@ export function serveStatic(
       if (contentType !== undefined) {
         headers.set('Content-Type', contentType);
       }
+
+      // ETag / Last-Modified / Accept-Ranges
+      const etag = `W/"${file.size}-${file.lastModified}"`;
+      headers.set('ETag', etag);
+      headers.set('Last-Modified', new Date(file.lastModified).toUTCString());
+      headers.set('Accept-Ranges', 'bytes');
+
+      // If-None-Match → 304
+      const ifNoneMatch = ctx.request.headers.get('if-none-match');
+      if (ifNoneMatch !== null && ifNoneMatch.includes(etag)) {
+        return new Response(null, { status: 304, headers });
+      }
+
+      // If-Modified-Since → 304
+      const ifModifiedSince = ctx.request.headers.get('if-modified-since');
+      if (ifModifiedSince !== null) {
+        const since = Date.parse(ifModifiedSince);
+        if (!Number.isNaN(since) && file.lastModified <= since) {
+          return new Response(null, { status: 304, headers });
+        }
+      }
+
+      // Range → 206 Partial Content（仅处理单范围）
+      const range = ctx.request.headers.get('range');
+      if (range !== null && range.startsWith('bytes=')) {
+        const size = file.size;
+        const spec = range.slice(6).split(',')[0].trim(); // 只取第一个范围
+        const [startStr, endStr] = spec.split('-');
+        let start: number;
+        let end: number;
+
+        if (startStr === '') {
+          // 后缀范围：bytes=-500 → 最后 500 字节
+          const suffix = Number(endStr);
+          if (Number.isNaN(suffix) || suffix <= 0) {
+            headers.set('Content-Range', `bytes */${size}`);
+            return new Response(null, { status: 416, headers });
+          }
+          start = Math.max(0, size - suffix);
+          end = size - 1;
+        } else {
+          start = Number(startStr);
+          end = endStr !== '' ? Number(endStr) : size - 1;
+        }
+
+        if (
+          Number.isNaN(start) ||
+          Number.isNaN(end) ||
+          start > end ||
+          start >= size
+        ) {
+          headers.set('Content-Range', `bytes */${size}`);
+          return new Response(null, { status: 416, headers });
+        }
+        end = Math.min(end, size - 1);
+
+        const sliced = file.slice(start, end + 1);
+        headers.set('Content-Range', `bytes ${start}-${end}/${size}`);
+        headers.set('Content-Length', String(end - start + 1));
+        return new Response(sliced, { status: 206, headers });
+      }
+
       return new Response(file, { headers });
     }
 

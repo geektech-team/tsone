@@ -1,0 +1,13 @@
+{
+  "name": "@tsone-playground/backone",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "dependencies": {
+    "@geektech/backone": "workspace:*"
+  }
+}

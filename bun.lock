@@ -57,6 +57,12 @@
         "@geektech/tsone-cli": "workspace:*",
       },
     },
+    "playground/backone": {
+      "name": "@tsone-playground/backone",
+      "dependencies": {
+        "@geektech/backone": "workspace:*",
+      },
+    },
     "playground/demo": {
       "name": "demo",
       "dependencies": {
@@ -108,6 +114,8 @@
     "@pkgr/core": ["@pkgr/core@0.3.6", "http://offline.npm.juqitech.com/@pkgr/core/-/core-0.3.6.tgz", {}, "sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA=="],
 
     "@tsone-playground/admin-dashboard": ["@tsone-playground/admin-dashboard@workspace:playground/admin-dashboard"],
+
+    "@tsone-playground/backone": ["@tsone-playground/backone@workspace:playground/backone"],
 
     "@tsone-playground/official-site": ["@tsone-playground/official-site@workspace:playground/official-site"],
 

@@ -23,6 +23,7 @@
     "docs:one:build": "bun run --cwd packages/one docs:build",
     "docs:backone": "bun run --cwd packages/backone docs",
     "docs:backone:build": "bun run --cwd packages/backone docs:build",
+    "playground:backone": "bun run --cwd playground/backone-demo dev",
     "docs:cli": "bun run --cwd packages/tsone-cli docs",
     "docs:cli:build": "bun run --cwd packages/tsone-cli docs:build",
     "preview": "bun run --cwd packages/tsone preview",

@@ -100,10 +100,10 @@ await app.listen();`
       },
       {
         name: 'close',
-        signature: 'close(): void',
+        signature: 'close(options?) => Promise<void>',
         description: t(
-          '停止监听并关闭活跃连接。',
-          'Stops listening and closes active connections.'
+          '优雅关闭：停止接受新连接，等待进行中请求完成，超时后强制关闭。timeout 默认 5000ms，传 0 立即强制关闭。',
+          'Graceful shutdown: stop accepting new connections, wait for in-flight requests, then force-close after timeout. Default timeout 5000ms; pass 0 to force-close immediately.'
         ),
       },
       {
@@ -117,8 +117,8 @@ await app.listen();`
     ]),
     callout('tip', t('链式注册', 'Chainable registration'), [
       t(
-        'get/post/put/patch/delete/options/head/all、use、useLogger、useCors、serveStatic 均返回 this。',
-        'get/post/put/patch/delete/options/head/all, use, useLogger, useCors and serveStatic all return this.'
+        'get/post/put/patch/delete/options/head/all、group、use、useLogger、useCors、useGzip、useTimeout、useHelmet、serveStatic 均返回 this。',
+        'get/post/put/patch/delete/options/head/all, group, use, useLogger, useCors, useGzip, useTimeout, useHelmet and serveStatic all return this.'
       ),
     ]),
   ],

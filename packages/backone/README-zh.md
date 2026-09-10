@@ -10,10 +10,15 @@
 - TypeScript 优先，零运行时依赖
 - Bun 原生：基于 `Bun.serve`，流式响应、静态文件零拷贝
 - 分段基数树（segment radix-tree）路由，支持 `:param` 与 `*` 通配
+- 类型化路由：泛型 params 提供 IDE 补全与类型检查
 - 洋葱模型中间件链，配合类型化的每请求 `Context`
 - query / body 惰性解析并缓存
 - 直接返回 `Response` 即可零开销直通
-- 内置中间件：`logger`、`cors`、`serveStatic`
+- 内置中间件：`logger`、`cors`、`gzip`、`serveStatic`、`timeout`、`helmet`
+- 静态文件自动携带 ETag、Last-Modified，支持 If-None-Match 304 与 Range 206
+- WebSocket 支持：`app.ws(path, handler)` 基于 Bun 原生升级
+- 路由组：`app.group(prefix, callback)` 统一前缀批量注册
+- 优雅关闭：等待进行中请求完成，超时后强制关闭
 
 ## 环境要求
 
@@ -48,6 +53,24 @@ await app.listen();
 注册处理器。路径支持静态段、`:param` 与 `*` 通配；同一路由可注册多个处理器，
 按注册顺序执行。
 
+所有路由方法支持泛型参数，实现类型化 params：
+
+```ts
+app.get<{ id: string }>('/users/:id', (ctx) => {
+  // ctx.params.id 类型为 string，IDE 可补全
+  return ctx.json({ id: ctx.params.id });
+});
+```
+
+路由组可在统一前缀下批量注册：
+
+```ts
+app.group('/api/v1', (api) => {
+  api.get('/users', handler);
+  api.post('/users', handler);
+});
+```
+
 ### Context
 
 每个请求都会获得一个 `Context`：
@@ -64,8 +87,31 @@ await app.listen();
 ### 中间件
 
 `app.use(...handlers)` 安装中间件，链路按洋葱模型执行。内置：`logger`、
-`cors`、`serveStatic`（也提供 `app.useLogger()`、`app.useCors()`、
+`cors`、`gzip`、`timeout`、`helmet`、`serveStatic`（也提供 `app.useLogger()`、
+`app.useCors()`、`app.useGzip()`、`app.useTimeout()`、`app.useHelmet()`、
 `app.serveStatic()` 快捷方法）。
+
+`serveStatic` 基于 `Bun.file` 零拷贝流式发送文件。响应自动携带 `ETag`、
+`Last-Modified` 与 `Accept-Ranges: bytes`；`If-None-Match` / `If-Modified-Since`
+条件请求返回 `304`，`Range` 请求返回 `206` 部分内容。
+
+`helmet` 设置常见安全响应头（X-Content-Type-Options、X-Frame-Options、
+Referrer-Policy 等），每项可通过选项覆盖或设为 false 禁用。`timeout`
+在处理器超过指定毫秒数时返回 `504`。
+
+### WebSocket
+
+通过 `app.ws(path, handler)` 在路径上注册 WebSocket 处理器。携带
+`Upgrade: websocket` 头且路径已注册的请求会自动通过 Bun 原生
+`server.upgrade()` 升级。
+
+```ts
+app.ws('/echo', {
+  open(ws) { ws.send('connected'); },
+  message(ws, message) { ws.send(`echo: ${message}`); },
+  close(ws, code, reason) { console.log('closed', code, reason); },
+});
+```
 
 ### 错误处理
 

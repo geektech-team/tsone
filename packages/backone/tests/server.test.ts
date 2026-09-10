@@ -7,7 +7,8 @@ import { createServer } from '../lib/server';
 describe('server', () => {
   const server = createServer();
 
-  server.use(async (_ctx, next) => {
+  server.use(async (ctx, next) => {
+    ctx.state.requestId = 'req-1';
     const result = await next();
     if (result instanceof Response) {
       result.headers.set('X-Powered-By', 'BackOne');
@@ -20,6 +21,10 @@ describe('server', () => {
   server.get('/users/:id', (ctx) => ctx.json({ id: ctx.params.id }));
   server.get('/raw', () => new Response('raw', { status: 201 }));
   server.post('/echo', async (ctx) => ctx.json(await ctx.bodyJson()));
+  server.get('/state', (ctx) => ctx.json({ requestId: ctx.state.requestId }));
+  server.post('/form', async (ctx) =>
+    ctx.json(Object.fromEntries(await ctx.bodyForm()))
+  );
   server.get('/boom', () => {
     throw new Error('boom');
   });
@@ -66,6 +71,30 @@ describe('server', () => {
       body: JSON.stringify({ name: 'BackOne' }),
     });
     expect(await res.json()).toEqual({ name: 'BackOne' });
+  });
+
+  it('中间件通过 ctx.state 传数据给处理器', async () => {
+    const res = await fetch(`${base}/state`);
+    expect(await res.json()).toEqual({ requestId: 'req-1' });
+  });
+
+  it('POST 表单请求体', async () => {
+    const form = new FormData();
+    form.set('name', 'max');
+    const res = await fetch(`${base}/form`, { method: 'POST', body: form });
+    expect(await res.json()).toEqual({ name: 'max' });
+  });
+
+  it('POST 非 JSON 请求体返回 400', async () => {
+    const res = await fetch(`${base}/echo`, {
+      method: 'POST',
+      body: 'not-json',
+    });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({
+      error: 'Invalid JSON body',
+      status: 400,
+    });
   });
 
   it('重定向', async () => {
@@ -144,5 +173,38 @@ describe('static', () => {
   it('静态路由外的请求继续走路由', async () => {
     const res = await fetch(`${base}/health`);
     expect(await res.text()).toBe('ok');
+  });
+
+  it('静态文件带 ETag 与 Last-Modified', async () => {
+    const res = await fetch(`${base}/public/app.js`);
+    expect(res.headers.get('ETag')).toMatch(/^W\/"\d+-\d+"$/);
+    expect(res.headers.get('Last-Modified')).not.toBeNull();
+    expect(res.headers.get('Accept-Ranges')).toBe('bytes');
+  });
+
+  it('If-None-Match 匹配时返回 304', async () => {
+    const first = await fetch(`${base}/public/app.js`);
+    const etag = first.headers.get('ETag') ?? '';
+    const res = await fetch(`${base}/public/app.js`, {
+      headers: { 'If-None-Match': etag },
+    });
+    expect(res.status).toBe(304);
+  });
+
+  it('Range 请求返回 206 与 Content-Range', async () => {
+    const res = await fetch(`${base}/public/index.html`, {
+      headers: { Range: 'bytes=0-3' },
+    });
+    expect(res.status).toBe(206);
+    expect(res.headers.get('Content-Range')).toMatch(/^bytes 0-3\/\d+$/);
+    expect(await res.text()).toBe('<h1>');
+  });
+
+  it('无效 Range 返回 416', async () => {
+    const res = await fetch(`${base}/public/index.html`, {
+      headers: { Range: 'bytes=9999-10000' },
+    });
+    expect(res.status).toBe(416);
+    expect(res.headers.get('Content-Range')).toMatch(/^bytes \*\//);
   });
 });

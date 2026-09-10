@@ -66,4 +66,28 @@ describe('context', () => {
     ctx.setParams({ id: '42' });
     expect(ctx.params.id).toBe('42');
   });
+
+  it('state 提供中间件与处理器之间的共享数据', () => {
+    const ctx = new Context(makeRequest('/'));
+    ctx.state.userId = 7;
+    expect(ctx.state.userId).toBe(7);
+  });
+
+  it('惰性解析表单请求体', async () => {
+    const form = new FormData();
+    form.set('name', 'max');
+    form.set('role', 'admin');
+    const ctx = new Context(makeRequest('/', { method: 'POST', body: form }));
+    const parsed = await ctx.bodyForm();
+    expect(parsed.get('name')).toBe('max');
+    expect(parsed.get('role')).toBe('admin');
+    expect(await ctx.bodyForm()).toBe(parsed);
+  });
+
+  it('bodyJson 解析失败抛出 HttpError(400)', async () => {
+    const ctx = new Context(
+      makeRequest('/', { method: 'POST', body: 'not-json' })
+    );
+    await expect(ctx.bodyJson()).rejects.toMatchObject({ status: 400 });
+  });
 });

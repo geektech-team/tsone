@@ -18,7 +18,7 @@ export const performancePage: BackOneDocPage = {
   ),
   section: 'guide',
   sectionOrder: 1,
-  order: 4,
+  order: 6,
   body: [
     heading(1, 'performance', t('高性能设计', 'Performance design')),
     paragraph(
@@ -32,8 +32,22 @@ export const performancePage: BackOneDocPage = {
       [
         inlineCode('路由预编译'),
         t(
-          '：路由表在启动期构建为分段基数树，请求期匹配为路径段数线性。',
-          ': routes are compiled into a segment radix tree at startup; matching is linear in path segments.'
+          '：路由表在启动期构建为分段基数树，请求期匹配为路径段数线性；同一路径的多处理器链在注册后预编译为单个函数。',
+          ': routes are compiled into a segment radix tree at startup; matching is linear in path segments. Multi-handler chains per route are pre-compiled into a single function after registration.'
+        ),
+      ],
+      [
+        inlineCode('中间件链预编译'),
+        t(
+          '：use() 注册后立即组合为预编译链，请求期不再分配数组或重建闭包，3 个中间件的额外开销约 9%。',
+          ': the middleware chain is composed once after use(); requests allocate no arrays and rebuild no closures. Three middlewares add roughly 9% overhead.'
+        ),
+      ],
+      [
+        inlineCode('零 new URL 热路径'),
+        t(
+          '：pathname 用字符串切分提取，query 用 URLSearchParams 直接解析，避免每请求完整 URL 解析。',
+          ': pathname is extracted by string slicing and query by URLSearchParams, avoiding a full URL parse per request.'
         ),
       ],
       [
@@ -86,13 +100,17 @@ export const performancePage: BackOneDocPage = {
   return ctx.stream(stream);
 });`
     ),
-    heading(2, 'target', t('基准目标', 'Benchmark target')),
-    callout('note', t('对照裸 Bun.serve', 'Against raw Bun.serve'), [
-      t(
-        '设计目标是把简单路由的框架开销控制在裸 Bun.serve 的个位数百分比以内。正式的基准工具与报告计划随后续版本发布，v0.1 阶段以测试与类型保障为主。',
-        'The design target keeps framework overhead on simple routes within single-digit percentages of raw Bun.serve. A formal benchmark harness and report are planned for a later release; v0.1 focuses on tests and type safety.'
-      ),
-    ]),
+    heading(2, 'target', t('基准与实测', 'Benchmark and measurements')),
+    callout(
+      'note',
+      t('微观基准（bun run bench）', 'Micro-benchmark (bun run bench)'),
+      [
+        t(
+          '基准工具直接调用 server.handle() 测量纯 CPU 开销（不经网络），结果稳定可复现。当前实测：无中间件约 100 万 handle/s，3 个自定义中间件开销约 9.4%；logger+cors 的额外开销主要来自这些中间件的实际工作（performance.now、响应头读写），而非框架管线。加 --network 可运行对照裸 Bun.serve 的网络基准，但含 fetch 客户端与网络栈噪声，波动较大。',
+          'The benchmark calls server.handle() directly to measure pure CPU cost (no network), giving stable reproducible numbers. Current measurements: roughly 1M handle/s without middleware, about 9.4% overhead with three custom middlewares. The extra cost of logger+cors comes from those middlewares real work (performance.now, header reads/writes), not the framework pipeline. Pass --network for a raw-Bun.serve comparison, but it includes fetch client and network noise and fluctuates more.'
+        ),
+      ]
+    ),
     heading(2, 'antipatterns', t('避免反模式', 'Avoiding anti-patterns')),
     list([
       [

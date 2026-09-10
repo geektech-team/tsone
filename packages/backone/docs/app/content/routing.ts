@@ -18,7 +18,7 @@ export const routingPage: BackOneDocPage = {
   ),
   section: 'guide',
   sectionOrder: 1,
-  order: 0,
+  order: 1,
   body: [
     heading(1, 'routing', t('路由', 'Routing')),
     paragraph(
@@ -102,6 +102,50 @@ app.all('/ping', handler); // 匹配任意方法`
   },
   (ctx) => ctx.json({ ok: true })
 );`
+    ),
+    heading(2, 'typed', t('类型化路由', 'Typed routes')),
+    paragraph(
+      t(
+        '所有路由方法支持泛型参数，声明 ',
+        'All route methods accept a generic type parameter declaring the shape of '
+      ),
+      inlineCode('ctx.params'),
+      t(
+        '，IDE 会提供字段补全与类型检查。',
+        ', giving IDE autocompletion and compile-time type checking.'
+      )
+    ),
+    codeBlock(
+      'ts',
+      `app.get<{ id: string }>('/users/:id', (ctx) => {
+  // ctx.params.id 类型为 string，IDE 可补全
+  return ctx.json({ id: ctx.params.id });
+});
+
+// 多处理器链同样支持泛型
+app.get<{ slug: string }>(
+  '/posts/:slug',
+  (ctx, next) => { ctx.state.slug = ctx.params.slug; return next(); },
+  (ctx) => ctx.json({ slug: ctx.state.slug })
+);`
+    ),
+    heading(2, 'group', t('路由组', 'Route groups')),
+    paragraph(
+      t('通过 ', 'Register multiple routes under a shared prefix with '),
+      inlineCode('app.group(prefix, callback)'),
+      t(
+        '，回调内的所有路由自动加上前缀。group 支持全部 HTTP 方法、类型化泛型与 WebSocket。',
+        '; every route inside the callback gets the prefix. Groups support all HTTP methods, typed generics and WebSocket.'
+      )
+    ),
+    codeBlock(
+      'ts',
+      `app.group('/api/v1', (api) => {
+  api.get('/users', handler);
+  api.post('/users', handler);
+  api.get<{ id: string }>('/users/:id', (ctx) => ctx.params.id);
+  api.ws('/events', wsHandler);
+});`
     ),
     heading(2, 'fallbacks', t('方法与兜底', 'Methods and fallbacks')),
     list([

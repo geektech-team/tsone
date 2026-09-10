@@ -3,6 +3,7 @@ import {
   localize,
   sectionLabel,
   type BackOneDocBlock,
+  type BackOneDocDiagramNode,
   type BackOneDocInline,
   type BackOneDocLocale,
   type BackOneDocPage,
@@ -139,6 +140,22 @@ export class DocArticle extends Component<DocArticleProps> {
             },
           ],
         };
+      case 'diagram':
+        return {
+          tag: 'figure',
+          props: { className: 'backone-docs-diagram' },
+          children: [
+            {
+              tag: 'div',
+              props: { className: 'backone-docs-diagram-canvas' },
+              children: [this.renderDiagramNode(block.svg)],
+            },
+            {
+              tag: 'figcaption',
+              children: [localize(block.title, locale)],
+            },
+          ],
+        };
       default:
         return assertNever(block);
     }
@@ -165,6 +182,16 @@ export class DocArticle extends Component<DocArticleProps> {
 
       return localize(item, locale);
     });
+  }
+
+  private renderDiagramNode(node: BackOneDocDiagramNode): VNode {
+    return {
+      tag: node.tag,
+      props: node.props ?? {},
+      children: (node.children ?? []).map((child) =>
+        typeof child === 'string' ? child : this.renderDiagramNode(child)
+      ),
+    };
   }
 
   private localizeHref(href: string): string {
