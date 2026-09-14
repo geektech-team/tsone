@@ -59,8 +59,8 @@ createApp({ root: App }).mount();
   `OneRadioGroup`、`OneSwitch`、`OneSlider`、`OneRate`、`OneUpload`
 - 导航：`OneTabs`、`OneSteps`、`OneBreadcrumb`、`OnePagination`
 - 数据展示：`OneCard`、`OneTag`、`OneBadge`、`OneAvatar`、`OneProgress`、
-  `OneEmpty`、`OneTable`、`OneCollapse`、`OneSkeleton`、`OneDescriptions`、
-  `OneTimeline`
+  `OneEmpty`、`OneTable`、`OneTree`、`OneCollapse`、`OneSkeleton`、
+  `OneDescriptions`、`OneTimeline`
 - 反馈与浮层：`OneAlert`、`OneMessage`、`OneDialog`、`OneTooltip`、
   `OnePopover`、`OneLoading`
 

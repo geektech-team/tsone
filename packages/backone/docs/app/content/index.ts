@@ -5,6 +5,7 @@ import { routingPage } from './routing';
 import { contextPage } from './context';
 import { middlewarePage } from './middleware';
 import { websocketPage } from './websocket';
+import { ssePage } from './sse';
 import { errorsPage } from './errors';
 import { performancePage } from './performance';
 import { createServerPage } from './create-server';
@@ -21,6 +22,7 @@ export const backOneDocPages = validateBackOneDocPages([
   contextPage,
   middlewarePage,
   websocketPage,
+  ssePage,
   errorsPage,
   performancePage,
   createServerPage,

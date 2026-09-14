@@ -26,6 +26,7 @@ import {
   OneRate,
   OneUpload,
   OneTable,
+  OneTree,
   OneCollapse,
   OneSkeleton,
   OneDivider,
@@ -358,7 +359,11 @@ export class DocArticle extends Component<DocArticleProps> {
             component: OneTextarea,
             props: {
               rows: 5,
-              placeholder: pick('请输入补充说明', 'Type additional notes', locale),
+              placeholder: pick(
+                '请输入补充说明',
+                'Type additional notes',
+                locale
+              ),
               ariaLabel: pick('补充说明', 'Additional notes', locale),
             },
           },
@@ -376,7 +381,9 @@ export class DocArticle extends Component<DocArticleProps> {
               },
               {
                 tag: 'p',
-                children: [pick('default 主体内容', 'default body content', locale)],
+                children: [
+                  pick('default 主体内容', 'default body content', locale),
+                ],
               },
               {
                 tag: 'span',
@@ -815,6 +822,38 @@ export class DocArticle extends Component<DocArticleProps> {
             },
           },
         ];
+      case 'tree':
+        return [
+          {
+            component: OneTree,
+            props: {
+              defaultExpanded: ['engineering'],
+              ariaLabel: pick('团队结构', 'Team structure', locale),
+              data: [
+                {
+                  value: 'design',
+                  label: pick('设计', 'Design', locale),
+                  children: [
+                    {
+                      value: 'visual',
+                      label: pick('视觉', 'Visual', locale),
+                    },
+                  ],
+                },
+                {
+                  value: 'engineering',
+                  label: pick('工程', 'Engineering', locale),
+                  children: [
+                    {
+                      value: 'frontend',
+                      label: pick('前端', 'Frontend', locale),
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        ];
       case 'collapse':
         return [
           {
@@ -951,7 +990,11 @@ export class DocArticle extends Component<DocArticleProps> {
                 { title: pick('填写信息', 'Fill details', locale) },
                 {
                   title: pick('确认订单', 'Confirm order', locale),
-                  description: pick('核对收货地址', 'Check the address', locale),
+                  description: pick(
+                    '核对收货地址',
+                    'Check the address',
+                    locale
+                  ),
                 },
                 { title: pick('完成支付', 'Pay', locale) },
               ],
@@ -968,8 +1011,14 @@ export class DocArticle extends Component<DocArticleProps> {
               bordered: true,
               items: [
                 { label: pick('订单号', 'Order ID', locale), value: 'A-1024' },
-                { label: pick('状态', 'Status', locale), value: pick('已发货', 'Shipped', locale) },
-                { label: pick('收件人', 'Recipient', locale), value: pick('张三', 'Zhang San', locale) },
+                {
+                  label: pick('状态', 'Status', locale),
+                  value: pick('已发货', 'Shipped', locale),
+                },
+                {
+                  label: pick('收件人', 'Recipient', locale),
+                  value: pick('张三', 'Zhang San', locale),
+                },
                 { label: pick('金额', 'Amount', locale), value: '¥ 128.00' },
               ],
             },
@@ -1000,13 +1049,19 @@ export class DocArticle extends Component<DocArticleProps> {
           {
             component: OnePopover,
             props: {
-              content: pick('这是一段浮层说明，点击外部或按 Escape 关闭。', 'Popover content; click outside or press Escape to close.', locale),
+              content: pick(
+                '这是一段浮层说明，点击外部或按 Escape 关闭。',
+                'Popover content; click outside or press Escape to close.',
+                locale
+              ),
               defaultOpen: true,
             },
             children: [
               {
                 tag: 'button',
-                props: { className: 'one-button one-button--secondary one-button--md' },
+                props: {
+                  className: 'one-button one-button--secondary one-button--md',
+                },
                 children: [pick('点击打开', 'Open popover', locale)],
               },
             ],
@@ -1027,8 +1082,14 @@ export class DocArticle extends Component<DocArticleProps> {
                       value: 'hangzhou',
                       label: pick('杭州', 'Hangzhou', locale),
                       children: [
-                        { value: 'xihu', label: pick('西湖区', 'Xihu', locale) },
-                        { value: 'yuhang', label: pick('余杭区', 'Yuhang', locale) },
+                        {
+                          value: 'xihu',
+                          label: pick('西湖区', 'Xihu', locale),
+                        },
+                        {
+                          value: 'yuhang',
+                          label: pick('余杭区', 'Yuhang', locale),
+                        },
                       ],
                     },
                     { value: 'ningbo', label: pick('宁波', 'Ningbo', locale) },
@@ -1037,7 +1098,12 @@ export class DocArticle extends Component<DocArticleProps> {
                 {
                   value: 'jiangsu',
                   label: pick('江苏', 'Jiangsu', locale),
-                  children: [{ value: 'nanjing', label: pick('南京', 'Nanjing', locale) }],
+                  children: [
+                    {
+                      value: 'nanjing',
+                      label: pick('南京', 'Nanjing', locale),
+                    },
+                  ],
                 },
               ],
             },

@@ -18,7 +18,7 @@ export const performancePage: BackOneDocPage = {
   ),
   section: 'guide',
   sectionOrder: 1,
-  order: 6,
+  order: 7,
   body: [
     heading(1, 'performance', t('高性能设计', 'Performance design')),
     paragraph(

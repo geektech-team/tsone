@@ -59,8 +59,8 @@ createApp({ root: App }).mount();
   `OneRadioGroup`, `OneSwitch`, `OneSlider`, `OneRate`, `OneUpload`
 - Navigation: `OneTabs`, `OneSteps`, `OneBreadcrumb`, `OnePagination`
 - Data display: `OneCard`, `OneTag`, `OneBadge`, `OneAvatar`, `OneProgress`,
-  `OneEmpty`, `OneTable`, `OneCollapse`, `OneSkeleton`, `OneDescriptions`,
-  `OneTimeline`
+  `OneEmpty`, `OneTable`, `OneTree`, `OneCollapse`, `OneSkeleton`,
+  `OneDescriptions`, `OneTimeline`
 - Feedback and overlays: `OneAlert`, `OneMessage`, `OneDialog`, `OneTooltip`,
   `OnePopover`, `OneLoading`
 

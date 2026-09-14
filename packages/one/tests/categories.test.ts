@@ -51,6 +51,7 @@ describe('ONE_COMPONENT_CATEGORIES', () => {
           'OneProgress',
           'OneEmpty',
           'OneTable',
+          'OneTree',
           'OneCollapse',
           'OneSkeleton',
           'OneDescriptions',

@@ -133,16 +133,56 @@ app.post('/theme', (ctx) => {
 app.get('/old-path', (ctx) => ctx.redirect('/'));
 app.delete('/cleanup', (ctx) => ctx.noContent());
 
-// 流式响应（SSE 场景）
+// ---- SSE（Server-Sent Events）流式推送 ----
+
+// 基本 SSE：发送多条带 id/event 的消息后关闭
 app.get('/events', (ctx) => {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(encoder.encode('data: hello from backone\n\n'));
+      const messages = [
+        { id: 1, event: 'greeting', data: 'hello from backone' },
+        { id: 2, event: 'update', data: JSON.stringify({ status: 'ok', ts: Date.now() }) },
+        { id: 3, event: 'done', data: 'stream complete' },
+      ];
+      for (const msg of messages) {
+        controller.enqueue(
+          encoder.encode(`id: ${msg.id}\nevent: ${msg.event}\ndata: ${msg.data}\n\n`)
+        );
+      }
       controller.close();
     },
   });
-  return ctx.set('content-type', 'text/event-stream').stream(stream);
+  return ctx
+    .set('content-type', 'text/event-stream')
+    .set('cache-control', 'no-cache')
+    .stream(stream);
+});
+
+// 实时时钟：每秒推送当前时间，客户端断开时自动清理定时器
+app.get('/clock', (ctx) => {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      const send = () => {
+        const data = JSON.stringify({
+          time: new Date().toISOString(),
+          local: new Date().toLocaleTimeString(),
+        });
+        controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+      };
+      send();
+      const timer = setInterval(send, 1000);
+      ctx.request.signal.addEventListener('abort', () => {
+        clearInterval(timer);
+        controller.close();
+      });
+    },
+  });
+  return ctx
+    .set('content-type', 'text/event-stream')
+    .set('cache-control', 'no-cache')
+    .stream(stream);
 });
 
 // ---- 多处理器与错误处理 ----

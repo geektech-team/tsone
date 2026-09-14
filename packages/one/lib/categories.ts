@@ -1,10 +1,5 @@
 export type OneComponentCategory =
-  | 'basic'
-  | 'layout'
-  | 'form'
-  | 'navigation'
-  | 'data-display'
-  | 'feedback';
+  'basic' | 'layout' | 'form' | 'navigation' | 'data-display' | 'feedback';
 
 export const ONE_COMPONENT_CATEGORIES = [
   { id: 'basic', label: '基础', components: ['OneButton', 'OneSpace'] },
@@ -37,12 +32,7 @@ export const ONE_COMPONENT_CATEGORIES = [
   {
     id: 'navigation',
     label: '导航',
-    components: [
-      'OneTabs',
-      'OneSteps',
-      'OneBreadcrumb',
-      'OnePagination',
-    ],
+    components: ['OneTabs', 'OneSteps', 'OneBreadcrumb', 'OnePagination'],
   },
   {
     id: 'data-display',
@@ -55,6 +45,7 @@ export const ONE_COMPONENT_CATEGORIES = [
       'OneProgress',
       'OneEmpty',
       'OneTable',
+      'OneTree',
       'OneCollapse',
       'OneSkeleton',
       'OneDescriptions',

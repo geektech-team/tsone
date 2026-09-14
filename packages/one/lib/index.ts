@@ -126,6 +126,14 @@ export { OneProgress } from './progress';
 export type { OneProgressProps } from './progress';
 export { OneTable } from './table';
 export type { OneTableColumn, OneTableProps, OneTableRow } from './table';
+export { OneTree } from './tree';
+export type {
+  OneTreeCheckEvent,
+  OneTreeExpandEvent,
+  OneTreeNode,
+  OneTreeProps,
+  OneTreeSelectEvent,
+} from './tree';
 export { OneCollapse } from './collapse';
 export type {
   OneCollapseChangeEvent,
@@ -135,10 +143,7 @@ export type {
 export { OneSkeleton } from './skeleton';
 export type { OneSkeletonProps } from './skeleton';
 export { OneDescriptions } from './descriptions';
-export type {
-  OneDescriptionsItem,
-  OneDescriptionsProps,
-} from './descriptions';
+export type { OneDescriptionsItem, OneDescriptionsProps } from './descriptions';
 export { OneTimeline } from './timeline';
 export type {
   OneTimelineColor,

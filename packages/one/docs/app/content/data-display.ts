@@ -13,8 +13,8 @@ export const dataDisplayPages: OneDocPage[] = [
     path: '/components/data-display/',
     title: t('数据展示', 'Data display'),
     description: t(
-      '使用 Card、Tag、Badge、Avatar、Progress、Empty、Table、Collapse 和 Skeleton 清晰呈现内容与状态。',
-      'Use Card, Tag, Badge, Avatar, Progress, Empty, Table, Collapse and Skeleton to present content and state clearly.'
+      '使用 Card、Tag、Badge、Avatar、Progress、Empty、Table、Tree、Collapse 和 Skeleton 清晰呈现内容与状态。',
+      'Use Card, Tag, Badge, Avatar, Progress, Empty, Table, Tree, Collapse and Skeleton to present content and state clearly.'
     ),
     section: 'components',
     sectionOrder: 2,
@@ -33,57 +33,98 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'OneCard',
           signature: 'new OneCard(props)',
-          description: t('组织标题、正文和底部操作。', 'Organizes a title, body and bottom actions.'),
+          description: t(
+            '组织标题、正文和底部操作。',
+            'Organizes a title, body and bottom actions.'
+          ),
         },
         {
           name: 'OneTag',
           signature: 'new OneTag(props)',
-          description: t('展示状态或分类标签。', 'Shows status or category tags.'),
+          description: t(
+            '展示状态或分类标签。',
+            'Shows status or category tags.'
+          ),
         },
         {
           name: 'OneBadge',
           signature: 'new OneBadge(props)',
-          description: t('展示计数、短文本或状态圆点。', 'Shows counts, short text or a status dot.'),
+          description: t(
+            '展示计数、短文本或状态圆点。',
+            'Shows counts, short text or a status dot.'
+          ),
         },
         {
           name: 'OneAvatar',
           signature: 'new OneAvatar(props)',
-          description: t('展示图片或文字占位头像。', 'Shows an image or text-placeholder avatar.'),
+          description: t(
+            '展示图片或文字占位头像。',
+            'Shows an image or text-placeholder avatar.'
+          ),
         },
         {
           name: 'OneProgress',
           signature: 'new OneProgress(props)',
-          description: t('展示线性的完成进度。', 'Shows linear completion progress.'),
+          description: t(
+            '展示线性的完成进度。',
+            'Shows linear completion progress.'
+          ),
         },
         {
           name: 'OneEmpty',
           signature: 'new OneEmpty(props)',
-          description: t('展示无数据状态和恢复操作。', 'Shows an empty state and recovery actions.'),
+          description: t(
+            '展示无数据状态和恢复操作。',
+            'Shows an empty state and recovery actions.'
+          ),
         },
         {
           name: 'OneTable',
           signature: 'new OneTable(props)',
-          description: t('用表格组织行列数据与状态。', 'Organizes row and column data and states in a table.'),
+          description: t(
+            '用表格组织行列数据与状态。',
+            'Organizes row and column data and states in a table.'
+          ),
+        },
+        {
+          name: 'OneTree',
+          signature: 'new OneTree(props)',
+          description: t(
+            '用树形结构展示层级数据，支持展开、选中与勾选。',
+            'Shows hierarchical data in a tree, with expand, select and check support.'
+          ),
         },
         {
           name: 'OneCollapse',
           signature: 'new OneCollapse(props)',
-          description: t('折叠面板，支持手风琴与多开。', 'Collapsible panels, with accordion and multi-open modes.'),
+          description: t(
+            '折叠面板，支持手风琴与多开。',
+            'Collapsible panels, with accordion and multi-open modes.'
+          ),
         },
         {
           name: 'OneSkeleton',
           signature: 'new OneSkeleton(props)',
-          description: t('展示加载占位骨架。', 'Shows loading placeholder skeletons.'),
+          description: t(
+            '展示加载占位骨架。',
+            'Shows loading placeholder skeletons.'
+          ),
         },
         {
           name: 'OneDescriptions',
           signature: 'new OneDescriptions(props)',
-          description: t('以标签-值对展示只读信息。', 'Presents read-only information as label-value pairs.'),
+          description: t(
+            '以标签-值对展示只读信息。',
+            'Presents read-only information as label-value pairs.'
+          ),
         },
         {
           name: 'OneTimeline',
           signature: 'new OneTimeline(props)',
-          description: t('按时间顺序展示事件流。', 'Shows an event stream in chronological order.'),
+          description: t(
+            '按时间顺序展示事件流。',
+            'Shows an event stream in chronological order.'
+          ),
         },
       ]),
     ],
@@ -91,7 +132,10 @@ export const dataDisplayPages: OneDocPage[] = [
   {
     path: '/components/data-display/tag/',
     title: 'OneTag',
-    description: t('展示状态、分类和可关闭的轻量标签。', 'Lightweight tags for status, category and dismissible labels.'),
+    description: t(
+      '展示状态、分类和可关闭的轻量标签。',
+      'Lightweight tags for status, category and dismissible labels.'
+    ),
     section: 'components',
     sectionOrder: 2,
     order: 7,
@@ -117,17 +161,26 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'variant',
           signature: 'variant?: OneDataDisplayVariant',
-          description: t('neutral、primary、success、warning 或 error。', 'neutral, primary, success, warning or error.'),
+          description: t(
+            'neutral、primary、success、warning 或 error。',
+            'neutral, primary, success, warning or error.'
+          ),
         },
         {
           name: 'size',
           signature: 'size?: OneComponentSize',
-          description: t('sm、md 或 lg，默认 md。', 'sm, md or lg; default md.'),
+          description: t(
+            'sm、md 或 lg，默认 md。',
+            'sm, md or lg; default md.'
+          ),
         },
         {
           name: 'closable',
           signature: 'closable?: boolean',
-          description: t('显示可访问的关闭按钮。', 'Shows an accessible close button.'),
+          description: t(
+            '显示可访问的关闭按钮。',
+            'Shows an accessible close button.'
+          ),
         },
         {
           name: 'children',
@@ -137,7 +190,10 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'close',
           signature: '() => void',
-          description: t('用户关闭标签时发出一次。', 'Emitted once when the user dismisses the tag.'),
+          description: t(
+            '用户关闭标签时发出一次。',
+            'Emitted once when the user dismisses the tag.'
+          ),
         },
       ]),
     ],
@@ -145,7 +201,10 @@ export const dataDisplayPages: OneDocPage[] = [
   {
     path: '/components/data-display/badge/',
     title: 'OneBadge',
-    description: t('展示数字、短文本、封顶计数和状态圆点。', 'Shows numbers, short text, capped counts and status dots.'),
+    description: t(
+      '展示数字、短文本、封顶计数和状态圆点。',
+      'Shows numbers, short text, capped counts and status dots.'
+    ),
     section: 'components',
     sectionOrder: 2,
     order: 8,
@@ -163,7 +222,10 @@ export const dataDisplayPages: OneDocPage[] = [
         inlineCode('dot'),
         t(' 优先显示圆点；', ' takes precedence as a dot; '),
         inlineCode('showZero'),
-        t(' 控制零值是否可见。圆点应通过 ariaLabel 表达业务含义。', ' controls whether a zero value is visible. Dots should express their meaning through ariaLabel.')
+        t(
+          ' 控制零值是否可见。圆点应通过 ariaLabel 表达业务含义。',
+          ' controls whether a zero value is visible. Dots should express their meaning through ariaLabel.'
+        )
       ),
       heading(2, 'api', 'API'),
       apiTable(t('OneBadge 属性', 'OneBadge props'), [
@@ -180,17 +242,26 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'dot',
           signature: 'dot?: boolean',
-          description: t('忽略 value 并显示状态圆点。', 'Ignores value and shows a status dot.'),
+          description: t(
+            '忽略 value 并显示状态圆点。',
+            'Ignores value and shows a status dot.'
+          ),
         },
         {
           name: 'showZero',
           signature: 'showZero?: boolean',
-          description: t('value 为 0 时仍显示标记。', 'Still shows the badge when value is 0.'),
+          description: t(
+            'value 为 0 时仍显示标记。',
+            'Still shows the badge when value is 0.'
+          ),
         },
         {
           name: 'variant',
           signature: 'variant?: OneDataDisplayVariant',
-          description: t('标记的状态颜色，默认 primary。', 'Status color of the badge; default primary.'),
+          description: t(
+            '标记的状态颜色，默认 primary。',
+            'Status color of the badge; default primary.'
+          ),
         },
         {
           name: 'ariaLabel',
@@ -208,7 +279,10 @@ export const dataDisplayPages: OneDocPage[] = [
   {
     path: '/components/data-display/empty/',
     title: 'OneEmpty',
-    description: t('展示无数据说明、图片与后续操作。', 'Shows an empty-state description, image and follow-up actions.'),
+    description: t(
+      '展示无数据说明、图片与后续操作。',
+      'Shows an empty-state description, image and follow-up actions.'
+    ),
     section: 'components',
     sectionOrder: 2,
     order: 9,
@@ -224,31 +298,49 @@ export const dataDisplayPages: OneDocPage[] = [
       heading(2, 'slots', t('插槽优先级', 'Slot precedence')),
       paragraph(
         inlineCode('image'),
-        t(' 替换默认 CSS 图形；default 替换 description；', ' replaces the default CSS graphic; default replaces the description; '),
+        t(
+          ' 替换默认 CSS 图形；default 替换 description；',
+          ' replaces the default CSS graphic; default replaces the description; '
+        ),
         inlineCode('actions'),
-        t(' 提供创建、刷新或恢复操作。', ' provides create, refresh or recovery actions.')
+        t(
+          ' 提供创建、刷新或恢复操作。',
+          ' provides create, refresh or recovery actions.'
+        )
       ),
       heading(2, 'api', 'API'),
       apiTable(t('OneEmpty 属性与插槽', 'OneEmpty props and slots'), [
         {
           name: 'description',
           signature: 'description?: string',
-          description: t('没有 default 插槽时使用的说明。', 'Description used when no default slot is present.'),
+          description: t(
+            '没有 default 插槽时使用的说明。',
+            'Description used when no default slot is present.'
+          ),
         },
         {
           name: 'children',
           signature: 'children?: Array<VNode | string>',
-          description: t('image、default 和 actions 插槽内容。', 'image, default and actions slot content.'),
+          description: t(
+            'image、default 和 actions 插槽内容。',
+            'image, default and actions slot content.'
+          ),
         },
         {
           name: 'image',
           signature: "Array<VNode & { slot: 'image' }>",
-          description: t('替换默认装饰图形。', 'Replaces the default decorative graphic.'),
+          description: t(
+            '替换默认装饰图形。',
+            'Replaces the default decorative graphic.'
+          ),
         },
         {
           name: 'default',
           signature: 'Array<VNode | string>',
-          description: t('替换 description 文本。', 'Replaces the description text.'),
+          description: t(
+            '替换 description 文本。',
+            'Replaces the description text.'
+          ),
         },
         {
           name: 'actions',
@@ -273,24 +365,39 @@ export const dataDisplayPages: OneDocPage[] = [
       paragraph(
         t('提供 ', 'When '),
         inlineCode('src'),
-        t(' 时渲染图片；否则回退到 ', ' is provided it renders an image; otherwise it falls back to '),
+        t(
+          ' 时渲染图片；否则回退到 ',
+          ' is provided it renders an image; otherwise it falls back to '
+        ),
         inlineCode('text'),
-        t(' 或默认插槽中的文字。尺寸与状态色与其它数据展示组件一致。', ' or the text in the default slot. Sizes and status colors match other data display components.')
+        t(
+          ' 或默认插槽中的文字。尺寸与状态色与其它数据展示组件一致。',
+          ' or the text in the default slot. Sizes and status colors match other data display components.'
+        )
       ),
       demo('avatar'),
       heading(2, 'shape-size', t('形状与尺寸', 'Shape and size')),
       paragraph(
         inlineCode('shape'),
-        t(' 支持 circle 和 square，非法值回退 circle；', ' supports circle and square, falling back to circle for invalid values; '),
+        t(
+          ' 支持 circle 和 square，非法值回退 circle；',
+          ' supports circle and square, falling back to circle for invalid values; '
+        ),
         inlineCode('size'),
-        t(' 支持 sm、md、lg，非法值回退 md。', ' supports sm, md, lg, falling back to md for invalid values.')
+        t(
+          ' 支持 sm、md、lg，非法值回退 md。',
+          ' supports sm, md, lg, falling back to md for invalid values.'
+        )
       ),
       heading(2, 'api', 'API'),
       apiTable(t('OneAvatar 属性', 'OneAvatar props'), [
         {
           name: 'src',
           signature: 'src?: string',
-          description: t('图片地址；存在时渲染 img。', 'Image URL; renders an img when present.'),
+          description: t(
+            '图片地址；存在时渲染 img。',
+            'Image URL; renders an img when present.'
+          ),
         },
         {
           name: 'alt',
@@ -300,32 +407,50 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'text',
           signature: 'text?: string',
-          description: t('无 src 时的文字回退。', 'Text fallback when src is absent.'),
+          description: t(
+            '无 src 时的文字回退。',
+            'Text fallback when src is absent.'
+          ),
         },
         {
           name: 'size',
           signature: 'size?: OneComponentSize',
-          description: t('sm、md 或 lg，默认 md。', 'sm, md or lg; default md.'),
+          description: t(
+            'sm、md 或 lg，默认 md。',
+            'sm, md or lg; default md.'
+          ),
         },
         {
           name: 'shape',
           signature: "shape?: 'circle' | 'square'",
-          description: t('头像形状，默认 circle。', 'Avatar shape; default circle.'),
+          description: t(
+            '头像形状，默认 circle。',
+            'Avatar shape; default circle.'
+          ),
         },
         {
           name: 'variant',
           signature: 'variant?: OneDataDisplayVariant',
-          description: t('状态背景色，默认 neutral。', 'Status background color; default neutral.'),
+          description: t(
+            '状态背景色，默认 neutral。',
+            'Status background color; default neutral.'
+          ),
         },
         {
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
-          description: t('存在时设置 role="img" 与 aria-label。', 'Sets role="img" and aria-label when present.'),
+          description: t(
+            '存在时设置 role="img" 与 aria-label。',
+            'Sets role="img" and aria-label when present.'
+          ),
         },
         {
           name: 'children',
           signature: 'children?: Array<VNode | string>',
-          description: t('无 src 时的文字回退，优先于 text。', 'Text fallback when src is absent; takes precedence over text.'),
+          description: t(
+            '无 src 时的文字回退，优先于 text。',
+            'Text fallback when src is absent; takes precedence over text.'
+          ),
         },
       ]),
     ],
@@ -345,7 +470,10 @@ export const dataDisplayPages: OneDocPage[] = [
       paragraph(
         t('百分比会被钳制到 0–100；', 'The percentage is clamped to 0–100; '),
         inlineCode('showText'),
-        t(' 会显示四舍五入后的百分比文本，', ' shows the rounded percentage text, and '),
+        t(
+          ' 会显示四舍五入后的百分比文本，',
+          ' shows the rounded percentage text, and '
+        ),
         inlineCode('variant'),
         t(' 控制进度条颜色。', ' controls the bar color.')
       ),
@@ -362,22 +490,34 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'percent',
           signature: 'percent?: number',
-          description: t('进度百分比，NaN 归 0 并钳制到 0–100。', 'Progress percentage; NaN becomes 0 and clamps to 0–100.'),
+          description: t(
+            '进度百分比，NaN 归 0 并钳制到 0–100。',
+            'Progress percentage; NaN becomes 0 and clamps to 0–100.'
+          ),
         },
         {
           name: 'variant',
           signature: 'variant?: OneDataDisplayVariant',
-          description: t('进度条颜色，默认 primary。', 'Bar color; default primary.'),
+          description: t(
+            '进度条颜色，默认 primary。',
+            'Bar color; default primary.'
+          ),
         },
         {
           name: 'showText',
           signature: 'showText?: boolean',
-          description: t('显示四舍五入后的百分比文本。', 'Shows the rounded percentage text.'),
+          description: t(
+            '显示四舍五入后的百分比文本。',
+            'Shows the rounded percentage text.'
+          ),
         },
         {
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
-          description: t('进度条的可访问名称。', 'Accessible name of the progress bar.'),
+          description: t(
+            '进度条的可访问名称。',
+            'Accessible name of the progress bar.'
+          ),
         },
       ]),
     ],
@@ -397,9 +537,15 @@ export const dataDisplayPages: OneDocPage[] = [
       paragraph(
         t('未提供 ', 'When '),
         inlineCode('columns'),
-        t(' 时会从首行数据推导列；', ' is omitted the columns are derived from the first data row; '),
+        t(
+          ' 时会从首行数据推导列；',
+          ' is omitted the columns are derived from the first data row; '
+        ),
         inlineCode('render'),
-        t(' 可返回文本或 VNode（例如状态标签）。', ' can return text or a VNode, such as a status tag.')
+        t(
+          ' 可返回文本或 VNode（例如状态标签）。',
+          ' can return text or a VNode, such as a status tag.'
+        )
       ),
       demo('table'),
       heading(2, 'empty', t('空状态', 'Empty state')),
@@ -419,12 +565,18 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'columns',
           signature: 'columns?: readonly OneTableColumn[]',
-          description: t('列定义；缺省时从首行推导。', 'Column definitions; derived from the first row when omitted.'),
+          description: t(
+            '列定义；缺省时从首行推导。',
+            'Column definitions; derived from the first row when omitted.'
+          ),
         },
         {
           name: 'rowKey',
           signature: 'rowKey?: string',
-          description: t('用于行标识的字段名，缺省回退到索引。', 'Field used as the row key; falls back to the index when absent.'),
+          description: t(
+            '用于行标识的字段名，缺省回退到索引。',
+            'Field used as the row key; falls back to the index when absent.'
+          ),
         },
         {
           name: 'striped',
@@ -439,12 +591,163 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'emptyText',
           signature: 'emptyText?: string',
-          description: t('空状态文本，默认“暂无数据”。', 'Empty-state text; defaults to “暂无数据”.'),
+          description: t(
+            '空状态文本，默认“暂无数据”。',
+            'Empty-state text; defaults to “暂无数据”.'
+          ),
         },
         {
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
           description: t('表格的可访问名称。', 'Accessible name of the table.'),
+        },
+      ]),
+    ],
+  },
+  {
+    path: '/components/data-display/tree/',
+    title: 'OneTree',
+    description: t(
+      '用树形结构展示层级数据，支持展开/收起、单选与级联勾选。',
+      'Presents hierarchical data as a tree, with expand/collapse, single select and cascading checks.'
+    ),
+    section: 'components',
+    sectionOrder: 2,
+    order: 13,
+    body: [
+      heading(1, 'onetree', 'OneTree'),
+      paragraph(
+        t('节点行是 ', 'Each node row is a '),
+        inlineCode('div[tabindex]'),
+        t(
+          '，容器使用 role=tree，展开的子树使用 role=group；',
+          ' with role=tree on the container and role=group on expanded subtrees; '
+        ),
+        inlineCode('aria-expanded'),
+        t(
+          ' 与 aria-selected、aria-level、aria-posinset、aria-setsize 表达层级与状态。',
+          ' plus aria-selected, aria-level, aria-posinset and aria-setsize express hierarchy and state.'
+        )
+      ),
+      demo('tree'),
+      heading(2, 'check', t('勾选级联', 'Check cascade')),
+      paragraph(
+        t(
+          'checkable 开启复选框；cascade 默认开启，勾选父节点会同步所有后代，父节点随子节点状态呈现“勾选/半选/未选”。',
+          'checkable shows checkboxes; cascade is on by default, checking a parent syncs all descendants, and parents show checked/mixed/unchecked states derived from children.'
+        )
+      ),
+      heading(2, 'keyboard', t('键盘导航', 'Keyboard navigation')),
+      paragraph(
+        t(
+          '方向键在可见节点间移动焦点，ArrowRight 展开或进入首个子节点，ArrowLeft 收起或回到父节点，Home/End 跳转首尾，Space/Enter 触发选中或勾选。',
+          'Arrow keys move focus among visible nodes, ArrowRight expands or enters the first child, ArrowLeft collapses or returns to the parent, Home/End jump to the first/last node, and Space/Enter select or check.'
+        )
+      ),
+      heading(2, 'api', 'API'),
+      apiTable(t('OneTree 属性与事件', 'OneTree props and events'), [
+        {
+          name: 'data',
+          signature: 'data?: readonly OneTreeNode[]',
+          description: t(
+            '树节点：value、label、disabled 与可选 children。',
+            'Tree nodes: value, label, disabled and optional children.'
+          ),
+        },
+        {
+          name: 'defaultExpanded',
+          signature: 'defaultExpanded?: readonly string[]',
+          description: t(
+            '非受控初始展开节点。',
+            'Uncontrolled initially expanded nodes.'
+          ),
+        },
+        {
+          name: 'expanded',
+          signature: 'expanded?: readonly string[]',
+          description: t('受控展开节点。', 'Controlled expanded nodes.'),
+        },
+        {
+          name: 'defaultSelected',
+          signature: 'defaultSelected?: string | null',
+          description: t(
+            '非受控初始选中节点。',
+            'Uncontrolled initially selected node.'
+          ),
+        },
+        {
+          name: 'selected',
+          signature: 'selected?: string | null',
+          description: t('受控选中节点。', 'Controlled selected node.'),
+        },
+        {
+          name: 'selectable',
+          signature: 'selectable?: boolean',
+          description: t(
+            '是否允许选中，默认 true。',
+            'Whether selection is enabled; default true.'
+          ),
+        },
+        {
+          name: 'defaultChecked',
+          signature: 'defaultChecked?: readonly string[]',
+          description: t(
+            '非受控初始勾选节点。',
+            'Uncontrolled initially checked nodes.'
+          ),
+        },
+        {
+          name: 'checked',
+          signature: 'checked?: readonly string[]',
+          description: t('受控勾选节点。', 'Controlled checked nodes.'),
+        },
+        {
+          name: 'checkable',
+          signature: 'checkable?: boolean',
+          description: t(
+            '显示复选框，默认 false。',
+            'Shows checkboxes; default false.'
+          ),
+        },
+        {
+          name: 'cascade',
+          signature: 'cascade?: boolean',
+          description: t(
+            '勾选级联到后代与祖先，默认 true。',
+            'Cascades checks to descendants and ancestors; default true.'
+          ),
+        },
+        {
+          name: 'ariaLabel',
+          signature: 'ariaLabel?: string',
+          description: t(
+            '树容器的可访问名称。',
+            'Accessible name of the tree container.'
+          ),
+        },
+        {
+          name: 'expand',
+          signature: '(event: OneTreeExpandEvent) => void',
+          description: t(
+            '展开状态变化时发出 value: string[] 与 originalEvent。',
+            'Emitted when expanded nodes change with value: string[] and originalEvent.'
+          ),
+        },
+        {
+          name: 'select',
+          signature: '(event: OneTreeSelectEvent) => void',
+          description: t(
+            '选中变化时发出 value: string | null 与 originalEvent。',
+            'Emitted when selection changes with value: string | null and originalEvent.'
+          ),
+        },
+        {
+          name: 'check',
+          signature: '(event: OneTreeCheckEvent) => void',
+          description: t(
+            '勾选变化时发出完全勾选的 value: string[] 与 originalEvent。',
+            'Emitted when checked nodes change with fully-checked value: string[] and originalEvent.'
+          ),
         },
       ]),
     ],
@@ -458,7 +761,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 13,
+    order: 14,
     body: [
       heading(1, 'onecollapse', 'OneCollapse'),
       paragraph(
@@ -481,7 +784,10 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'items',
           signature: 'items?: readonly OneCollapseItem[]',
-          description: t('面板定义，支持禁用项。', 'Panel definitions; supports disabled items.'),
+          description: t(
+            '面板定义，支持禁用项。',
+            'Panel definitions; supports disabled items.'
+          ),
         },
         {
           name: 'active',
@@ -491,17 +797,26 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'defaultActive',
           signature: 'defaultActive?: readonly string[]',
-          description: t('非受控初始展开项。', 'Uncontrolled initial active panels.'),
+          description: t(
+            '非受控初始展开项。',
+            'Uncontrolled initial active panels.'
+          ),
         },
         {
           name: 'accordion',
           signature: 'accordion?: boolean',
-          description: t('手风琴模式，同时只开一项。', 'Accordion mode; only one panel is open at a time.'),
+          description: t(
+            '手风琴模式，同时只开一项。',
+            'Accordion mode; only one panel is open at a time.'
+          ),
         },
         {
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
-          description: t('折叠组容器的访问名称。', 'Accessible name of the collapse container.'),
+          description: t(
+            '折叠组容器的访问名称。',
+            'Accessible name of the collapse container.'
+          ),
         },
         {
           name: 'change',
@@ -523,7 +838,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 14,
+    order: 15,
     body: [
       heading(1, 'oneskeleton', 'OneSkeleton'),
       paragraph(
@@ -531,7 +846,10 @@ export const dataDisplayPages: OneDocPage[] = [
         inlineCode('--one-color-border'),
         t(' 着色；', ' for their color; '),
         inlineCode('animated'),
-        t(' 开启 one-skeleton-pulse 闪烁动画（默认开启）。', ' enables the one-skeleton-pulse animation, on by default.')
+        t(
+          ' 开启 one-skeleton-pulse 闪烁动画（默认开启）。',
+          ' enables the one-skeleton-pulse animation, on by default.'
+        )
       ),
       demo('skeleton'),
       heading(2, 'aria', 'ARIA'),
@@ -546,32 +864,50 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'rows',
           signature: 'rows?: number',
-          description: t('段落行数，默认 3。', 'Number of paragraph rows; default 3.'),
+          description: t(
+            '段落行数，默认 3。',
+            'Number of paragraph rows; default 3.'
+          ),
         },
         {
           name: 'title',
           signature: 'title?: boolean',
-          description: t('显示标题条，默认 true。', 'Shows the title bar; default true.'),
+          description: t(
+            '显示标题条，默认 true。',
+            'Shows the title bar; default true.'
+          ),
         },
         {
           name: 'avatar',
           signature: 'avatar?: boolean',
-          description: t('显示圆形头像占位。', 'Shows a circular avatar placeholder.'),
+          description: t(
+            '显示圆形头像占位。',
+            'Shows a circular avatar placeholder.'
+          ),
         },
         {
           name: 'animated',
           signature: 'animated?: boolean',
-          description: t('闪烁动画，默认 true。', 'Pulse animation; default true.'),
+          description: t(
+            '闪烁动画，默认 true。',
+            'Pulse animation; default true.'
+          ),
         },
         {
           name: 'widths',
           signature: 'widths?: readonly string[]',
-          description: t('每行占位宽度，按序循环。', 'Per-row placeholder widths, cycled in order.'),
+          description: t(
+            '每行占位宽度，按序循环。',
+            'Per-row placeholder widths, cycled in order.'
+          ),
         },
         {
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
-          description: t('加载语义，默认“加载中”。', 'Loading semantics; defaults to “加载中”.'),
+          description: t(
+            '加载语义，默认“加载中”。',
+            'Loading semantics; defaults to “加载中”.'
+          ),
         },
       ]),
     ],
@@ -585,7 +921,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 15,
+    order: 16,
     body: [
       heading(1, 'onedescriptions', 'OneDescriptions'),
       paragraph(
@@ -607,17 +943,26 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'items',
           signature: 'items: OneDescriptionsItem[]',
-          description: t('标签-值对：label、value 与可选 span。', 'Label-value pairs: label, value and optional span.'),
+          description: t(
+            '标签-值对：label、value 与可选 span。',
+            'Label-value pairs: label, value and optional span.'
+          ),
         },
         {
           name: 'column',
           signature: 'column?: number',
-          description: t('每行列数，1-4，默认 1。', 'Columns per row, 1-4; defaults to 1.'),
+          description: t(
+            '每行列数，1-4，默认 1。',
+            'Columns per row, 1-4; defaults to 1.'
+          ),
         },
         {
           name: 'bordered',
           signature: 'bordered?: boolean',
-          description: t('是否绘制单元格边框。', 'Whether to draw cell borders.'),
+          description: t(
+            '是否绘制单元格边框。',
+            'Whether to draw cell borders.'
+          ),
         },
         {
           name: 'title',
@@ -636,7 +981,7 @@ export const dataDisplayPages: OneDocPage[] = [
     ),
     section: 'components',
     sectionOrder: 2,
-    order: 16,
+    order: 17,
     body: [
       heading(1, 'onetimeline', 'OneTimeline'),
       paragraph(
@@ -658,7 +1003,10 @@ export const dataDisplayPages: OneDocPage[] = [
         {
           name: 'items',
           signature: 'items: OneTimelineItem[]',
-          description: t('事件项：title、content、time 与可选 color。', 'Event items: title, content, time and optional color.'),
+          description: t(
+            '事件项：title、content、time 与可选 color。',
+            'Event items: title, content, time and optional color.'
+          ),
         },
       ]),
     ],

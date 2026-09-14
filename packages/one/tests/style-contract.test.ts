@@ -34,6 +34,7 @@ import { ONE_SLIDER_STYLES } from '../lib/slider/OneSlider';
 import { ONE_RATE_STYLES } from '../lib/rate/OneRate';
 import { ONE_UPLOAD_STYLES } from '../lib/upload/OneUpload';
 import { ONE_TABLE_STYLES } from '../lib/table/OneTable';
+import { ONE_TREE_STYLES } from '../lib/tree/OneTree';
 import { ONE_COLLAPSE_STYLES } from '../lib/collapse/OneCollapse';
 import { ONE_SKELETON_STYLES } from '../lib/skeleton/OneSkeleton';
 import {
@@ -94,6 +95,7 @@ const COMPONENT_STYLE_GROUPS = [
   ONE_RATE_STYLES,
   ONE_UPLOAD_STYLES,
   ONE_TABLE_STYLES,
+  ONE_TREE_STYLES,
   ONE_COLLAPSE_STYLES,
   ONE_SKELETON_STYLES,
 ] as const;
@@ -256,6 +258,7 @@ describe('One UI style contract', () => {
       'one-rate-base',
       'one-upload-base',
       'one-table-base',
+      'one-tree-base',
       'one-collapse-base',
       'one-skeleton-base',
     ];

@@ -2,11 +2,7 @@ import { createApp, type ComponentConstructor } from '@geektech/tsone';
 import type { OneDocLocale } from './content';
 import { readOneDocBaseFromDocument, setOneDocBasePath } from './base';
 import { setDemoLocale } from './demos/locale';
-import {
-  isOneDocsTheme,
-  ONE_DOCS_THEME_KEY,
-  type OneDocsTheme,
-} from './theme';
+import { isOneDocsTheme, ONE_DOCS_THEME_KEY, type OneDocsTheme } from './theme';
 import { ButtonDemo } from './demos/ButtonDemo';
 import { BadgeDemo } from './demos/BadgeDemo';
 import { CardDemo } from './demos/CardDemo';
@@ -34,6 +30,7 @@ import { SliderDemo } from './demos/SliderDemo';
 import { RateDemo } from './demos/RateDemo';
 import { UploadDemo } from './demos/UploadDemo';
 import { TableDemo } from './demos/TableDemo';
+import { TreeDemo } from './demos/TreeDemo';
 import { CollapseDemo } from './demos/CollapseDemo';
 import { SkeletonDemo } from './demos/SkeletonDemo';
 import { DividerDemo } from './demos/DividerDemo';
@@ -74,6 +71,7 @@ type DemoName =
   | 'rate'
   | 'upload'
   | 'table'
+  | 'tree'
   | 'collapse'
   | 'skeleton'
   | 'divider'
@@ -114,6 +112,7 @@ const DEMOS: Record<DemoName, DemoConstructor> = {
   rate: RateDemo,
   upload: UploadDemo,
   table: TableDemo,
+  tree: TreeDemo,
   collapse: CollapseDemo,
   skeleton: SkeletonDemo,
   divider: DividerDemo,
@@ -269,6 +268,7 @@ function isDemoName(value: string | undefined): value is DemoName {
     value === 'rate' ||
     value === 'upload' ||
     value === 'table' ||
+    value === 'tree' ||
     value === 'collapse' ||
     value === 'skeleton' ||
     value === 'divider' ||

@@ -26,6 +26,7 @@ export type OneDocDemoName =
   | 'rate'
   | 'upload'
   | 'table'
+  | 'tree'
   | 'collapse'
   | 'skeleton'
   | 'divider'
@@ -72,7 +73,7 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
       "import { OneTextarea, type OneTextareaValueEvent } from '@geektech/one';",
       '',
       'const textarea = new OneTextarea({',
-      "  rows: 5,",
+      '  rows: 5,',
       "  placeholder: '请输入补充说明',",
       "  ariaLabel: '补充说明',",
       '});',
@@ -276,7 +277,7 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
     code: [
       "import { OneProgress } from '@geektech/one';",
       '',
-      "new OneProgress({ percent: 65, showText: true });",
+      'new OneProgress({ percent: 65, showText: true });',
       "new OneProgress({ percent: 30, variant: 'success' });",
     ].join('\n'),
   },
@@ -403,12 +404,44 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
       '});',
     ].join('\n'),
   },
+  tree: {
+    language: 'ts',
+    code: [
+      "import { OneTree, type OneTreeSelectEvent } from '@geektech/one';",
+      '',
+      'const tree = new OneTree({',
+      "  defaultExpanded: ['engineering'],",
+      '  data: [',
+      '    {',
+      "      value: 'design',",
+      "      label: '设计',",
+      '      children: [',
+      "        { value: 'visual', label: '视觉' },",
+      "        { value: 'interaction', label: '交互' },",
+      '      ],',
+      '    },',
+      '    {',
+      "      value: 'engineering',",
+      "      label: '工程',",
+      '      children: [',
+      "        { value: 'frontend', label: '前端' },",
+      "        { value: 'quality', label: '质量' },",
+      '      ],',
+      '    },',
+      '  ],',
+      '});',
+      "tree.on('select', (payload) => {",
+      '  const event = payload as OneTreeSelectEvent;',
+      '  console.log(event.value);',
+      '});',
+    ].join('\n'),
+  },
   skeleton: {
     language: 'ts',
     code: [
       "import { OneSkeleton } from '@geektech/one';",
       '',
-      "new OneSkeleton({ rows: 3, title: true, avatar: true });",
+      'new OneSkeleton({ rows: 3, title: true, avatar: true });',
     ].join('\n'),
   },
   divider: {
@@ -510,16 +543,16 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
     code: [
       "import { OneCascader } from '@geektech/one';",
       '',
-      "new OneCascader({",
-      "  options: [",
-      "    {",
+      'new OneCascader({',
+      '  options: [',
+      '    {',
       "      value: 'zhejiang',",
       "      label: '浙江',",
-      "      children: [",
+      '      children: [',
       "        { value: 'hangzhou', label: '杭州', children: [{ value: 'xihu', label: '西湖区' }] },",
       "        { value: 'ningbo', label: '宁波' },",
       '      ],',
-      "    },",
+      '    },',
       "    { value: 'jiangsu', label: '江苏', children: [{ value: 'nanjing', label: '南京' }] },",
       '  ],',
       "  placeholder: '请选择地区',",
