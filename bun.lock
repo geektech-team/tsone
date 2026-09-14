@@ -23,9 +23,16 @@
         "@geektech/tsone-cli": "workspace:*",
       },
     },
+    "packages/backone-cli": {
+      "name": "@geektech/backone-cli",
+      "version": "0.1.0",
+      "bin": {
+        "backone": "bin/backone.ts",
+      },
+    },
     "packages/one": {
       "name": "@geektech/one",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "devDependencies": {
         "@geektech/tsone": "workspace:*",
         "@geektech/tsone-cli": "workspace:*",
@@ -57,19 +64,10 @@
         "@geektech/tsone-cli": "workspace:*",
       },
     },
-    "playground/backone": {
+    "playground/backone-demo": {
       "name": "@tsone-playground/backone",
       "dependencies": {
         "@geektech/backone": "workspace:*",
-      },
-    },
-    "playground/demo": {
-      "name": "demo",
-      "dependencies": {
-        "@geektech/tsone": "^0.2.1",
-      },
-      "devDependencies": {
-        "@geektech/tsone-cli": "^0.2.2",
       },
     },
     "playground/official-site": {
@@ -79,6 +77,15 @@
       },
       "devDependencies": {
         "@geektech/tsone-cli": "workspace:*",
+      },
+    },
+    "playground/tsone-create-demo": {
+      "name": "demo",
+      "dependencies": {
+        "@geektech/tsone": "^0.2.1",
+      },
+      "devDependencies": {
+        "@geektech/tsone-cli": "^0.2.2",
       },
     },
   },
@@ -92,6 +99,8 @@
     "@eslint/js": ["@eslint/js@8.57.1", "http://offline.npm.juqitech.com/@eslint/js/-/js-8.57.1.tgz", {}, "sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q=="],
 
     "@geektech/backone": ["@geektech/backone@workspace:packages/backone"],
+
+    "@geektech/backone-cli": ["@geektech/backone-cli@workspace:packages/backone-cli"],
 
     "@geektech/one": ["@geektech/one@workspace:packages/one"],
 
@@ -115,7 +124,7 @@
 
     "@tsone-playground/admin-dashboard": ["@tsone-playground/admin-dashboard@workspace:playground/admin-dashboard"],
 
-    "@tsone-playground/backone": ["@tsone-playground/backone@workspace:playground/backone"],
+    "@tsone-playground/backone": ["@tsone-playground/backone@workspace:playground/backone-demo"],
 
     "@tsone-playground/official-site": ["@tsone-playground/official-site@workspace:playground/official-site"],
 
@@ -183,7 +192,7 @@
 
     "deep-is": ["deep-is@0.1.4", "http://offline.npm.juqitech.com/deep-is/-/deep-is-0.1.4.tgz", {}, "sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ=="],
 
-    "demo": ["demo@workspace:playground/demo"],
+    "demo": ["demo@workspace:playground/tsone-create-demo"],
 
     "dir-glob": ["dir-glob@3.0.1", "http://offline.npm.juqitech.com/dir-glob/-/dir-glob-3.0.1.tgz", { "dependencies": { "path-type": "^4.0.0" } }, "sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA=="],
 
