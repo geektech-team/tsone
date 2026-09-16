@@ -5,7 +5,7 @@
 import { initProject } from './commands/init';
 import type { TemplateName } from './types';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
 export async function runCli(): Promise<void> {
   const args = process.argv.slice(2);

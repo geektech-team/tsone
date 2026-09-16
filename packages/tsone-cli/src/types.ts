@@ -18,6 +18,32 @@ export interface BuildConfig {
   directoryPages?: boolean;
 }
 
+/** 微信小程序构建配置：`tsone build --mp-weixin` 时使用。 */
+export interface MiniProgramConfig {
+  /** 小程序 appid；默认 "touristappid"（微信开发者工具测试号）。 */
+  appId?: string;
+  /** 小程序产物目录；默认 dist/build/mp-wx。 */
+  outDir?: string;
+  /** 全局导航栏标题；默认 "TSone"。 */
+  navigationBarTitleText?: string;
+  /** 小程序专用页面路由（route → 入口文件）；默认复用 config.pages。 */
+  pages?: Record<string, string>;
+  /** 合并进 app.json.window 的字段（如 backgroundTextStyle、navigationBarBackgroundColor）。 */
+  window?: Record<string, unknown>;
+  /** app.json.tabBar（底部导航，含 list 等完整配置）。 */
+  tabBar?: Record<string, unknown>;
+  /** 合并进 app.json 的其他顶层字段（subPackages、lazyCodeLoading、permission、usingComponents 等）。 */
+  appExtra?: Record<string, unknown>;
+  /** 页面级 json 合并：route -> 字段（enablePullDownRefresh、navigationBarTitleText 等）。 */
+  pageExtra?: Record<string, Record<string, unknown>>;
+  /** 样式数字长度单位：'px'（默认）或 'rpx'（数值按 1px=2rpx 换算输出）。 */
+  lengthUnit?: 'px' | 'rpx';
+  /** 需要整体复制进产物包的静态资源目录；默认 'public'（不存在则跳过）。 */
+  publicDir?: string;
+  /** App 全局数据，写入 app.js 的 App({ globalData })。 */
+  globalData?: Record<string, unknown>;
+}
+
 /** 库打包配置：`tsone build --library` 时使用，产出可发布的 ESM bundle + .d.ts。 */
 export interface LibraryConfig {
   /** 库入口（如 lib/index.ts），默认 src/index.ts。 */
@@ -49,12 +75,27 @@ export interface ResolvedLibraryConfig {
   minify?: boolean;
 }
 
+export interface ResolvedMiniProgramConfig {
+  appId: string;
+  outDir: string;
+  navigationBarTitleText: string;
+  pages: Record<string, string>;
+  window?: Record<string, unknown>;
+  tabBar?: Record<string, unknown>;
+  appExtra?: Record<string, unknown>;
+  pageExtra?: Record<string, Record<string, unknown>>;
+  lengthUnit: 'px' | 'rpx';
+  publicDir: string;
+  globalData?: Record<string, unknown>;
+}
+
 export interface UserConfig {
   entry?: string;
   pages?: Record<string, string>;
   server?: ServerConfig;
   build?: BuildConfig;
   library?: LibraryConfig;
+  mp?: MiniProgramConfig;
 }
 
 export interface ResolveConfigOptions {
@@ -65,6 +106,8 @@ export interface ResolveConfigOptions {
   outDir?: string;
   /** 部署基础路径前缀（如 /tsone/one），覆盖 config.build.basePath。 */
   base?: string;
+  /** 构建微信小程序工程（读取 config.mp 与 config.pages）。 */
+  mpWeixin?: boolean;
 }
 
 export interface BuildOptions extends ResolveConfigOptions {
@@ -94,4 +137,5 @@ export interface ResolvedConfig {
     directoryPages: boolean;
   };
   library?: ResolvedLibraryConfig;
+  mp?: ResolvedMiniProgramConfig;
 }

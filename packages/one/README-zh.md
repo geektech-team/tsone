@@ -57,10 +57,10 @@ createApp({ root: App }).mount();
 - 表单：`OneForm`、`OneFormItem`、`OneInput`、`OneTextarea`、`OneSelect`、`OneCascader`、
   `OneTimePicker`、`OneCheckbox`、`OneCheckboxGroup`、`OneRadio`、
   `OneRadioGroup`、`OneSwitch`、`OneSlider`、`OneRate`、`OneUpload`
-- 导航：`OneTabs`、`OneSteps`、`OneBreadcrumb`、`OnePagination`
+- 导航：`OneTabs`、`OneSteps`、`OneBreadcrumb`、`OnePagination`、`OneMenu`
 - 数据展示：`OneCard`、`OneTag`、`OneBadge`、`OneAvatar`、`OneProgress`、
   `OneEmpty`、`OneTable`、`OneTree`、`OneCollapse`、`OneSkeleton`、
-  `OneDescriptions`、`OneTimeline`
+  `OneDescriptions`、`OneTimeline`、`OneCarousel`
 - 反馈与浮层：`OneAlert`、`OneMessage`、`OneDialog`、`OneTooltip`、
   `OnePopover`、`OneLoading`
 
@@ -112,15 +112,18 @@ xl >= 1200px，xxl >= 1600px。可通过主题 CSS 变量
 
 ## 导航
 
-并列内容使用标签页，层级位置使用面包屑，大量同类记录使用分页。三个组件分别
-提供受控状态；涉及原生链接时也可以通过事件决定是否继续导航。
+并列内容使用标签页，层级位置使用面包屑，大量同类记录使用分页，可展开的层级导航
+使用菜单。组件分别提供受控状态；涉及原生链接时也可以通过事件决定是否继续导航。
 
 ```ts
 import {
   OneBreadcrumb,
+  OneMenu,
   OnePagination,
   OneTabs,
   type OneBreadcrumbClickEvent,
+  type OneMenuOpenChangeEvent,
+  type OneMenuSelectEvent,
   type OnePaginationChangeEvent,
   type OneTabsChangeEvent,
 } from '@geektech/one';
@@ -168,6 +171,28 @@ pagination.on('change', (payload) => {
   pagination.setProps({ page: event.page, pageSize: event.pageSize });
 });
 void basicPagination;
+
+const menu = new OneMenu({
+  items: [
+    { value: 'overview', label: '概览' },
+    {
+      value: 'city',
+      label: '城市',
+      children: [
+        { value: 'ranking', label: '排行榜' },
+        { value: 'compare', label: '对比' },
+      ],
+    },
+  ],
+});
+menu.on('select', (payload) => {
+  const event = payload as OneMenuSelectEvent;
+  menu.setProps({ value: event.value });
+});
+menu.on('openChange', (payload) => {
+  const event = payload as OneMenuOpenChangeEvent;
+  menu.setProps({ open: event.value });
+});
 ```
 
 ## 数据展示
@@ -389,6 +414,28 @@ const upload = new OneUpload({ multiple: true, ariaLabel: '附件' });
 upload.on('change', (payload) => {
   const event = payload as OneUploadChangeEvent;
   console.log(event.files.map((file) => file.name));
+});
+```
+
+## 轮播
+
+`OneCarousel` 用平移轨道展示图片列表，内置自动播放、指示点、左右箭头与键盘
+导航，当前索引支持受控与非受控模式。
+
+```ts
+import { OneCarousel, type OneCarouselChangeEvent } from '@geektech/one';
+
+const carousel = new OneCarousel({
+  autoplay: true,
+  interval: 3000,
+  items: [
+    { src: '/banner-1.png', alt: '城市天际线', caption: '天际线' },
+    { src: '/banner-2.png', alt: '海港日落' },
+  ],
+});
+carousel.on('change', (payload) => {
+  const event = payload as OneCarouselChangeEvent;
+  console.log(event.value);
 });
 ```
 

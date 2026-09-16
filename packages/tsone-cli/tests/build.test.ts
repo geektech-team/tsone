@@ -122,32 +122,43 @@ afterEach(() => {
 describe('TSone production build', () => {
   it('cleans stale output, bundles assets, and writes an application document', async () => {
     const root = makeRoot();
-    mkdirSync(join(root, 'dist'));
-    writeFileSync(join(root, 'dist', 'stale.txt'), 'stale');
+    mkdirSync(join(root, 'dist', 'build', 'h5'), { recursive: true });
+    writeFileSync(join(root, 'dist', 'build', 'h5', 'stale.txt'), 'stale');
 
     const result = await build({ root });
-    const html = readFileSync(join(root, 'dist', 'index.html'), 'utf8');
-
-    expect(existsSync(join(root, 'dist', 'stale.txt'))).toBe(false);
-    expect(existsSync(join(root, 'dist', 'main.js'))).toBe(true);
-    expect(readFileSync(join(root, 'dist', 'main.js'), 'utf8')).not.toBe('');
-    expect(existsSync(join(root, 'dist', 'main.css'))).toBe(true);
-    expect(readFileSync(join(root, 'dist', 'main.css'), 'utf8')).toContain(
-      'color:'
+    const html = readFileSync(
+      join(root, 'dist', 'build', 'h5', 'index.html'),
+      'utf8'
     );
+
+    expect(existsSync(join(root, 'dist', 'build', 'h5', 'stale.txt'))).toBe(
+      false
+    );
+    expect(existsSync(join(root, 'dist', 'build', 'h5', 'main.js'))).toBe(true);
+    expect(
+      readFileSync(join(root, 'dist', 'build', 'h5', 'main.js'), 'utf8')
+    ).not.toBe('');
+    expect(existsSync(join(root, 'dist', 'build', 'h5', 'main.css'))).toBe(
+      true
+    );
+    expect(
+      readFileSync(join(root, 'dist', 'build', 'h5', 'main.css'), 'utf8')
+    ).toContain('color:');
     expect(result).toEqual({
       root,
-      outDir: join(root, 'dist'),
+      outDir: join(root, 'dist', 'build', 'h5'),
       assetsBuilt: expect.arrayContaining([
-        join(root, 'dist', 'index.html'),
-        join(root, 'dist', 'main.js'),
-        join(root, 'dist', 'main.css'),
+        join(root, 'dist', 'build', 'h5', 'index.html'),
+        join(root, 'dist', 'build', 'h5', 'main.js'),
+        join(root, 'dist', 'build', 'h5', 'main.css'),
       ]),
     });
     expect(html).toContain('<title>Built TSone App</title>');
     expect(html).toContain('<script type="module" src="./main.js"></script>');
     expect(html).toContain('<link rel="stylesheet" href="./main.css">');
-    const documentUrl = pathToFileURL(join(root, 'dist', 'index.html'));
+    const documentUrl = pathToFileURL(
+      join(root, 'dist', 'build', 'h5', 'index.html')
+    );
     const scriptSource = html.match(
       /<script type="module" src="([^"]+)"><\/script>/
     )?.[1];
@@ -160,13 +171,13 @@ describe('TSone production build', () => {
     }
 
     expect(fileURLToPath(new URL(scriptSource, documentUrl))).toBe(
-      join(root, 'dist', 'main.js')
+      join(root, 'dist', 'build', 'h5', 'main.js')
     );
     expect(existsSync(fileURLToPath(new URL(scriptSource, documentUrl)))).toBe(
       true
     );
     expect(fileURLToPath(new URL(stylesheetHref, documentUrl))).toBe(
-      join(root, 'dist', 'main.css')
+      join(root, 'dist', 'build', 'h5', 'main.css')
     );
     expect(
       existsSync(fileURLToPath(new URL(stylesheetHref, documentUrl)))
@@ -219,7 +230,7 @@ describe('TSone production build', () => {
       logs: [],
       outputs: [
         createBuildOutput(
-          join(root, 'dist', 'main.js'),
+          join(root, 'dist', 'build', 'h5', 'main.js'),
           'export const failedBuild = true;',
           'entry-point',
           'text/javascript;charset=utf-8'
@@ -228,7 +239,9 @@ describe('TSone production build', () => {
     } as BunBuildResult);
 
     await expect(build({ root })).rejects.toThrow('Bun build reported failure');
-    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(false);
+    expect(existsSync(join(root, 'dist', 'build', 'h5', 'index.html'))).toBe(
+      false
+    );
   });
 
   it('adds TSone build context when Bun rejects unexpectedly', async () => {
@@ -238,7 +251,9 @@ describe('TSone production build', () => {
     await expect(build({ root })).rejects.toThrow(
       /Failed to build TSone application: .*unexpected bundler rejection/
     );
-    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(false);
+    expect(existsSync(join(root, 'dist', 'build', 'h5', 'index.html'))).toBe(
+      false
+    );
   });
 
   it('reports when Bun emits no output files', async () => {
@@ -248,7 +263,9 @@ describe('TSone production build', () => {
     await expect(build({ root })).rejects.toThrow(
       'Bun emitted no output files'
     );
-    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(false);
+    expect(existsSync(join(root, 'dist', 'build', 'h5', 'index.html'))).toBe(
+      false
+    );
   });
 
   it('reports when Bun emits CSS without JavaScript', async () => {
@@ -258,7 +275,7 @@ describe('TSone production build', () => {
       logs: [],
       outputs: [
         createBuildOutput(
-          join(root, 'dist', 'main.css'),
+          join(root, 'dist', 'build', 'h5', 'main.css'),
           'body { color: rebeccapurple; }',
           'asset',
           'text/css;charset=utf-8'
@@ -269,13 +286,15 @@ describe('TSone production build', () => {
     await expect(build({ root })).rejects.toThrow(
       'Bun emitted no JavaScript output'
     );
-    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(false);
+    expect(existsSync(join(root, 'dist', 'build', 'h5', 'index.html'))).toBe(
+      false
+    );
   });
 
   it('does not execute JavaScript outputs classified as assets', async () => {
     const root = makeRoot();
-    const entryPoint = join(root, 'dist', 'main.js');
-    const javascriptAsset = join(root, 'dist', 'worker.js');
+    const entryPoint = join(root, 'dist', 'build', 'h5', 'main.js');
+    const javascriptAsset = join(root, 'dist', 'build', 'h5', 'worker.js');
     mockBuild({
       success: true,
       logs: [],
@@ -296,13 +315,16 @@ describe('TSone production build', () => {
     } as BunBuildResult);
 
     const result = await build({ root });
-    const html = readFileSync(join(root, 'dist', 'index.html'), 'utf8');
+    const html = readFileSync(
+      join(root, 'dist', 'build', 'h5', 'index.html'),
+      'utf8'
+    );
 
     expect(result.assetsBuilt).toEqual(
       expect.arrayContaining([
         entryPoint,
         javascriptAsset,
-        join(root, 'dist', 'index.html'),
+        join(root, 'dist', 'build', 'h5', 'index.html'),
       ])
     );
     expect(html).toContain('<script type="module" src="./main.js"></script>');
@@ -317,8 +339,10 @@ describe('TSone production build', () => {
 
     const result = await build({ root: linkedRoot });
 
-    expect(result.outDir).toBe(join(linkedRoot, 'dist'));
-    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(true);
+    expect(result.outDir).toBe(join(linkedRoot, 'dist', 'build', 'h5'));
+    expect(existsSync(join(root, 'dist', 'build', 'h5', 'index.html'))).toBe(
+      true
+    );
   });
 
   it('rejects the project root as an output directory without deleting it', async () => {
@@ -426,7 +450,8 @@ describe('TSone production build', () => {
   it('rejects an existing output symlink that targets outside the project', async () => {
     const root = makeRoot();
     const external = makeExternalDirectory();
-    symlinkSync(external, join(root, 'dist'));
+    mkdirSync(join(root, 'dist', 'build'), { recursive: true });
+    symlinkSync(external, join(root, 'dist', 'build', 'h5'));
 
     await expect(build({ root })).rejects.toThrow(
       'Build output must be a subdirectory of the project root'

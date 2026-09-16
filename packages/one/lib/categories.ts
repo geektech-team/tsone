@@ -32,7 +32,7 @@ export const ONE_COMPONENT_CATEGORIES = [
   {
     id: 'navigation',
     label: '导航',
-    components: ['OneTabs', 'OneSteps', 'OneBreadcrumb', 'OnePagination'],
+    components: ['OneTabs', 'OneSteps', 'OneBreadcrumb', 'OnePagination', 'OneMenu'],
   },
   {
     id: 'data-display',
@@ -50,6 +50,7 @@ export const ONE_COMPONENT_CATEGORIES = [
       'OneSkeleton',
       'OneDescriptions',
       'OneTimeline',
+      'OneCarousel',
     ],
   },
   {

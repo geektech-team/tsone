@@ -3,7 +3,7 @@
  * TSone monorepo 外层发布脚本。
  *
  * 在仓库根目录使用：
- *   bun run release --package <tsone|one|tsone-cli> [操作]...
+ *   bun run release --package <tsone|one|tsone-cli|backone|backone-cli> [操作]...
  *
  * 操作（可组合，至少指定一个；执行顺序固定为 bump → build → publish）：
  *   --build                   对目标包执行构建
@@ -16,11 +16,14 @@
  *   bun run release --package tsone --bump minor            # 升版本 + 构建 + 发布
  *   bun run release --package one --bump patch --no...      # 见 --dry-run
  *   bun run release --package tsone-cli --build             # 仅构建
+ *   bun run release --package backone --bump minor          # 升版本 + 构建 + 发布
+ *   bun run release --package backone-cli --bump patch --build
  *   bun run release --package tsone --bump major --dry-run  # 演练，不落盘
  *
  * 说明：
  *   - 版本升级时会同步该包已知的硬编码版本引用；升级 tsone 时还会同步
- *     one 的 peerDependencies 范围与相关契约测试，保证 monorepo 一致性。
+ *     one 的 peerDependencies 范围与相关契约测试；升级 backone 时会同步
+ *     backone-cli 脚手架模板中生成应用的依赖范围，保证 monorepo 一致性。
  *   - 发布使用 Bun 原生的 `bun publish`，需要已登录 npm（bun pm whoami）。
  */
 import { spawnSync } from 'node:child_process';
@@ -32,7 +35,11 @@ const REPO_ROOT = resolve(import.meta.dir, '..');
 const PACKAGES: Record<string, { dir: string; name: string }> = {
   tsone: { dir: 'packages/tsone', name: '@geektech/tsone' },
   one: { dir: 'packages/one', name: '@geektech/one' },
+  'one-chart': { dir: 'packages/one-chart', name: '@geektech/one-chart' },
   'tsone-cli': { dir: 'packages/tsone-cli', name: '@geektech/tsone-cli' },
+  backone: { dir: 'packages/backone', name: '@geektech/backone' },
+  'backone-utils': { dir: 'packages/backone-utils', name: '@geektech/backone-utils' },
+  'backone-cli': { dir: 'packages/backone-cli', name: '@geektech/backone-cli' },
 };
 
 const BUMP_TYPES = ['major', 'minor', 'patch'] as const;
@@ -49,7 +56,7 @@ interface CliArgs {
 function printHelp(): void {
   console.log(
     [
-      '用法：bun run release --package <tsone|one|tsone-cli> [操作]...',
+      '用法：bun run release --package <tsone|one|one-chart|tsone-cli|backone|backone-utils|backone-cli> [操作]...',
       '',
       '操作（至少一个，执行顺序：bump → build → publish）：',
       '  --build                   构建目标包',
@@ -60,7 +67,11 @@ function printHelp(): void {
       '示例：',
       '  bun run release --package tsone --bump minor',
       '  bun run release --package one --bump patch --build --publish',
+      '  bun run release --package one-chart --bump patch --build',
       '  bun run release --package tsone-cli --build',
+      '  bun run release --package backone --bump minor',
+      '  bun run release --package backone-utils --bump patch --build',
+      '  bun run release --package backone-cli --bump patch --build',
     ].join('\n')
   );
 }
@@ -84,7 +95,7 @@ function parseArgs(argv: string[]): CliArgs {
         }
         args.pkg = normalizePackage(value);
         if (!args.pkg) {
-          fail(`未知包：${value}（可选 tsone | one | tsone-cli）`);
+          fail(`未知包：${value}（可选 tsone | one | one-chart | tsone-cli | backone | backone-utils | backone-cli）`);
         }
         break;
       }
@@ -205,12 +216,13 @@ function syncForBump(pkgKey: string, oldVersion: string, newVersion: string, dry
       { file: 'packages/tsone-cli/tests/package-smoke.test.ts', from: `'@geektech/tsone': '${oldVersion}',`, to: `'@geektech/tsone': '${newVersion}',` },
       { file: 'packages/tsone-cli/tests/package-smoke.test.ts', from: `installedFrameworkManifest.version).toBe('${oldVersion}')`, to: `installedFrameworkManifest.version).toBe('${newVersion}')` }
     );
-    // one 对 tsone 的 peerDependencies 范围随 tsone 版本同步
+    // one / one-chart 对 tsone 的 peerDependencies 范围随 tsone 版本同步
     const oldRange = peerRange(oldVersion);
     const newRange = peerRange(newVersion);
     targets.push(
       { file: 'packages/one/package.json', from: `"@geektech/tsone": ">=${oldRange.low} <${oldRange.high}"`, to: `"@geektech/tsone": ">=${newRange.low} <${newRange.high}"` },
-      { file: 'packages/one/tests/package-contract.test.ts', from: `peerDependencies['@geektech/tsone']).toBe('>=${oldRange.low} <${oldRange.high}')`, to: `peerDependencies['@geektech/tsone']).toBe('>=${newRange.low} <${newRange.high}')` }
+      { file: 'packages/one/tests/package-contract.test.ts', from: `peerDependencies['@geektech/tsone']).toBe('>=${oldRange.low} <${oldRange.high}')`, to: `peerDependencies['@geektech/tsone']).toBe('>=${newRange.low} <${newRange.high}')` },
+      { file: 'packages/one-chart/package.json', from: `"@geektech/tsone": ">=${oldRange.low} <${oldRange.high}"`, to: `"@geektech/tsone": ">=${newRange.low} <${newRange.high}"` }
     );
   } else if (pkgKey === 'one') {
     targets.push(
@@ -221,10 +233,37 @@ function syncForBump(pkgKey: string, oldVersion: string, newVersion: string, dry
       { file: 'packages/one/tests/package-smoke.test.ts', from: `packageVersion: '${oldVersion}' = ONE_VERSION`, to: `packageVersion: '${newVersion}' = ONE_VERSION` },
       { file: 'packages/one/tests/package-smoke.test.ts', from: `version: '${oldVersion}',`, to: `version: '${newVersion}',` }
     );
+  } else if (pkgKey === 'one-chart') {
+    targets.push(
+      { file: 'packages/one-chart/package.json', from: `"version": "${oldVersion}"`, to: `"version": "${newVersion}"` },
+      { file: 'packages/one-chart/lib/index.ts', from: `ONE_CHART_VERSION = '${oldVersion}'`, to: `ONE_CHART_VERSION = '${newVersion}'` },
+      { file: 'packages/one-chart/tests/package-smoke.test.ts', from: `geektech-one-chart-${oldVersion}.tgz`, to: `geektech-one-chart-${newVersion}.tgz` },
+      { file: 'packages/one-chart/tests/package-smoke.test.ts', from: `packageVersion: '${oldVersion}' = ONE_CHART_VERSION`, to: `packageVersion: '${newVersion}' = ONE_CHART_VERSION` },
+      { file: 'packages/one-chart/tests/package-smoke.test.ts', from: `version: '${oldVersion}',`, to: `version: '${newVersion}',` }
+    );
   } else if (pkgKey === 'tsone-cli') {
     targets.push(
       { file: 'packages/tsone-cli/package.json', from: `"version": "${oldVersion}"`, to: `"version": "${newVersion}"` },
       { file: 'packages/tsone-cli/tests/package-smoke.test.ts', from: `installedCliManifest.version).toBe('${oldVersion}')`, to: `installedCliManifest.version).toBe('${newVersion}')` }
+    );
+  } else if (pkgKey === 'backone') {
+    targets.push(
+      { file: 'packages/backone/package.json', from: `"version": "${oldVersion}"`, to: `"version": "${newVersion}"` },
+      { file: 'packages/backone/lib/index.ts', from: `export const version = '${oldVersion}'`, to: `export const version = '${newVersion}'` }
+    );
+    // backone-cli 脚手架模板中生成应用对 backone 的 caret 依赖范围随版本同步
+    targets.push(
+      { file: 'packages/backone-cli/src/templates.ts', from: `'@geektech/backone': '^${oldVersion}'`, to: `'@geektech/backone': '^${newVersion}'` }
+    );
+  } else if (pkgKey === 'backone-utils') {
+    targets.push(
+      { file: 'packages/backone-utils/package.json', from: `"version": "${oldVersion}"`, to: `"version": "${newVersion}"` },
+      { file: 'packages/backone-utils/lib/index.ts', from: `export const version = '${oldVersion}'`, to: `export const version = '${newVersion}'` }
+    );
+  } else if (pkgKey === 'backone-cli') {
+    targets.push(
+      { file: 'packages/backone-cli/package.json', from: `"version": "${oldVersion}"`, to: `"version": "${newVersion}"` },
+      { file: 'packages/backone-cli/src/cli.ts', from: `const VERSION = '${oldVersion}'`, to: `const VERSION = '${newVersion}'` }
     );
   }
 
@@ -237,7 +276,7 @@ function main(): void {
   const args = parseArgs(process.argv.slice(2));
 
   if (!args.pkg) {
-    fail('请用 --package 指定目标包（tsone | one | tsone-cli）');
+    fail('请用 --package 指定目标包（tsone | one | tsone-cli | backone | backone-utils | backone-cli）');
   }
   if (!args.build && !args.bump && !args.publish) {
     fail('请至少指定一个操作：--build / --bump <major|minor|patch> / --publish');

@@ -42,6 +42,8 @@ import { TimelineDemo } from './demos/TimelineDemo';
 import { PopoverDemo } from './demos/PopoverDemo';
 import { LangSwitcher } from './components/LangSwitcher';
 import { CascaderDemo } from './demos/CascaderDemo';
+import { CarouselDemo } from './demos/CarouselDemo';
+import { MenuDemo } from './demos/MenuDemo';
 
 type DemoName =
   | 'button'
@@ -81,7 +83,9 @@ type DemoName =
   | 'descriptions'
   | 'timeline'
   | 'popover'
-  | 'cascader';
+  | 'cascader'
+  | 'carousel'
+  | 'menu';
 type DemoConstructor = ComponentConstructor<Record<string, never>, object>;
 
 const DEMOS: Record<DemoName, DemoConstructor> = {
@@ -123,6 +127,8 @@ const DEMOS: Record<DemoName, DemoConstructor> = {
   timeline: TimelineDemo,
   popover: PopoverDemo,
   cascader: CascaderDemo,
+  carousel: CarouselDemo,
+  menu: MenuDemo,
 };
 const mountedDemoRoots = new WeakSet<HTMLElement>();
 
@@ -278,7 +284,9 @@ function isDemoName(value: string | undefined): value is DemoName {
     value === 'descriptions' ||
     value === 'timeline' ||
     value === 'popover' ||
-    value === 'cascader'
+    value === 'cascader' ||
+    value === 'carousel' ||
+    value === 'menu'
   );
 }
 

@@ -439,6 +439,7 @@ describe('CLI package smoke', () => {
       };
       expect(extractedManifest.dependencies).toEqual({
         '@geektech/tsone': '0.5.0',
+        typescript: '^5.3.3',
       });
       const binTarget = extractedManifest.bin?.tsone;
       expect(binTarget).toBeTruthy();
@@ -510,7 +511,7 @@ describe('CLI package smoke', () => {
       );
       expect(installedCliRoot).toStartWith(`${consumerNodeModules}${sep}`);
       expect(installedFrameworkManifest.version).toBe('0.5.0');
-      expect(installedCliManifest.version).toBe('0.4.0');
+      expect(installedCliManifest.version).toBe('0.5.0');
 
       expect(
         findInstalledPackage(join(consumerRoot, 'node_modules'), 'happy-dom')

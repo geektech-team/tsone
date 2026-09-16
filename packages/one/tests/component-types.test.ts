@@ -13,11 +13,13 @@ import {
   OneBreadcrumb,
   OneButton,
   OneCard,
+  OneCarousel,
   OneCol,
   OneDialog,
   OneEmpty,
   OneInput,
   OneLoading,
+  OneMenu,
   OneMessage,
   OnePagination,
   OneProgress,
@@ -51,12 +53,17 @@ import {
   type OneBreadcrumbProps,
   type OneButtonProps,
   type OneCardProps,
+  type OneCarouselChangeEvent,
+  type OneCarouselProps,
   type OneColProps,
   type OneDataDisplayVariant,
   type OneDialogProps,
   type OneEmptyProps,
   type OneInputProps,
   type OneLoadingProps,
+  type OneMenuOpenChangeEvent,
+  type OneMenuProps,
+  type OneMenuSelectEvent,
   type OneMessageOptions,
   type OneMessagePlacement,
   type OnePaginationProps,
@@ -98,6 +105,13 @@ import {
 const buttonProps: OneButtonProps = { variant: 'danger', size: 'lg' };
 const inputProps: OneInputProps = { value: 'one', invalid: true };
 const cardProps: OneCardProps = { title: 'One', children: ['Body'] };
+const carouselProps: OneCarouselProps = {
+  items: [{ src: '/a.png', alt: '第一张' }],
+  defaultValue: 1,
+  autoplay: true,
+  interval: 3000,
+  loop: false,
+};
 const alertProps: OneAlertProps = { title: 'Info', variant: 'info' };
 const messageOptions: OneMessageOptions = { content: 'Saved', duration: 0 };
 const dialogProps: OneDialogProps = { title: 'Confirm', defaultOpen: false };
@@ -158,6 +172,19 @@ const loadingProps: OneLoadingProps = {
   size: 'lg',
   variant: 'primary',
   label: '加载中',
+};
+const menuProps: OneMenuProps = {
+  items: [
+    { value: 'overview', label: '概览' },
+    {
+      value: 'city',
+      label: '城市',
+      children: [{ value: 'ranking', label: '排行榜' }],
+    },
+  ],
+  mode: 'horizontal',
+  defaultValue: 'ranking',
+  accordion: true,
 };
 const sliderProps: OneSliderProps = {
   defaultValue: 40,
@@ -248,6 +275,10 @@ const invalidProgress: OneProgressProps = { variant: 'info' };
 const invalidUpload: OneUploadProps = { defaultValue: [{ id: 'a' }] };
 // @ts-expect-error slider max must be a number
 const invalidSlider: OneSliderProps = { max: '100' };
+// @ts-expect-error carousel items must carry a src
+const invalidCarousel: OneCarouselProps = { items: [{ alt: '缺图' }] };
+// @ts-expect-error menu item values must be strings
+const invalidMenu: OneMenuProps = { items: [{ value: 1, label: '错误' }] };
 // @ts-expect-error unsupported row align
 const invalidRow: OneRowProps = { align: 'middle' };
 // @ts-expect-error unsupported row justify
@@ -268,6 +299,7 @@ describe('public component types', () => {
     expect(typeof OneTabs).toBe('function');
     expect(typeof OneBreadcrumb).toBe('function');
     expect(typeof OnePagination).toBe('function');
+    expect(typeof OneMenu).toBe('function');
     expect(typeof OneRadio).toBe('function');
     expect(typeof OneRadioGroup).toBe('function');
     expect(typeof OneTimePicker).toBe('function');
@@ -280,6 +312,7 @@ describe('public component types', () => {
     expect(typeof OneTable).toBe('function');
     expect(typeof OneCollapse).toBe('function');
     expect(typeof OneSkeleton).toBe('function');
+    expect(typeof OneCarousel).toBe('function');
     expect(typeof OneRow).toBe('function');
     expect(typeof OneCol).toBe('function');
     expect(typeof OneTextarea).toBe('function');
@@ -306,6 +339,7 @@ describe('public component types', () => {
     expect(new OneTabs(tabsProps)).toBeInstanceOf(OneTabs);
     expect(new OneBreadcrumb(breadcrumbProps)).toBeInstanceOf(OneBreadcrumb);
     expect(new OnePagination(paginationProps)).toBeInstanceOf(OnePagination);
+    expect(new OneMenu(menuProps)).toBeInstanceOf(OneMenu);
     expect(new OneRadio(radioProps)).toBeInstanceOf(OneRadio);
     expect(new OneRadioGroup(radioGroupProps)).toBeInstanceOf(OneRadioGroup);
     expect(new OneTimePicker(timePickerProps)).toBeInstanceOf(OneTimePicker);
@@ -318,6 +352,7 @@ describe('public component types', () => {
     expect(new OneTable(tableProps)).toBeInstanceOf(OneTable);
     expect(new OneCollapse(collapseProps)).toBeInstanceOf(OneCollapse);
     expect(new OneSkeleton(skeletonProps)).toBeInstanceOf(OneSkeleton);
+    expect(new OneCarousel(carouselProps)).toBeInstanceOf(OneCarousel);
     expect(new OneRow(rowProps)).toBeInstanceOf(OneRow);
     expect(new OneCol(colProps)).toBeInstanceOf(OneCol);
     expect(new OneTextarea(textareaProps)).toBeInstanceOf(OneTextarea);
@@ -341,10 +376,25 @@ describe('public component types', () => {
       value: [],
       originalEvent: new Event('click'),
     };
+    const carouselChange: OneCarouselChangeEvent = {
+      value: 2,
+      originalEvent: new Event('click'),
+    };
+    const menuSelect: OneMenuSelectEvent = {
+      value: 'ranking',
+      originalEvent: new Event('click'),
+    };
+    const menuOpenChange: OneMenuOpenChangeEvent = {
+      value: ['city'],
+      originalEvent: new Event('click'),
+    };
     expect(sliderValue.value).toBe(1);
     expect(rateValue.value).toBe(5);
     expect(uploadChange.files).toHaveLength(0);
     expect(collapseChange.value).toEqual([]);
+    expect(carouselChange.value).toBe(2);
+    expect(menuSelect.value).toBe('ranking');
+    expect(menuOpenChange.value).toEqual(['city']);
     expect(textareaValue.value).toBe('updated');
     expect(messagePlacement).toBe('top-end');
     expect(overlayPlacement).toBe('right-start');
@@ -367,6 +417,8 @@ describe('public component types', () => {
     void invalidProgress;
     void invalidUpload;
     void invalidSlider;
+    void invalidCarousel;
+    void invalidMenu;
     void invalidRow;
     void invalidJustify;
   });

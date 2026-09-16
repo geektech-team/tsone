@@ -109,6 +109,14 @@ export type {
   OnePaginationProps,
   OnePaginationToken,
 } from './pagination';
+export { OneMenu, normalizeOneMenuMode } from './menu';
+export type {
+  OneMenuItem,
+  OneMenuMode,
+  OneMenuOpenChangeEvent,
+  OneMenuProps,
+  OneMenuSelectEvent,
+} from './menu';
 export { ONE_COMPONENT_CATEGORIES } from './categories';
 export type { OneComponentCategory } from './categories';
 export { OneCard } from './card';
@@ -150,6 +158,12 @@ export type {
   OneTimelineItem,
   OneTimelineProps,
 } from './timeline';
+export { OneCarousel } from './carousel';
+export type {
+  OneCarouselChangeEvent,
+  OneCarouselItem,
+  OneCarouselProps,
+} from './carousel';
 export { ONE_THEME_DEFAULTS } from './styles/shared';
 export {
   ONE_DEFAULT_THEME,
@@ -231,4 +245,4 @@ export type {
 } from './i18n';
 
 export const ONE_NAME = '@geektech/one';
-export const ONE_VERSION = '0.6.0';
+export const ONE_VERSION = '0.7.0';

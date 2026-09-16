@@ -38,6 +38,8 @@ import {
   OneTimeline,
   OnePopover,
   OneCascader,
+  OneCarousel,
+  OneMenu,
 } from '../../../lib';
 import {
   localize,
@@ -1109,9 +1111,102 @@ export class DocArticle extends Component<DocArticleProps> {
             },
           },
         ];
+      case 'carousel':
+        return [
+          {
+            component: OneCarousel,
+            props: {
+              height: '280px',
+              ariaLabel: pick('城市图片轮播', 'City image carousel', locale),
+              items: [
+                {
+                  src: this.carouselPlaceholder(
+                    '#2f7c39',
+                    pick('城市天际线', 'City skyline', locale)
+                  ),
+                  alt: pick('城市天际线', 'City skyline', locale),
+                  caption: pick('城市天际线', 'City skyline', locale),
+                },
+                {
+                  src: this.carouselPlaceholder(
+                    '#2563eb',
+                    pick('海港日落', 'Harbor sunset', locale)
+                  ),
+                  alt: pick('海港日落', 'Harbor sunset', locale),
+                  caption: pick('海港日落', 'Harbor sunset', locale),
+                },
+                {
+                  src: this.carouselPlaceholder(
+                    '#9a6700',
+                    pick('山间公路', 'Mountain road', locale)
+                  ),
+                  alt: pick('山间公路', 'Mountain road', locale),
+                  caption: pick('山间公路', 'Mountain road', locale),
+                },
+              ],
+            },
+          },
+        ];
+      case 'menu':
+        return [
+          {
+            component: OneMenu,
+            props: {
+              ariaLabel: pick('示例菜单', 'Example menu', locale),
+              items: [
+                {
+                  value: 'overview',
+                  label: pick('概览', 'Overview', locale),
+                },
+                {
+                  value: 'city',
+                  label: pick('城市', 'City', locale),
+                  children: [
+                    {
+                      value: 'ranking',
+                      label: pick('排行榜', 'Ranking', locale),
+                    },
+                    {
+                      value: 'compare',
+                      label: pick('对比', 'Compare', locale),
+                    },
+                  ],
+                },
+                {
+                  value: 'data',
+                  label: pick('数据', 'Data', locale),
+                  children: [
+                    {
+                      value: 'chart',
+                      label: pick('图表', 'Charts', locale),
+                    },
+                    {
+                      value: 'export',
+                      label: pick('导出', 'Export', locale),
+                    },
+                  ],
+                },
+                {
+                  value: 'settings',
+                  label: pick('设置', 'Settings', locale),
+                },
+              ],
+            },
+          },
+        ];
       default:
         return assertNever(component);
     }
+  }
+
+  private carouselPlaceholder(color: string, label: string): string {
+    const svg = [
+      '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="300">',
+      `<rect width="100%" height="100%" fill="${color}"/>`,
+      `<text x="50%" y="50%" font-size="28" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">${label}</text>`,
+      '</svg>',
+    ].join('');
+    return `data:image/svg+xml,${encodeURIComponent(svg)}`;
   }
 
   private localizeHref(href: string): string {

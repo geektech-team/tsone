@@ -114,7 +114,9 @@ describe('TSone CLI arguments', () => {
       command: 'build',
       library: true,
     });
-    expect(parseCliArgs(['build', '--library', '--out-dir', 'lib-dist'])).toEqual({
+    expect(
+      parseCliArgs(['build', '--library', '--out-dir', 'lib-dist'])
+    ).toEqual({
       command: 'build',
       library: true,
       outDir: 'lib-dist',
@@ -122,6 +124,24 @@ describe('TSone CLI arguments', () => {
     expect(() => parseCliArgs(['dev', '--library'])).toThrow(
       'Option --library is not supported for dev'
     );
+  });
+
+  it('parses the mp-weixin flag for build', () => {
+    expect(parseCliArgs(['build', '--mp-weixin'])).toEqual({
+      command: 'build',
+      mpWeixin: true,
+    });
+    expect(
+      parseCliArgs(['build', '--mp-weixin', '--out-dir', 'dist-mp'])
+    ).toEqual({
+      command: 'build',
+      mpWeixin: true,
+      outDir: 'dist-mp',
+    });
+    expect(parseCliArgs(['dev', '--mp-weixin'])).toEqual({
+      command: 'dev',
+      mpWeixin: true,
+    });
   });
 
   it('parses the base path flag for build and dev', () => {

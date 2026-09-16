@@ -16,14 +16,47 @@ import {
 } from './props';
 import type { RenderRuntimeContext, RenderStrategy, Renderable } from './types';
 
+export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
+/**
+ * 仅包含 HTML 中不存在的 SVG 专属标签：这些标签必须通过
+ * createElementNS 创建，否则会落入 HTML 命名空间而无法渲染。
+ * 与 HTML 重名的标签（title/desc/a/image 等）不在此列，避免误伤。
+ */
+export const SVG_TAGS: ReadonlySet<string> = new Set([
+  'svg',
+  'g',
+  'defs',
+  'rect',
+  'circle',
+  'ellipse',
+  'line',
+  'polyline',
+  'polygon',
+  'path',
+  'text',
+  'tspan',
+  'textPath',
+  'use',
+  'symbol',
+  'marker',
+  'linearGradient',
+  'radialGradient',
+  'stop',
+  'pattern',
+  'mask',
+  'clipPath',
+  'foreignObject',
+]);
+
 export class ElementRenderStrategy<
   TNode extends HTMLNode = HTMLNode,
 > implements RenderStrategy<TNode> {
   private readonly listeners = new WeakMap<
-    HTMLElement,
+    Element,
     Map<string, { eventName: string; listener: EventListener }>
   >();
-  private readonly effects = new WeakMap<HTMLElement, Set<ReactiveEffect>>();
+  private readonly effects = new WeakMap<Element, Set<ReactiveEffect>>();
   private readonly modelBindings = new ModelBindingController();
 
   public matches(vnode: Renderable): vnode is TNode {
@@ -35,7 +68,9 @@ export class ElementRenderStrategy<
       return document.createComment('if');
     }
 
-    const element = document.createElement(vnode.tag);
+    const element = SVG_TAGS.has(vnode.tag)
+      ? document.createElementNS(SVG_NAMESPACE, vnode.tag)
+      : document.createElement(vnode.tag);
     this.applyProps(element, {}, vnode.props ?? {}, context);
     this.updateListeners(element, {}, this.collectListeners(vnode));
     this.mountChildren(element, vnode, context);
@@ -60,7 +95,8 @@ export class ElementRenderStrategy<
       return nextNode;
     }
 
-    if (!(currentNode instanceof HTMLElement)) {
+    // SVG 元素是 SVGElement 而非 HTMLElement，元素级补丁必须覆盖两者
+    if (!(currentNode instanceof Element)) {
       return currentNode;
     }
 
@@ -98,7 +134,7 @@ export class ElementRenderStrategy<
     currentNode: Node,
     context: RenderRuntimeContext
   ): void {
-    if (!(currentNode instanceof HTMLElement)) {
+    if (!(currentNode instanceof Element)) {
       return;
     }
 
@@ -109,12 +145,12 @@ export class ElementRenderStrategy<
       currentNode.removeEventListener(eventName, listener);
     });
     this.listeners.delete(currentNode);
-    this.modelBindings.cleanup(currentNode);
+    this.modelBindings.cleanup(currentNode as HTMLElement);
     this.unmountChildren(currentNode, vnode, context);
   }
 
   protected mountChildren(
-    element: HTMLElement,
+    element: Element,
     vnode: TNode,
     context: RenderRuntimeContext
   ): void {
@@ -124,7 +160,7 @@ export class ElementRenderStrategy<
   }
 
   protected updateChildren(
-    element: HTMLElement,
+    element: Element,
     oldVNode: TNode,
     newVNode: TNode,
     context: RenderRuntimeContext
@@ -138,7 +174,7 @@ export class ElementRenderStrategy<
   }
 
   protected unmountChildren(
-    element: HTMLElement,
+    element: Element,
     vnode: TNode,
     context: RenderRuntimeContext
   ): void {
@@ -151,7 +187,7 @@ export class ElementRenderStrategy<
   }
 
   private applyProps(
-    element: HTMLElement,
+    element: Element,
     oldProps: HTMLProps,
     newProps: HTMLProps,
     context: RenderRuntimeContext
@@ -171,9 +207,9 @@ export class ElementRenderStrategy<
         element !== null &&
         'value' in element
       ) {
-        element.value = '';
+        (element as HTMLElement & { value: string }).value = '';
       } else {
-        element.removeAttribute(key);
+        element.removeAttribute(attributeName(key));
       }
     });
 
@@ -188,7 +224,13 @@ export class ElementRenderStrategy<
       }
 
       if (key === 'className' || key === 'class') {
-        element.className = String(value ?? '');
+        // SVG 元素的 className 是 SVGAnimatedString，直接赋值在部分环境
+        // 不可靠；统一走 class 属性。
+        if (element.namespaceURI === SVG_NAMESPACE) {
+          element.setAttribute('class', String(value ?? ''));
+        } else {
+          (element as HTMLElement).className = String(value ?? '');
+        }
         return;
       }
 
@@ -201,25 +243,28 @@ export class ElementRenderStrategy<
         element !== null &&
         'value' in element
       ) {
-        element.value = String(value ?? '');
+        (element as HTMLElement & { value: string }).value = String(
+          value ?? ''
+        );
         return;
       }
 
       if (key === 'style' && typeof value === 'object' && value !== null) {
         element.removeAttribute('style');
+        const style = (element as HTMLElement).style;
         Object.entries(value).forEach(([cssKey, cssValue]) => {
-          setStyleValue(element.style, cssKey, cssValue);
+          setStyleValue(style, cssKey, cssValue);
         });
         return;
       }
 
       if (value === false || value === undefined || value === null) {
-        element.removeAttribute(key);
+        element.removeAttribute(attributeName(key));
         return;
       }
 
       if (value === true) {
-        element.setAttribute(key, '');
+        element.setAttribute(attributeName(key), '');
         return;
       }
 
@@ -231,36 +276,36 @@ export class ElementRenderStrategy<
         return;
       }
 
-      element.setAttribute(key, String(value));
+      element.setAttribute(attributeName(key), String(value));
     });
   }
 
   private applyDirections(
-    element: HTMLElement,
+    element: Element,
     oldDirections: HTMLNode['directions'],
     newDirections: HTMLNode['directions'],
     context: RenderRuntimeContext
   ): void {
     if (newDirections && 'show' in newDirections) {
-      element.style.display = newDirections.show ? '' : 'none';
+      (element as HTMLElement).style.display = newDirections.show ? '' : 'none';
     } else if (oldDirections && 'show' in oldDirections) {
-      element.style.display = '';
+      (element as HTMLElement).style.display = '';
     }
 
     if (!newDirections?.model) {
-      this.modelBindings.cleanup(element);
+      this.modelBindings.cleanup(element as HTMLElement);
       return;
     }
 
     this.modelBindings.bind(
-      element,
+      element as HTMLElement,
       newDirections.model,
       context.templateEngine.state as Record<string, unknown>
     );
   }
 
   private updateOrdinaryChildren(
-    element: HTMLElement,
+    element: Element,
     oldChildren: Array<VNode | string>,
     newChildren: Array<VNode | string>,
     context: RenderRuntimeContext
@@ -311,7 +356,7 @@ export class ElementRenderStrategy<
   }
 
   private updateKeyedChildren(
-    element: HTMLElement,
+    element: Element,
     oldChildren: Array<VNode | string>,
     newChildren: Array<VNode | string>,
     context: RenderRuntimeContext
@@ -423,7 +468,7 @@ export class ElementRenderStrategy<
   }
 
   private updateListeners(
-    element: HTMLElement,
+    element: Element,
     oldListeners: EventListeners,
     newListeners: EventListeners
   ): void {
@@ -454,7 +499,7 @@ export class ElementRenderStrategy<
   }
 
   private setupReactiveAttribute(
-    element: HTMLElement,
+    element: Element,
     attrName: string,
     attrValue: string,
     context: RenderRuntimeContext
@@ -469,9 +514,19 @@ export class ElementRenderStrategy<
     this.trackEffect(element, effectRef);
   }
 
-  private trackEffect(element: HTMLElement, effectRef: ReactiveEffect): void {
+  private trackEffect(element: Element, effectRef: ReactiveEffect): void {
     const effects = this.effects.get(element) ?? new Set();
     effects.add(effectRef);
     this.effects.set(element, effects);
   }
+}
+
+/** dataId -> data-id：与小程序 dataset 约定一致，h5 端同样可从 dataset 读取。 */
+function attributeName(key: string): string {
+  if (key.startsWith('data') && key.length > 4) {
+    return `data${key
+      .slice(4)
+      .replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`;
+  }
+  return key;
 }

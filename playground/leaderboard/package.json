@@ -1,0 +1,18 @@
+{
+  "name": "@tsone-playground/leaderboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsone dev",
+    "dev:mp": "tsone dev --mp-weixin",
+    "build": "tsone build",
+    "build:mp": "tsone build --mp-weixin",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "dependencies": {
+    "@geektech/tsone": "workspace:*"
+  },
+  "devDependencies": {
+    "@geektech/tsone-cli": "workspace:*"
+  }
+}

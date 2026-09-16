@@ -36,7 +36,9 @@ export type OneDocDemoName =
   | 'descriptions'
   | 'timeline'
   | 'popover'
-  | 'cascader';
+  | 'cascader'
+  | 'carousel'
+  | 'menu';
 
 export interface OneDocDemoSource {
   language: 'ts';
@@ -556,6 +558,50 @@ export const oneDocDemoExamples: Record<OneDocDemoName, OneDocDemoSource> = {
       "    { value: 'jiangsu', label: '江苏', children: [{ value: 'nanjing', label: '南京' }] },",
       '  ],',
       "  placeholder: '请选择地区',",
+      '});',
+    ].join('\n'),
+  },
+  carousel: {
+    language: 'ts',
+    code: [
+      "import { OneCarousel, type OneCarouselChangeEvent } from '@geektech/one';",
+      '',
+      'const carousel = new OneCarousel({',
+      '  autoplay: true,',
+      '  interval: 3000,',
+      '  items: [',
+      "    { src: '/banner-1.png', alt: '城市天际线', caption: '天际线' },",
+      "    { src: '/banner-2.png', alt: '海港日落' },",
+      '  ],',
+      '});',
+      "carousel.on('change', (payload) => {",
+      '  const event = payload as OneCarouselChangeEvent;',
+      '  console.log(event.value);',
+      '});',
+    ].join('\n'),
+  },
+  menu: {
+    language: 'ts',
+    code: [
+      "import { OneMenu, type OneMenuSelectEvent } from '@geektech/one';",
+      '',
+      'const menu = new OneMenu({',
+      '  items: [',
+      "    { value: 'overview', label: '概览' },",
+      '    {',
+      "      value: 'city',",
+      "      label: '城市',",
+      '      children: [',
+      "        { value: 'ranking', label: '排行榜' },",
+      "        { value: 'compare', label: '对比' },",
+      '      ],',
+      '    },',
+      '  ],',
+      "  mode: 'horizontal',",
+      '});',
+      "menu.on('select', (payload) => {",
+      '  const event = payload as OneMenuSelectEvent;',
+      '  console.log(event.value);',
       '});',
     ].join('\n'),
   },

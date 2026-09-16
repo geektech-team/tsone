@@ -45,6 +45,8 @@ describe('One UI docs client', () => {
       '<div data-one-demo="tabs"></div>',
       '<div data-one-demo="breadcrumb"></div>',
       '<div data-one-demo="pagination"></div>',
+      '<div data-one-demo="carousel"></div>',
+      '<div data-one-demo="menu"></div>',
     ].join('');
 
     mountOneDocsClient();
@@ -77,6 +79,8 @@ describe('One UI docs client', () => {
     expect(document.querySelector('.one-tabs')).toBeTruthy();
     expect(document.querySelector('.one-breadcrumb')).toBeTruthy();
     expect(document.querySelector('.one-pagination')).toBeTruthy();
+    expect(document.querySelector('.one-carousel')).toBeTruthy();
+    expect(document.querySelector('.one-menu')).toBeTruthy();
   });
 
   it('reuses One controls throughout feedback demos', () => {

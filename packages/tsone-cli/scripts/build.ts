@@ -30,6 +30,8 @@ const result = await Bun.build({
   sourcemap: 'linked',
   splitting: true,
   packages: 'bundle',
+  // typescript 体积大且仅小程序编译器需要：作为运行时依赖，不打包进 CLI
+  external: ['typescript'],
   naming: {
     entry: '[dir]/[name].js',
     chunk: '[name]-[hash].js',

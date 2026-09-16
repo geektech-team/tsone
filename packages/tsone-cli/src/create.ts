@@ -102,7 +102,7 @@ function scaffoldFiles(name: string): ScaffoldFile[] {
     },
     {
       path: '.gitignore',
-      content: 'node_modules/\ndist/\n.tsone/\n',
+      content: 'node_modules/\ndist/\n',
     },
     {
       path: 'src/main.ts',

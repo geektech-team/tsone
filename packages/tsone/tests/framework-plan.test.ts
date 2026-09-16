@@ -48,7 +48,7 @@ class StrategyHost extends Component {
   protected render(): VNode {
     return {
       tag: 'div',
-      props: { className: 'host', title: 'Count {{count}}' },
+      props: { className: 'host', title: 'Count {{count}}', dataId: 42 },
       children: [
         'Count {{count}}',
         {
@@ -641,6 +641,18 @@ describe('framework public plan', () => {
     InjectionLeaf.latest = null;
   });
 
+  it('renders data-prefixed props as data-* attributes readable via dataset', () => {
+    const container = document.createElement('div');
+    const component = new StrategyHost();
+
+    component.mount(container);
+
+    const node = container.querySelector('[data-id]');
+    expect(node).not.toBeNull();
+    expect(node?.getAttribute('data-id')).toBe('42');
+    expect((node as HTMLElement).dataset.id).toBe('42');
+  });
+
   it('exports the README public API and renders through strategy-backed components', () => {
     expect(typeof Component).toBe('function');
 
@@ -1110,3 +1122,110 @@ class PropDiffHost extends Component<object, { label: string }> {
     };
   }
 }
+
+class SvgChartHost extends Component<object, { value: number }> {
+  protected initState(): { value: number } {
+    return { value: 40 };
+  }
+
+  protected initStyles(): void {}
+
+  protected render(): VNode {
+    return {
+      tag: 'svg',
+      props: {
+        viewBox: '0 0 200 100',
+        role: 'img',
+        'aria-label': 'svg chart',
+      },
+      children: [
+        {
+          tag: 'g',
+          children: [
+            {
+              tag: 'rect',
+              props: {
+                className: 'bar',
+                x: '10',
+                y: '20',
+                width: '30',
+                'stroke-width': '2',
+                fill: '#4e79a7',
+              },
+            },
+            {
+              tag: 'path',
+              props: { d: `M0 ${this.state.value} L100 80` },
+            },
+            {
+              tag: 'text',
+              props: { 'text-anchor': 'middle' },
+              children: ['Label'],
+            },
+          ],
+        },
+      ],
+    };
+  }
+}
+
+describe('SVG element rendering', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('creates SVG tags in the SVG namespace with presentation attributes', () => {
+    const container = document.createElement('div');
+    const host = new SvgChartHost();
+    host.mount(container);
+
+    const svg = container.querySelector('svg');
+    expect(svg).not.toBeNull();
+    expect(svg?.namespaceURI).toBe('http://www.w3.org/2000/svg');
+    expect(svg?.getAttribute('viewBox')).toBe('0 0 200 100');
+    expect(svg?.getAttribute('role')).toBe('img');
+
+    const rect = container.querySelector('rect');
+    expect(rect?.namespaceURI).toBe('http://www.w3.org/2000/svg');
+    expect(rect?.getAttribute('x')).toBe('10');
+    expect(rect?.getAttribute('stroke-width')).toBe('2');
+    expect(rect?.getAttribute('fill')).toBe('#4e79a7');
+    // SVG 元素的 class 走 class 属性而不是 className 赋值
+    expect(rect?.getAttribute('class')).toBe('bar');
+
+    const text = container.querySelector('text');
+    expect(text?.getAttribute('text-anchor')).toBe('middle');
+    expect(text?.textContent).toBe('Label');
+
+    host.unmount();
+  });
+
+  it('patches SVG attributes and path data on reactive updates', () => {
+    const container = document.createElement('div');
+    const host = new SvgChartHost();
+    host.mount(container);
+
+    host.state.value = 70;
+    flushSync();
+
+    const path = container.querySelector('path');
+    expect(path?.getAttribute('d')).toBe('M0 70 L100 80');
+    // 未变化的静态属性不被重写
+    const rect = container.querySelector('rect');
+    expect(rect?.getAttribute('x')).toBe('10');
+    expect(rect?.getAttribute('width')).toBe('30');
+
+    host.unmount();
+  });
+
+  it('keeps ordinary HTML tags in the HTML namespace', () => {
+    const container = document.createElement('div');
+    const host = new PropDiffHost();
+    host.mount(container);
+
+    const div = container.querySelector('div');
+    expect(div?.namespaceURI).not.toBe('http://www.w3.org/2000/svg');
+
+    host.unmount();
+  });
+});

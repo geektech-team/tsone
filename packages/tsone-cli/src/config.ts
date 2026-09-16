@@ -3,10 +3,12 @@ import { resolve } from 'node:path';
 import type {
   BuildConfig,
   LibraryConfig,
+  MiniProgramConfig,
   ProxyOptions,
   ResolveConfigOptions,
   ResolvedConfig,
   ResolvedLibraryConfig,
+  ResolvedMiniProgramConfig,
   ServerConfig,
   UserConfig,
 } from './types';
@@ -25,11 +27,11 @@ interface MergedConfig {
     directoryPages: boolean;
   };
   library?: LibraryConfig;
+  mp?: MiniProgramConfig;
 }
 
 type ConfigFileLoadResult =
-  | { exists: false }
-  | { exists: true; config: unknown };
+  { exists: false } | { exists: true; config: unknown };
 
 const DEFAULT_CONFIG: MergedConfig = {
   entry: 'src/main.ts',
@@ -39,7 +41,7 @@ const DEFAULT_CONFIG: MergedConfig = {
     proxy: {},
   },
   build: {
-    outDir: 'dist',
+    outDir: 'dist/build/h5',
     basePath: '',
     directoryPages: false,
   },
@@ -76,6 +78,13 @@ export async function resolveConfig(
     throw new Error(`Entry file does not exist: ${entry}`);
   }
   const pages = await resolvePages(root, entry, config.pages);
+  const mpPages = config.mp?.pages
+    ? await resolvePages(root, entry, config.mp.pages, {
+        includeEntry: false,
+        allowRoot: true,
+      })
+    : pages;
+  const mpEnabled = config.mp !== undefined || options.mpWeixin === true;
 
   return {
     root,
@@ -92,7 +101,40 @@ export async function resolveConfig(
       basePath: normalizeBasePath(config.build.basePath),
       directoryPages: config.build.directoryPages,
     },
-    ...(config.library ? { library: resolveLibrary(root, config.library) } : {}),
+    ...(config.library
+      ? { library: resolveLibrary(root, config.library) }
+      : {}),
+    ...(mpEnabled
+      ? {
+          mp: resolveMiniProgram(
+            root,
+            options.outDir,
+            config.mp ?? {},
+            mpPages
+          ),
+        }
+      : {}),
+  };
+}
+
+function resolveMiniProgram(
+  root: string,
+  outDirOverride: string | undefined,
+  mp: MiniProgramConfig,
+  pages: Record<string, string>
+): ResolvedMiniProgramConfig {
+  return {
+    appId: mp.appId ?? 'touristappid',
+    outDir: resolve(root, outDirOverride ?? mp.outDir ?? 'dist/build/mp-wx'),
+    navigationBarTitleText: mp.navigationBarTitleText ?? 'TSone',
+    pages,
+    ...(mp.window !== undefined ? { window: mp.window } : {}),
+    ...(mp.tabBar !== undefined ? { tabBar: mp.tabBar } : {}),
+    ...(mp.appExtra !== undefined ? { appExtra: mp.appExtra } : {}),
+    ...(mp.pageExtra !== undefined ? { pageExtra: mp.pageExtra } : {}),
+    lengthUnit: mp.lengthUnit ?? 'px',
+    publicDir: resolve(root, mp.publicDir ?? 'public'),
+    ...(mp.globalData !== undefined ? { globalData: mp.globalData } : {}),
   };
 }
 
@@ -127,11 +169,13 @@ function normalizeBasePath(base: string | undefined): string {
 async function resolvePages(
   root: string,
   entry: string,
-  pages: Record<string, string> | undefined
+  pages: Record<string, string> | undefined,
+  options: { includeEntry?: boolean; allowRoot?: boolean } = {}
 ): Promise<Record<string, string>> {
-  const resolved: Record<string, string> = { '/': entry };
+  const resolved: Record<string, string> =
+    options.includeEntry === false ? {} : { '/': entry };
   for (const [route, pageEntry] of Object.entries(pages ?? {})) {
-    const normalized = normalizePageRoute(route);
+    const normalized = normalizePageRoute(route, options.allowRoot);
     const absolute = resolve(root, pageEntry);
     if (!existsSync(absolute)) {
       throw new Error(
@@ -143,8 +187,11 @@ async function resolvePages(
   return resolved;
 }
 
-function normalizePageRoute(route: string): string {
+function normalizePageRoute(route: string, allowRoot = false): string {
   if (route === '/') {
+    if (allowRoot) {
+      return '/';
+    }
     throw new Error(
       'Config pages must not redefine the root page "/"; use config.entry instead'
     );
@@ -214,10 +261,16 @@ function mergeConfig(...configs: UserConfig[]): MergedConfig {
       build: {
         outDir: build?.outDir ?? merged.build.outDir,
         basePath: build?.basePath ?? merged.build.basePath,
-        directoryPages:
-          build?.directoryPages ?? merged.build.directoryPages,
+        directoryPages: build?.directoryPages ?? merged.build.directoryPages,
       },
       library: config.library ?? merged.library,
+      mp:
+        config.mp !== undefined
+          ? {
+              ...(merged.mp ?? {}),
+              ...config.mp,
+            }
+          : merged.mp,
     };
   }, DEFAULT_CONFIG);
 }
@@ -240,9 +293,46 @@ function validateUserConfig(config: unknown): asserts config is UserConfig {
   if (config.library !== undefined) {
     validateLibraryConfig(config.library);
   }
+  if (config.mp !== undefined) {
+    validateMiniProgramConfig(config.mp);
+  }
 }
 
-function validateLibraryConfig(library: unknown): asserts library is LibraryConfig {
+function validateMiniProgramConfig(
+  mp: unknown
+): asserts mp is MiniProgramConfig {
+  assertRecord(mp, 'Config mp');
+  for (const key of ['appId', 'outDir', 'navigationBarTitleText'] as const) {
+    if (mp[key] !== undefined && typeof mp[key] !== 'string') {
+      throw new Error(`Config mp.${key} must be a string`);
+    }
+  }
+  if (mp.pages !== undefined) {
+    validatePagesConfig(mp.pages, 'Config mp.pages');
+  }
+  if (
+    mp.lengthUnit !== undefined &&
+    mp.lengthUnit !== 'px' &&
+    mp.lengthUnit !== 'rpx'
+  ) {
+    throw new Error("Config mp.lengthUnit must be 'px' or 'rpx'");
+  }
+  if (mp.publicDir !== undefined && typeof mp.publicDir !== 'string') {
+    throw new Error('Config mp.publicDir must be a string');
+  }
+  for (const key of ['window', 'tabBar', 'appExtra', 'globalData'] as const) {
+    if (mp[key] !== undefined && !isRecord(mp[key])) {
+      throw new Error(`Config mp.${key} must be an object`);
+    }
+  }
+  if (mp.pageExtra !== undefined && !isRecord(mp.pageExtra)) {
+    throw new Error('Config mp.pageExtra must be an object');
+  }
+}
+
+function validateLibraryConfig(
+  library: unknown
+): asserts library is LibraryConfig {
   assertRecord(library, 'Config library');
   if (library.entry !== undefined && typeof library.entry !== 'string') {
     throw new Error('Config library.entry must be a string');
@@ -264,18 +354,16 @@ function validateLibraryConfig(library: unknown): asserts library is LibraryConf
 }
 
 function assertStringArray(value: unknown, name: string): void {
-  if (
-    !Array.isArray(value) ||
-    value.some((item) => typeof item !== 'string')
-  ) {
+  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
     throw new Error(`${name} must be an array of strings`);
   }
 }
 
 function validatePagesConfig(
-  pages: unknown
+  pages: unknown,
+  label = 'Config pages'
 ): asserts pages is Record<string, string> {
-  assertRecord(pages, 'Config pages');
+  assertRecord(pages, label);
 
   for (const [route, entry] of Object.entries(pages)) {
     if (!route.startsWith('/')) {
@@ -375,13 +463,17 @@ function assertRecord(
   value: unknown,
   name: string
 ): asserts value is Record<string, unknown> {
-  if (
-    typeof value !== 'object' ||
-    value === null ||
-    Array.isArray(value) ||
-    (Object.getPrototypeOf(value) !== Object.prototype &&
-      Object.getPrototypeOf(value) !== null)
-  ) {
+  if (!isRecord(value)) {
     throw new Error(`${name} must be an object`);
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    (Object.getPrototypeOf(value) === Object.prototype ||
+      Object.getPrototypeOf(value) === null)
+  );
 }

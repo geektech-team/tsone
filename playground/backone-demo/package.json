@@ -8,6 +8,7 @@
     "typecheck": "bunx tsc --noEmit"
   },
   "dependencies": {
-    "@geektech/backone": "workspace:*"
+    "@geektech/backone": "workspace:*",
+    "@geektech/backone-utils": "workspace:*"
   }
 }

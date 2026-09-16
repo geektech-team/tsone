@@ -1,0 +1,60 @@
+{
+  "name": "@geektech/backone-utils",
+  "version": "0.3.0",
+  "description": "BackOne 通用工具包：数据库连接与增删改查（多库）、ID 生成、缓存、JWT、HTTP 客户端、限流、schema 校验，基于 Bun 内置能力，零运行时依赖",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "build:types": "bunx tsc --project tsconfig.build.json",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write . --ignore-path .gitignore",
+    "test": "bun test"
+  },
+  "keywords": [
+    "typescript",
+    "backend",
+    "database",
+    "sql",
+    "crud",
+    "cache",
+    "jwt",
+    "http",
+    "rate-limit",
+    "validation",
+    "bun",
+    "backone"
+  ],
+  "author": "Jimmie Max(Qianyu)",
+  "homepage": "https://geektech-team.github.io/tsone/",
+  "bugs": {
+    "url": "https://github.com/geektech-team/tsone/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geektech-team/tsone.git",
+    "directory": "packages/backone-utils"
+  },
+  "license": "MIT",
+  "engines": {
+    "bun": ">=1.3.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README-zh.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

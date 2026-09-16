@@ -173,16 +173,28 @@ describe('TSone CLI multi-page', () => {
     );
 
     const result = await build({ root });
-    const indexHtml = readFileSync(join(root, 'dist', 'index.html'), 'utf8');
-    const aboutHtml = readFileSync(join(root, 'dist', 'about.html'), 'utf8');
+    const indexHtml = readFileSync(
+      join(root, 'dist', 'build', 'h5', 'index.html'),
+      'utf8'
+    );
+    const aboutHtml = readFileSync(
+      join(root, 'dist', 'build', 'h5', 'about.html'),
+      'utf8'
+    );
     const guideHtml = readFileSync(
-      join(root, 'dist', 'docs', 'guide.html'),
+      join(root, 'dist', 'build', 'h5', 'docs', 'guide.html'),
       'utf8'
     );
 
-    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(true);
-    expect(existsSync(join(root, 'dist', 'about.html'))).toBe(true);
-    expect(existsSync(join(root, 'dist', 'docs', 'guide.html'))).toBe(true);
+    expect(existsSync(join(root, 'dist', 'build', 'h5', 'index.html'))).toBe(
+      true
+    );
+    expect(existsSync(join(root, 'dist', 'build', 'h5', 'about.html'))).toBe(
+      true
+    );
+    expect(
+      existsSync(join(root, 'dist', 'build', 'h5', 'docs', 'guide.html'))
+    ).toBe(true);
     expect(indexHtml).toContain('<title>Home Page</title>');
     expect(indexHtml).toContain('<script type="module" src="./main.js">');
     expect(aboutHtml).toContain('<title>About</title>');
@@ -191,11 +203,11 @@ describe('TSone CLI multi-page', () => {
     expect(guideHtml).toContain('<script type="module" src="./../guide.js">');
     expect(result.assetsBuilt).toEqual(
       expect.arrayContaining([
-        join(root, 'dist', 'index.html'),
-        join(root, 'dist', 'about.html'),
-        join(root, 'dist', 'docs', 'guide.html'),
-        join(root, 'dist', 'main.js'),
-        join(root, 'dist', 'about.js'),
+        join(root, 'dist', 'build', 'h5', 'index.html'),
+        join(root, 'dist', 'build', 'h5', 'about.html'),
+        join(root, 'dist', 'build', 'h5', 'docs', 'guide.html'),
+        join(root, 'dist', 'build', 'h5', 'main.js'),
+        join(root, 'dist', 'build', 'h5', 'about.js'),
       ])
     );
   });
@@ -214,8 +226,8 @@ describe('TSone CLI multi-page', () => {
     const originalBuild = Bun.build;
     Bun.build = (async () => {
       buildCalls += 1;
-      const entryPath = join(root, 'dist', 'shared.js');
-      mkdirSync(join(root, 'dist'), { recursive: true });
+      const entryPath = join(root, 'dist', 'build', 'h5', 'shared.js');
+      mkdirSync(join(root, 'dist', 'build', 'h5'), { recursive: true });
       writeFileSync(entryPath, 'export const shared = true;');
       return {
         success: true,
@@ -242,15 +254,21 @@ describe('TSone CLI multi-page', () => {
     const result = await build({ root });
 
     expect(buildCalls).toBe(2);
-    expect(existsSync(join(root, 'dist', 'index.html'))).toBe(true);
-    expect(existsSync(join(root, 'dist', 'about', 'index.html'))).toBe(true);
-    expect(existsSync(join(root, 'dist', 'docs', 'guide', 'index.html'))).toBe(
+    expect(existsSync(join(root, 'dist', 'build', 'h5', 'index.html'))).toBe(
       true
     );
+    expect(
+      existsSync(join(root, 'dist', 'build', 'h5', 'about', 'index.html'))
+    ).toBe(true);
+    expect(
+      existsSync(
+        join(root, 'dist', 'build', 'h5', 'docs', 'guide', 'index.html')
+      )
+    ).toBe(true);
     expect(result.assetsBuilt).toEqual(
       expect.arrayContaining([
-        join(root, 'dist', 'about', 'index.html'),
-        join(root, 'dist', 'docs', 'guide', 'index.html'),
+        join(root, 'dist', 'build', 'h5', 'about', 'index.html'),
+        join(root, 'dist', 'build', 'h5', 'docs', 'guide', 'index.html'),
       ])
     );
   });
@@ -282,9 +300,12 @@ describe('TSone CLI multi-page', () => {
 
     await build({ root });
 
-    const rootHtml = readFileSync(join(root, 'dist', 'index.html'), 'utf8');
+    const rootHtml = readFileSync(
+      join(root, 'dist', 'build', 'h5', 'index.html'),
+      'utf8'
+    );
     const guideHtml = readFileSync(
-      join(root, 'dist', 'zh', 'guide', 'index.html'),
+      join(root, 'dist', 'build', 'h5', 'zh', 'guide', 'index.html'),
       'utf8'
     );
     expect(rootHtml).toContain('/tsone/one/');

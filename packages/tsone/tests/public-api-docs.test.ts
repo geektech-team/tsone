@@ -429,7 +429,7 @@ describe('public API documentation', () => {
 
     expect(readme).toContain("'/backend': 'http://localhost:4000'");
     expect(readme).toContain("target: 'http://localhost:3000'");
-    expect(readme).toContain("build: { outDir: 'dist' }");
+    expect(readme).toContain("build: { outDir: 'dist/build/h5' }");
     expect(readme).toContain(
       'The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.'
     );

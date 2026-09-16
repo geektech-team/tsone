@@ -98,6 +98,13 @@ export const middlewarePage: BackOneDocPage = {
           ': security header middleware (helmet-style), sets X-Content-Type-Options, X-Frame-Options, Referrer-Policy etc., each overridable or disablable.'
         ),
       ],
+      [
+        inlineCode('usePrefix'),
+        t(
+          '：路由前缀（注册期快捷方法），为之后注册的路由统一增加前缀；支持持久替换与作用域临时叠加两种形式，可与 group 组合。',
+          ': route prefix (a registration-time shortcut), adds a prefix to routes registered afterwards; supports persistent replacement and scoped temporary stacking, composable with group.'
+        ),
+      ],
     ]),
     heading(2, 'shortcuts', t('快捷方法', 'Shortcuts')),
     codeBlock(
@@ -107,6 +114,7 @@ app.useCors({ origin: ['https://app.example.com'] }); // cors()
 app.useGzip({ threshold: 1024, level: 6 });          // gzip()
 app.useTimeout({ ms: 5000 });                         // timeout()
 app.useHelmet({ xFrameOptions: 'SAMEORIGIN' });      // helmet()
+app.usePrefix('/api');                                 // 后续路由统一加前缀
 app.serveStatic('/public', './public', {
   cacheControl: 'public, max-age=3600',
 });`

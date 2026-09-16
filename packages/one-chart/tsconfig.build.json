@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./lib",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationDir": "./dist",
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "paths": {
+      "@geektech/tsone": ["packages/tsone/dist/index.d.ts"],
+      "@geektech/tsone/style": ["packages/tsone/dist/style/index.d.ts"]
+    }
+  },
+  "include": ["lib"],
+  "exclude": ["node_modules", "dist", "coverage", "tests", "docs", "scripts"]
+}

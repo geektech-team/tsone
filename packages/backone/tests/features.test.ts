@@ -218,6 +218,145 @@ describe('route group', () => {
   });
 });
 
+describe('usePrefix', () => {
+  it('持久形式：为后续注册的路由统一增加前缀', async () => {
+    const app = createServer({ port: 0 });
+    app.usePrefix('/api');
+    app.get('/users', () => 'users');
+    app.get<{ id: string }>('/users/:id', (ctx) => ctx.params.id);
+    const port = await app.listen();
+    try {
+      const res1 = await fetch(`http://127.0.0.1:${port}/api/users`);
+      expect(await res1.text()).toBe('users');
+      const res2 = await fetch(`http://127.0.0.1:${port}/api/users/7`);
+      expect(await res2.text()).toBe('7');
+      const res3 = await fetch(`http://127.0.0.1:${port}/users`);
+      expect(res3.status).toBe(404);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('前缀归一化：自动补前导斜杠、去末尾斜杠；空串重置', async () => {
+    const app = createServer({ port: 0 });
+    expect(app.prefix).toBe('');
+    app.usePrefix('api/');
+    expect(app.prefix).toBe('/api');
+    app.get('/x', () => 'x');
+    app.usePrefix('');
+    expect(app.prefix).toBe('');
+    app.get('/y', () => 'y');
+    const port = await app.listen();
+    try {
+      expect(await (await fetch(`http://127.0.0.1:${port}/api/x`)).text()).toBe(
+        'x'
+      );
+      expect(await (await fetch(`http://127.0.0.1:${port}/y`)).text()).toBe(
+        'y'
+      );
+      expect((await fetch(`http://127.0.0.1:${port}/x`)).status).toBe(404);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('持久形式替换而非叠加', async () => {
+    const app = createServer({ port: 0 });
+    app.usePrefix('/api');
+    app.usePrefix('/api/v2');
+    expect(app.prefix).toBe('/api/v2');
+    app.get('/ping', () => 'pong');
+    const port = await app.listen();
+    try {
+      expect(
+        await (await fetch(`http://127.0.0.1:${port}/api/v2/ping`)).text()
+      ).toBe('pong');
+      expect((await fetch(`http://127.0.0.1:${port}/api/ping`)).status).toBe(
+        404
+      );
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('作用域形式：相对当前前缀叠加，结束自动恢复，支持嵌套', async () => {
+    const app = createServer({ port: 0 });
+    app.usePrefix('/api');
+    app.usePrefix('/v2', (api) => {
+      api.get('/users', () => 'v2-users');
+      api.usePrefix('/admin', (admin) => {
+        admin.get('/stats', () => 'v2-admin-stats');
+      });
+    });
+    expect(app.prefix).toBe('/api');
+    app.get('/health', () => 'health');
+    const port = await app.listen();
+    try {
+      expect(
+        await (await fetch(`http://127.0.0.1:${port}/api/v2/users`)).text()
+      ).toBe('v2-users');
+      expect(
+        await (
+          await fetch(`http://127.0.0.1:${port}/api/v2/admin/stats`)
+        ).text()
+      ).toBe('v2-admin-stats');
+      expect(
+        await (await fetch(`http://127.0.0.1:${port}/api/health`)).text()
+      ).toBe('health');
+      expect((await fetch(`http://127.0.0.1:${port}/v2/users`)).status).toBe(
+        404
+      );
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('与 group 叠加：前缀 + 组前缀', async () => {
+    const app = createServer({ port: 0 });
+    app.usePrefix('/api');
+    app.group('/v1', (api) => {
+      api.get('/users', () => 'v1-users');
+    });
+    const port = await app.listen();
+    try {
+      expect(
+        await (await fetch(`http://127.0.0.1:${port}/api/v1/users`)).text()
+      ).toBe('v1-users');
+      expect((await fetch(`http://127.0.0.1:${port}/v1/users`)).status).toBe(
+        404
+      );
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('WebSocket 路径同样应用前缀', async () => {
+    const app = createServer({ port: 0 });
+    app.usePrefix('/ws');
+    app.ws('/echo', {
+      message: (ws, message) => ws.send(`echo: ${message}`),
+    });
+    const port = await app.listen();
+    try {
+      const ws = new WebSocket(`ws://127.0.0.1:${port}/ws/echo`);
+      await new Promise<void>((resolve) => {
+        ws.onopen = () => resolve();
+      });
+      ws.send('hi');
+      const data = await new Promise<string>((resolve) => {
+        ws.onmessage = (event) => resolve(String(event.data));
+      });
+      expect(data).toBe('echo: hi');
+      ws.close();
+      await new Promise<void>((resolve) => {
+        ws.onclose = () => resolve();
+      });
+    } finally {
+      await app.close();
+    }
+  });
+});
+
 describe('timeout', () => {
   it('超时返回 504', async () => {
     const app = createServer({ port: 0 });

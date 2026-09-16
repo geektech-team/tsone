@@ -36,6 +36,13 @@
 - 代码检查：`bun run lint`
 - CLI 开发服务：在应用目录运行 `bun run tsone dev`
 - CLI 应用构建：在应用目录运行 `bun run tsone build`
+- CLI 小程序构建：在应用目录运行 `bun run tsone build --mp-weixin`（编译期
+  静态转换，产物为原生小程序工程，无框架运行时；不可静态编译的写法会快速报错）
+- CLI 小程序开发：在应用目录运行 `bun run tsone dev --mp-weixin`（watch 模式，
+  产物写入 `dist/dev/mp-wx`，不启动 HTTP 服务）
+- 产物目录约定：构建产物 `dist/build/h5`（站点）与 `dist/build/mp-wx`（小程序），
+  开发产物 `dist/dev/h5`（dev server）与 `dist/dev/mp-wx`（mp watch）；`dist/`
+  整体是生成物（已 gitignore），watch 逻辑忽略 `dist` 段。
 - 演练服务：`bun run dev`
 - 文档服务：`bun run docs`
 - 发布前建议检查：`bun test && bunx tsc --noEmit && bun run build && bun pm pack --cwd packages/tsone --dry-run && bun pm pack --cwd packages/tsone-cli --dry-run`
@@ -53,6 +60,15 @@ preload `packages/tsone/tests/setup-dom.ts` 注入 Happy DOM 全局对象；从�
   `tsone` bin、files 和 publishConfig。
 - `packages/tsone-cli/src/config.ts` 管理 `defineConfig`、配置加载、默认值、
   CLI 覆盖和校验；`types.ts` 定义公开配置类型。
+- `packages/tsone-cli/src/mp/` 是微信小程序编译期转换器（`build --mp-weixin`）：
+  - `build-mp.ts` 编排产物（app.json/app.js/app.wxss/project.config.json +
+    pages/<route>/ + components/<tag>/）。
+  - `wxml.ts` 编译 `render()` 的静态 VNode 子集为 WXML；`binding.ts` 生成
+    `{{...}}` 绑定；`fold.ts` 做模块常量静态折叠。
+  - `methods.ts` 把方法体改写成 setData/triggerEvent 语义；`state.ts`/
+    `styles.ts` 编译 initState/initStyles；`analyze.ts` 定位根类与组件引用；
+    `compile.ts` 编排单元编译；`jsgen.ts` 生成 Page/Component JS。
+  - `ts-loader.ts` 惰性加载 typescript（作为运行时依赖，不打包进 CLI）。
 - `packages/tsone-cli/src/server.ts` 与 `build.ts` 分别实现开发服务和生产构建，
   `proxy.ts` 实现 HTTP/HTTPS 开发代理，`project.ts` 隔离入口文档渲染。
 - `packages/tsone-cli/src/index.ts` 是编程式 API 入口，`src/cli.ts` 与
@@ -128,6 +144,7 @@ CLI 品牌包名固定为 `@geektech/tsone-cli`，bin 名固定为 `tsone`。
 - CLI 代理：`bun test packages/tsone-cli/tests/proxy.test.ts`
 - CLI 开发服务：`bun test packages/tsone-cli/tests/server.test.ts`
 - CLI 构建和命令行：`bun test packages/tsone-cli/tests/build.test.ts packages/tsone-cli/tests/cli.test.ts`
+- CLI 小程序编译：`bun test packages/tsone-cli/tests/mp-compile.test.ts packages/tsone-cli/tests/mp-build.test.ts`
 - CLI 发布包：`bun test packages/tsone-cli/tests/package-smoke.test.ts`
 
 对行为修复和新功能，先补或调整能复现问题的测试，再实现。改动发布面、构建

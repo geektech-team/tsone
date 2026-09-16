@@ -15,8 +15,8 @@ export const navigationPages: OneDocPage[] = [
     path: '/components/navigation/',
     title: t('导航组件', 'Navigation'),
     description: t(
-      '使用 Tabs、Breadcrumb 和 Pagination 帮助用户定位与移动。',
-      'Use Tabs, Breadcrumb and Pagination to help users orient and move.'
+      '使用 Tabs、Breadcrumb、Pagination 和 Menu 帮助用户定位与移动。',
+      'Use Tabs, Breadcrumb, Pagination and Menu to help users orient and move.'
     ),
     section: 'components',
     sectionOrder: 2,
@@ -32,32 +32,78 @@ export const navigationPages: OneDocPage[] = [
       demo('tabs'),
       heading(2, 'choose', t('如何选择', 'How to choose')),
       list([
-        [t('同一页面内切换并列内容时使用 OneTabs。', 'Use OneTabs to switch between sibling content within the same page.')],
-        [t('按步骤推进一个多阶段流程时使用 OneSteps。', 'Use OneSteps to walk through a multi-stage process.')],
-        [t('表达当前位置的层级路径时使用 OneBreadcrumb。', 'Use OneBreadcrumb to express the hierarchical path of the current position.')],
-        [t('在大量同类记录之间翻页时使用 OnePagination。', 'Use OnePagination to page through many records of the same kind.')],
+        [
+          t(
+            '同一页面内切换并列内容时使用 OneTabs。',
+            'Use OneTabs to switch between sibling content within the same page.'
+          ),
+        ],
+        [
+          t(
+            '按步骤推进一个多阶段流程时使用 OneSteps。',
+            'Use OneSteps to walk through a multi-stage process.'
+          ),
+        ],
+        [
+          t(
+            '表达当前位置的层级路径时使用 OneBreadcrumb。',
+            'Use OneBreadcrumb to express the hierarchical path of the current position.'
+          ),
+        ],
+        [
+          t(
+            '在大量同类记录之间翻页时使用 OnePagination。',
+            'Use OnePagination to page through many records of the same kind.'
+          ),
+        ],
+        [
+          t(
+            '组织可展开的层级导航时使用 OneMenu。',
+            'Use OneMenu to organize expandable hierarchical navigation.'
+          ),
+        ],
       ]),
       heading(2, 'components', t('组件', 'Components')),
       apiTable(t('导航组件', 'Navigation components'), [
         {
           name: 'OneTabs',
           signature: 'new OneTabs(props: OneTabsProps)',
-          description: t('带动态面板插槽的水平标签页。', 'Horizontal tabs with dynamic panel slots.'),
+          description: t(
+            '带动态面板插槽的水平标签页。',
+            'Horizontal tabs with dynamic panel slots.'
+          ),
         },
         {
           name: 'OneSteps',
           signature: 'new OneSteps(props: OneStepsProps)',
-          description: t('按当前进度推导等待、进行与完成状态的步骤条。', 'A step tracker that derives wait, process and finish states from current.'),
+          description: t(
+            '按当前进度推导等待、进行与完成状态的步骤条。',
+            'A step tracker that derives wait, process and finish states from current.'
+          ),
         },
         {
           name: 'OneBreadcrumb',
           signature: 'new OneBreadcrumb(props: OneBreadcrumbProps)',
-          description: t('支持原生链接与折叠展开的层级路径。', 'Hierarchical path with native links and collapse/expand.'),
+          description: t(
+            '支持原生链接与折叠展开的层级路径。',
+            'Hierarchical path with native links and collapse/expand.'
+          ),
         },
         {
           name: 'OnePagination',
           signature: 'new OnePagination(props: OnePaginationProps)',
-          description: t('支持页大小与快速跳转的分页控件。', 'Pagination control with page size and quick jump.'),
+          description: t(
+            '支持页大小与快速跳转的分页控件。',
+            'Pagination control with page size and quick jump.'
+          ),
+        },
+        {
+          name: 'OneMenu',
+          signature: 'new OneMenu(props: OneMenuProps)',
+          description: t(
+            '支持垂直内联展开与水平浮层的菜单导航。',
+            'Menu navigation with vertical inline expansion and horizontal dropdowns.'
+          ),
         },
       ]),
     ],
@@ -99,7 +145,10 @@ export const navigationPages: OneDocPage[] = [
         {
           name: 'items',
           signature: 'items: readonly OneTabItem[]',
-          description: t('标签项；重复 value 只保留第一项。', 'Tab items; duplicate values keep only the first entry.'),
+          description: t(
+            '标签项；重复 value 只保留第一项。',
+            'Tab items; duplicate values keep only the first entry.'
+          ),
         },
         {
           name: 'value',
@@ -114,17 +163,26 @@ export const navigationPages: OneDocPage[] = [
         {
           name: 'id',
           signature: 'id?: string',
-          description: t('稳定的标签与面板 ID 前缀。', 'Stable ID prefix for tabs and panels.'),
+          description: t(
+            '稳定的标签与面板 ID 前缀。',
+            'Stable ID prefix for tabs and panels.'
+          ),
         },
         {
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
-          description: t('tablist 的可访问名称。', 'Accessible name of the tablist.'),
+          description: t(
+            'tablist 的可访问名称。',
+            'Accessible name of the tablist.'
+          ),
         },
         {
           name: 'children',
           signature: 'children?: Array<VNode | string>',
-          description: t('slot 名与 item.value 相同的动态面板内容。', 'Dynamic panel content whose slot name matches item.value.'),
+          description: t(
+            'slot 名与 item.value 相同的动态面板内容。',
+            'Dynamic panel content whose slot name matches item.value.'
+          ),
         },
       ]),
       apiTable(t('OneTabItem 与事件', 'OneTabItem and events'), [
@@ -136,7 +194,10 @@ export const navigationPages: OneDocPage[] = [
         {
           name: 'change',
           signature: '(event: OneTabsChangeEvent) => void',
-          description: t('事件包含 value: string 与 originalEvent: Event。', 'The event carries value: string and originalEvent: Event.'),
+          description: t(
+            '事件包含 value: string 与 originalEvent: Event。',
+            'The event carries value: string and originalEvent: Event.'
+          ),
         },
       ]),
     ],
@@ -172,23 +233,33 @@ export const navigationPages: OneDocPage[] = [
         {
           name: 'items',
           signature: 'items: OneStepsItem[]',
-          description: t('步骤项：title、description 与可选 status。', 'Step items: title, description and optional status.'),
+          description: t(
+            '步骤项：title、description 与可选 status。',
+            'Step items: title, description and optional status.'
+          ),
         },
         {
           name: 'current',
           signature: 'current?: number',
-          description: t('当前进行步骤的索引，默认 0。', 'Index of the current step; defaults to 0.'),
+          description: t(
+            '当前进行步骤的索引，默认 0。',
+            'Index of the current step; defaults to 0.'
+          ),
         },
         {
           name: 'direction',
           signature: "direction?: 'horizontal' | 'vertical'",
-          description: t('排列方向，默认 horizontal。', 'Layout direction; defaults to horizontal.'),
+          description: t(
+            '排列方向，默认 horizontal。',
+            'Layout direction; defaults to horizontal.'
+          ),
         },
       ]),
       apiTable(t('OneStepsItem 与状态', 'OneStepsItem and status'), [
         {
           name: 'OneStepsItem',
-          signature: '{ title: string; description?: string; status?: OneStepsStatus }',
+          signature:
+            '{ title: string; description?: string; status?: OneStepsStatus }',
           description: t('步骤项公开类型。', 'Public step item type.'),
         },
         {
@@ -199,7 +270,10 @@ export const navigationPages: OneDocPage[] = [
         {
           name: 'resolveOneStepsStatus',
           signature: '(item, current, index) => OneStepsStatus',
-          description: t('按当前进度解析单步状态。', 'Resolves a step status from the current progress.'),
+          description: t(
+            '按当前进度解析单步状态。',
+            'Resolves a step status from the current progress.'
+          ),
         },
       ]),
     ],
@@ -226,7 +300,10 @@ export const navigationPages: OneDocPage[] = [
       heading(2, 'collapse', t('折叠与分隔符', 'Collapse and separator')),
       paragraph(
         inlineCode('maxItems'),
-        t(' 保留首项、当前位置和末项，省略按钮可展开全部路径。separator 插槽优先于 separator 文本。', ' keeps the first item, current position and last item; the ellipsis button expands the full path. The separator slot takes precedence over separator text.')
+        t(
+          ' 保留首项、当前位置和末项，省略按钮可展开全部路径。separator 插槽优先于 separator 文本。',
+          ' keeps the first item, current position and last item; the ellipsis button expands the full path. The separator slot takes precedence over separator text.'
+        )
       ),
       heading(2, 'keyboard-aria', t('键盘与 ARIA', 'Keyboard and ARIA')),
       paragraph(
@@ -240,7 +317,10 @@ export const navigationPages: OneDocPage[] = [
         {
           name: 'items',
           signature: 'items: readonly OneBreadcrumbItem[]',
-          description: t('按来源顺序显示的层级项目。', 'Hierarchical items shown in source order.'),
+          description: t(
+            '按来源顺序显示的层级项目。',
+            'Hierarchical items shown in source order.'
+          ),
         },
         {
           name: 'separator',
@@ -250,24 +330,36 @@ export const navigationPages: OneDocPage[] = [
         {
           name: 'maxItems',
           signature: 'maxItems?: number',
-          description: t('折叠前最多保留的项目数，最小为 3。', 'Maximum items kept before collapsing; minimum 3.'),
+          description: t(
+            '折叠前最多保留的项目数，最小为 3。',
+            'Maximum items kept before collapsing; minimum 3.'
+          ),
         },
         {
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
-          description: t('导航的可访问名称，默认“面包屑”。', 'Accessible name of the navigation; default "breadcrumb".'),
+          description: t(
+            '导航的可访问名称，默认“面包屑”。',
+            'Accessible name of the navigation; default "breadcrumb".'
+          ),
         },
         {
           name: 'children',
           signature: 'children?: Array<VNode | string>',
-          description: t('可提供 separator 命名插槽。', 'Can provide a separator named slot.'),
+          description: t(
+            '可提供 separator 命名插槽。',
+            'Can provide a separator named slot.'
+          ),
         },
       ]),
       apiTable(t('OneBreadcrumbItem 与事件', 'OneBreadcrumbItem and events'), [
         {
           name: 'OneBreadcrumbItem',
           signature: '{ label: string; href?: string; current?: boolean }',
-          description: t('层级项目公开类型。', 'Public hierarchical item type.'),
+          description: t(
+            '层级项目公开类型。',
+            'Public hierarchical item type.'
+          ),
         },
         {
           name: 'itemClick',
@@ -338,7 +430,10 @@ export const navigationPages: OneDocPage[] = [
         {
           name: 'defaultPageSize',
           signature: 'defaultPageSize?: number',
-          description: t('非受控初始每页条数，默认 10。', 'Uncontrolled initial page size; default 10.'),
+          description: t(
+            '非受控初始每页条数，默认 10。',
+            'Uncontrolled initial page size; default 10.'
+          ),
         },
         {
           name: 'pageSizeOptions',
@@ -348,7 +443,10 @@ export const navigationPages: OneDocPage[] = [
         {
           name: 'siblingCount',
           signature: 'siblingCount?: number',
-          description: t('当前页两侧保留页数，默认 1。', 'Number of pages kept on each side of the current page; default 1.'),
+          description: t(
+            '当前页两侧保留页数，默认 1。',
+            'Number of pages kept on each side of the current page; default 1.'
+          ),
         },
         {
           name: 'showQuickJumper',
@@ -363,7 +461,10 @@ export const navigationPages: OneDocPage[] = [
         {
           name: 'ariaLabel',
           signature: 'ariaLabel?: string',
-          description: t('导航可访问名称，默认“分页”。', 'Accessible name of the navigation; default "pagination".'),
+          description: t(
+            '导航可访问名称，默认“分页”。',
+            'Accessible name of the navigation; default "pagination".'
+          ),
         },
       ]),
       apiTable(t('OnePagination 事件', 'OnePagination events'), [
@@ -373,6 +474,123 @@ export const navigationPages: OneDocPage[] = [
           description: t(
             '事件包含 page: number、pageSize: number 与 originalEvent: Event。',
             'The event carries page: number, pageSize: number and originalEvent: Event.'
+          ),
+        },
+      ]),
+    ],
+  },
+  {
+    path: '/components/navigation/menu/',
+    title: 'OneMenu',
+    description: t(
+      '以菜单项组织层级导航，支持垂直内联展开与水平浮层两种模式。',
+      'Organizes hierarchical navigation with menu items, in vertical inline expansion or horizontal dropdown mode.'
+    ),
+    section: 'components',
+    sectionOrder: 2,
+    order: 35,
+    body: [
+      heading(1, 'onemenu', 'OneMenu'),
+      paragraph(
+        t(
+          'value 与 open 可分别受控；defaultValue 与 defaultOpen 提供非受控初始状态。点击叶子项发出 select，子菜单展开变化发出 openChange。',
+          'value and open can each be controlled; defaultValue and defaultOpen provide the uncontrolled initial state. Clicking a leaf item emits select, and submenu expansion changes emit openChange.'
+        )
+      ),
+      demo('menu'),
+      heading(2, 'behavior', t('模式与子菜单', 'Modes and submenus')),
+      paragraph(
+        t(
+          '垂直模式将子菜单内联展开在左侧缩进区域，同一父级可同时展开多个，accordion 可改为单选展开。水平模式用浮层展示一级子菜单，同时只展开一个，选中叶子项后自动收起。',
+          'Vertical mode expands submenus inline in an indented area; several can stay open under the same parent, and accordion switches to single expansion. Horizontal mode shows one level of submenus in a floating panel, keeps a single one open and collapses it after selecting a leaf.'
+        )
+      ),
+      heading(2, 'keyboard-aria', t('键盘与 ARIA', 'Keyboard and ARIA')),
+      paragraph(
+        t(
+          '菜单根使用 role=list 与 aria-label；子菜单触发器暴露 aria-expanded 与 aria-controls，选中项标记 aria-current=true。聚焦后可用方向键在菜单项间移动焦点，Home 与 End 跳到首尾。',
+          'The menu root uses role=list with an aria-label; submenu triggers expose aria-expanded and aria-controls, and the selected item is marked aria-current=true. Arrow keys move focus among menu items and Home/End jump to the first or last item.'
+        )
+      ),
+      heading(2, 'api', 'API'),
+      apiTable('OneMenuProps', [
+        {
+          name: 'items',
+          signature: 'items: readonly OneMenuItem[]',
+          description: t(
+            '菜单项，含 value、label、disabled 与可选 children。',
+            'Menu items with value, label, disabled and optional children.'
+          ),
+        },
+        {
+          name: 'mode',
+          signature: "mode?: 'vertical' | 'horizontal'",
+          description: t(
+            '菜单方向，默认 vertical。',
+            'Menu orientation; default vertical.'
+          ),
+        },
+        {
+          name: 'value',
+          signature: 'value?: string',
+          description: t('受控选中值。', 'Controlled selected value.'),
+        },
+        {
+          name: 'defaultValue',
+          signature: 'defaultValue?: string',
+          description: t(
+            '非受控初始选中值。',
+            'Uncontrolled initial selected value.'
+          ),
+        },
+        {
+          name: 'open',
+          signature: 'open?: readonly string[]',
+          description: t(
+            '受控展开的子菜单值。',
+            'Controlled open submenu values.'
+          ),
+        },
+        {
+          name: 'defaultOpen',
+          signature: 'defaultOpen?: readonly string[]',
+          description: t(
+            '非受控初始展开的子菜单值。',
+            'Uncontrolled initial open submenu values.'
+          ),
+        },
+        {
+          name: 'accordion',
+          signature: 'accordion?: boolean',
+          description: t(
+            '垂直模式同时只展开一个子菜单。',
+            'Keeps a single submenu open in vertical mode.'
+          ),
+        },
+        {
+          name: 'ariaLabel',
+          signature: 'ariaLabel?: string',
+          description: t(
+            '菜单可访问名称，默认“菜单”。',
+            'Accessible name of the menu; default "menu".'
+          ),
+        },
+      ]),
+      apiTable(t('OneMenu 事件', 'OneMenu events'), [
+        {
+          name: 'select',
+          signature: '(event: OneMenuSelectEvent) => void',
+          description: t(
+            '事件包含 value: string 与 originalEvent: Event。',
+            'The event carries value: string and originalEvent: Event.'
+          ),
+        },
+        {
+          name: 'openChange',
+          signature: '(event: OneMenuOpenChangeEvent) => void',
+          description: t(
+            '事件包含 value: string[] 与 originalEvent: Event。',
+            'The event carries value: string[] and originalEvent: Event.'
           ),
         },
       ]),

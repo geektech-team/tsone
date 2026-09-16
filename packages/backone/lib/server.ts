@@ -68,6 +68,8 @@ export interface RouteGroup {
 export class BackOneServer {
   readonly #router = new Router();
   readonly #middlewares: Handler[] = [];
+  /** 路由前缀栈：栈顶为当前生效前缀；作用域形式进出栈实现临时叠加 */
+  readonly #prefixes: string[] = [];
   /** 预编译的中间件链（use 后重编译），避免每请求重建闭包与数组 */
   #composedMiddlewares: ComposedHandler = compose([]);
   readonly #wsHandlers = new Map<string, WebSocketHandler>();
@@ -152,15 +154,15 @@ export class BackOneServer {
   }
 
   add(method: RouteMethod, path: string, handlers: Handler[]): this {
-    this.#router.add(method, path, handlers);
+    this.#router.add(method, this.#resolvePath(path), handlers);
     return this;
   }
 
   // ---- WebSocket ----
 
-  /** 注册 WebSocket 处理器：请求 Upgrade 时自动升级并分发 */
+  /** 注册 WebSocket 处理器：请求 Upgrade 时自动升级并分发（路径应用当前前缀） */
   ws(path: string, handler: WebSocketHandler): this {
-    this.#wsHandlers.set(path, handler);
+    this.#wsHandlers.set(this.#resolvePath(path), handler);
     return this;
   }
 
@@ -201,6 +203,65 @@ export class BackOneServer {
   /** 内置：安全响应头（helmet 风格） */
   useHelmet(options: HelmetOptions = {}): this {
     return this.use(helmet(options));
+  }
+
+  // ---- 路由前缀 ----
+
+  /**
+   * 路由前缀：为之后注册的路由统一增加前缀（内置快捷方法，作用于路由注册
+   * 而非请求处理，因此与 group 一样在注册期生效）。
+   *
+   * 两种形式：
+   * - 持久形式 `usePrefix('/api')`：替换当前基础前缀，影响此后注册的所有
+   *   路由与 WebSocket；`usePrefix()` / `usePrefix('')` 重置为无前缀。
+   * - 作用域形式 `usePrefix('/api', (api) => {...})`：在回调内临时叠加
+   *   前缀（相对当前前缀），回调结束自动恢复，支持嵌套。
+   *
+   * 前缀会做归一化：自动补前导 `/`、去掉末尾 `/`；`''` 与 `'/'` 视为无前缀。
+   *
+   * @example
+   * app.usePrefix('/api');
+   * app.get('/users', handler);           // GET /api/users
+   * app.usePrefix('/v2', (api) => {
+   *   api.get('/users', handler);         // GET /api/v2/users
+   * });
+   * app.get('/health', handler);          // GET /api/health
+   * app.usePrefix();
+   * app.get('/status', handler);          // GET /status
+   */
+  usePrefix(prefix = '', callback?: (api: BackOneServer) => void): this {
+    const normalized = normalizePrefix(prefix);
+    if (callback === undefined) {
+      this.#prefixes.length = 0;
+      if (normalized !== '') {
+        this.#prefixes.push(normalized);
+      }
+      return this;
+    }
+    this.#prefixes.push(this.#currentPrefix + normalized);
+    try {
+      callback(this);
+    } finally {
+      this.#prefixes.pop();
+    }
+    return this;
+  }
+
+  /** 当前生效的路由前缀（无前缀时为空字符串） */
+  get prefix(): string {
+    return this.#currentPrefix;
+  }
+
+  get #currentPrefix(): string {
+    return this.#prefixes.length > 0
+      ? this.#prefixes[this.#prefixes.length - 1]
+      : '';
+  }
+
+  /** 把注册路径解析为最终路径（叠加当前前缀） */
+  #resolvePath(path: string): string {
+    const prefix = this.#currentPrefix;
+    return prefix === '' ? path : prefix + path;
   }
 
   // ---- 请求管线 ----
@@ -360,6 +421,19 @@ export class BackOneServer {
 /** 创建 BackOne 服务端应用 */
 export function createServer(options: AppOptions = {}): BackOneServer {
   return new BackOneServer(options);
+}
+
+/**
+ * 归一化路由前缀：补前导 `/`、去末尾 `/`；空串与 `/` 视为无前缀。
+ * 例如 `'api/'` → `'/api'`、`'/v2'` → `'/v2'`、`''` → `''`。
+ */
+function normalizePrefix(prefix: string): string {
+  const trimmed = prefix.trim();
+  if (trimmed === '' || trimmed === '/') {
+    return '';
+  }
+  const withSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  return withSlash.replace(/\/+$/, '');
 }
 
 /** RouteGroup 的内部实现：所有方法委托给 server 并自动加前缀 */

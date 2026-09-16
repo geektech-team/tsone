@@ -19,6 +19,7 @@ static file serving.
 - Static files with ETag, Last-Modified, If-None-Match 304 and Range 206
 - WebSocket support via `app.ws(path, handler)` on Bun native upgrade
 - Route groups with `app.group(prefix, callback)` for shared prefixes
+- Route prefix with `app.usePrefix(prefix, callback?)`: persistent replacement or scoped stacking for later routes, composable with `group`
 - Graceful shutdown: wait for in-flight requests, force-close after timeout
 
 ## Requirements
@@ -70,6 +71,20 @@ app.group('/api/v1', (api) => {
   api.get('/users', handler);
   api.post('/users', handler);
 });
+```
+
+`usePrefix` adds a prefix to routes registered afterwards — persistent or
+scoped, composable with `group`:
+
+```ts
+app.usePrefix('/api');
+app.get('/users', handler); // GET /api/users
+
+app.usePrefix('/v2', (api) => {
+  api.get('/users', handler); // GET /api/v2/users
+}); // prefix restored to /api afterwards
+
+app.usePrefix(); // reset: no prefix
 ```
 
 ### Context

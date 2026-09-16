@@ -29,7 +29,7 @@ describe('TSone CLI config', () => {
       entry: join(root, 'src/main.ts'),
       server: { host: '127.0.0.1', port: 52211, proxy: {} },
       build: {
-        outDir: join(root, 'dist'),
+        outDir: join(root, 'dist', 'build', 'h5'),
         basePath: '',
         directoryPages: false,
       },
@@ -180,9 +180,7 @@ describe('TSone CLI config', () => {
         root,
         config: { library: { external: 'x' } } as unknown as UserConfig,
       })
-    ).rejects.toThrow(
-      'Config library.external must be an array of strings'
-    );
+    ).rejects.toThrow('Config library.external must be an array of strings');
     await expect(
       resolveConfig({
         root,
@@ -195,5 +193,62 @@ describe('TSone CLI config', () => {
     expect(defineConfig({ server: { port: 4000 } })).toEqual({
       server: { port: 4000 },
     });
+  });
+
+  it('resolves mp config with defaults', async () => {
+    const root = makeRoot();
+    expect((await resolveConfig({ root })).mp).toBeUndefined();
+
+    const withMp = await resolveConfig({
+      root,
+      config: { mp: { appId: 'wx123' } },
+    });
+    expect(withMp.mp).toEqual({
+      appId: 'wx123',
+      outDir: join(root, 'dist', 'build', 'mp-wx'),
+      navigationBarTitleText: 'TSone',
+      pages: { '/': join(root, 'src/main.ts') },
+      lengthUnit: 'px',
+      publicDir: join(root, 'public'),
+    });
+  });
+
+  it('mp outDir is overridden by --out-dir and mp.pages by pages', async () => {
+    const root = makeRoot();
+    writeFileSync(join(root, 'src/second.ts'), 'export const app = {};');
+    const result = await resolveConfig({
+      root,
+      outDir: 'custom-mp',
+      config: {
+        mp: { pages: { '/': 'src/main.ts', '/second': 'src/second.ts' } },
+      },
+    });
+    expect(result.mp?.outDir).toBe(join(root, 'custom-mp'));
+    expect(result.mp?.pages).toEqual({
+      '/': join(root, 'src/main.ts'),
+      '/second': join(root, 'src/second.ts'),
+    });
+  });
+
+  it('rejects invalid mp config', async () => {
+    const root = makeRoot();
+    await expect(
+      resolveConfig({
+        root,
+        config: { mp: { appId: 1 } } as unknown as UserConfig,
+      })
+    ).rejects.toThrow('Config mp.appId must be a string');
+    await expect(
+      resolveConfig({
+        root,
+        config: { mp: { outDir: 1 } } as unknown as UserConfig,
+      })
+    ).rejects.toThrow('Config mp.outDir must be a string');
+    await expect(
+      resolveConfig({
+        root,
+        config: { mp: { pages: 'x' } } as unknown as UserConfig,
+      })
+    ).rejects.toThrow('Config mp.pages must be an object');
   });
 });

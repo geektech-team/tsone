@@ -57,10 +57,10 @@ createApp({ root: App }).mount();
 - Form: `OneForm`, `OneFormItem`, `OneInput`, `OneTextarea`, `OneSelect`, `OneCascader`,
   `OneTimePicker`, `OneCheckbox`, `OneCheckboxGroup`, `OneRadio`,
   `OneRadioGroup`, `OneSwitch`, `OneSlider`, `OneRate`, `OneUpload`
-- Navigation: `OneTabs`, `OneSteps`, `OneBreadcrumb`, `OnePagination`
+- Navigation: `OneTabs`, `OneSteps`, `OneBreadcrumb`, `OnePagination`, `OneMenu`
 - Data display: `OneCard`, `OneTag`, `OneBadge`, `OneAvatar`, `OneProgress`,
   `OneEmpty`, `OneTable`, `OneTree`, `OneCollapse`, `OneSkeleton`,
-  `OneDescriptions`, `OneTimeline`
+  `OneDescriptions`, `OneTimeline`, `OneCarousel`
 - Feedback and overlays: `OneAlert`, `OneMessage`, `OneDialog`, `OneTooltip`,
   `OnePopover`, `OneLoading`
 
@@ -113,16 +113,20 @@ xl >= 1200px, xxl >= 1600px. Override them with theme CSS variables
 
 ## Navigation
 
-Use tabs for parallel views, breadcrumbs for a hierarchy, and pagination for a
-long collection. All three components support controlled state or cancellable
-events where native navigation is involved.
+Use tabs for parallel views, breadcrumbs for a hierarchy, pagination for a
+long collection, and menus for expandable navigation trees. All these
+components support controlled state or cancellable events where native
+navigation is involved.
 
 ```ts
 import {
   OneBreadcrumb,
+  OneMenu,
   OnePagination,
   OneTabs,
   type OneBreadcrumbClickEvent,
+  type OneMenuOpenChangeEvent,
+  type OneMenuSelectEvent,
   type OnePaginationChangeEvent,
   type OneTabsChangeEvent,
 } from '@geektech/one';
@@ -170,6 +174,28 @@ pagination.on('change', (payload) => {
   pagination.setProps({ page: event.page, pageSize: event.pageSize });
 });
 void basicPagination;
+
+const menu = new OneMenu({
+  items: [
+    { value: 'overview', label: 'Overview' },
+    {
+      value: 'city',
+      label: 'City',
+      children: [
+        { value: 'ranking', label: 'Ranking' },
+        { value: 'compare', label: 'Compare' },
+      ],
+    },
+  ],
+});
+menu.on('select', (payload) => {
+  const event = payload as OneMenuSelectEvent;
+  menu.setProps({ value: event.value });
+});
+menu.on('openChange', (payload) => {
+  const event = payload as OneMenuOpenChangeEvent;
+  menu.setProps({ open: event.value });
+});
 ```
 
 ## Data display
@@ -396,6 +422,29 @@ const upload = new OneUpload({ multiple: true, ariaLabel: 'Attachments' });
 upload.on('change', (payload) => {
   const event = payload as OneUploadChangeEvent;
   console.log(event.files.map((file) => file.name));
+});
+```
+
+## Carousel
+
+`OneCarousel` shows an image list in a translating track. Autoplay, indicator
+dots, prev/next arrows and keyboard navigation are built in, and the current
+index supports both controlled and uncontrolled modes.
+
+```ts
+import { OneCarousel, type OneCarouselChangeEvent } from '@geektech/one';
+
+const carousel = new OneCarousel({
+  autoplay: true,
+  interval: 3000,
+  items: [
+    { src: '/banner-1.png', alt: 'City skyline', caption: 'Skyline' },
+    { src: '/banner-2.png', alt: 'Harbor sunset' },
+  ],
+});
+carousel.on('change', (payload) => {
+  const event = payload as OneCarouselChangeEvent;
+  console.log(event.value);
 });
 ```
 

@@ -42,6 +42,7 @@ const APPROVED_PATHS = [
   '/components/data-display/descriptions/',
   '/components/data-display/timeline/',
   '/components/form/',
+  '/components/data-display/carousel/',
   '/components/form/form/',
   '/components/form/input/',
   '/components/form/select/',
@@ -60,6 +61,7 @@ const APPROVED_PATHS = [
   '/components/navigation/breadcrumb/',
   '/components/navigation/pagination/',
   '/components/feedback/',
+  '/components/navigation/menu/',
   '/components/feedback/alert/',
   '/components/feedback/message/',
   '/components/feedback/dialog/',
@@ -114,7 +116,7 @@ function validPage(overrides: Partial<OneDocPage> = {}): OneDocPage {
 }
 
 describe('One UI docs content', () => {
-  it('defines exactly the forty-seven approved routes in stable order', () => {
+  it('defines exactly the forty-nine approved routes in stable order', () => {
     expect(oneDocPages.map((page) => page.path)).toEqual(APPROVED_PATHS);
   });
 
@@ -441,7 +443,12 @@ describe('One UI docs content', () => {
     ] as const) {
       const markdown = readFileSync(join(packageRoot, readme), 'utf8');
       expect(markdown).toContain(category);
-      for (const name of ['OneTabs', 'OneBreadcrumb', 'OnePagination']) {
+      for (const name of [
+        'OneTabs',
+        'OneBreadcrumb',
+        'OnePagination',
+        'OneMenu',
+      ]) {
         expect(markdown).toContain(name);
       }
       expect(markdown).toContain('new OneTabs({');
@@ -449,6 +456,7 @@ describe('One UI docs content', () => {
       expect(markdown).toContain('new OneBreadcrumb({');
       expect(markdown).toContain("href: '/projects'");
       expect(markdown).toContain('new OnePagination({ total: 95');
+      expect(markdown).toContain('new OneMenu({');
     }
   });
 
@@ -554,6 +562,8 @@ describe('One UI docs content', () => {
         'descriptions',
         'timeline',
         'popover',
+        'carousel',
+        'menu',
       ])
     );
 
@@ -621,6 +631,7 @@ describe('One UI docs content', () => {
       ['/components/navigation/tabs/', 'tabs'],
       ['/components/navigation/breadcrumb/', 'breadcrumb'],
       ['/components/navigation/pagination/', 'pagination'],
+      ['/components/navigation/menu/', 'menu'],
     ] as const) {
       expect(pageAt(path).body).toContainEqual(
         expect.objectContaining({
@@ -666,6 +677,20 @@ describe('One UI docs content', () => {
       'aria-label',
     ]) {
       expect(pagination).toContain(fragment);
+    }
+
+    const menu = pageText('/components/navigation/menu/');
+    for (const fragment of [
+      'OneMenuProps',
+      'OneMenuItem',
+      'OneMenuSelectEvent',
+      'OneMenuOpenChangeEvent',
+      'select',
+      'openChange',
+      'aria-expanded',
+      'aria-current',
+    ]) {
+      expect(menu).toContain(fragment);
     }
   });
 

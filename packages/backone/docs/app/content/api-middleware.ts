@@ -234,5 +234,29 @@ const chain = compose([auth, logger, handler]);`
         'serveStatic rejects .. segments by default (including URL-encoded forms) and calls next() when the file is missing. Static responses automatically carry ETag, Last-Modified and Accept-Ranges, supporting If-None-Match/If-Modified-Since 304 and Range 206.'
       ),
     ]),
+    heading(2, 'usePrefix', 'usePrefix(prefix?, callback?)'),
+    paragraph(
+      t(
+        '路由前缀：为之后注册的路由统一增加前缀（作用于路由注册而非请求处理，与 group 类似，属于「内置快捷方法」）。',
+        'Route prefix: adds a prefix to routes registered afterwards (applies at registration time rather than per-request, like group — a built-in shortcut).'
+      )
+    ),
+    paragraph(
+      t(
+        '持久形式替换当前前缀（usePrefix() 或 usePrefix(\'\') 重置为无前缀）；作用域形式在回调内相对当前前缀叠加，结束后自动恢复，支持嵌套。前缀自动归一化：补前导 `/`、去末尾 `/`。',
+        'The persistent form replaces the current prefix (usePrefix() or usePrefix(\'\') resets to none); the scoped form stacks a prefix relative to the current one inside the callback and restores afterwards, with nesting supported. Prefixes are normalized: leading / is added and trailing / removed.'
+      )
+    ),
+    codeBlock(
+      'ts',
+      `app.usePrefix('/api');
+app.get('/users', handler);          // GET /api/users
+app.usePrefix('/v2', (api) => {
+  api.get('/users', handler);        // GET /api/v2/users
+});
+app.get('/health', handler);         // GET /api/health
+app.usePrefix();
+app.get('/status', handler);         // GET /status`
+    ),
   ],
 };

@@ -25,14 +25,29 @@
     },
     "packages/backone-cli": {
       "name": "@geektech/backone-cli",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "bin": {
         "backone": "bin/backone.ts",
       },
     },
+    "packages/backone-utils": {
+      "name": "@geektech/backone-utils",
+      "version": "0.3.0",
+    },
     "packages/one": {
       "name": "@geektech/one",
-      "version": "0.6.0",
+      "version": "0.7.0",
+      "devDependencies": {
+        "@geektech/tsone": "workspace:*",
+        "@geektech/tsone-cli": "workspace:*",
+      },
+      "peerDependencies": {
+        "@geektech/tsone": ">=0.5.0 <0.6.0",
+      },
+    },
+    "packages/one-chart": {
+      "name": "@geektech/one-chart",
+      "version": "0.2.0",
       "devDependencies": {
         "@geektech/tsone": "workspace:*",
         "@geektech/tsone-cli": "workspace:*",
@@ -47,12 +62,13 @@
     },
     "packages/tsone-cli": {
       "name": "@geektech/tsone-cli",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "bin": {
         "tsone": "bin/tsone.ts",
       },
       "dependencies": {
         "@geektech/tsone": "workspace:*",
+        "typescript": "^5.3.3",
       },
     },
     "playground/admin-dashboard": {
@@ -68,6 +84,16 @@
       "name": "@tsone-playground/backone",
       "dependencies": {
         "@geektech/backone": "workspace:*",
+        "@geektech/backone-utils": "workspace:*",
+      },
+    },
+    "playground/leaderboard": {
+      "name": "@tsone-playground/leaderboard",
+      "dependencies": {
+        "@geektech/tsone": "workspace:*",
+      },
+      "devDependencies": {
+        "@geektech/tsone-cli": "workspace:*",
       },
     },
     "playground/official-site": {
@@ -102,7 +128,11 @@
 
     "@geektech/backone-cli": ["@geektech/backone-cli@workspace:packages/backone-cli"],
 
+    "@geektech/backone-utils": ["@geektech/backone-utils@workspace:packages/backone-utils"],
+
     "@geektech/one": ["@geektech/one@workspace:packages/one"],
+
+    "@geektech/one-chart": ["@geektech/one-chart@workspace:packages/one-chart"],
 
     "@geektech/tsone": ["@geektech/tsone@workspace:packages/tsone"],
 
@@ -125,6 +155,8 @@
     "@tsone-playground/admin-dashboard": ["@tsone-playground/admin-dashboard@workspace:playground/admin-dashboard"],
 
     "@tsone-playground/backone": ["@tsone-playground/backone@workspace:playground/backone-demo"],
+
+    "@tsone-playground/leaderboard": ["@tsone-playground/leaderboard@workspace:playground/leaderboard"],
 
     "@tsone-playground/official-site": ["@tsone-playground/official-site@workspace:playground/official-site"],
 

@@ -13,8 +13,8 @@ export const dataDisplayPages: OneDocPage[] = [
     path: '/components/data-display/',
     title: t('数据展示', 'Data display'),
     description: t(
-      '使用 Card、Tag、Badge、Avatar、Progress、Empty、Table、Tree、Collapse 和 Skeleton 清晰呈现内容与状态。',
-      'Use Card, Tag, Badge, Avatar, Progress, Empty, Table, Tree, Collapse and Skeleton to present content and state clearly.'
+      '使用 Card、Tag、Badge、Avatar、Progress、Empty、Table、Tree、Collapse、Skeleton 和 Carousel 清晰呈现内容与状态。',
+      'Use Card, Tag, Badge, Avatar, Progress, Empty, Table, Tree, Collapse, Skeleton and Carousel to present content and state clearly.'
     ),
     section: 'components',
     sectionOrder: 2,
@@ -124,6 +124,14 @@ export const dataDisplayPages: OneDocPage[] = [
           description: t(
             '按时间顺序展示事件流。',
             'Shows an event stream in chronological order.'
+          ),
+        },
+        {
+          name: 'OneCarousel',
+          signature: 'new OneCarousel(props)',
+          description: t(
+            '用横向轮播展示多张图片，支持自动播放与键盘导航。',
+            'Shows multiple images in a horizontal carousel, with autoplay and keyboard navigation.'
           ),
         },
       ]),
@@ -1006,6 +1014,146 @@ export const dataDisplayPages: OneDocPage[] = [
           description: t(
             '事件项：title、content、time 与可选 color。',
             'Event items: title, content, time and optional color.'
+          ),
+        },
+      ]),
+    ],
+  },
+  {
+    path: '/components/data-display/carousel/',
+    title: 'OneCarousel',
+    description: t(
+      '横向图片轮播，支持箭头、指示点、自动播放与键盘导航。',
+      'A horizontal image carousel with arrows, indicator dots, autoplay and keyboard navigation.'
+    ),
+    section: 'components',
+    sectionOrder: 2,
+    order: 18,
+    body: [
+      heading(1, 'onecarousel', 'OneCarousel'),
+      paragraph(
+        t(
+          'OneCarousel 用平移轨道展示图片列表；默认开启循环与指示点，当前索引支持受控与非受控模式。',
+          'OneCarousel presents an image list in a translating track; looping and indicator dots are on by default, and the current index supports controlled and uncontrolled modes.'
+        )
+      ),
+      demo('carousel'),
+      heading(2, 'autoplay', t('自动播放', 'Autoplay')),
+      paragraph(
+        inlineCode('autoplay'),
+        t(' 开启后按 ', ' enables advancing every '),
+        inlineCode('interval'),
+        t(
+          ' 自动前进（默认 4000ms）；',
+          ' milliseconds (default 4000); ',
+        ),
+        inlineCode('pauseOnHover'),
+        t(
+          ' 悬停暂停（默认开启），非循环模式播完最后一张后停止。',
+          ' pauses on hover (on by default) and playback stops after the last slide when loop is off.'
+        )
+      ),
+      heading(2, 'keyboard', t('键盘导航', 'Keyboard navigation')),
+      paragraph(
+        t(
+          '轮播区域可聚焦，ArrowLeft/ArrowRight 切换上一张/下一张，Home/End 跳转首尾。',
+          'The carousel region is focusable: ArrowLeft/ArrowRight move to the previous/next slide and Home/End jump to the first/last slide.'
+        )
+      ),
+      heading(2, 'aria', 'ARIA'),
+      paragraph(
+        t(
+          '容器使用 role=region 与 aria-roledescription=carousel；每张幻灯片为 role=group，非当前项通过 aria-hidden 隐藏；指示点通过 aria-current 表达选中。',
+          'The container uses role=region with aria-roledescription=carousel; each slide is role=group with non-active slides hidden via aria-hidden; dots express the active slide with aria-current.'
+        )
+      ),
+      heading(2, 'api', 'API'),
+      apiTable(t('OneCarousel 属性与事件', 'OneCarousel props and events'), [
+        {
+          name: 'items',
+          signature: 'items: readonly OneCarouselItem[]',
+          description: t(
+            '图片项：src 必填，可选 alt 与 caption。',
+            'Image items: src is required, with optional alt and caption.'
+          ),
+        },
+        {
+          name: 'value',
+          signature: 'value?: number',
+          description: t('受控当前索引。', 'Controlled current index.'),
+        },
+        {
+          name: 'defaultValue',
+          signature: 'defaultValue?: number',
+          description: t('非受控初始索引。', 'Uncontrolled initial index.'),
+        },
+        {
+          name: 'autoplay',
+          signature: 'autoplay?: boolean',
+          description: t('自动播放，默认关闭。', 'Autoplay; off by default.'),
+        },
+        {
+          name: 'interval',
+          signature: 'interval?: number',
+          description: t(
+            '自动播放间隔毫秒，默认 4000。',
+            'Autoplay interval in milliseconds; default 4000.'
+          ),
+        },
+        {
+          name: 'pauseOnHover',
+          signature: 'pauseOnHover?: boolean',
+          description: t(
+            '悬停暂停自动播放，默认开启。',
+            'Pauses autoplay on hover; on by default.'
+          ),
+        },
+        {
+          name: 'loop',
+          signature: 'loop?: boolean',
+          description: t(
+            '循环播放，默认开启；关闭后边界箭头禁用。',
+            'Loops around; on by default; boundary arrows disable when off.'
+          ),
+        },
+        {
+          name: 'showArrows',
+          signature: 'showArrows?: boolean',
+          description: t(
+            '显示左右箭头，默认开启。',
+            'Shows prev/next arrows; on by default.'
+          ),
+        },
+        {
+          name: 'showDots',
+          signature: 'showDots?: boolean',
+          description: t(
+            '显示指示点，默认开启。',
+            'Shows indicator dots; on by default.'
+          ),
+        },
+        {
+          name: 'height',
+          signature: 'height?: string',
+          description: t(
+            '轮播高度，默认 240px。',
+            'Carousel height; default 240px.'
+          ),
+        },
+        {
+          name: 'ariaLabel',
+          signature: 'ariaLabel?: string',
+          description: t(
+            '轮播区域的可访问名称。',
+            'Accessible name of the carousel region.'
+          ),
+        },
+        {
+          name: 'change',
+          signature: '(event: OneCarouselChangeEvent) => void',
+          description: t(
+            '当前索引变化时发出 value: number 与 originalEvent。',
+            'Emitted when the current index changes with value: number and originalEvent.'
           ),
         },
       ]),

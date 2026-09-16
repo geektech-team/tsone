@@ -1,6 +1,6 @@
 {
   "name": "@geektech/tsone-cli",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Bun-native development and build CLI for TSone applications",
   "type": "module",
   "exports": {
@@ -21,7 +21,8 @@
     "docs:build": "bun scripts/docs.ts --build"
   },
   "dependencies": {
-    "@geektech/tsone": "workspace:*"
+    "@geektech/tsone": "workspace:*",
+    "typescript": "^5.3.3"
   },
   "devDependencies": {},
   "files": [

@@ -37,6 +37,8 @@ import { ONE_TABLE_STYLES } from '../lib/table/OneTable';
 import { ONE_TREE_STYLES } from '../lib/tree/OneTree';
 import { ONE_COLLAPSE_STYLES } from '../lib/collapse/OneCollapse';
 import { ONE_SKELETON_STYLES } from '../lib/skeleton/OneSkeleton';
+import { ONE_CAROUSEL_STYLES } from '../lib/carousel/OneCarousel';
+import { ONE_MENU_STYLES } from '../lib/menu/OneMenu';
 import {
   OneAlert,
   OneAvatar,
@@ -63,6 +65,8 @@ import {
   OneTable,
   OneCollapse,
   OneSkeleton,
+  OneCarousel,
+  OneMenu,
 } from '../lib';
 
 const COMPONENT_STYLE_GROUPS = [
@@ -98,6 +102,8 @@ const COMPONENT_STYLE_GROUPS = [
   ONE_TREE_STYLES,
   ONE_COLLAPSE_STYLES,
   ONE_SKELETON_STYLES,
+  ONE_CAROUSEL_STYLES,
+  ONE_MENU_STYLES,
 ] as const;
 
 function styleByName(name: string): OneNamedStyle {
@@ -206,6 +212,8 @@ describe('One UI style contract', () => {
     | OneTable
     | OneCollapse
     | OneSkeleton
+    | OneCarousel
+    | OneMenu
   >;
 
   beforeEach(() => {
@@ -261,6 +269,8 @@ describe('One UI style contract', () => {
       'one-tree-base',
       'one-collapse-base',
       'one-skeleton-base',
+      'one-carousel-base',
+      'one-menu-base',
     ];
 
     roots.forEach((name) => {
@@ -366,6 +376,22 @@ describe('One UI style contract', () => {
         items: [{ value: 'a', title: '基础', children: ['内容'] }],
       }),
       new OneSkeleton({ rows: 2, avatar: true }),
+      new OneCarousel({
+        items: [
+          { src: '/a.png', alt: '第一张' },
+          { src: '/b.png', alt: '第二张' },
+        ],
+      }),
+      new OneMenu({
+        items: [
+          { value: 'overview', label: '概览' },
+          {
+            value: 'city',
+            label: '城市',
+            children: [{ value: 'ranking', label: '排行榜' }],
+          },
+        ],
+      }),
     ];
     components.forEach((component) => component.mount(container));
 
@@ -405,6 +431,12 @@ describe('One UI style contract', () => {
     expect(css).toContain('.one-table__cell');
     expect(css).toContain('.one-collapse__panel');
     expect(css).toContain('.one-skeleton__line');
+    expect(css).toContain('.one-carousel');
+    expect(css).toContain('.one-carousel__track');
+    expect(css).toContain('.one-carousel__dot');
+    expect(css).toContain('.one-menu');
+    expect(css).toContain('.one-menu__item');
+    expect(css).toContain('.one-menu__dropdown');
     expect(css).not.toMatch(/(^|})\s*(button|a|nav)\s*\{/);
     expect(css).not.toMatch(/(^|[}\s,])(body|html)(?=[\s,{])/m);
   });

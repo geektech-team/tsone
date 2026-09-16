@@ -10,7 +10,10 @@ TSone 是一套完全基于 TypeScript 与 Bun 的前端生态：轻量级框架
 |---|---|---|---|
 | `@geektech/tsone` | `packages/tsone` | 0.3.0 | 轻量级前端框架：响应式系统、类组件、策略化渲染、内置路由 |
 | `@geektech/one` | `packages/one` | 0.3.3 | One UI 组件库，peer 依赖 `@geektech/tsone`，零额外运行时依赖 |
+| `@geektech/one-chart` | `packages/one-chart` | 0.1.0 | One Chart 图表库：柱状图/折线图/饼图/雷达图，纯 SVG 渲染，peer 依赖 `@geektech/tsone` |
 | `@geektech/tsone-cli` | `packages/tsone-cli` | 0.3.0 | Bun-native CLI：`tsone create` / `dev` / `build`，含 npm 库打包模式 |
+| `@geektech/backone` | `packages/backone` | 0.1.0 | 轻量级服务端框架：路由、中间件、请求上下文、静态文件，零运行时依赖 |
+| `@geektech/backone-utils` | `packages/backone-utils` | 0.1.0 | BackOne 通用工具包（第一期：数据库连接管理与增删改查，多库连接，基于 Bun.SQL） |
 
 其他目录：
 
@@ -54,13 +57,15 @@ bun run dev:site
 | 命令 | 作用 |
 |---|---|
 | `bun install` | 安装 workspace 依赖 |
-| `bun run build` | 全量构建：tsone → one → tsone-cli |
+| `bun run build` | 全量构建：tsone → one → one-chart → tsone-cli → backone 系 |
 | `bun run build:one` | 仅构建 One UI 库（`tsone build --library`） |
+| `bun run build:one-chart` | 仅构建 One Chart 库（`tsone build --library`） |
 | `bun run build:types` | 构建 tsone / tsone-cli 的类型声明 |
 | `bun run test` | 全仓测试（`bun test`） |
 | `bun run lint` / `bun run format` | 代码检查 / 格式化 |
 | `bun run docs` / `bun run docs:build` | 框架文档站开发 / 构建 |
 | `bun run docs:one` / `bun run docs:one:build` | One UI 文档站开发 / 构建 |
+| `bun run docs:one-chart` / `bun run docs:one-chart:build` | One Chart 文档站开发 / 构建 |
 | `bun run docs:cli` / `bun run docs:cli:build` | CLI 文档站开发 / 构建 |
 | `bun run dev:site` / `bun run dev:admin` | playground 站点 / 后台示例 |
 | `bun run release` | 发布所有包（`scripts/release.ts`） |
@@ -89,12 +94,14 @@ bun test
 
 - TSone 框架文档：<https://geektech-team.github.io/tsone/>
 - One UI 文档：<https://geektech-team.github.io/tsone/one/>
+- One Chart 文档：<https://geektech-team.github.io/tsone/one-chart/>
 - CLI 文档：<https://geektech-team.github.io/tsone/cli/>
 
 子包 README（含中英双语）：
 
 - [TSone 框架](packages/tsone/README.md)
 - [One UI 组件库](packages/one/README.md)
+- [One Chart 图表库](packages/one-chart/README.md)
 - [TSone CLI](packages/tsone-cli/README.md)
 
 ## 贡献

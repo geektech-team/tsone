@@ -18,6 +18,7 @@
 - 静态文件自动携带 ETag、Last-Modified，支持 If-None-Match 304 与 Range 206
 - WebSocket 支持：`app.ws(path, handler)` 基于 Bun 原生升级
 - 路由组：`app.group(prefix, callback)` 统一前缀批量注册
+- 路由前缀：`app.usePrefix(prefix, callback?)` 为后续路由统一加前缀，支持持久替换与作用域叠加，可与 group 组合
 - 优雅关闭：等待进行中请求完成，超时后强制关闭
 
 ## 环境要求
@@ -69,6 +70,20 @@ app.group('/api/v1', (api) => {
   api.get('/users', handler);
   api.post('/users', handler);
 });
+```
+
+`usePrefix` 为之后注册的路由统一增加前缀，支持持久替换与作用域临时叠加，
+可与 group 组合：
+
+```ts
+app.usePrefix('/api');
+app.get('/users', handler); // GET /api/users
+
+app.usePrefix('/v2', (api) => {
+  api.get('/users', handler); // GET /api/v2/users
+}); // 结束后恢复为 /api
+
+app.usePrefix(); // 重置：无前缀
 ```
 
 ### Context
