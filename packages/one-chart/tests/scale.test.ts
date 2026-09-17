@@ -29,11 +29,21 @@ describe('oneNiceStep / oneNiceTicks / oneNiceDomain', () => {
     expect(oneNiceTicks(0, 440, 5)).toEqual([0, 100, 200, 300, 400, 500]);
   });
 
-  it('expands domains to nice bounds', () => {
+  it('prepends a tick to cover the min when it falls below the first tick', () => {
+    // -0.3 应落在 -0.2 之下，首刻度须向前补一档，避免负值数据点越出绘图区
+    expect(oneNiceTicks(-0.3, 0.5, 5)).toEqual([-0.4, -0.2, 0, 0.2, 0.4, 0.6]);
+    expect(oneNiceTicks(-7, 12, 5)).toEqual([-10, -5, 0, 5, 10, 15]);
+    // min 恰为步长整数倍时不补
+    expect(oneNiceTicks(-10, 10, 4)).toEqual([-10, -5, 0, 5, 10]);
+    expect(oneNiceTicks(0, 100, 5)).toEqual([0, 20, 40, 60, 80, 100]);
+  });
+
+  it('expands domains to nice bounds covering both extremes', () => {
     expect(oneNiceDomain(0, 37)).toEqual([0, 40]);
     expect(oneNiceDomain(0, 0)).toEqual([0, 1]);
     expect(oneNiceDomain(5, 5)).toEqual([0, 5.5]);
-    expect(oneNiceDomain(-7, 12)).toEqual([-5, 15]);
+    expect(oneNiceDomain(-7, 12)).toEqual([-10, 15]);
+    expect(oneNiceDomain(-0.3, 0.5)).toEqual([-0.4, 0.6]);
   });
 });
 

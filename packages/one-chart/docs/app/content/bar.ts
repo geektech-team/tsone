@@ -29,6 +29,12 @@ export const barChartPage: OneChartDocPage = {
         'Pass categories and series data to render grouped bars with multi-series comparison; the demo below switches between grouped, stacked and horizontal modes.'
       )
     ),
+    paragraph(
+      t(
+        '数据支持负数：数值域自动扩展到整齐边界并覆盖最小/最大值（0 为基线），负值柱在基线另一侧渲染且不会超出绘图区。',
+        'Negative values are supported: the value domain automatically extends to nice bounds covering both extremes (0 is the baseline), and negative bars render on the opposite side of the baseline without overflowing the plot area.'
+      )
+    ),
     heading(2, 'tooltip', t('Tooltip', 'Tooltip')),
     paragraph(
       t(

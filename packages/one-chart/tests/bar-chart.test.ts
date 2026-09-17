@@ -144,6 +144,27 @@ describe('OneBarChart', () => {
     expect(q4Total).toBeCloseTo(312 * 0.88, 0);
   });
 
+  it('keeps negative-value bars inside the plot area', () => {
+    // 数据含负数（最低 -0.3）时，数值域必须覆盖最小值，
+    // 否则负值柱会渲染到绘图区（plotY=44, plotBottom=356）之外。
+    chart = new OneBarChart({
+      categories: ['上海', '成都', '北京', '杭州', '深圳', '南京', '西安', '重庆', '广州'],
+      series: [{ name: '涨幅', data: [0.5, 0.4, 0.3, 0.2, 0.1, 0.1, 0, -0.1, -0.3] }],
+    });
+    chart.mount(container);
+    flushSync();
+
+    const bars = plotRects(container);
+    expect(bars.length).toBe(9);
+    for (const bar of bars) {
+      const y = Number(bar.getAttribute('y'));
+      const height = Number(bar.getAttribute('height'));
+      // 柱必须在绘图区上下边界之内（允许 1px 浮点误差）
+      expect(y).toBeGreaterThanOrEqual(44 - 1);
+      expect(y + height).toBeLessThanOrEqual(356 + 1);
+    }
+  });
+
   it('rejects negative values in stacked mode', () => {
     chart = new OneBarChart({
       categories: CATEGORIES,

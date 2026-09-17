@@ -49,6 +49,12 @@ export function oneNiceTicks(min: number, max: number, count = 5): number[] {
   if (ticks.length > 0 && last !== undefined && last < max) {
     ticks.push(roundToStep(last + step, step));
   }
+  // 保证刻度覆盖 min：首刻度仍大于 min（如 -0.3 落在 -0.2 之上）时向前补一档，
+  // 否则负值数据点会落在比例尺域外、柱子渲染到绘图区之外。
+  const first = ticks[0];
+  if (ticks.length > 0 && first !== undefined && first > min) {
+    ticks.unshift(roundToStep(first - step, step));
+  }
   return ticks;
 }
 
