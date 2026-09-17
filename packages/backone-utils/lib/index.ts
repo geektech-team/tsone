@@ -12,6 +12,7 @@
  * - `http`：fetch 封装客户端（超时、指数退避重试、请求头合并、JSON 解析）。
  * - `rate-limit`：限流器（固定窗口 / 滑动窗口 / 令牌桶）。
  * - `schema`：轻量 schema 校验器（zod 风格，含类型推导与 safeParse）。
+ * - `config`：全局配置（从环境变量读取强类型配置，启动期 fail-fast 校验）。
  *
  * ```ts
  * import { DatabaseManager, createId, createHttpClient, v } from '@geektech/backone-utils';
@@ -102,13 +103,29 @@ export type {
   SafeParseResult,
   Schema,
   SchemaIssue,
+  SchemaKind,
   Shape,
   StringOptions,
   ValidationErrorCode,
 } from './schema';
 
+export {
+  ConfigError,
+  defineConfig,
+  EnvSource,
+  MemorySource,
+  toUpperSnake,
+} from './config';
+export type {
+  Config,
+  ConfigErrorCode,
+  ConfigFromSchema,
+  ConfigSource,
+  DefineConfigOptions,
+} from './config';
+
 export { BackoneError } from './errors';
 
 // 导出包名与版本（发布脚本同步）
 export const name = '@geektech/backone-utils';
-export const version = '0.3.0';
+export const version = '0.5.0';

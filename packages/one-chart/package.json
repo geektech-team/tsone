@@ -1,6 +1,6 @@
 {
   "name": "@geektech/one-chart",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "One Chart 是基于 TSone 的轻量级纯 TypeScript SVG 图表库",
   "type": "module",
   "main": "./dist/index.js",
@@ -19,7 +19,7 @@
     "docs:build": "tsone build"
   },
   "peerDependencies": {
-    "@geektech/tsone": ">=0.5.0 <0.6.0"
+    "@geektech/tsone": ">=0.5.1 <0.6.0"
   },
   "devDependencies": {
     "@geektech/tsone": "workspace:*",

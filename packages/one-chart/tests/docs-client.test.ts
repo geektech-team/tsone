@@ -7,7 +7,7 @@ import { BarChartDemo } from '../docs/app/demos/BarChartDemo';
  * 绑定（`emitters` 只对组件节点生效），否则点击按钮不会切换图表数据。
  */
 describe('One Chart docs demo interaction', () => {
-  it('toggles the bar demo between grouped and stacked on button click', () => {
+  it('cycles the bar demo through grouped, stacked and horizontal on button click', () => {
     const host = document.createElement('div');
     document.body.appendChild(host);
     const demo = new BarChartDemo();
@@ -20,13 +20,36 @@ describe('One Chart docs demo interaction', () => {
     expect(button?.textContent).toContain('堆叠');
     expect(title?.textContent).toBe('季度销量（分组）');
 
+    // 分组 → 堆叠
     button?.dispatchEvent(new Event('click'));
     flushSync();
+    expect(
+      host.querySelector<HTMLButtonElement>('button')?.textContent
+    ).toContain('横向');
+    expect(host.querySelector<SVGTextElement>('text')?.textContent).toBe(
+      '季度销量（堆叠）'
+    );
 
-    const buttonAfter = host.querySelector<HTMLButtonElement>('button');
-    const titleAfter = host.querySelector<SVGTextElement>('text');
-    expect(buttonAfter?.textContent).toContain('分组');
-    expect(titleAfter?.textContent).toBe('季度销量（堆叠）');
+    // 堆叠 → 横向
+    host.querySelector<HTMLButtonElement>('button')?.dispatchEvent(
+      new Event('click')
+    );
+    flushSync();
+    expect(
+      host.querySelector<HTMLButtonElement>('button')?.textContent
+    ).toContain('分组');
+    expect(host.querySelector<SVGTextElement>('text')?.textContent).toBe(
+      '季度销量（横向）'
+    );
+
+    // 横向 → 回到分组
+    host.querySelector<HTMLButtonElement>('button')?.dispatchEvent(
+      new Event('click')
+    );
+    flushSync();
+    expect(
+      host.querySelector<SVGTextElement>('text')?.textContent
+    ).toBe('季度销量（分组）');
   });
 
   it('keeps a stable svg node while repainting on toggle', () => {

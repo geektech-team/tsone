@@ -6,7 +6,7 @@
  */
 
 import { fail, Schema } from './schema';
-import type { InferType } from './schema';
+import type { InferType, SchemaKind } from './schema';
 import { ValidationError, type SchemaIssue } from './errors';
 
 // ---- 基础类型 ----
@@ -19,6 +19,7 @@ export interface StringOptions {
 }
 
 export class StringSchema extends Schema<string> {
+  readonly kind: SchemaKind = 'string';
   readonly #options: StringOptions;
 
   constructor(options: StringOptions = {}) {
@@ -61,6 +62,7 @@ export interface NumberOptions {
 }
 
 export class NumberSchema extends Schema<number> {
+  readonly kind: SchemaKind = 'number';
   readonly #options: NumberOptions;
 
   constructor(options: NumberOptions = {}) {
@@ -86,6 +88,8 @@ export class NumberSchema extends Schema<number> {
 }
 
 export class BooleanSchema extends Schema<boolean> {
+  readonly kind: SchemaKind = 'boolean';
+
   check(value: unknown, path: (string | number)[]): boolean {
     if (typeof value !== 'boolean') {
       fail(path, 'expected boolean');
@@ -98,6 +102,7 @@ export class BooleanSchema extends Schema<boolean> {
 export class LiteralSchema<
   L extends string | number | boolean,
 > extends Schema<L> {
+  readonly kind: SchemaKind = 'literal';
   readonly #literal: L;
 
   constructor(literal: L) {
@@ -115,6 +120,7 @@ export class LiteralSchema<
 
 /** 枚举：接受枚举列表中的值 */
 export class EnumSchema<T extends string> extends Schema<T> {
+  readonly kind: SchemaKind = 'enum';
   readonly #values: readonly T[];
 
   constructor(values: readonly T[]) {
@@ -142,6 +148,7 @@ export interface ArrayOptions {
 }
 
 export class ArraySchema<E> extends Schema<E[]> {
+  readonly kind: SchemaKind = 'array';
   readonly #item: Schema<E>;
   readonly #options: ArrayOptions;
 
@@ -195,7 +202,13 @@ export type Shape = Record<string, Schema<unknown>>;
 export class ObjectSchema<S extends Shape> extends Schema<{
   [K in keyof S]: InferType<S[K]>;
 }> {
+  readonly kind: SchemaKind = 'object';
   readonly #shape: S;
+
+  /** 形状表：键 → 字段 schema（config 等模块需要读取字段定义） */
+  get shape(): S {
+    return this.#shape;
+  }
 
   constructor(shape: S) {
     super();
@@ -234,6 +247,7 @@ export class ObjectSchema<S extends Shape> extends Schema<{
 
 /** 记录：任意字符串键 → 同构值 */
 export class RecordSchema<V> extends Schema<Record<string, V>> {
+  readonly kind: SchemaKind = 'record';
   readonly #value: Schema<V>;
 
   constructor(value: Schema<V>) {
@@ -272,11 +286,17 @@ export class RecordSchema<V> extends Schema<Record<string, V>> {
 
 /** 可选：undefined 通过，否则按内层 schema 校验 */
 export class OptionalSchema<T> extends Schema<T | undefined> {
+  readonly kind: SchemaKind = 'optional';
   readonly #inner: Schema<T>;
 
   constructor(inner: Schema<T>) {
     super();
     this.#inner = inner;
+  }
+
+  /** 内层 schema（config 等模块需要解包转换） */
+  get inner(): Schema<T> {
+    return this.#inner;
   }
 
   check(value: unknown, path: (string | number)[]): T | undefined {
@@ -286,11 +306,17 @@ export class OptionalSchema<T> extends Schema<T | undefined> {
 
 /** 可空：null 通过，否则按内层 schema 校验 */
 export class NullableSchema<T> extends Schema<T | null> {
+  readonly kind: SchemaKind = 'nullable';
   readonly #inner: Schema<T>;
 
   constructor(inner: Schema<T>) {
     super();
     this.#inner = inner;
+  }
+
+  /** 内层 schema（config 等模块需要解包转换） */
+  get inner(): Schema<T> {
+    return this.#inner;
   }
 
   check(value: unknown, path: (string | number)[]): T | null {
@@ -302,6 +328,7 @@ export class NullableSchema<T> extends Schema<T | null> {
 export class UnionSchema<T extends readonly Schema<unknown>[]> extends Schema<
   InferType<T[number]>
 > {
+  readonly kind: SchemaKind = 'union';
   readonly #schemas: T;
 
   constructor(schemas: T) {

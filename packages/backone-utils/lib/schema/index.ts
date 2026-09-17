@@ -19,12 +19,25 @@ import {
   type StringOptions,
 } from './primitives';
 
-export type { InferType, SafeParseResult, Schema } from './schema';
+export type { InferType, SafeParseResult, Schema, SchemaKind } from './schema';
 export type {
   ArrayOptions,
   NumberOptions,
   Shape,
   StringOptions,
+} from './primitives';
+export {
+  ArraySchema,
+  BooleanSchema,
+  EnumSchema,
+  LiteralSchema,
+  NullableSchema,
+  NumberSchema,
+  ObjectSchema,
+  OptionalSchema,
+  RecordSchema,
+  StringSchema,
+  UnionSchema,
 } from './primitives';
 export {
   ValidationError,

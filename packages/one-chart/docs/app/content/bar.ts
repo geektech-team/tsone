@@ -25,8 +25,8 @@ export const barChartPage: OneChartDocPage = {
     heading(2, 'basic', t('基础用法', 'Basic usage')),
     paragraph(
       t(
-        '传入分类与系列数据即可渲染分组柱状图，支持多系列并排对比。',
-        'Pass categories and series data to render grouped bars with multi-series comparison.'
+        '传入分类与系列数据即可渲染分组柱状图，支持多系列并排对比；下方 demo 可切换分组、堆叠与横向三种模式。',
+        'Pass categories and series data to render grouped bars with multi-series comparison; the demo below switches between grouped, stacked and horizontal modes.'
       )
     ),
     heading(2, 'tooltip', t('Tooltip', 'Tooltip')),

@@ -21,15 +21,10 @@ import {
   createId,
   createJwt,
   createRateLimiter,
+  defineConfig,
   v,
 } from '@geektech/backone-utils';
-import {
-  db,
-  setupDatabases,
-  writeAudit,
-  type AuditLog,
-  type Task,
-} from './db';
+import { db, setupDatabases, writeAudit, type AuditLog, type Task } from './db';
 
 const app = createServer({
   port: 5390,
@@ -163,12 +158,18 @@ app.get('/events', (ctx) => {
     start(controller) {
       const messages = [
         { id: 1, event: 'greeting', data: 'hello from backone' },
-        { id: 2, event: 'update', data: JSON.stringify({ status: 'ok', ts: Date.now() }) },
+        {
+          id: 2,
+          event: 'update',
+          data: JSON.stringify({ status: 'ok', ts: Date.now() }),
+        },
         { id: 3, event: 'done', data: 'stream complete' },
       ];
       for (const msg of messages) {
         controller.enqueue(
-          encoder.encode(`id: ${msg.id}\nevent: ${msg.event}\ndata: ${msg.data}\n\n`)
+          encoder.encode(
+            `id: ${msg.id}\nevent: ${msg.event}\ndata: ${msg.data}\n\n`
+          )
         );
       }
       controller.close();
@@ -389,6 +390,17 @@ app.get('/api/tools/ids', (ctx) =>
   })
 );
 
+// 配置：脱敏展示（密钥不完整回显），演示 defineConfig 读取与深冻结
+app.get('/api/tools/config', (ctx) =>
+  ctx.json({
+    prefix: 'BACKONE_DEMO_',
+    debug: demoConfig.debug,
+    jwtSecretMasked: `${demoConfig.jwtSecret.slice(0, 3)}***`,
+    adminToken: demoConfig.adminToken === undefined ? 'unset' : 'set',
+    frozen: Object.isFrozen(demoConfig),
+  })
+);
+
 // 缓存：getOrSet 缓存"城市得分"查询，5 秒过期（x-cache 标注命中/未命中）
 const scoreCache = createCache<number>({ ttlMs: 5_000, capacity: 100 });
 app.get('/api/tools/rank', async (ctx) => {
@@ -400,8 +412,22 @@ app.get('/api/tools/rank', async (ctx) => {
   return ctx.json({ city, score, cached });
 });
 
+// 全局配置：从环境变量读取（BACKONE_DEMO_ 前缀），启动期 fail-fast
+//   BACKONE_DEMO_JWT_SECRET（必填，≥8 字符）、BACKONE_DEMO_DEBUG、BACKONE_DEMO_ADMIN_TOKEN（可选）
+const demoConfig = defineConfig(
+  v.object({
+    jwtSecret: v.string({ minLength: 8 }),
+    debug: v.boolean(),
+    adminToken: v.optional(v.string({ minLength: 4 })),
+  }),
+  {
+    prefix: 'BACKONE_DEMO_',
+    defaults: { jwtSecret: 'backone-demo-secret', debug: false },
+  }
+);
+
 // JWT：签发 / 验证（Bearer 头），HS256 + issuer 校验
-const jwt = createJwt({ secret: process.env.BACKONE_DEMO_JWT_SECRET ?? 'backone-demo-secret' });
+const jwt = createJwt({ secret: demoConfig.jwtSecret });
 app.post('/api/tools/token', async (ctx) => {
   const body = await ctx.bodyJson<{ role?: string }>();
   const token = await jwt.sign(
@@ -441,7 +467,9 @@ const api = createHttpClient({
   timeoutMs: 2000,
 });
 app.get('/api/tools/http', async (ctx) => {
-  const { data } = await api.get<{ uuidv7: string; nanoid: string }>('/api/tools/ids');
+  const { data } = await api.get<{ uuidv7: string; nanoid: string }>(
+    '/api/tools/ids'
+  );
   return ctx.json({ proxied: data });
 });
 
@@ -478,5 +506,5 @@ console.log(
   `  db demo: /api/tasks /api/tasks/:id /api/tasks/batch /api/audit /api/db`
 );
 console.log(
-  `  utils demo: /api/tools/ids /api/tools/rank /api/tools/token /api/tools/me /api/tools/limited /api/tools/http /api/tools/city`
+  `  utils demo: /api/tools/config /api/tools/ids /api/tools/rank /api/tools/token /api/tools/me /api/tools/limited /api/tools/http /api/tools/city`
 );

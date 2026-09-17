@@ -1,7 +1,7 @@
 {
   "name": "@geektech/backone-utils",
-  "version": "0.3.0",
-  "description": "BackOne 通用工具包：数据库连接与增删改查（多库）、ID 生成、缓存、JWT、HTTP 客户端、限流、schema 校验，基于 Bun 内置能力，零运行时依赖",
+  "version": "0.5.0",
+  "description": "BackOne 通用工具包：数据库（多库 CRUD）、ID、缓存、JWT、HTTP、限流、校验、全局配置（零运行时依赖）",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -31,7 +31,10 @@
     "rate-limit",
     "validation",
     "bun",
-    "backone"
+    "backone",
+    "config",
+    "env",
+    "configuration"
   ],
   "author": "Jimmie Max(Qianyu)",
   "homepage": "https://geektech-team.github.io/tsone/",

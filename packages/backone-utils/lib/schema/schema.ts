@@ -14,8 +14,25 @@ export type SafeParseResult<T> =
 /** 从 schema 类型推导值类型：`InferType<typeof schema>` */
 export type InferType<S> = S extends Schema<infer T> ? T : never;
 
+/** schema 类型标识：供外部按类型分流（如 config 模块的 env 值转换） */
+export type SchemaKind =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'literal'
+  | 'enum'
+  | 'array'
+  | 'object'
+  | 'record'
+  | 'optional'
+  | 'nullable'
+  | 'union';
+
 /** Schema 基类 */
 export abstract class Schema<T> {
+  /** 类型标识（子类各自实现） */
+  abstract readonly kind: SchemaKind;
+
   /**
    * 校验并返回类型化值；失败抛出携带问题列表的 ValidationError。
    */

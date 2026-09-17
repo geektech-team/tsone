@@ -16,6 +16,7 @@ Modules:
 - `http` — fetch wrapper: timeouts, exponential-backoff retries, header merge, JSON parsing
 - `rate-limit` — fixed-window / sliding-window / token-bucket limiters
 - `schema` — lightweight zod-style validators with type inference
+- `config` — typed global configuration read from environment variables (fail-fast validation)
 
 Supported database dialects: **SQLite**, **PostgreSQL**, **MySQL**, **MariaDB**.
 
@@ -193,6 +194,9 @@ import {
   createHttpClient,  // fetch wrapper with retries/timeouts
   createRateLimiter, // fixed/sliding/token-bucket limiter factory
   v,                 // schema validator factory (zod style)
+  defineConfig,      // typed config from env (prefix + coercion + fail-fast)
+  EnvSource,         // env read source (Bun.env + process.env)
+  ConfigError,       // config errors with stable codes
   BackoneError,      // shared error base with stable codes
   name, version,
 } from '@geektech/backone-utils';

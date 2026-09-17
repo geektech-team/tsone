@@ -15,6 +15,7 @@
 - `http` —— fetch 封装：超时、指数退避重试、请求头合并、JSON 解析
 - `rate-limit` —— 限流器（固定窗口 / 滑动窗口 / 令牌桶）
 - `schema` —— 轻量 schema 校验器（zod 风格，含类型推导）
+- `config` —— 全局配置（从环境变量读取强类型配置，启动期 fail-fast 校验）
 
 支持方言：**SQLite**、**PostgreSQL**、**MySQL**、**MariaDB**。
 
@@ -29,6 +30,7 @@
 - 原生查询：标签模板（`db.query\`...\``）与参数化字符串（`db.raw(sql, params)`）
 - 所有值经 `?` 占位符参数化，表名 / 列名按方言引用，杜绝字符串拼接注入
 - 策略化 ID 生成、内存 TTL/LRU 缓存、WebCrypto JWT、可重试 fetch 客户端、三种限流策略、zod 风格校验器
+- `defineConfig` 从环境变量读取强类型配置：命名空间前缀、自动类型转换、默认值、启动期聚合报错、深冻结结果
 
 ## 环境要求
 
@@ -192,6 +194,9 @@ import {
   createHttpClient,  // 带重试 / 超时的 fetch 封装
   createRateLimiter, // 固定 / 滑动 / 令牌桶限流工厂
   v,                 // schema 校验器工厂（zod 风格）
+  defineConfig,      // 从环境变量读取强类型配置（前缀 + 转换 + fail-fast）
+  EnvSource,         // 环境变量读取源（Bun.env + process.env）
+  ConfigError,       // 配置错误（稳定错误码）
   BackoneError,      // 统一错误基类（稳定错误码）
   name, version,
 } from '@geektech/backone-utils';

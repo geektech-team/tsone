@@ -32,7 +32,7 @@
     },
     "packages/backone-utils": {
       "name": "@geektech/backone-utils",
-      "version": "0.3.0",
+      "version": "0.5.0",
     },
     "packages/one": {
       "name": "@geektech/one",
@@ -42,7 +42,7 @@
         "@geektech/tsone-cli": "workspace:*",
       },
       "peerDependencies": {
-        "@geektech/tsone": ">=0.5.0 <0.6.0",
+        "@geektech/tsone": ">=0.5.1 <0.6.0",
       },
     },
     "packages/one-chart": {
@@ -53,12 +53,12 @@
         "@geektech/tsone-cli": "workspace:*",
       },
       "peerDependencies": {
-        "@geektech/tsone": ">=0.5.0 <0.6.0",
+        "@geektech/tsone": ">=0.5.1 <0.6.0",
       },
     },
     "packages/tsone": {
       "name": "@geektech/tsone",
-      "version": "0.5.0",
+      "version": "0.5.1",
     },
     "packages/tsone-cli": {
       "name": "@geektech/tsone-cli",
