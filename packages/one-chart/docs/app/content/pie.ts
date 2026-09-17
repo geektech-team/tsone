@@ -29,6 +29,17 @@ export const pieChartPage: OneChartDocPage = {
         'A pie chart slices the circle by value proportions, suited to showing composition. A single datum renders as a full circle.'
       )
     ),
+    heading(2, 'tooltip', t('Tooltip', 'Tooltip')),
+    paragraph(
+      t(
+        '鼠标悬停到扇区上显示数据项名称、数值与百分比，tooltip 默认开启，可传 ',
+        'Hovering a sector shows its name, value and percentage; tooltips are on by default. Pass '
+      ),
+      inlineCode('tooltip: false'),
+      t(' 关闭或传入 ', ' to disable, or pass '),
+      inlineCode('{ formatter }'),
+      t(' 自定义内容。', ' to customize the content.'),
+    ),
     demo('pie', true),
     heading(2, 'props', t('属性', 'Props')),
     apiTable(t('OnePieChart 属性', 'OnePieChart props'), [

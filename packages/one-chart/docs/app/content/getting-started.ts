@@ -128,6 +128,14 @@ export const gettingStartedPage: OneChartDocPage = {
           'Accessibility label, defaults to title or chart name'
         ),
       },
+      {
+        name: 'tooltip',
+        signature: 'boolean | { formatter }',
+        description: t(
+          '是否启用 tooltip，默认 true；传入对象时可自定义内容格式',
+          'Whether tooltips are enabled, default true; pass an object to customize the content'
+        ),
+      },
     ]),
     callout(
       'tip',

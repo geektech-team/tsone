@@ -73,6 +73,7 @@ export class OnePieChart extends OneChart<OnePieChartProps> {
     data.forEach((item, index) => {
       const span = (item.value / total) * sweep;
       const color = this.colorFor(index);
+      const percent = (item.value / total) * 100;
       nodes.push(
         svgPath(
           oneArcPath(cx, cy, radius, innerRadius, angle, angle + span, padAngle),
@@ -80,13 +81,16 @@ export class OnePieChart extends OneChart<OnePieChartProps> {
             fill: color,
             stroke: '#ffffff',
             'stroke-width': 1,
+            ...this.tooltipHitProps(
+              { name: item.name, value: item.value, percent },
+              color
+            ),
           }
         )
       );
 
       if (showLabels) {
         const midAngle = angle + span / 2;
-        const percent = (item.value / total) * 100;
         const label = this.props.labelFormat
           ? this.props.labelFormat(item.value, total, percent)
           : onePercentLabel(percent);

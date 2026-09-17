@@ -27,6 +27,17 @@ export const radarChartPage: OneChartDocPage = {
         'A radar chart maps each indicator to an equally spaced spoke and series values to radii, ideal for multi-dimensional comparison.'
       )
     ),
+    heading(2, 'tooltip', t('Tooltip', 'Tooltip')),
+    paragraph(
+      t(
+        '雷达图为每个系列与指标的交点渲染热区，悬停显示指标名、系列名与数值，tooltip 默认开启，可传 ',
+        'The radar chart adds hit areas at every series-by-indicator vertex, showing indicator, series and value on hover; tooltips are on by default. Pass '
+      ),
+      inlineCode('tooltip: false'),
+      t(' 关闭或传入 ', ' to disable, or pass '),
+      inlineCode('{ formatter }'),
+      t(' 自定义内容。', ' to customize the content.'),
+    ),
     demo('radar', true),
     heading(2, 'props', t('属性', 'Props')),
     apiTable(t('OneRadarChart 属性', 'OneRadarChart props'), [

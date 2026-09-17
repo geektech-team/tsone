@@ -12,6 +12,8 @@ external dependencies in the browser runtime.
 - `OneLineChart` — linear or smooth curves, optional area fill and data points
 - `OnePieChart` — proportional sectors, donut rings, percentage labels
 - `OneRadarChart` — multi-indicator comparison with grid rings
+- `OneScatterChart` — scatter on two numeric axes with multi-series overlay
+- `OneFunnelChart` — trapezoid funnel with per-level conversion
 
 ## Installation
 
@@ -52,6 +54,10 @@ chart.mount(document.querySelector('#app')!);
 
 - **Built-in basics** — title, legend, axes, grid lines and value labels ship
   with every chart; palette and margins are configurable per chart.
+- **Interactive tooltip** — hovering a bar, data point or sector shows its
+  value; on by default, disable with `tooltip: false` or customize via a
+  `formatter`. Line and radar charts ship invisible hit areas, so no
+  `showPoints` is needed to hover.
 - **Data validation** — invalid categories, series length mismatches,
   non-finite values, empty pie data or negative pie values throw
   `OneChartDataError` at render time.
@@ -59,7 +65,8 @@ chart.mount(document.querySelector('#app')!);
 ## Common props
 
 All charts share `width` / `height` (default `640 × 400`), `title`, `margin`,
-`colors` (default Tableau 10 palette), `showLegend` and `ariaLabel`.
+`colors` (default Tableau 10 palette), `showLegend`, `ariaLabel` and `tooltip`
+(on by default; pass `{ formatter }` to customize the content).
 
 ## Development
 

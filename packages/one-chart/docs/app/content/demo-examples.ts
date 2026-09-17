@@ -1,4 +1,4 @@
-export type OneChartDocDemoName = 'bar' | 'line' | 'pie' | 'radar';
+export type OneChartDocDemoName = 'bar' | 'line' | 'pie' | 'radar' | 'scatter' | 'funnel';
 
 export interface OneChartDocDemoSource {
   language: 'ts';
@@ -75,6 +75,39 @@ export const oneChartDocDemoExamples: Record<
       "    { name: '法师', data: [50, 80, 60, 95, 60] },",
       '  ],',
       '  showPoints: true,',
+      '});',
+      "chart.mount(document.querySelector('#app')!);",
+    ].join('\n'),
+  },
+  scatter: {
+    language: 'ts',
+    code: [
+      "import { OneScatterChart } from '@geektech/one-chart';",
+      '',
+      "const chart = new OneScatterChart({",
+      "  title: '身高与体重',",
+      '  series: [',
+      "    { name: 'A 组', data: [[1, 2], [2, 4], [3, 6]] },",
+      "    { name: 'B 组', data: [[1, 5], [2, 3], [3, 4]] },",
+      '  ],',
+      '});',
+      "chart.mount(document.querySelector('#app')!);",
+    ].join('\n'),
+  },
+  funnel: {
+    language: 'ts',
+    code: [
+      "import { OneFunnelChart } from '@geektech/one-chart';",
+      '',
+      "const chart = new OneFunnelChart({",
+      "  title: '转化漏斗',",
+      '  data: [',
+      "    { name: '曝光', value: 1000 },",
+      "    { name: '点击', value: 420 },",
+      "    { name: '转化', value: 72 },",
+      '  ],',
+      '  showValues: true,',
+      '  showPercent: true,',
       '});',
       "chart.mount(document.querySelector('#app')!);",
     ].join('\n'),

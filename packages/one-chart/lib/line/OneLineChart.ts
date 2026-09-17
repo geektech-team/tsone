@@ -81,8 +81,9 @@ export class OneLineChart extends OneCartesianChart<OneLineChartProps> {
         })
       );
 
-      if (showPoints) {
-        points.forEach(([x, y]) => {
+      points.forEach(([x, y], index) => {
+        const value = item.data[index];
+        if (showPoints) {
           nodes.push(
             svgCircle({
               cx: x,
@@ -93,8 +94,22 @@ export class OneLineChart extends OneCartesianChart<OneLineChartProps> {
               'stroke-width': 1.5,
             })
           );
-        });
-      }
+        }
+        // 透明热区置于可见点之上，承担 tooltip 命中。
+        nodes.push(
+          svgCircle({
+            cx: x,
+            cy: y,
+            r: 9,
+            fill: 'transparent',
+            ...this.tooltipHitProps(
+              { name: categories[index], series: item.name, value },
+              color,
+              (v) => this.formatValue(v)
+            ),
+          })
+        );
+      });
     });
 
     return nodes;

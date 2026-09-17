@@ -9,7 +9,14 @@ import {
   type OneChartDocPage,
 } from '../content';
 import { pick } from '../locale';
-import { OneBarChart, OneLineChart, OnePieChart, OneRadarChart } from '../../../lib';
+import {
+  OneBarChart,
+  OneFunnelChart,
+  OneLineChart,
+  OnePieChart,
+  OneRadarChart,
+  OneScatterChart,
+} from '../../../lib';
 
 export interface DocArticleProps {
   page: OneChartDocPage;
@@ -62,6 +69,30 @@ const DEMO_CHARTS: Record<OneChartDocDemoName, { component: unknown; props: obje
         { name: '法师', data: [50, 80, 60, 95, 60] },
       ],
       showPoints: true,
+    },
+  },
+  scatter: {
+    component: OneScatterChart,
+    props: {
+      title: '身高与体重',
+      series: [
+        { name: 'A 组', data: [[1, 2], [2, 4], [3, 6], [4, 5]] },
+        { name: 'B 组', data: [[1, 5], [2, 3], [3, 4], [4, 7]] },
+      ],
+    },
+  },
+  funnel: {
+    component: OneFunnelChart,
+    props: {
+      title: '转化漏斗',
+      data: [
+        { name: '曝光', value: 1000 },
+        { name: '点击', value: 420 },
+        { name: '注册', value: 190 },
+        { name: '转化', value: 72 },
+      ],
+      showValues: true,
+      showPercent: true,
     },
   },
 };

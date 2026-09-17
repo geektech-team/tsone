@@ -140,8 +140,9 @@ export class OneRadarChart extends OneChart<OneRadarChartProps> {
         })
       );
 
-      if (showPoints) {
-        points.forEach(([x, y]) => {
+      points.forEach(([x, y], pointIndex) => {
+        const value = item.data[pointIndex];
+        if (showPoints) {
           nodes.push(
             svgCircle({
               cx: x,
@@ -152,8 +153,21 @@ export class OneRadarChart extends OneChart<OneRadarChartProps> {
               'stroke-width': 1.5,
             })
           );
-        });
-      }
+        }
+        // 透明热区置于可见点之上，承担 tooltip 命中。
+        nodes.push(
+          svgCircle({
+            cx: x,
+            cy: y,
+            r: 8,
+            fill: 'transparent',
+            ...this.tooltipHitProps(
+              { name: indicators[pointIndex], series: item.name, value },
+              color
+            ),
+          })
+        );
+      });
     });
 
     return nodes;

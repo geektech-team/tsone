@@ -130,6 +130,11 @@ export class OneBarChart extends OneCartesianChart<OneBarChartProps> {
               width: band.bandwidth,
               height: Math.max(0.5, Math.abs(end - start)),
               fill: color,
+              ...this.tooltipHitProps(
+                { name: categories[index], series: item.name, value },
+                color,
+                (v) => this.formatValue(v)
+              ),
             })
           );
         });
@@ -154,6 +159,11 @@ export class OneBarChart extends OneCartesianChart<OneBarChartProps> {
             width: barWidth,
             height: Math.max(0.5, Math.abs(baseline - valueY)),
             fill: color,
+            ...this.tooltipHitProps(
+              { name: categories[index], series: item.name, value },
+              color,
+              (v) => this.formatValue(v)
+            ),
           })
         );
         if (this.props.showValues && Math.abs(baseline - valueY) >= 10) {
@@ -197,6 +207,11 @@ export class OneBarChart extends OneCartesianChart<OneBarChartProps> {
               width: Math.max(0.5, Math.abs(end - start)),
               height: band.bandwidth,
               fill: color,
+              ...this.tooltipHitProps(
+                { name: categories[index], series: item.name, value },
+                color,
+                (v) => this.formatValue(v)
+              ),
             })
           );
         });
@@ -221,6 +236,11 @@ export class OneBarChart extends OneCartesianChart<OneBarChartProps> {
             width: Math.max(0.5, Math.abs(baseline - valueX)),
             height: barHeight,
             fill: color,
+            ...this.tooltipHitProps(
+              { name: categories[index], series: item.name, value },
+              color,
+              (v) => this.formatValue(v)
+            ),
           })
         );
         if (this.props.showValues && Math.abs(baseline - valueX) >= 10) {

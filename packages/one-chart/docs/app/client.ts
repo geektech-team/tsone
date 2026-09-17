@@ -9,11 +9,13 @@ import {
 } from './theme';
 import { LangSwitcher } from './components/LangSwitcher';
 import { BarChartDemo } from './demos/BarChartDemo';
+import { FunnelChartDemo } from './demos/FunnelChartDemo';
 import { LineChartDemo } from './demos/LineChartDemo';
 import { PieChartDemo } from './demos/PieChartDemo';
 import { RadarChartDemo } from './demos/RadarChartDemo';
+import { ScatterChartDemo } from './demos/ScatterChartDemo';
 
-type DemoName = 'bar' | 'line' | 'pie' | 'radar';
+type DemoName = 'bar' | 'line' | 'pie' | 'radar' | 'scatter' | 'funnel';
 type DemoConstructor = ComponentConstructor<Record<string, never>, object>;
 
 const DEMOS: Record<DemoName, DemoConstructor> = {
@@ -21,6 +23,8 @@ const DEMOS: Record<DemoName, DemoConstructor> = {
   line: LineChartDemo,
   pie: PieChartDemo,
   radar: RadarChartDemo,
+  scatter: ScatterChartDemo,
+  funnel: FunnelChartDemo,
 };
 
 const mountedDemoRoots = new WeakSet<HTMLElement>();
@@ -148,7 +152,14 @@ function currentDocsTheme(): OneChartDocsTheme {
 }
 
 function isDemoName(value: string | undefined): value is DemoName {
-  return value === 'bar' || value === 'line' || value === 'pie' || value === 'radar';
+  return (
+    value === 'bar' ||
+    value === 'line' ||
+    value === 'pie' ||
+    value === 'radar' ||
+    value === 'scatter' ||
+    value === 'funnel'
+  );
 }
 
 function ensureUniqueRootId(root: HTMLElement, index: number): string {

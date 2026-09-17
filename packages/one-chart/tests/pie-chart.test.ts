@@ -28,7 +28,10 @@ describe('OnePieChart', () => {
     chart.mount(container);
 
     expect(container.querySelectorAll('path').length).toBe(3);
-    expect(container.querySelectorAll('rect').length).toBe(3);
+    const rects = [...container.querySelectorAll('rect')].filter(
+      (rect) => !rect.closest('[data-one-chart-tooltip]')
+    );
+    expect(rects.length).toBe(3);
     const texts = [...container.querySelectorAll('text')].map(
       (node) => node.textContent
     );

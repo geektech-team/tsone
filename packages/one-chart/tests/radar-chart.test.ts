@@ -50,7 +50,10 @@ describe('OneRadarChart', () => {
     });
     chart.mount(container);
 
-    expect(container.querySelectorAll('circle').length).toBe(10);
+    const circles = [...container.querySelectorAll('circle')].filter(
+      (circle) => !circle.hasAttribute('data-one-chart-tip-title')
+    );
+    expect(circles.length).toBe(10); // 2 系列 × 5 指标
   });
 
   it('respects the custom levels count', () => {

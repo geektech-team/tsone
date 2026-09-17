@@ -38,6 +38,13 @@ export const ONE_CHART_GRID_COLOR = '#e5e7eb';
 export const ONE_CHART_TITLE_COLOR = '#111827';
 export const ONE_CHART_VALUE_TEXT_COLOR = '#374151';
 
+export const ONE_CHART_TOOLTIP_BACKGROUND = '#111827';
+export const ONE_CHART_TOOLTIP_BORDER = '#374151';
+export const ONE_CHART_TOOLTIP_TEXT = '#f9fafb';
+/** tooltip 相对鼠标光标的偏移（px）。 */
+export const ONE_CHART_TOOLTIP_OFFSET_X = 14;
+export const ONE_CHART_TOOLTIP_OFFSET_Y = -14;
+
 /** 归一化边距：非有限值或负值回落到默认值。 */
 export function normalizeOneChartMargin(
   margin?: Partial<OneChartMargin> | OneChartMargin

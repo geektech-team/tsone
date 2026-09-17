@@ -6,6 +6,10 @@ export { OnePieChart } from './pie';
 export type { OnePieChartProps } from './pie';
 export { OneRadarChart } from './radar';
 export type { OneRadarChartProps } from './radar';
+export { OneScatterChart } from './scatter';
+export type { OneScatterChartProps } from './scatter';
+export { OneFunnelChart } from './funnel';
+export type { OneFunnelChartProps } from './funnel';
 export { OneChart } from './Chart';
 export { OneCartesianChart } from './cartesian';
 export type { OneCartesianChartProps } from './cartesian';
@@ -41,8 +45,12 @@ export type {
   OneChartProps,
   OneChartRenderContext,
   OneChartSeries,
+  OneChartTooltipHit,
+  OneChartTooltipOptions,
+  OneFunnelDatum,
   OnePieDatum,
   OneScale,
+  OneScatterSeries,
 } from './types';
 export {
   ONE_CHART_AXIS_LINE_COLOR,
@@ -56,6 +64,11 @@ export {
   ONE_CHART_LEGEND_HEIGHT,
   ONE_CHART_TITLE_COLOR,
   ONE_CHART_TITLE_HEIGHT,
+  ONE_CHART_TOOLTIP_BACKGROUND,
+  ONE_CHART_TOOLTIP_BORDER,
+  ONE_CHART_TOOLTIP_OFFSET_X,
+  ONE_CHART_TOOLTIP_OFFSET_Y,
+  ONE_CHART_TOOLTIP_TEXT,
   ONE_CHART_VALUE_TEXT_COLOR,
   normalizeOneChartMargin,
   normalizeOneChartSize,

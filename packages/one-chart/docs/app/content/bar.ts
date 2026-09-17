@@ -29,6 +29,17 @@ export const barChartPage: OneChartDocPage = {
         'Pass categories and series data to render grouped bars with multi-series comparison.'
       )
     ),
+    heading(2, 'tooltip', t('Tooltip', 'Tooltip')),
+    paragraph(
+      t(
+        '鼠标悬停到柱子上显示该柱的系列名与数值（分组、堆叠、横向模式均支持），tooltip 默认开启，可传 ',
+        'Hovering a bar shows its series name and value (grouped, stacked and horizontal modes all support it); tooltips are on by default. Pass '
+      ),
+      inlineCode('tooltip: false'),
+      t(' 关闭或传入 ', ' to disable, or pass '),
+      inlineCode('{ formatter }'),
+      t(' 自定义内容。', ' to customize the content.'),
+    ),
     demo('bar', true),
     heading(2, 'props', t('属性', 'Props')),
     apiTable(t('OneBarChart 属性', 'OneBarChart props'), [

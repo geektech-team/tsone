@@ -82,7 +82,9 @@ describe('OneLineChart', () => {
     });
     chart.mount(container);
 
-    const circles = container.querySelectorAll('circle');
+    const circles = [...container.querySelectorAll('circle')].filter(
+      (circle) => !circle.hasAttribute('data-one-chart-tip-title')
+    );
     expect(circles.length).toBe(10); // 2 系列 × 5 分类
     expect(circles[0]?.getAttribute('r')).toBe('3.5');
   });

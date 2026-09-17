@@ -1,14 +1,20 @@
-import type { HTMLNode, HTMLProps, VNode } from '@geektech/tsone';
+import type {
+  EventListeners,
+  HTMLNode,
+  HTMLProps,
+  VNode,
+} from '@geektech/tsone';
 
 export type SvgChild = VNode | string;
 
-/** 构造一个 SVG 元素 VNode。 */
+/** 构造一个 SVG 元素 VNode。listeners 挂载在节点顶层。 */
 export function svgElement(
   tag: string,
   props?: HTMLProps,
-  children?: SvgChild[]
+  children?: SvgChild[],
+  listeners?: EventListeners
 ): HTMLNode {
-  return { tag, props, children };
+  return { tag, props, children, ...(listeners ? { listeners } : {}) };
 }
 
 export function svgG(children?: SvgChild[], props?: HTMLProps): HTMLNode {

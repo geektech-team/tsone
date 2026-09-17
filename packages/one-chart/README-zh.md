@@ -11,6 +11,8 @@ One Chart（`@geektech/one-chart`）是面向 TSone 类组件框架的轻量级 
 - `OneLineChart` —— 直线或平滑曲线，可选面积填充与数据点
 - `OnePieChart` —— 比例扇区、环形图与百分比标签
 - `OneRadarChart` —— 多指标对比，带网格环
+- `OneScatterChart` —— 双数值轴散点，支持多系列叠加
+- `OneFunnelChart` —— 梯形漏斗与逐级转化率
 
 ## 安装
 
@@ -51,13 +53,17 @@ chart.mount(document.querySelector('#app')!);
 
 - **开箱即用的基础能力** —— 标题、图例、坐标轴、网格线与数值标签随每个图表
   提供，调色板与边距均可配置。
+- **交互 tooltip** —— 悬停柱子、数据点或扇区即显示数值提示，默认开启，可用
+  `tooltip: false` 关闭或传入 `formatter` 自定义内容；折线图与雷达图内置
+  不可见热区，无需开启 `showPoints` 即可命中。
 - **数据校验** —— 分类与系列长度不一致、数值非有限、饼图空数据或非正值等
   会在渲染时抛出 `OneChartDataError`。
 
 ## 通用属性
 
 所有图表共享 `width` / `height`（默认 `640 × 400`）、`title`、`margin`、
-`colors`（默认 Tableau 10 调色板）、`showLegend` 与 `ariaLabel`。
+`colors`（默认 Tableau 10 调色板）、`showLegend`、`ariaLabel` 与 `tooltip`
+（默认开启，可传 `{ formatter }` 自定义内容）。
 
 ## 开发
 

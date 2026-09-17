@@ -2,6 +2,7 @@ import {
   apiTable,
   demo,
   heading,
+  inlineCode,
   list,
   paragraph,
   t,
@@ -26,6 +27,17 @@ export const lineChartPage: OneChartDocPage = {
         '折线图把每个分类映射到 X 轴，系列数值映射到 Y 轴，适合观察随时间或类别的变化趋势。',
         'A line chart maps categories to the X axis and series values to the Y axis, ideal for observing trends over time or across categories.'
       )
+    ),
+    heading(2, 'tooltip', t('Tooltip', 'Tooltip')),
+    paragraph(
+      t(
+        '折线图为每个数据点渲染了不可见热区，悬停即可显示系列名与数值（无需开启 showPoints），tooltip 默认开启，可传 ',
+        'The line chart renders invisible hit areas at every data point, so hovering shows the series and value without showPoints; tooltips are on by default. Pass '
+      ),
+      inlineCode('tooltip: false'),
+      t(' 关闭或传入 ', ' to disable, or pass '),
+      inlineCode('{ formatter }'),
+      t(' 自定义内容。', ' to customize the content.'),
     ),
     demo('line', true),
     heading(2, 'props', t('属性', 'Props')),

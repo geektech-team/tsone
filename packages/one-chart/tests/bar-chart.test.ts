@@ -9,15 +9,23 @@ const SERIES = [
   { name: '华南', data: [80, 110, 130, 160] },
 ];
 
-/** 过滤掉图例色块（10×10），只保留绘制区矩形。 */
+/** 过滤掉图例色块（10×10）与 tooltip 浮层，只保留绘制区矩形。 */
 function plotRects(container: HTMLElement): Element[] {
   return [...container.querySelectorAll('rect')].filter(
     (rect) =>
+      !rect.closest('[data-one-chart-tooltip]') &&
       !(
         rect.getAttribute('width') === '10' &&
         rect.getAttribute('height') === '10'
       )
   );
+}
+
+/** 过滤 tooltip 浮层后统计矩形数量。 */
+function plotRectCount(container: HTMLElement): number {
+  return [...container.querySelectorAll('rect')].filter(
+    (rect) => !rect.closest('[data-one-chart-tooltip]')
+  ).length;
 }
 
 describe('OneBarChart', () => {
@@ -43,7 +51,7 @@ describe('OneBarChart', () => {
     expect(svg?.getAttribute('aria-label')).toBe('OneBarChart');
 
     const rects = [...container.querySelectorAll('rect')];
-    expect(rects.length).toBe(10); // 8 根柱 + 2 个图例色块
+    expect(rects.length).toBe(11); // 8 根柱 + 2 个图例色块 + tooltip 背景
     const bars = plotRects(container);
     expect(bars.length).toBe(8);
     expect(bars.every((bar) => Number(bar.getAttribute('width')) > 0)).toBe(
@@ -156,7 +164,7 @@ describe('OneBarChart', () => {
   it('repaints bars after props change', () => {
     chart = new OneBarChart({ categories: CATEGORIES, series: SERIES });
     chart.mount(container);
-    expect(container.querySelectorAll('rect').length).toBe(10);
+    expect(plotRectCount(container)).toBe(10);
 
     chart.setProps({
       categories: ['Q1', 'Q2'],
@@ -165,7 +173,7 @@ describe('OneBarChart', () => {
     flushSync();
 
     // 2 根柱 + 1 个图例色块
-    expect(container.querySelectorAll('rect').length).toBe(3);
+    expect(plotRectCount(container)).toBe(3);
     const texts = [...container.querySelectorAll('text')].map(
       (node) => node.textContent
     );

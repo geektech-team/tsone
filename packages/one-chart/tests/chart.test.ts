@@ -110,7 +110,9 @@ describe('OneChart base', () => {
     expect(texts).toContain('甲');
     expect(texts).toContain('乙');
 
-    const swatches = container.querySelectorAll('rect');
+    const swatches = [...container.querySelectorAll('rect')].filter(
+      (rect) => !rect.closest('[data-one-chart-tooltip]')
+    );
     expect(swatches.length).toBe(3); // 两个图例色块 + 一个绘制区矩形
     expect(swatches[0]?.getAttribute('fill')).toBe('#111111');
     expect(swatches[1]?.getAttribute('fill')).toBe('#222222');
@@ -119,7 +121,10 @@ describe('OneChart base', () => {
   it('hides the legend when showLegend is false', () => {
     chart = new TestChart({ showLegend: false });
     chart.mount(container);
-    expect(container.querySelectorAll('rect').length).toBe(1);
+    const rects = [...container.querySelectorAll('rect')].filter(
+      (rect) => !rect.closest('[data-one-chart-tooltip]')
+    );
+    expect(rects.length).toBe(1);
   });
 
   it('respects custom dimensions and margins', () => {
