@@ -39,7 +39,11 @@ export function generateComponentJs(unit: CompiledUnit): string {
 
 /** 把 JSON 对象源码嵌入 Page/Component 的 data 字段（统一缩进）。 */
 function embedData(data: string): string {
-  const body = data.replace(/^\{\n/, '').replace(/\n\}$/, '');
+  const body = data
+    .trim()
+    .replace(/^\{/, '')
+    .replace(/\}$/, '')
+    .trim();
   return `{\n  ${body.replace(/\n/g, '\n  ')}\n  }`;
 }
 

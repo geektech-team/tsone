@@ -139,7 +139,8 @@ export function toBinding(context: BindingContext, node: tsTypes.Node): string {
   }
 
   if (ts.isPrefixUnaryExpression(node)) {
-    return `(${node.operator}${toBinding(context, node.operand)})`;
+    const operator = ts.tokenToString(node.operator) ?? String(node.operator);
+    return `(${operator}${toBinding(context, node.operand)})`;
   }
 
   if (ts.isArrayLiteralExpression(node)) {

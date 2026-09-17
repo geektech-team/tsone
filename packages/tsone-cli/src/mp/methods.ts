@@ -168,11 +168,19 @@ function compileMethod(
   result.dispose();
 
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-  return printer.printNode(
+  const printed = printer.printNode(
     ts.EmitHint.Expression,
     transformed,
     classSource.source
   );
+  // ts.transform 只运行自定义 transformer，不会做类型擦除；
+  // 方法体源码里残留的 TS 类型注解 / as 断言必须经 transpileModule 移除，
+  // 否则生成的小程序 JS 无法被解析。
+  const transpiled = ts.transpileModule(printed, {
+    compilerOptions: { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.None },
+    reportDiagnostics: false,
+  });
+  return transpiled.outputText.trim();
 }
 
 interface VisitState {
