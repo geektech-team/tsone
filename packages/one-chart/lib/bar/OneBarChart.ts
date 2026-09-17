@@ -7,6 +7,7 @@ import type { OneChartRenderContext } from '../types';
 import { OneBandScale, OneLinearScale, oneNiceDomain } from '../scale';
 import { validateOneChartSeriesData, ONE_CHART_VALUE_TEXT_COLOR } from '../theme';
 import { svgRect, svgText } from '../svg';
+import { oneAnimAttrs, oneAnimFrom, oneAnimKey } from '../animation';
 import { OneChartDataError } from '../errors';
 
 export interface OneBarChartProps extends OneCartesianChartProps {
@@ -123,13 +124,21 @@ export class OneBarChart extends OneCartesianChart<OneBarChartProps> {
           const start = yScale.scale(offsets[index]);
           const end = yScale.scale(offsets[index] + value);
           offsets[index] += value;
+          const barY = Math.min(start, end);
+          const barHeight = Math.max(0.5, Math.abs(end - start));
           nodes.push(
             svgRect({
               x: band.scaleIndex(index),
-              y: Math.min(start, end),
+              y: barY,
               width: band.bandwidth,
-              height: Math.max(0.5, Math.abs(end - start)),
+              height: barHeight,
               fill: color,
+              ...oneAnimAttrs(['y', 'height']),
+              ...oneAnimKey(`stack-${seriesIndex}-${index}`),
+              ...oneAnimFrom([
+                ['y', barY + barHeight],
+                ['height', 0],
+              ]),
               ...this.tooltipHitProps(
                 { name: categories[index], series: item.name, value },
                 color,
@@ -152,13 +161,21 @@ export class OneBarChart extends OneCartesianChart<OneBarChartProps> {
           band.scaleIndex(index) +
           seriesIndex * innerStep +
           (innerStep - barWidth) / 2;
+        const barY = Math.min(valueY, baseline);
+        const barHeight = Math.max(0.5, Math.abs(baseline - valueY));
         nodes.push(
           svgRect({
             x: barX,
-            y: Math.min(valueY, baseline),
+            y: barY,
             width: barWidth,
-            height: Math.max(0.5, Math.abs(baseline - valueY)),
+            height: barHeight,
             fill: color,
+            ...oneAnimAttrs(['y', 'height']),
+            ...oneAnimKey(`bar-${seriesIndex}-${index}`),
+            ...oneAnimFrom([
+              ['y', barY + barHeight],
+              ['height', 0],
+            ]),
             ...this.tooltipHitProps(
               { name: categories[index], series: item.name, value },
               color,
@@ -174,6 +191,12 @@ export class OneBarChart extends OneCartesianChart<OneBarChartProps> {
               'text-anchor': 'middle',
               'font-size': 10,
               fill: ONE_CHART_VALUE_TEXT_COLOR,
+              ...oneAnimAttrs(['x', 'y']),
+              ...oneAnimKey(`bar-value-${seriesIndex}-${index}`),
+              ...oneAnimFrom([
+                ['x', barX + barWidth / 2],
+                ['y', valueY > baseline ? baseline - 4 : baseline + 12],
+              ]),
             })
           );
         }
@@ -200,13 +223,21 @@ export class OneBarChart extends OneCartesianChart<OneBarChartProps> {
           const start = xScale.scale(offsets[index]);
           const end = xScale.scale(offsets[index] + value);
           offsets[index] += value;
+          const barX = Math.min(start, end);
+          const barWidth = Math.max(0.5, Math.abs(end - start));
           nodes.push(
             svgRect({
-              x: Math.min(start, end),
+              x: barX,
               y: band.scaleIndex(index),
-              width: Math.max(0.5, Math.abs(end - start)),
+              width: barWidth,
               height: band.bandwidth,
               fill: color,
+              ...oneAnimAttrs(['x', 'width']),
+              ...oneAnimKey(`hstack-${seriesIndex}-${index}`),
+              ...oneAnimFrom([
+                ['x', barX + barWidth],
+                ['width', 0],
+              ]),
               ...this.tooltipHitProps(
                 { name: categories[index], series: item.name, value },
                 color,
@@ -229,13 +260,21 @@ export class OneBarChart extends OneCartesianChart<OneBarChartProps> {
           band.scaleIndex(index) +
           seriesIndex * innerStep +
           (innerStep - barHeight) / 2;
+        const barX = Math.min(valueX, baseline);
+        const barWidth = Math.max(0.5, Math.abs(baseline - valueX));
         nodes.push(
           svgRect({
-            x: Math.min(valueX, baseline),
+            x: barX,
             y: barY,
-            width: Math.max(0.5, Math.abs(baseline - valueX)),
+            width: barWidth,
             height: barHeight,
             fill: color,
+            ...oneAnimAttrs(['x', 'width']),
+            ...oneAnimKey(`hbar-${seriesIndex}-${index}`),
+            ...oneAnimFrom([
+              ['x', barX + barWidth],
+              ['width', 0],
+            ]),
             ...this.tooltipHitProps(
               { name: categories[index], series: item.name, value },
               color,
@@ -251,6 +290,12 @@ export class OneBarChart extends OneCartesianChart<OneBarChartProps> {
               'text-anchor': 'start',
               'font-size': 10,
               fill: ONE_CHART_VALUE_TEXT_COLOR,
+              ...oneAnimAttrs(['x', 'y']),
+              ...oneAnimKey(`hbar-value-${seriesIndex}-${index}`),
+              ...oneAnimFrom([
+                ['x', baseline + 4],
+                ['y', barY + barHeight / 2 + 3],
+              ]),
             })
           );
         }

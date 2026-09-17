@@ -7,6 +7,12 @@ import type {
   OneChartTooltipHit,
 } from './types';
 import {
+  oneCreateAnimateElement,
+  oneParseAnimFrom,
+  oneResolveAnimationOptions,
+  type ResolvedOneChartAnimationOptions,
+} from './animation';
+import {
   ONE_CHART_AXIS_TEXT_COLOR,
   ONE_CHART_DEFAULT_HEIGHT,
   ONE_CHART_DEFAULT_WIDTH,
@@ -92,10 +98,256 @@ export abstract class OneChart<
   private tooltipBoxSize = { width: 0, height: 0 };
   private currentTooltipSignature: string | null = null;
 
+  /** 动画相关：上一次渲染的几何快照（按元素 key）与 SVG 根尺寸快照。 */
+  private readonly animationSnapshot = new Map<string, Record<string, string>>();
+  private rootSizeSnapshot: Record<string, string> | null = null;
+
   protected initStyles(): void {}
 
   /** 图表显示名，用于 aria-label 兜底与校验报错。 */
   protected abstract get chartName(): string;
+
+  /** 归一化后的动画配置；动画被禁用时返回 null。 */
+  protected get chartAnimation(): ResolvedOneChartAnimationOptions | null {
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        : false;
+    return oneResolveAnimationOptions(this.props.animation, prefersReducedMotion);
+  }
+
+  /** 挂载后播放初始化动画：图形从声明起点生长到最终形态。 */
+  protected onMounted(): void {
+    const animation = this.chartAnimation;
+    if (animation) {
+      this.playInitAnimations(animation);
+    }
+  }
+
+  /** 更新前快照当前几何，供数据变更时从旧值过渡到新值。 */
+  protected beforeUpdate(): void {
+    if (this.chartAnimation) {
+      this.snapshotAnimations();
+    }
+  }
+
+  /** 更新后播放数据变更 / 新增元素 / 容器大小变更动画。 */
+  protected onUpdated(): void {
+    const animation = this.chartAnimation;
+    if (animation) {
+      this.playUpdateAnimations(animation);
+    } else {
+      // 动画关闭时清掉残留的 freeze 动画，避免元素停留在旧几何值。
+      this.clearAllAnimations();
+    }
+  }
+
+  /** 移除全部残留动画（直接子元素与嵌套元素），并清空快照。 */
+  private clearAllAnimations(): void {
+    const root = this.animatedRoot();
+    if (!root) {
+      return;
+    }
+    for (const element of [...root.querySelectorAll('[data-one-chart-animate]')]) {
+      element.remove();
+    }
+    this.animationSnapshot.clear();
+    this.rootSizeSnapshot = null;
+  }
+
+  /** 记录全部动画元素当前几何与 SVG 根尺寸。 */
+  private snapshotAnimations(): void {
+    this.animationSnapshot.clear();
+    const root = this.animatedRoot();
+    if (!root) {
+      this.rootSizeSnapshot = null;
+      return;
+    }
+    const elements = [...root.querySelectorAll('[data-one-chart-anim]')];
+    elements.forEach((element, index) => {
+      const key =
+        element.getAttribute('data-one-chart-anim-key') ??
+        `${element.tagName}-${index}`;
+      const values: Record<string, string> = {};
+      for (const name of this.animationAttributes(element)) {
+        const value = element.getAttribute(name);
+        if (value !== null) {
+          values[name] = value;
+        }
+      }
+      if (Object.keys(values).length > 0) {
+        this.animationSnapshot.set(key, values);
+      }
+    });
+    this.rootSizeSnapshot = this.rootSizeValues(root);
+  }
+
+  /** 初始化动画：为声明了起点的元素按起点→当前值创建 SMIL 动画。 */
+  private playInitAnimations(options: ResolvedOneChartAnimationOptions): void {
+    if (!options.init) {
+      return;
+    }
+    const root = this.animatedRoot();
+    if (!root) {
+      return;
+    }
+    for (const element of [...root.querySelectorAll('[data-one-chart-anim]')]) {
+      this.animateElementInit(element, options);
+    }
+  }
+
+  /** 更新动画：有快照的元素做几何过渡，新增元素补播初始化动画。 */
+  private playUpdateAnimations(options: ResolvedOneChartAnimationOptions): void {
+    const root = this.animatedRoot();
+    if (!root) {
+      return;
+    }
+    const elements = [...root.querySelectorAll('[data-one-chart-anim]')];
+    elements.forEach((element, index) => {
+      const key =
+        element.getAttribute('data-one-chart-anim-key') ??
+        `${element.tagName}-${index}`;
+      const old = this.animationSnapshot.get(key);
+      if (old) {
+        if (options.update) {
+          this.animateElementUpdate(element, old, options);
+        } else {
+          // 关闭数据变更动画时移除残留动画，让新值立即生效。
+          this.removeAnimateChildren(element);
+        }
+      } else if (options.init) {
+        this.animateElementInit(element, options);
+      }
+    });
+    if (options.resize && this.rootSizeSnapshot) {
+      this.animateRootResize(root, options);
+    } else {
+      // 关闭容器动画时移除根上的残留动画。
+      this.removeAnimateChildren(root);
+    }
+  }
+
+  private animateElementInit(
+    element: Element,
+    options: ResolvedOneChartAnimationOptions
+  ): void {
+    const from = oneParseAnimFrom(
+      element.getAttribute('data-one-chart-anim-from')
+    );
+    if (!from) {
+      return;
+    }
+    const animations: Array<[string, string, string]> = [];
+    for (const name of this.animationAttributes(element)) {
+      const to = element.getAttribute(name);
+      if (to === null || !(name in from) || from[name] === to) {
+        continue;
+      }
+      animations.push([name, from[name]!, to]);
+    }
+    this.applyAnimations(element, animations, options);
+  }
+
+  private animateElementUpdate(
+    element: Element,
+    old: Record<string, string>,
+    options: ResolvedOneChartAnimationOptions
+  ): void {
+    const animations: Array<[string, string, string]> = [];
+    for (const name of this.animationAttributes(element)) {
+      const from = old[name];
+      const to = element.getAttribute(name);
+      if (from === undefined || to === null || from === to) {
+        continue;
+      }
+      animations.push([name, from, to]);
+    }
+    this.applyAnimations(element, animations, options);
+  }
+
+  /** 容器大小变更：SVG 的 width/height/viewBox 从旧值过渡到新值。 */
+  private animateRootResize(
+    root: Element,
+    options: ResolvedOneChartAnimationOptions
+  ): void {
+    const current = this.rootSizeValues(root);
+    const old = this.rootSizeSnapshot;
+    if (!old) {
+      return;
+    }
+    const animations: Array<[string, string, string]> = [];
+    for (const name of ['width', 'height', 'viewBox'] as const) {
+      const from = old[name];
+      const to = current[name];
+      if (from === undefined || to === undefined || from === to) {
+        continue;
+      }
+      animations.push([name, from, to]);
+    }
+    this.applyAnimations(root, animations, options);
+  }
+
+  /** 为元素创建并挂载一组 SMIL 动画，先清理该元素上的旧动画。 */
+  private applyAnimations(
+    element: Element,
+    animations: Array<[string, string, string]>,
+    options: ResolvedOneChartAnimationOptions
+  ): void {
+    if (animations.length === 0) {
+      // 几何无变化（如 tooltip 引起的重渲染）：保留现有动画不打断。
+      return;
+    }
+    if (options.duration <= 0) {
+      // 时长为 0 时移除残留动画，让基础属性直接生效。
+      this.removeAnimateChildren(element);
+      return;
+    }
+    this.removeAnimateChildren(element);
+    for (const [name, from, to] of animations) {
+      element.appendChild(
+        oneCreateAnimateElement(name, from, to, {
+          duration: options.duration,
+          easing: options.easing,
+        })
+      );
+    }
+  }
+
+  private removeAnimateChildren(element: Element): void {
+    for (const child of [...element.childNodes]) {
+      if (
+        child instanceof Element &&
+        child.hasAttribute('data-one-chart-animate')
+      ) {
+        child.remove();
+      }
+    }
+  }
+
+  private animatedRoot(): Element | null {
+    const root = this.getElement();
+    return root instanceof Element ? root : null;
+  }
+
+  /** 元素声明参与动画的属性列表。 */
+  private animationAttributes(element: Element): string[] {
+    return (element.getAttribute('data-one-chart-anim') ?? '')
+      .split(',')
+      .map((name) => name.trim())
+      .filter((name) => name.length > 0);
+  }
+
+  private rootSizeValues(root: Element): Record<string, string> {
+    const values: Record<string, string> = {};
+    for (const name of ['width', 'height', 'viewBox'] as const) {
+      const value = root.getAttribute(name);
+      if (value !== null) {
+        values[name] = value;
+      }
+    }
+    return values;
+  }
 
   /** tooltip 是否启用：props.tooltip 不为 false。 */
   protected get tooltipEnabled(): boolean {

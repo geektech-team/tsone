@@ -1,3 +1,5 @@
+import type { OneChartAnimationOptions } from './animation';
+
 /** 图表通用边距配置。 */
 export interface OneChartMargin {
   top: number;
@@ -27,6 +29,12 @@ export interface OneChartProps {
    * 传入对象时按 {@link OneChartTooltipOptions} 配置展示。
    */
   tooltip?: boolean | OneChartTooltipOptions;
+  /**
+   * 是否启用动画，默认 true：初始化时图形从起点形态生长出现、
+   * 数据变更时从旧几何过渡到新几何、容器大小变更时 SVG 平滑缩放。
+   * 传对象可配置时长、缓动，并单独关闭某类动画。
+   */
+  animation?: boolean | OneChartAnimationOptions;
 }
 
 /** 多系列图表的单系列数据（柱状图/折线图/雷达图）。 */

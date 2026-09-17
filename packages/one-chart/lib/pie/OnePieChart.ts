@@ -2,10 +2,11 @@ import type { VNode } from '@geektech/tsone';
 import { OneChart } from '../Chart';
 import type { OneChartProps, OneChartRenderContext, OnePieDatum } from '../types';
 import { normalizeOneNumberOption, validateOnePieData } from '../theme';
-import { oneArcPath, onePolarPoint } from '../geometry';
+import { oneArcPath, oneCollapsedArcPath, onePolarPoint } from '../geometry';
 import { ONE_CHART_AXIS_TEXT_COLOR } from '../theme';
 import { onePercentLabel } from '../format';
 import { svgPath, svgText } from '../svg';
+import { oneAnimAttrs, oneAnimFrom, oneAnimKey } from '../animation';
 import { OneChartDataError } from '../errors';
 
 export interface OnePieChartProps extends OneChartProps {
@@ -81,6 +82,14 @@ export class OnePieChart extends OneChart<OnePieChartProps> {
             fill: color,
             stroke: '#ffffff',
             'stroke-width': 1,
+            ...oneAnimAttrs(['d']),
+            ...oneAnimKey(`slice-${index}`),
+            ...oneAnimFrom([
+              [
+                'd',
+                oneCollapsedArcPath(cx, cy, radius, innerRadius, angle, padAngle),
+              ],
+            ]),
             ...this.tooltipHitProps(
               { name: item.name, value: item.value, percent },
               color
@@ -95,6 +104,8 @@ export class OnePieChart extends OneChart<OnePieChartProps> {
           ? this.props.labelFormat(item.value, total, percent)
           : onePercentLabel(percent);
         const [labelX, labelY] = onePolarPoint(cx, cy, radius + 16, midAngle);
+        // 初始化动画起点：标签从扇区起始角滑出。
+        const [fromX, fromY] = onePolarPoint(cx, cy, radius + 16, angle);
         nodes.push(
           svgText(label, {
             x: labelX,
@@ -102,6 +113,12 @@ export class OnePieChart extends OneChart<OnePieChartProps> {
             'text-anchor': Math.cos(midAngle) >= 0 ? 'start' : 'end',
             'font-size': 11,
             fill: ONE_CHART_AXIS_TEXT_COLOR,
+            ...oneAnimAttrs(['x', 'y']),
+            ...oneAnimKey(`slice-label-${index}`),
+            ...oneAnimFrom([
+              ['x', fromX],
+              ['y', fromY + 3],
+            ]),
           })
         );
       }

@@ -56,14 +56,21 @@ chart.mount(document.querySelector('#app')!);
 - **交互 tooltip** —— 悬停柱子、数据点或扇区即显示数值提示，默认开启，可用
   `tooltip: false` 关闭或传入 `formatter` 自定义内容；折线图与雷达图内置
   不可见热区，无需开启 `showPoints` 即可命中。
+- **内置动画** —— 默认开启，基于原生 SVG SMIL 实现（无逐帧 JS）：首次挂载
+  时图形从起点形态生长出现；数据变更时从旧几何过渡到新几何；`width` /
+  `height` 变更时 SVG 根节点平滑缩放。可用 `animation` 属性关闭或调节：
+  `animation: false` 或 `{ duration: 800, easing: 'easeInOut' }`；初始化 /
+  数据变更 / 容器大小变更三类动画（`init` / `update` / `resize`）可分别
+  开关，并遵循系统「减少动态效果」设置。
 - **数据校验** —— 分类与系列长度不一致、数值非有限、饼图空数据或非正值等
   会在渲染时抛出 `OneChartDataError`。
 
 ## 通用属性
 
 所有图表共享 `width` / `height`（默认 `640 × 400`）、`title`、`margin`、
-`colors`（默认 Tableau 10 调色板）、`showLegend`、`ariaLabel` 与 `tooltip`
-（默认开启，可传 `{ formatter }` 自定义内容）。
+`colors`（默认 Tableau 10 调色板）、`showLegend`、`ariaLabel`、`tooltip`
+（默认开启，可传 `{ formatter }` 自定义内容）与 `animation`（默认开启，
+传 `false` 关闭，或传对象配置时长、缓动与各类动画开关）。
 
 ## 开发
 

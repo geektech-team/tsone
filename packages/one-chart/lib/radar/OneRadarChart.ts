@@ -15,6 +15,7 @@ import {
 } from '../theme';
 import { truncateOneChartText } from '../format';
 import { svgCircle, svgLine, svgPolygon, svgText } from '../svg';
+import { oneAnimAttrs, oneAnimFrom, oneAnimKey } from '../animation';
 
 export interface OneRadarChartProps extends OneChartProps {
   /** 指标（坐标轴）名称。 */
@@ -137,6 +138,12 @@ export class OneRadarChart extends OneChart<OneRadarChartProps> {
           stroke: color,
           'stroke-width': 2,
           'stroke-linejoin': 'round',
+          ...oneAnimAttrs(['points']),
+          ...oneAnimKey(`radar-${seriesIndex}`),
+          // 初始化动画起点：多边形从中心点展开。
+          ...oneAnimFrom([
+            ['points', onePolygonPoints(points.map(() => [cx, cy] as const))],
+          ]),
         })
       );
 
@@ -151,6 +158,9 @@ export class OneRadarChart extends OneChart<OneRadarChartProps> {
               fill: color,
               stroke: '#ffffff',
               'stroke-width': 1.5,
+              ...oneAnimAttrs(['cx', 'cy', 'r']),
+              ...oneAnimKey(`radar-point-${seriesIndex}-${pointIndex}`),
+              ...oneAnimFrom([['r', 0]]),
             })
           );
         }

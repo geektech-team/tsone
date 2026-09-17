@@ -135,8 +135,7 @@ export function oneArcPath(
 }
 
 /** 整圆扇区（单数据项饼图）拆成两段半圆弧。 */
-function buildFullCirclePath(
-  cx: number,
+function buildFullCirclePath(  cx: number,
   cy: number,
   outerRadius: number,
   innerRadius: number,
@@ -167,4 +166,36 @@ function buildFullCirclePath(
     ix0
   )} ${oneSvgNumber(iy0)}`;
   return `${outer} ${inner}`;
+}
+
+/**
+ * 零跨度扇区 path：弧线收缩为起始角上的一点，作为饼图初始化动画的起点。
+ * 命令结构与 {@link oneArcPath} 输出一致（M/A/L/A/Z），可被 SMIL 直接形变。
+ */
+export function oneCollapsedArcPath(
+  cx: number,
+  cy: number,
+  outerRadius: number,
+  innerRadius: number,
+  angle: number,
+  _padAngle = 0
+): string {
+  const [x0, y0] = onePolarPoint(cx, cy, outerRadius, angle);
+  if (innerRadius <= 0) {
+    return `M${oneSvgNumber(x0)} ${oneSvgNumber(y0)} A${oneSvgNumber(
+      outerRadius
+    )} ${oneSvgNumber(outerRadius)} 0 0 1 ${oneSvgNumber(x0)} ${oneSvgNumber(
+      y0
+    )} L${oneSvgNumber(cx)} ${oneSvgNumber(cy)} Z`;
+  }
+  const [ix0, iy0] = onePolarPoint(cx, cy, innerRadius, angle);
+  return `M${oneSvgNumber(x0)} ${oneSvgNumber(y0)} A${oneSvgNumber(
+    outerRadius
+  )} ${oneSvgNumber(outerRadius)} 0 0 1 ${oneSvgNumber(x0)} ${oneSvgNumber(
+    y0
+  )} L${oneSvgNumber(ix0)} ${oneSvgNumber(iy0)} A${oneSvgNumber(
+    innerRadius
+  )} ${oneSvgNumber(innerRadius)} 0 0 0 ${oneSvgNumber(ix0)} ${oneSvgNumber(
+    iy0
+  )} Z`;
 }

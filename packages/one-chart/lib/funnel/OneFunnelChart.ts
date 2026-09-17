@@ -10,6 +10,7 @@ import { onePolygonPath } from '../geometry';
 import { onePercentLabel, truncateOneChartText } from '../format';
 import { svgPath, svgText } from '../svg';
 import { oneDefaultValueFormat } from '../format';
+import { oneAnimAttrs, oneAnimFrom, oneAnimKey } from '../animation';
 
 export interface OneFunnelChartProps extends OneChartProps {
   /** 漏斗数据项，按展示顺序逐级排列（通常由大到小）。 */
@@ -52,6 +53,7 @@ export class OneFunnelChart extends OneChart<OneFunnelChartProps> {
     const gap = this.resolveGap();
     const levelHeight =
       (context.height - gap * Math.max(0, data.length - 1)) / data.length;
+    const cx = context.x + context.width / 2;
     const nodes: VNode[] = [];
 
     data.forEach((item, index) => {
@@ -76,6 +78,20 @@ export class OneFunnelChart extends OneChart<OneFunnelChartProps> {
             fill: color,
             stroke: '#ffffff',
             'stroke-width': 1,
+            ...oneAnimAttrs(['d']),
+            ...oneAnimKey(`funnel-${index}`),
+            // 初始化动画起点：梯形收拢为中心竖线。
+            ...oneAnimFrom([
+              [
+                'd',
+                onePolygonPath([
+                  [cx, yTop],
+                  [cx, yTop],
+                  [cx, yBottom],
+                  [cx, yBottom],
+                ]),
+              ],
+            ]),
             ...this.tooltipHitProps(
               {
                 name: item.name,
@@ -91,7 +107,7 @@ export class OneFunnelChart extends OneChart<OneFunnelChartProps> {
       if (widthTop >= 44) {
         nodes.push(
           svgText(truncateOneChartText(item.name, 8), {
-            x: context.x + context.width / 2,
+            x: cx,
             y: yTop + levelHeight / 2 + 3.5,
             'text-anchor': 'middle',
             'font-size': 11,
@@ -116,6 +132,13 @@ export class OneFunnelChart extends OneChart<OneFunnelChartProps> {
             'text-anchor': 'start',
             'font-size': 11,
             fill: ONE_CHART_AXIS_TEXT_COLOR,
+            ...oneAnimAttrs(['x', 'y']),
+            ...oneAnimKey(`funnel-label-${index}`),
+            // 初始化动画起点：标签从中心随梯形一起展开。
+            ...oneAnimFrom([
+              ['x', cx + 8],
+              ['y', yTop + levelHeight / 2 + 3.5],
+            ]),
           })
         );
       }

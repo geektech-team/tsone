@@ -24,6 +24,7 @@ export type { OneBandScaleOptions } from './scale';
 export {
   oneArcPath,
   oneAreaPath,
+  oneCollapsedArcPath,
   oneLinePath,
   onePolarPoint,
   onePolygonPath,
@@ -31,6 +32,16 @@ export {
   oneSmoothLinePath,
 } from './geometry';
 export type { OnePoint } from './geometry';
+export {
+  ONE_CHART_ANIMATION_DEFAULT_DURATION,
+  oneAnimAttrs,
+  oneAnimFrom,
+  oneAnimKey,
+  oneCreateAnimateElement,
+  oneParseAnimFrom,
+  oneResolveAnimationOptions,
+} from './animation';
+export type { OneChartAnimationOptions, OneChartEasing } from './animation';
 export {
   oneDefaultValueFormat,
   onePercentLabel,

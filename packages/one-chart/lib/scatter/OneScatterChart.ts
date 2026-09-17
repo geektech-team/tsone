@@ -13,6 +13,7 @@ import {
 } from '../theme';
 import { oneDefaultValueFormat, truncateOneChartText } from '../format';
 import { svgCircle, svgLine, svgText } from '../svg';
+import { oneAnimAttrs, oneAnimFrom, oneAnimKey } from '../animation';
 import { OneChartDataError } from '../errors';
 
 export interface OneScatterChartProps extends OneChartProps {
@@ -67,7 +68,7 @@ export class OneScatterChart extends OneChart<OneScatterChartProps> {
     const pointRadius = this.resolvePointRadius();
     series.forEach((item, seriesIndex) => {
       const color = this.colorFor(seriesIndex);
-      item.data.forEach(([x, y]) => {
+      item.data.forEach(([x, y], pointIndex) => {
         nodes.push(
           svgCircle({
             cx: xScale.scale(x),
@@ -76,6 +77,9 @@ export class OneScatterChart extends OneChart<OneScatterChartProps> {
             fill: color,
             stroke: '#ffffff',
             'stroke-width': 1,
+            ...oneAnimAttrs(['cx', 'cy', 'r']),
+            ...oneAnimKey(`dot-${seriesIndex}-${pointIndex}`),
+            ...oneAnimFrom([['r', 0]]),
             ...this.tooltipHitProps(
               { name: item.name, xValue: x, yValue: y, value: y },
               color,

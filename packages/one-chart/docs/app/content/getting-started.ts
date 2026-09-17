@@ -78,6 +78,29 @@ export const gettingStartedPage: OneChartDocPage = {
         '});',
       ].join('\n')
     ),
+    heading(2, 'animation', t('动画', 'Animation')),
+    paragraph(
+      t(
+        '动画默认开启，基于原生 SVG SMIL 实现（无需逐帧 JS）：首次挂载时图形从起点形态生长出现，数据变更时从旧几何平滑过渡到新几何，容器尺寸（width / height）变化时 SVG 根节点同步缩放。传 ',
+        'Animations are on by default and powered by native SVG SMIL (no per-frame JavaScript): shapes grow in on first mount, transition from old to new geometry on data changes, and the SVG root resizes smoothly when width / height change. Pass '
+      ),
+      inlineCode('animation: false'),
+      t(' 完全关闭，或传入 ', ' to disable entirely, or pass '),
+      inlineCode('{ duration: 800, easing: \'easeInOut\' }'),
+      t(
+        ' 调节时长与缓动；初始化 / 数据变更 / 容器大小变更三类动画可分别用 ',
+        ' to tune duration and easing; the init / update / resize phases can be toggled individually via '
+      ),
+      inlineCode('init'),
+      t(' / ', ' / '),
+      inlineCode('update'),
+      t(' / ', ' / '),
+      inlineCode('resize'),
+      t(
+        ' 开关。系统启用「减少动态效果」时动画自动关闭。',
+        '. Animations also respect the prefers-reduced-motion system setting.'
+      )
+    ),
     heading(2, 'common-props', t('通用属性', 'Common props')),
     paragraph(
       t(
@@ -134,6 +157,14 @@ export const gettingStartedPage: OneChartDocPage = {
         description: t(
           '是否启用 tooltip，默认 true；传入对象时可自定义内容格式',
           'Whether tooltips are enabled, default true; pass an object to customize the content'
+        ),
+      },
+      {
+        name: 'animation',
+        signature: 'boolean | { duration; easing; init; update; resize }',
+        description: t(
+          '是否启用动画，默认 true；传对象可配置时长、缓动并单独开关初始化 / 数据变更 / 容器大小变更动画',
+          'Whether animations are enabled, default true; pass an object to configure duration, easing and per-phase toggles for init / update / resize'
         ),
       },
     ]),

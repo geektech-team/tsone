@@ -58,6 +58,13 @@ chart.mount(document.querySelector('#app')!);
   value; on by default, disable with `tooltip: false` or customize via a
   `formatter`. Line and radar charts ship invisible hit areas, so no
   `showPoints` is needed to hover.
+- **Built-in animations** — on by default and powered by native SVG SMIL
+  (zero JavaScript per frame): shapes grow in on first mount, transition from
+  old to new geometry when data changes, and the SVG root smoothly resizes
+  when `width` / `height` change. Disable or tune via the `animation` prop:
+  `animation: false`, or `{ duration: 800, easing: 'easeInOut' }`; each phase
+  (`init` / `update` / `resize`) can be toggled individually. Respects the
+  `prefers-reduced-motion` system setting.
 - **Data validation** — invalid categories, series length mismatches,
   non-finite values, empty pie data or negative pie values throw
   `OneChartDataError` at render time.
@@ -65,8 +72,10 @@ chart.mount(document.querySelector('#app')!);
 ## Common props
 
 All charts share `width` / `height` (default `640 × 400`), `title`, `margin`,
-`colors` (default Tableau 10 palette), `showLegend`, `ariaLabel` and `tooltip`
-(on by default; pass `{ formatter }` to customize the content).
+`colors` (default Tableau 10 palette), `showLegend`, `ariaLabel`, `tooltip`
+(on by default; pass `{ formatter }` to customize the content) and `animation`
+(on by default; pass `false` to disable or an object to configure duration,
+easing and per-phase toggles).
 
 ## Development
 

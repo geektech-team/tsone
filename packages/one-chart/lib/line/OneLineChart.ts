@@ -8,6 +8,7 @@ import type { OnePoint } from '../geometry';
 import { oneAreaPath, oneLinePath, oneSmoothLinePath } from '../geometry';
 import { validateOneChartSeriesData } from '../theme';
 import { svgCircle, svgPath } from '../svg';
+import { oneAnimAttrs, oneAnimFrom, oneAnimKey } from '../animation';
 
 export interface OneLineChartProps extends OneCartesianChartProps {
   /** 折线形态：linear 直线（默认）或 smooth 平滑曲线。 */
@@ -58,6 +59,8 @@ export class OneLineChart extends OneCartesianChart<OneLineChartProps> {
         this.xCategoryCenter(index),
         yScale.scale(value),
       ]);
+      // 初始化动画起点：所有数据点落在基线，折线/面积从水平线生长。
+      const flatPoints = points.map(([x]) => [x, baseline] as const);
 
       if (fill) {
         nodes.push(
@@ -65,6 +68,11 @@ export class OneLineChart extends OneCartesianChart<OneLineChartProps> {
             fill: color,
             'fill-opacity': 0.12,
             stroke: 'none',
+            ...oneAnimAttrs(['d']),
+            ...oneAnimKey(`area-${seriesIndex}`),
+            ...oneAnimFrom([
+              ['d', oneAreaPath(flatPoints, baseline, curve)],
+            ]),
           })
         );
       }
@@ -78,6 +86,16 @@ export class OneLineChart extends OneCartesianChart<OneLineChartProps> {
           'stroke-width': 2,
           'stroke-linejoin': 'round',
           'stroke-linecap': 'round',
+          ...oneAnimAttrs(['d']),
+          ...oneAnimKey(`line-${seriesIndex}`),
+          ...oneAnimFrom([
+            [
+              'd',
+              curve === 'smooth'
+                ? oneSmoothLinePath(flatPoints)
+                : oneLinePath(flatPoints),
+            ],
+          ]),
         })
       );
 
@@ -92,6 +110,9 @@ export class OneLineChart extends OneCartesianChart<OneLineChartProps> {
               fill: color,
               stroke: '#ffffff',
               'stroke-width': 1.5,
+              ...oneAnimAttrs(['cx', 'cy', 'r']),
+              ...oneAnimKey(`line-point-${seriesIndex}-${index}`),
+              ...oneAnimFrom([['r', 0]]),
             })
           );
         }
