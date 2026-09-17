@@ -23,8 +23,7 @@
   },
   "devDependencies": {
     "@geektech/tsone": "workspace:*",
-    "@geektech/tsone-cli": "workspace:*",
-    "happy-dom": "20.9.0"
+    "@geektech/tsone-cli": "workspace:*"
   },
   "files": [
     "dist",

@@ -149,6 +149,7 @@ export class Event {
   public preventDefault(): void {
     if (this.cancelable) {
       this.canceled = true;
+      this.defaultPrevented = true;
     }
   }
 
@@ -208,11 +209,19 @@ export class MouseEvent extends Event {
 export class KeyboardEvent extends Event {
   public readonly key: string;
   public readonly code: string;
+  public readonly shiftKey: boolean;
+  public readonly ctrlKey: boolean;
+  public readonly altKey: boolean;
+  public readonly metaKey: boolean;
 
   constructor(type: string, init?: KeyboardEventInit) {
     super(type, init);
     this.key = init?.key ?? '';
     this.code = init?.code ?? '';
+    this.shiftKey = init?.shiftKey ?? false;
+    this.ctrlKey = init?.ctrlKey ?? false;
+    this.altKey = init?.altKey ?? false;
+    this.metaKey = init?.metaKey ?? false;
   }
 }
 
@@ -813,7 +822,7 @@ export class Node extends EventTarget {
     return parent;
   }
 
-  public isConnected(): boolean {
+  public get isConnected(): boolean {
     return this.getRootNode().nodeType === DomNodeType.DOCUMENT_NODE;
   }
 }
@@ -1016,25 +1025,33 @@ export class Element extends Node {
   }
 
   public getBoundingClientRect(): DOMRect {
+    const view = this.ownerDocument?.defaultView;
+    // 无排版引擎时 body/documentElement 的边界即视口，给默认视口尺寸
+    const width = view?.innerWidth ?? 1024;
+    const height = view?.innerHeight ?? 768;
+    const current = this as unknown as HTMLElement;
+    const viewport =
+      current === this.ownerDocument?.body ||
+      current === this.ownerDocument?.documentElement;
     return {
       x: 0,
       y: 0,
       top: 0,
       left: 0,
-      right: 0,
-      bottom: 0,
-      width: 0,
-      height: 0,
+      right: viewport ? width : 0,
+      bottom: viewport ? height : 0,
+      width: viewport ? width : 0,
+      height: viewport ? height : 0,
       toJSON(): Record<string, number> {
         return {
           x: 0,
           y: 0,
           top: 0,
           left: 0,
-          right: 0,
-          bottom: 0,
-          width: 0,
-          height: 0,
+          right: viewport ? width : 0,
+          bottom: viewport ? height : 0,
+          width: viewport ? width : 0,
+          height: viewport ? height : 0,
         };
       },
     };
@@ -1042,14 +1059,35 @@ export class Element extends Node {
 
   public scrollIntoView(): void {}
 
-  public focus(): void {}
+  public focus(): void {
+    this.ownerDocument?.setActiveElement(this);
+  }
 
-  public blur(): void {}
+  public blur(): void {
+    if (this.ownerDocument?.activeElement === this) {
+      this.ownerDocument.setActiveElement(null);
+    }
+  }
 
   public click(): void {
+    // 禁用态表单控件不派发 click（真实浏览器行为）
+    const candidate = this as unknown as { disabled?: boolean };
+    if (candidate.disabled === true) {
+      return;
+    }
     this.dispatchEvent(
       new MouseEvent('click', { bubbles: true, cancelable: true })
     );
+    // 表单按钮默认行为：type=reset 的按钮点击触发表单 reset 事件
+    if (
+      this.tagName === 'BUTTON' &&
+      this.getAttribute('type') === 'reset' &&
+      this.isConnected
+    ) {
+      this.closest('form')?.dispatchEvent(
+        new Event('reset', { bubbles: true, cancelable: true })
+      );
+    }
   }
 
   public append(...nodes: (Node | string)[]): void {
@@ -1179,6 +1217,59 @@ export class HTMLElement extends Element {
   constructor(tagName: string) {
     super(tagName);
   }
+
+  /** 页面语言（属性反射，无值回退空串）。 */
+  public get lang(): string {
+    return this.getAttribute('lang') ?? '';
+  }
+
+  public set lang(value: string) {
+    this.setAttribute('lang', value);
+  }
+
+  /** 是否隐藏（布尔属性反射）。 */
+  public get hidden(): boolean {
+    return this.hasAttribute('hidden');
+  }
+
+  public set hidden(value: boolean) {
+    if (value) {
+      this.setAttribute('hidden', '');
+    } else {
+      this.removeAttribute('hidden');
+    }
+  }
+
+  /** 键盘焦点顺序（数字属性反射；0 表示按文档顺序）。 */
+  public get tabIndex(): number {
+    const raw = this.getAttribute('tabindex');
+    return raw === null ? 0 : Number(raw);
+  }
+
+  public set tabIndex(value: number) {
+    if (value === 0) {
+      this.removeAttribute('tabindex');
+    } else {
+      this.setAttribute('tabindex', String(value));
+    }
+  }
+
+  /** 布局尺寸与偏移；无排版引擎时恒为 0，测试可覆盖 getBoundingClientRect。 */
+  public get offsetWidth(): number {
+    return 0;
+  }
+
+  public get offsetHeight(): number {
+    return 0;
+  }
+
+  public get offsetLeft(): number {
+    return 0;
+  }
+
+  public get offsetTop(): number {
+    return 0;
+  }
 }
 
 export class NamedNodeMap implements Iterable<{ name: string; value: string }> {
@@ -1284,6 +1375,18 @@ export class HTMLOptionElement extends HTMLElement {
 export class HTMLSelectElement extends HTMLElement {
   constructor(tagName = 'select') {
     super(tagName);
+  }
+
+  public get disabled(): boolean {
+    return this.hasAttribute('disabled');
+  }
+
+  public set disabled(value: boolean) {
+    if (value) {
+      this.setAttribute('disabled', '');
+    } else {
+      this.removeAttribute('disabled');
+    }
   }
 
   public get multiple(): boolean {
@@ -1466,6 +1569,58 @@ export class HTMLInputElement extends HTMLElement {
     }
   }
 
+  public get placeholder(): string {
+    return this.getAttribute('placeholder') ?? '';
+  }
+
+  public set placeholder(value: string) {
+    this.setAttribute('placeholder', value);
+  }
+
+  public get accept(): string {
+    return this.getAttribute('accept') ?? '';
+  }
+
+  public get multiple(): boolean {
+    return this.hasAttribute('multiple');
+  }
+
+  public set multiple(value: boolean) {
+    if (value) {
+      this.setAttribute('multiple', '');
+    } else {
+      this.removeAttribute('multiple');
+    }
+  }
+
+  public set accept(value: string) {
+    this.setAttribute('accept', value);
+  }
+
+  public get min(): string {
+    return this.getAttribute('min') ?? '';
+  }
+
+  public set min(value: string) {
+    this.setAttribute('min', value);
+  }
+
+  public get max(): string {
+    return this.getAttribute('max') ?? '';
+  }
+
+  public set max(value: string) {
+    this.setAttribute('max', value);
+  }
+
+  public get step(): string {
+    return this.getAttribute('step') ?? '';
+  }
+
+  public set step(value: string) {
+    this.setAttribute('step', value);
+  }
+
   /** @internal */
   protected createClone(): Node {
     const clone = super.createClone() as HTMLInputElement;
@@ -1490,6 +1645,34 @@ export class HTMLTextAreaElement extends HTMLElement {
   public set value(value: string) {
     this.textareaValue = value;
   }
+
+  public get name(): string {
+    return this.getAttribute('name') ?? '';
+  }
+
+  public set name(value: string) {
+    this.setAttribute('name', value);
+  }
+
+  public get disabled(): boolean {
+    return this.hasAttribute('disabled');
+  }
+
+  public set disabled(value: boolean) {
+    if (value) {
+      this.setAttribute('disabled', '');
+    } else {
+      this.removeAttribute('disabled');
+    }
+  }
+
+  public get placeholder(): string {
+    return this.getAttribute('placeholder') ?? '';
+  }
+
+  public set placeholder(value: string) {
+    this.setAttribute('placeholder', value);
+  }
 }
 
 export class HTMLButtonElement extends HTMLElement {
@@ -1497,8 +1680,71 @@ export class HTMLButtonElement extends HTMLElement {
     super(tagName);
   }
 
+  public get disabled(): boolean {
+    return this.hasAttribute('disabled');
+  }
+
+  public set disabled(value: boolean) {
+    if (value) {
+      this.setAttribute('disabled', '');
+    } else {
+      this.removeAttribute('disabled');
+    }
+  }
+
   public get type(): string {
     return this.getAttribute('type') ?? 'submit';
+  }
+}
+
+export class HTMLTableCellElement extends HTMLElement {
+  constructor(tagName = 'td') {
+    super(tagName);
+  }
+
+  public get colSpan(): number {
+    const raw = this.getAttribute('colspan');
+    return raw === null ? 1 : Number(raw);
+  }
+
+  public set colSpan(value: number) {
+    this.setAttribute('colspan', String(value));
+  }
+}
+
+export class HTMLLabelElement extends HTMLElement {
+  constructor(tagName = 'label') {
+    super(tagName);
+  }
+
+  public get htmlFor(): string {
+    return this.getAttribute('for') ?? '';
+  }
+
+  public set htmlFor(value: string) {
+    this.setAttribute('for', value);
+  }
+}
+
+export class HTMLImageElement extends HTMLElement {
+  constructor(tagName = 'img') {
+    super(tagName);
+  }
+
+  public get src(): string {
+    return this.getAttribute('src') ?? '';
+  }
+
+  public set src(value: string) {
+    this.setAttribute('src', value);
+  }
+
+  public get alt(): string {
+    return this.getAttribute('alt') ?? '';
+  }
+
+  public set alt(value: string) {
+    this.setAttribute('alt', value);
   }
 }
 
@@ -1588,11 +1834,62 @@ export class DocumentFragment extends Node {
   }
 }
 
+export interface DomDocumentImplementation {
+  createHTMLDocument(title?: string): Document;
+  createDocument(): Document;
+  createDocumentType(): never;
+  hasFeature(): boolean;
+}
+
+export class DomDOMImplementation implements DomDocumentImplementation {
+  public createDocument(): Document {
+    return new Document();
+  }
+
+  public createDocumentType(): never {
+    throw new Error('createDocumentType is not supported in tsone DOM');
+  }
+
+  public hasFeature(): boolean {
+    return false;
+  }
+
+  public createHTMLDocument(title?: string): Document {
+    const document = new Document();
+    const html = document.createElement('html');
+    const head = document.createElement('head');
+    const body = document.createElement('body');
+    if (title) {
+      const titleElement = document.createElement('title');
+      titleElement.textContent = title;
+      head.appendChild(titleElement);
+    }
+    html.appendChild(head);
+    html.appendChild(body);
+    document.appendChild(html);
+    return document;
+  }
+}
+
 export class Document extends Node {
   public readonly defaultView: DomWindow | null = null;
 
+  public readonly implementation: DomDocumentImplementation;
+
+  private activeElementRef: Element | null = null;
+
   constructor() {
     super(DomNodeType.DOCUMENT_NODE, '#document');
+    this.implementation = new DomDOMImplementation();
+  }
+
+  public get activeElement(): Element | null {
+    return this.activeElementRef;
+  }
+
+  /** @internal 由 Element.focus()/blur() 维护。 */
+  public setActiveElement(element: Element | null): void {
+    this.activeElementRef = element;
   }
 
   public createElement(tagName: string): HTMLElement {
@@ -1992,6 +2289,9 @@ export const DOM_GLOBAL_KEYS: readonly string[] = [
   'HTMLOptionElement',
   'HTMLStyleElement',
   'HTMLAnchorElement',
+  'HTMLImageElement',
+  'HTMLTableCellElement',
+  'HTMLLabelElement',
   'DocumentFragment',
   'Document',
   'Event',
@@ -2015,6 +2315,19 @@ export const DOM_GLOBAL_KEYS: readonly string[] = [
  * DomWindow：模拟的浏览器 window 环境。
  */
 export class DomWindow extends EventTarget {
+  public readonly innerWidth = 1024;
+  public readonly innerHeight = 768;
+
+  public setTimeout(
+    handler: () => void,
+    timeout?: number
+  ): ReturnType<typeof setTimeout> {
+    return setTimeout(handler, timeout);
+  }
+
+  public clearTimeout(id: ReturnType<typeof setTimeout>): void {
+    clearTimeout(id);
+  }
   public readonly window: DomWindow = this;
   public readonly document: Document;
   public readonly location: Location;
@@ -2389,6 +2702,7 @@ type SimpleSelector =
   | { type: 'class'; className: string }
   | { type: 'attribute'; name: string; operator?: string; value?: string }
   | { type: 'compound'; parts: SimpleSelector[] }
+  | { type: 'not'; selector: SimpleSelector }
   | { type: 'child' };
 
 function parseCompound(source: string): SimpleSelector {
@@ -2429,6 +2743,14 @@ function parseCompound(source: string): SimpleSelector {
         selectors.push({ type: 'attribute', name: inner });
       }
       index = end < 0 ? source.length : end + 1;
+    } else if (char === ':' && source.startsWith(':not(', index)) {
+      const close = source.indexOf(')', index);
+      const inner = source.slice(index + 5, close < 0 ? source.length : close);
+      selectors.push({ type: 'not', selector: parseCompound(inner.trim()) });
+      index = close < 0 ? source.length : close + 1;
+    } else if (char === ':' && source.startsWith(':disabled', index)) {
+      selectors.push({ type: 'attribute', name: 'disabled' });
+      index += ':disabled'.length;
     } else if (/[a-zA-Z_]/.test(char)) {
       const end = scanIdentifier(source, index);
       selectors.push({
@@ -2448,7 +2770,8 @@ function parseCompound(source: string): SimpleSelector {
 
 function scanIdentifier(source: string, start: number): number {
   let index = start;
-  while (index < source.length && /[a-zA-Z0-9:_-]/.test(source[index])) {
+  // ':' 是伪类（:not）起始，不属于标识符
+  while (index < source.length && /[a-zA-Z0-9_-]/.test(source[index])) {
     index += 1;
   }
   return index;
@@ -2519,6 +2842,8 @@ function matchSegment(element: Element, selector: SimpleSelector): boolean {
       return matchAttribute(element, selector);
     case 'compound':
       return selector.parts.every((part) => matchSegment(element, part));
+    case 'not':
+      return !matchSegment(element, selector.selector);
     case 'child':
       return false;
     default:
@@ -2597,6 +2922,12 @@ function createElementForTag(
     element = new HTMLStyleElement(tag);
   } else if (tag === 'a') {
     element = new HTMLAnchorElement(tag);
+  } else if (tag === 'img') {
+    element = new HTMLImageElement(tag);
+  } else if (tag === 'label') {
+    element = new HTMLLabelElement(tag);
+  } else if (tag === 'td' || tag === 'th') {
+    element = new HTMLTableCellElement(tag);
   } else {
     element = new HTMLElement(tag);
   }
@@ -2606,7 +2937,6 @@ function createElementForTag(
 
 function setupDocumentTree(documentRef: Document): void {
   const html = documentRef.createElement('html');
-  html.setAttribute('lang', 'en');
   documentRef.appendChild(html);
   const head = documentRef.createElement('head');
   const body = documentRef.createElement('body');
@@ -2620,13 +2950,15 @@ function createDatasetProxy(element: Element): Record<string, string> {
       if (typeof property === 'symbol') {
         return undefined;
       }
-      return element.getAttribute(`data-${toKebabCase(property)}`) ?? '';
+      return (
+        element.getAttribute(`data-${toKebabCase(property)}`) ?? undefined
+      );
     },
     set(_target, property: string, value: string): boolean {
       if (typeof property === 'symbol') {
         return true;
       }
-      if (value === '' || value === null || value === undefined) {
+      if (value === null || value === undefined) {
         element.removeAttribute(`data-${toKebabCase(property)}`);
       } else {
         element.setAttribute(`data-${toKebabCase(property)}`, String(value));

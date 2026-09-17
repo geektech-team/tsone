@@ -528,5 +528,9 @@ function attributeName(key: string): string {
       .slice(4)
       .replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`;
   }
+  // 标准 HTML 属性名不使用 camelCase
+  if (key === 'tabIndex' || key === 'colSpan' || key === 'htmlFor') {
+    return key.toLowerCase();
+  }
   return key;
 }
