@@ -47,7 +47,7 @@
     },
     "packages/one-chart": {
       "name": "@geektech/one-chart",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "devDependencies": {
         "@geektech/tsone": "workspace:*",
         "@geektech/tsone-cli": "workspace:*",
