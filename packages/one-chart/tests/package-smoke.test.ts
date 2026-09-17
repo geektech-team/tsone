@@ -73,7 +73,7 @@ describe('One Chart package smoke', () => {
         tempDir,
         `${tsoneManifest.name.replace('@', '').replace('/', '-')}-${tsoneManifest.version}.tgz`
       );
-      const oneChartTarball = join(tempDir, 'geektech-one-chart-0.4.0.tgz');
+      const oneChartTarball = join(tempDir, 'geektech-one-chart-0.4.1.tgz');
       run(
         'bun',
         ['pm', 'pack', '--destination', tempDir, '--ignore-scripts', '--quiet'],
@@ -203,7 +203,7 @@ describe('One Chart package smoke', () => {
           "const baseCtor: typeof OneChart = OneChart;",
           "const cartesianCtor: typeof OneCartesianChart = OneCartesianChart;",
           "const packageName: '@geektech/one-chart' = ONE_CHART_NAME;",
-          "const packageVersion: '0.4.0' = ONE_CHART_VERSION;",
+          "const packageVersion: '0.4.1' = ONE_CHART_VERSION;",
           'const firstColor: string = ONE_CHART_DEFAULT_COLORS[0];',
           'void bar;',
           'void line;',
@@ -309,7 +309,7 @@ describe('One Chart package smoke', () => {
 
       expect(runtimeResult).toEqual({
         name: '@geektech/one-chart',
-        version: '0.4.0',
+        version: '0.4.1',
         palette: ['#4e79a7', '#f28e2b'],
         ticks: [0, 10, 20, 30, 40],
         label: '30%',

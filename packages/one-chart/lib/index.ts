@@ -90,4 +90,4 @@ export {
 } from './theme';
 
 export const ONE_CHART_NAME = '@geektech/one-chart';
-export const ONE_CHART_VERSION = '0.4.0';
+export const ONE_CHART_VERSION = '0.4.1';
