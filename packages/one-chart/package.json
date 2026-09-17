@@ -35,7 +35,7 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "homepage": "https://geektech-team.github.io/tsone/one-chart/",
+  "homepage": "https://github.com/geektech-team/tsone/tree/main/packages/one-chart",
   "bugs": {
     "url": "https://github.com/geektech-team/tsone/issues"
   },

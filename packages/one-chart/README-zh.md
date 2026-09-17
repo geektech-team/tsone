@@ -3,7 +3,7 @@
 One Chart（`@geektech/one-chart`）是面向 TSone 类组件框架的轻量级 SVG 图表库。
 所有图表仅以 SVG 渲染，浏览器运行时零外部依赖。
 
-**文档：** <https://geektech-team.github.io/tsone/one-chart/>
+**文档：** <https://github.com/geektech-team/tsone/tree/main/packages/one-chart>
 
 ## 图表
 

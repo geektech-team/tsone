@@ -4,7 +4,7 @@ One Chart (`@geektech/one-chart`) is a lightweight SVG chart library for the
 TSone class-component framework. Every chart renders purely as SVG with zero
 external dependencies in the browser runtime.
 
-**Documentation:** <https://geektech-team.github.io/tsone/one-chart/>
+**Documentation:** <https://github.com/geektech-team/tsone/tree/main/packages/one-chart>
 
 ## Charts
 

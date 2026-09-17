@@ -6,6 +6,7 @@ on:
     paths:
       - 'packages/tsone/**'
       - 'packages/one/**'
+      - 'packages/one-chart/**'
       - 'packages/tsone-cli/**'
       - '.github/workflows/**'
   workflow_dispatch:
@@ -61,14 +62,22 @@ jobs:
         # https://<owner>.github.io/tsone/cli/).
         run: bun run docs:cli:build -- --base=/${{ github.event.repository.name }}/cli/
 
+      - name: Build One Chart documentation
+        # One Chart docs are published under the same Pages site, merged into
+        # packages/tsone/docs/dist/one-chart/ (e.g.
+        # https://<owner>.github.io/tsone/one-chart/).
+        run: bun run docs:one-chart:build -- --base=/${{ github.event.repository.name }}/one-chart/
+
       - name: Merge documentation into the Pages site
         # tsone build keeps its output inside the project root, so the One docs
-        # land in packages/one/docs/dist and the CLI docs in
-        # packages/tsone-cli/docs/dist. Merge both into the Pages deploy dir.
+        # land in packages/one/docs/dist, the CLI docs in
+        # packages/tsone-cli/docs/dist and the One Chart docs in
+        # packages/one-chart/docs/dist. Merge all into the Pages deploy dir.
         run: |
-          mkdir -p packages/tsone/docs/dist/one packages/tsone/docs/dist/cli
+          mkdir -p packages/tsone/docs/dist/one packages/tsone/docs/dist/cli packages/tsone/docs/dist/one-chart
           cp -r packages/one/docs/dist/. packages/tsone/docs/dist/one/
           cp -r packages/tsone-cli/docs/dist/. packages/tsone/docs/dist/cli/
+          cp -r packages/one-chart/docs/dist/. packages/tsone/docs/dist/one-chart/
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
