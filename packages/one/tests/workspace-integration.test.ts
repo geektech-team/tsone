@@ -21,7 +21,7 @@ describe('One UI workspace integration', () => {
       'bun run --cwd packages/one docs:build'
     );
     expect(rootPackage.scripts.build).toBe(
-      'bun run --cwd packages/tsone build && bun run --cwd packages/one build && bun run --cwd packages/one-chart build && bun run --cwd packages/tsone-cli build && bun run --cwd packages/backone build && bun run --cwd packages/backone-utils build && bun run --cwd packages/backone-cli build'
+      'bun run --cwd packages/tsone build && bun run --cwd packages/one build && bun run --cwd packages/one-chart build && bun run --cwd packages/tsone-cli build'
     );
   });
 

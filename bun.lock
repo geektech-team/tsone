@@ -15,25 +15,6 @@
         "typescript": "^5.3.3",
       },
     },
-    "packages/backone": {
-      "name": "@geektech/backone",
-      "version": "0.1.0",
-      "devDependencies": {
-        "@geektech/tsone": "workspace:*",
-        "@geektech/tsone-cli": "workspace:*",
-      },
-    },
-    "packages/backone-cli": {
-      "name": "@geektech/backone-cli",
-      "version": "0.2.0",
-      "bin": {
-        "backone": "bin/backone.ts",
-      },
-    },
-    "packages/backone-utils": {
-      "name": "@geektech/backone-utils",
-      "version": "0.5.0",
-    },
     "packages/one": {
       "name": "@geektech/one",
       "version": "0.7.0",
@@ -80,13 +61,6 @@
         "@geektech/tsone-cli": "workspace:*",
       },
     },
-    "playground/backone-demo": {
-      "name": "@tsone-playground/backone",
-      "dependencies": {
-        "@geektech/backone": "workspace:*",
-        "@geektech/backone-utils": "workspace:*",
-      },
-    },
     "playground/leaderboard": {
       "name": "@tsone-playground/leaderboard",
       "dependencies": {
@@ -124,12 +98,6 @@
 
     "@eslint/js": ["@eslint/js@8.57.1", "", {}, "sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q=="],
 
-    "@geektech/backone": ["@geektech/backone@workspace:packages/backone"],
-
-    "@geektech/backone-cli": ["@geektech/backone-cli@workspace:packages/backone-cli"],
-
-    "@geektech/backone-utils": ["@geektech/backone-utils@workspace:packages/backone-utils"],
-
     "@geektech/one": ["@geektech/one@workspace:packages/one"],
 
     "@geektech/one-chart": ["@geektech/one-chart@workspace:packages/one-chart"],
@@ -153,8 +121,6 @@
     "@pkgr/core": ["@pkgr/core@0.3.6", "", {}, "sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA=="],
 
     "@tsone-playground/admin-dashboard": ["@tsone-playground/admin-dashboard@workspace:playground/admin-dashboard"],
-
-    "@tsone-playground/backone": ["@tsone-playground/backone@workspace:playground/backone-demo"],
 
     "@tsone-playground/leaderboard": ["@tsone-playground/leaderboard@workspace:playground/leaderboard"],
 

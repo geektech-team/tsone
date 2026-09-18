@@ -12,8 +12,6 @@ TSone 是一套完全基于 TypeScript 与 Bun 的前端生态：轻量级框架
 | `@geektech/one` | `packages/one` | 0.3.3 | One UI 组件库，peer 依赖 `@geektech/tsone`，零额外运行时依赖 |
 | `@geektech/one-chart` | `packages/one-chart` | 0.1.0 | One Chart 图表库：柱状图/折线图/饼图/雷达图，纯 SVG 渲染，peer 依赖 `@geektech/tsone` |
 | `@geektech/tsone-cli` | `packages/tsone-cli` | 0.3.0 | Bun-native CLI：`tsone create` / `dev` / `build`，含 npm 库打包模式 |
-| `@geektech/backone` | `packages/backone` | 0.1.0 | 轻量级服务端框架：路由、中间件、请求上下文、静态文件，零运行时依赖 |
-| `@geektech/backone-utils` | `packages/backone-utils` | 0.1.0 | BackOne 通用工具包（第一期：数据库连接管理与增删改查，多库连接，基于 Bun.SQL） |
 
 其他目录：
 
@@ -57,7 +55,7 @@ bun run dev:site
 | 命令 | 作用 |
 |---|---|
 | `bun install` | 安装 workspace 依赖 |
-| `bun run build` | 全量构建：tsone → one → one-chart → tsone-cli → backone 系 |
+| `bun run build` | 全量构建：tsone → one → one-chart → tsone-cli |
 | `bun run build:one` | 仅构建 One UI 库（`tsone build --library`） |
 | `bun run build:one-chart` | 仅构建 One Chart 库（`tsone build --library`） |
 | `bun run build:types` | 构建 tsone / tsone-cli 的类型声明 |
