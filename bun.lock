@@ -62,7 +62,7 @@
     },
     "packages/tsone-cli": {
       "name": "@geektech/tsone-cli",
-      "version": "0.5.0",
+      "version": "1.0.0",
       "bin": {
         "tsone": "bin/tsone.ts",
       },
