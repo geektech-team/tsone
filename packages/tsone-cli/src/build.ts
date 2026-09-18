@@ -18,15 +18,6 @@ interface BuiltPage {
 export async function build(options: BuildOptions = {}): Promise<BuildResult> {
   const config = await resolveConfig(options);
 
-  if (options.mpWeixin) {
-    if (options.library) {
-      throw new Error('--library 与 --mp-weixin 不能同时使用');
-    }
-    // 动态加载：mp 编译器依赖 typescript API，仅在小程序构建路径加载
-    const { buildMiniProgram } = await import('./mp/build-mp');
-    return buildMiniProgram(config);
-  }
-
   if (options.library) {
     return buildLibrary(config);
   }

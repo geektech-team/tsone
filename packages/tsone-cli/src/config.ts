@@ -3,12 +3,10 @@ import { resolve } from 'node:path';
 import type {
   BuildConfig,
   LibraryConfig,
-  MiniProgramConfig,
   ProxyOptions,
   ResolveConfigOptions,
   ResolvedConfig,
   ResolvedLibraryConfig,
-  ResolvedMiniProgramConfig,
   ServerConfig,
   UserConfig,
 } from './types';
@@ -27,7 +25,6 @@ interface MergedConfig {
     directoryPages: boolean;
   };
   library?: LibraryConfig;
-  mp?: MiniProgramConfig;
 }
 
 type ConfigFileLoadResult =
@@ -78,13 +75,6 @@ export async function resolveConfig(
     throw new Error(`Entry file does not exist: ${entry}`);
   }
   const pages = await resolvePages(root, entry, config.pages);
-  const mpPages = config.mp?.pages
-    ? await resolvePages(root, entry, config.mp.pages, {
-        includeEntry: false,
-        allowRoot: true,
-      })
-    : pages;
-  const mpEnabled = config.mp !== undefined || options.mpWeixin === true;
 
   return {
     root,
@@ -104,37 +94,6 @@ export async function resolveConfig(
     ...(config.library
       ? { library: resolveLibrary(root, config.library) }
       : {}),
-    ...(mpEnabled
-      ? {
-          mp: resolveMiniProgram(
-            root,
-            options.outDir,
-            config.mp ?? {},
-            mpPages
-          ),
-        }
-      : {}),
-  };
-}
-
-function resolveMiniProgram(
-  root: string,
-  outDirOverride: string | undefined,
-  mp: MiniProgramConfig,
-  pages: Record<string, string>
-): ResolvedMiniProgramConfig {
-  return {
-    appId: mp.appId ?? 'touristappid',
-    outDir: resolve(root, outDirOverride ?? mp.outDir ?? 'dist/build/mp-wx'),
-    navigationBarTitleText: mp.navigationBarTitleText ?? 'TSone',
-    pages,
-    ...(mp.window !== undefined ? { window: mp.window } : {}),
-    ...(mp.tabBar !== undefined ? { tabBar: mp.tabBar } : {}),
-    ...(mp.appExtra !== undefined ? { appExtra: mp.appExtra } : {}),
-    ...(mp.pageExtra !== undefined ? { pageExtra: mp.pageExtra } : {}),
-    lengthUnit: mp.lengthUnit ?? 'px',
-    publicDir: resolve(root, mp.publicDir ?? 'public'),
-    ...(mp.globalData !== undefined ? { globalData: mp.globalData } : {}),
   };
 }
 
@@ -169,13 +128,11 @@ function normalizeBasePath(base: string | undefined): string {
 async function resolvePages(
   root: string,
   entry: string,
-  pages: Record<string, string> | undefined,
-  options: { includeEntry?: boolean; allowRoot?: boolean } = {}
+  pages: Record<string, string> | undefined
 ): Promise<Record<string, string>> {
-  const resolved: Record<string, string> =
-    options.includeEntry === false ? {} : { '/': entry };
+  const resolved: Record<string, string> = { '/': entry };
   for (const [route, pageEntry] of Object.entries(pages ?? {})) {
-    const normalized = normalizePageRoute(route, options.allowRoot);
+    const normalized = normalizePageRoute(route);
     const absolute = resolve(root, pageEntry);
     if (!existsSync(absolute)) {
       throw new Error(
@@ -187,11 +144,8 @@ async function resolvePages(
   return resolved;
 }
 
-function normalizePageRoute(route: string, allowRoot = false): string {
+function normalizePageRoute(route: string): string {
   if (route === '/') {
-    if (allowRoot) {
-      return '/';
-    }
     throw new Error(
       'Config pages must not redefine the root page "/"; use config.entry instead'
     );
@@ -264,13 +218,6 @@ function mergeConfig(...configs: UserConfig[]): MergedConfig {
         directoryPages: build?.directoryPages ?? merged.build.directoryPages,
       },
       library: config.library ?? merged.library,
-      mp:
-        config.mp !== undefined
-          ? {
-              ...(merged.mp ?? {}),
-              ...config.mp,
-            }
-          : merged.mp,
     };
   }, DEFAULT_CONFIG);
 }
@@ -292,41 +239,6 @@ function validateUserConfig(config: unknown): asserts config is UserConfig {
   }
   if (config.library !== undefined) {
     validateLibraryConfig(config.library);
-  }
-  if (config.mp !== undefined) {
-    validateMiniProgramConfig(config.mp);
-  }
-}
-
-function validateMiniProgramConfig(
-  mp: unknown
-): asserts mp is MiniProgramConfig {
-  assertRecord(mp, 'Config mp');
-  for (const key of ['appId', 'outDir', 'navigationBarTitleText'] as const) {
-    if (mp[key] !== undefined && typeof mp[key] !== 'string') {
-      throw new Error(`Config mp.${key} must be a string`);
-    }
-  }
-  if (mp.pages !== undefined) {
-    validatePagesConfig(mp.pages, 'Config mp.pages');
-  }
-  if (
-    mp.lengthUnit !== undefined &&
-    mp.lengthUnit !== 'px' &&
-    mp.lengthUnit !== 'rpx'
-  ) {
-    throw new Error("Config mp.lengthUnit must be 'px' or 'rpx'");
-  }
-  if (mp.publicDir !== undefined && typeof mp.publicDir !== 'string') {
-    throw new Error('Config mp.publicDir must be a string');
-  }
-  for (const key of ['window', 'tabBar', 'appExtra', 'globalData'] as const) {
-    if (mp[key] !== undefined && !isRecord(mp[key])) {
-      throw new Error(`Config mp.${key} must be an object`);
-    }
-  }
-  if (mp.pageExtra !== undefined && !isRecord(mp.pageExtra)) {
-    throw new Error('Config mp.pageExtra must be an object');
   }
 }
 

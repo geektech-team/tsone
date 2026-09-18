@@ -10,7 +10,7 @@ import {
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'bun:test';
-import { startDevServer, startMiniProgramDev } from '../src/index';
+import { startDevServer } from '../src/index';
 
 const roots: string[] = [];
 const servers: Array<ReturnType<typeof Bun.serve>> = [];
@@ -683,57 +683,4 @@ describe('TSone development server', () => {
       )
     ).toBe(true);
   });
-
-  it('startMiniProgramDev writes the mini program build to dist/dev/mp-wx', async () => {
-    const root = makeMiniProgramRoot();
-    const dev = await startMiniProgramDev({ root, watch: false });
-
-    expect(dev.outDir).toBe(join(root, 'dist', 'dev', 'mp-wx'));
-    expect(existsSync(join(root, 'dist', 'dev', 'mp-wx', 'app.json'))).toBe(
-      true
-    );
-    expect(
-      existsSync(join(root, 'dist', 'dev', 'mp-wx', 'pages', 'index'))
-    ).toBe(true);
-    dev.dispose();
-  });
 });
-
-function makeMiniProgramRoot(): string {
-  const root = mkdtempSync(join(tmpdir(), 'tsone-cli-mp-dev-'));
-  roots.push(root);
-  const frameworkEntryPath = join(
-    import.meta.dir,
-    '..',
-    '..',
-    'tsone',
-    'lib',
-    'index.ts'
-  );
-  mkdirSync(join(root, 'src'));
-  writeFileSync(
-    join(root, 'src', 'main.ts'),
-    `
-      import { createApp, Component, h } from '${frameworkEntryPath}';
-      export class App extends Component {
-        initState() {
-          return { title: 'MP Dev' };
-        }
-        render() {
-          return h('div', {}, this.state.title);
-        }
-      }
-      export const app = createApp({ root: App });
-    `
-  );
-  writeFileSync(
-    join(root, 'tsone.config.ts'),
-    `
-      export default {
-        entry: 'src/main.ts',
-        mp: { appId: 'wx1234567890' },
-      };
-    `
-  );
-  return root;
-}

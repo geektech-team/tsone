@@ -521,7 +521,7 @@ export class ElementRenderStrategy<
   }
 }
 
-/** dataId -> data-id：与小程序 dataset 约定一致，h5 端同样可从 dataset 读取。 */
+/** dataId -> data-id：元素属性写入 data-id，事件回调可从 currentTarget.dataset 读取。 */
 function attributeName(key: string): string {
   if (key.startsWith('data') && key.length > 4) {
     return `data${key

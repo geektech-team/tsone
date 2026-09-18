@@ -126,24 +126,6 @@ describe('TSone CLI arguments', () => {
     );
   });
 
-  it('parses the mp-weixin flag for build', () => {
-    expect(parseCliArgs(['build', '--mp-weixin'])).toEqual({
-      command: 'build',
-      mpWeixin: true,
-    });
-    expect(
-      parseCliArgs(['build', '--mp-weixin', '--out-dir', 'dist-mp'])
-    ).toEqual({
-      command: 'build',
-      mpWeixin: true,
-      outDir: 'dist-mp',
-    });
-    expect(parseCliArgs(['dev', '--mp-weixin'])).toEqual({
-      command: 'dev',
-      mpWeixin: true,
-    });
-  });
-
   it('parses the base path flag for build and dev', () => {
     expect(parseCliArgs(['build', '--base', '/tsone/one/'])).toEqual({
       command: 'build',

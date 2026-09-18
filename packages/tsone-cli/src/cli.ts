@@ -1,15 +1,15 @@
 import { build } from './build';
 import { createProject } from './create';
-import { startDevServer, startMiniProgramDev } from './server';
+import { startDevServer } from './server';
 
 const USAGE = [
   'Usage:',
   '  tsone create',
   '  tsone dev [--host <host>] [--port <port>] [--base <path>] [--no-watch]',
-  '  tsone build [--out-dir <path>] [--base <path>] [--library] [--mp-weixin]',
+  '  tsone build [--out-dir <path>] [--base <path>] [--library]',
 ].join('\n');
 
-const FLAG_OPTIONS = new Set(['--no-watch', '--library', '--mp-weixin']);
+const FLAG_OPTIONS = new Set(['--no-watch', '--library']);
 
 export interface CreateCliArgs {
   command: 'create';
@@ -21,7 +21,6 @@ export interface DevCliArgs {
   port?: number;
   base?: string;
   noWatch?: boolean;
-  mpWeixin?: boolean;
 }
 
 export interface BuildCliArgs {
@@ -29,7 +28,6 @@ export interface BuildCliArgs {
   outDir?: string;
   base?: string;
   library?: boolean;
-  mpWeixin?: boolean;
 }
 
 export type CliArgs = CreateCliArgs | DevCliArgs | BuildCliArgs;
@@ -82,7 +80,6 @@ export function parseCliArgs(argv: string[]): CliArgs {
       ...(port === undefined ? {} : { port: parsePort(port) }),
       ...(options.has('--base') ? { base: options.get('--base') } : {}),
       ...(options.has('--no-watch') ? { noWatch: true } : {}),
-      ...(options.has('--mp-weixin') ? { mpWeixin: true } : {}),
     };
   }
 
@@ -91,7 +88,6 @@ export function parseCliArgs(argv: string[]): CliArgs {
     ...(options.has('--out-dir') ? { outDir: options.get('--out-dir') } : {}),
     ...(options.has('--base') ? { base: options.get('--base') } : {}),
     ...(options.has('--library') ? { library: true } : {}),
-    ...(options.has('--mp-weixin') ? { mpWeixin: true } : {}),
   };
 }
 
@@ -115,13 +111,6 @@ export async function runCli(
       ...(args.base === undefined ? {} : { base: args.base }),
       watch: !args.noWatch,
     };
-    if (args.mpWeixin) {
-      const dev = await startMiniProgramDev(devOptions);
-      console.log(
-        `TSone mini program dev build: ${dev.outDir} (watch: ${!args.noWatch})`
-      );
-      return;
-    }
     const server = await startDevServer(devOptions);
     console.log(
       `TSone dev server listening at http://${server.hostname}:${server.port}`
@@ -131,12 +120,11 @@ export async function runCli(
 
   const result = await build(
     args.outDir === undefined && args.base === undefined && !args.library
-      ? { mpWeixin: args.mpWeixin }
+      ? {}
       : {
           outDir: args.outDir,
           base: args.base,
           library: args.library,
-          mpWeixin: args.mpWeixin,
         }
   );
   console.log(
@@ -163,7 +151,6 @@ function assertKnownOption(name: string): void {
     name === '--out-dir' ||
     name === '--no-watch' ||
     name === '--library' ||
-    name === '--mp-weixin' ||
     name === '--base'
   ) {
     return;
@@ -182,13 +169,9 @@ function assertSupportedOption(
       (name === '--host' ||
         name === '--port' ||
         name === '--base' ||
-        name === '--no-watch' ||
-        name === '--mp-weixin')) ||
+        name === '--no-watch')) ||
     (command === 'build' &&
-      (name === '--out-dir' ||
-        name === '--base' ||
-        name === '--library' ||
-        name === '--mp-weixin'));
+      (name === '--out-dir' || name === '--base' || name === '--library'));
 
   if (!supported) {
     throw parseError(`Option ${name} is not supported for ${command}`);

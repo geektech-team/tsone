@@ -18,12 +18,12 @@ interface LeaderboardState {
   lastUpdated: string;
 }
 
-/** 行点击事件：h5 为 DOM 事件，小程序为微信事件，均可用 currentTarget.dataset。 */
+/** 行点击事件：h5 的 DOM 事件可用 currentTarget.dataset 读取。 */
 interface TapEvent {
   currentTarget: { dataset: Record<string, string | number | undefined> };
 }
 
-// 静态数据会被小程序编译器折叠进 initState；数值仅供演示。
+// 静态数据仅作演示，运行时通过 initState 初始化。
 const INITIAL_RANKS: RankItem[] = [
   { id: 1, name: '星尘观察站', score: 9820, change: 3 },
   { id: 2, name: '橘子汽水', score: 9545, change: -1 },
@@ -230,7 +230,6 @@ class LeaderboardApp extends Component<object, LeaderboardState> {
               {
                 className: index < 3 ? 'rank-row top' : 'rank-row',
                 dataId: item.id,
-                // h5 与小程序事件结构不同，调用点做一次窄化
                 onClick: (e) => this.selectRow(e as unknown as TapEvent),
               },
               [
@@ -269,7 +268,7 @@ class LeaderboardApp extends Component<object, LeaderboardState> {
     this.setState({ ranks, lastUpdated: '刚刚' });
   }
 
-  /** 榜单行点击：通过 data-id 拿到项目 id（小程序编译为 data-id + bindtap）。 */
+  /** 榜单行点击：通过 data-id 读取 currentTarget.dataset。 */
   protected selectRow(e: TapEvent): void {
     const raw = e.currentTarget.dataset.id;
     const id = typeof raw === 'number' ? raw : Number(raw);
@@ -278,11 +277,6 @@ class LeaderboardApp extends Component<object, LeaderboardState> {
       this.setState({ lastUpdated: `选中：${item.name}` });
     }
   }
-
-  /** 小程序分享（页面级生命周期，h5 下为普通方法，不影响运行）。 */
-  protected onShareAppMessage(): { title: string } {
-    return { title: `数据排行榜 Top 1：${this.state.ranks[0]?.name ?? ''}` };
-  }
 }
 
 export const app = createApp({
@@ -290,7 +284,7 @@ export const app = createApp({
   document: {
     lang: 'zh-CN',
     title: '数据排行榜 - TSone',
-    description: 'TSone 数据排行榜首页示例，可同时构建 H5 与微信小程序',
+    description: 'TSone 数据排行榜首页示例',
   },
 });
 
