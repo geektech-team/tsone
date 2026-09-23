@@ -1081,4 +1081,74 @@ export const enApiPages: DocPage[] = [
       ),
     ],
   },
+  {
+    path: '/api/request/',
+    title: 'Request API',
+    description:
+      'Create zero-dependency fetch clients with request, response, and error interceptors.',
+    section: apiSection,
+    sectionOrder: apiSectionOrder,
+    order: 6,
+    body: [
+      heading(1, 'Request API'),
+      paragraph(
+        'The request client is imported from a dedicated subpath. It uses native fetch and parses JSON by default.'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { createRequest } from '@geektech/tsone/request';",
+          '',
+          "const api = createRequest({ baseURL: '/api' });",
+          '',
+          'api.interceptors.request.use((config) => ({',
+          '  ...config,',
+          "  headers: { ...config.headers, Authorization: 'Bearer token' },",
+          '}));',
+          'api.interceptors.error.use(() => ({ offline: true }));',
+          '',
+          "const health = await api.get('/health', { responseType: 'text' });",
+        ].join('\n')
+      ),
+      heading(2, 'Client and Interceptors'),
+      apiTable([
+        {
+          name: 'createRequest',
+          signature: 'createRequest(defaults?: RequestDefaults): RequestClient',
+          description: 'Creates an isolated request client.',
+        },
+        {
+          name: 'request',
+          signature: 'RequestClient',
+          description: 'The default request client instance.',
+        },
+        {
+          name: 'interceptors.request.use',
+          signature: '(config: RequestConfig) => RequestConfig | Promise<RequestConfig>',
+          description: 'Runs before fetch and can replace the request config.',
+        },
+        {
+          name: 'interceptors.response.use',
+          signature: '(value: unknown) => unknown | Promise<unknown>',
+          description: 'Runs after a successful response has been parsed.',
+        },
+        {
+          name: 'interceptors.error.use',
+          signature: '(error: unknown) => unknown | Promise<unknown>',
+          description: 'Runs for request, transport, parsing, and non-2xx failures; returning a value recovers the request.',
+        },
+      ]),
+      heading(2, 'Response Types and Errors'),
+      paragraph(
+        "responseType defaults to 'json'. Use 'text', 'blob', 'arrayBuffer', or 'response' for another result; 'response' leaves the native Response unconsumed. A non-2xx response throws RequestError unless an error interceptor returns a recovery value."
+      ),
+      list([
+        [inlineCode("'json'"), ': parsed JSON (default)'],
+        [inlineCode("'text'"), ': response text'],
+        [inlineCode("'blob'"), ': Blob data'],
+        [inlineCode("'arrayBuffer'"), ': ArrayBuffer data'],
+        [inlineCode("'response'"), ': the raw Response'],
+      ]),
+    ],
+  },
 ];

@@ -135,7 +135,7 @@ describe('public API documentation', () => {
     expect(englishReadme).toContain('content/en');
     expect(englishReadme).toContain('content/zh');
     expect(englishReadme).toContain(
-      'Chinese and English catalogs each contain exactly 16 logical routes'
+      'Chinese and English catalogs each contain exactly 17 logical routes'
     );
     expect(englishReadme).toMatch(
       /Add or\s+remove a route in both catalogs in the same change/u
@@ -149,7 +149,7 @@ describe('public API documentation', () => {
     );
     expect(chineseReadme).toContain('content/zh');
     expect(chineseReadme).toContain('content/en');
-    expect(chineseReadme).toContain('中英文 catalog 当前各包含 16 条逻辑路由');
+    expect(chineseReadme).toContain('中英文 catalog 当前各包含 17 条逻辑路由');
     expect(chineseReadme).toContain('新增或删除路由时必须同步修改两边');
     expect(chineseReadme).toContain('中英文逻辑路由必须一致');
     expect(chineseReadme).toContain('不要手写 `/en/`');
@@ -244,6 +244,19 @@ describe('public API documentation', () => {
     expect(routerApi).toContain('RouterView');
     expect(routerApi).toContain('RouterLink');
     expect(routerApi).toContain('createRouter({ routes');
+  });
+
+  it('documents the request client in both localized API catalogs', () => {
+    const englishReadme = readText('README.md');
+    const chineseReadme = readText('README-zh.md');
+    const englishApi = localizedDocsTextFor('en', ['/api/request/']);
+    const chineseApi = localizedDocsTextFor('zh', ['/api/request/']);
+
+    for (const text of [englishReadme, chineseReadme, englishApi, chineseApi]) {
+      expect(text).toContain("from '@geektech/tsone/request'");
+      expect(text).toContain('createRequest');
+      expect(text).toContain('responseType');
+    }
   });
 
   it('keeps documented public symbols exported from source entrypoints', () => {

@@ -19,6 +19,10 @@
       "import": "./dist/style/index.js",
       "types": "./dist/style/index.d.ts"
     },
+    "./request": {
+      "import": "./dist/request/index.js",
+      "types": "./dist/request/index.d.ts"
+    },
     "./dom": {
       "import": "./dist/dom/index.js",
       "types": "./dist/dom/index.d.ts"

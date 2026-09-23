@@ -268,6 +268,7 @@ describe('docs locales', () => {
       '/api/reactive/',
       '/api/router/',
       '/api/style/',
+      '/api/request/',
     ]);
     expect(pages.map((page) => page.title)).toEqual([
       'App API',
@@ -275,6 +276,7 @@ describe('docs locales', () => {
       'Reactive API',
       'Router API',
       'Style API',
+      'Request API',
     ]);
 
     const text = pages.map(docText).join('\n');
@@ -285,6 +287,7 @@ describe('docs locales', () => {
       'reactive',
       'RouterView',
       'StyleManager',
+      'createRequest',
       'VNode',
     ]) {
       expect(text).toContain(symbol);
@@ -509,8 +512,8 @@ describe('docs locales', () => {
   });
 
   it('keeps Chinese and English catalogs in strict route parity', () => {
-    expect(docCatalogs.zh.pages).toHaveLength(16);
-    expect(docCatalogs.en.pages).toHaveLength(16);
+    expect(docCatalogs.zh.pages).toHaveLength(17);
+    expect(docCatalogs.en.pages).toHaveLength(17);
     expect(docCatalogs.en.pages.map((page) => page.path)).toEqual(
       docCatalogs.zh.pages.map((page) => page.path)
     );

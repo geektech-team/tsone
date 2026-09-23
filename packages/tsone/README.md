@@ -246,6 +246,32 @@ navigation, returning a string redirects to that path. `redirect` routes
 resolve to their target, and a `*` route matches every otherwise unmatched
 path with the remaining path available as `params.pathMatch`.
 
+## Requests
+
+Import the optional request client from its dedicated subpath. It uses native
+`fetch`, parses JSON by default, and has no runtime dependencies:
+
+```typescript
+import { createRequest } from '@geektech/tsone/request';
+
+const api = createRequest({ baseURL: '/api' });
+
+api.interceptors.request.use((config) => ({
+  ...config,
+  headers: { ...config.headers, Authorization: 'Bearer token' },
+}));
+api.interceptors.error.use(() => ({ offline: true }));
+
+const user = await api.get('/users/1');
+const health = await api.get('/health', { responseType: 'text' });
+```
+
+Request, response, and error interceptors run in registration order and may be
+asynchronous. A non-2xx response rejects unless an error interceptor recovers
+with a value. Set `responseType` to `text`, `blob`, `arrayBuffer`, or `response`
+when the default JSON result is not appropriate; `response` returns the raw
+`Response` instance.
+
 ## Development Commands
 
 ```bash
@@ -273,7 +299,7 @@ content lives in `packages/tsone/docs/app/content/zh/`, while English content
 lives in `packages/tsone/docs/app/content/en/`. Every logical route must exist
 in both directories.
 
-Chinese and English catalogs each contain exactly 16 logical routes. Add or
+Chinese and English catalogs each contain exactly 17 logical routes. Add or
 remove a route in both catalogs in the same change.
 
 Content links stay locale-neutral: never write `/en/` manually. Chinese public
@@ -505,6 +531,12 @@ The `@geektech/tsone/style` entry point exports:
 
 - `StyleManager`
 - `StyleSheet` / `renderStyleSheet(styles)`
+
+The `@geektech/tsone/request` entry point exports:
+
+- `createRequest(defaults?)` / default `request`
+- `RequestClient` / `RequestError`
+- `RequestConfig` / `ResponseType`
 
 ## Pre-Publish Checklist
 

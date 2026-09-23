@@ -101,6 +101,8 @@ describe('package smoke', () => {
           'dist/router/index.d.ts',
           'dist/style/index.js',
           'dist/style/index.d.ts',
+          'dist/request/index.js',
+          'dist/request/index.d.ts',
           'README.md',
           'README-zh.md',
           'LICENSE',
@@ -134,6 +136,7 @@ describe('package smoke', () => {
           `import { Button, Component, Div, Input, P, Span, isRef, name, reactive, ref, unref, version } from '${packageName}';`,
           `import { RouterLink, RouterView, createRouter, useRouter } from '${packageName}/router';`,
           `import { StyleManager } from '${packageName}/style';`,
+          `import { createRequest, request } from '${packageName}/request';`,
           '',
           'console.log(JSON.stringify({',
           '  name,',
@@ -153,6 +156,8 @@ describe('package smoke', () => {
           '  ref: typeof ref,',
           '  isRef: typeof isRef,',
           '  unref: typeof unref,',
+          '  request: typeof request,',
+          '  createRequest: typeof createRequest,',
           '}));',
         ].join('\n')
       );
@@ -176,6 +181,8 @@ describe('package smoke', () => {
         ref: 'function',
         isRef: 'function',
         unref: 'function',
+        request: 'object',
+        createRequest: 'function',
       });
 
       writeFileSync(
@@ -183,6 +190,7 @@ describe('package smoke', () => {
         [
           `import { Component, Div, VNode, createApp, isRef, reactive, ref, unref } from '${packageName}';`,
           `import { RouterLink, RouterView, createRouter, useRouter } from '${packageName}/router';`,
+          `import { createRequest, request } from '${packageName}/request';`,
           '',
           'interface AppState {',
           '  count: number;',
@@ -205,11 +213,14 @@ describe('package smoke', () => {
           'app.use(router);',
           'const rawReady: boolean = unref(ready);',
           'const readyIsRef: boolean = isRef(ready);',
+          "const api = createRequest({ baseURL: 'https://api.example.test' });",
+          'request.interceptors.request.use((config) => config);',
           'void RouterLink;',
           'void RouterView;',
           'void useRouter;',
           'void rawReady;',
           'void readyIsRef;',
+          'void api;',
         ].join('\n')
       );
       writeFileSync(

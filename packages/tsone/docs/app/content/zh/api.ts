@@ -1013,4 +1013,73 @@ export const apiPages: DocPage[] = [
       ),
     ],
   },
+  {
+    path: '/api/request/',
+    title: '请求 API',
+    description: '创建零依赖 fetch 客户端，并配置请求、响应和失败拦截器。',
+    section: apiSection,
+    sectionOrder: apiSectionOrder,
+    order: 6,
+    body: [
+      heading(1, '请求 API'),
+      paragraph(
+        '请求客户端从独立子路径导入，基于原生 fetch，默认解析 JSON。'
+      ),
+      codeBlock(
+        'ts',
+        [
+          "import { createRequest } from '@geektech/tsone/request';",
+          '',
+          "const api = createRequest({ baseURL: '/api' });",
+          '',
+          'api.interceptors.request.use((config) => ({',
+          '  ...config,',
+          "  headers: { ...config.headers, Authorization: 'Bearer token' },",
+          '}));',
+          'api.interceptors.error.use(() => ({ offline: true }));',
+          '',
+          "const health = await api.get('/health', { responseType: 'text' });",
+        ].join('\n')
+      ),
+      heading(2, '客户端与拦截器'),
+      apiTable([
+        {
+          name: 'createRequest',
+          signature: 'createRequest(defaults?: RequestDefaults): RequestClient',
+          description: '创建相互隔离的请求客户端。',
+        },
+        {
+          name: 'request',
+          signature: 'RequestClient',
+          description: '默认请求客户端实例。',
+        },
+        {
+          name: 'interceptors.request.use',
+          signature: '(config: RequestConfig) => RequestConfig | Promise<RequestConfig>',
+          description: '在 fetch 之前执行，可替换请求配置。',
+        },
+        {
+          name: 'interceptors.response.use',
+          signature: '(value: unknown) => unknown | Promise<unknown>',
+          description: '在成功响应解析完成后执行。',
+        },
+        {
+          name: 'interceptors.error.use',
+          signature: '(error: unknown) => unknown | Promise<unknown>',
+          description: '处理请求、传输、解析和非 2xx 失败；返回值可恢复请求。',
+        },
+      ]),
+      heading(2, '返回类型与错误'),
+      paragraph(
+        "responseType 默认是 'json'。可使用 'text'、'blob'、'arrayBuffer' 或 'response'；其中 'response' 不消费原生 Response。非 2xx 响应会抛出 RequestError，除非失败拦截器返回恢复值。"
+      ),
+      list([
+        [inlineCode("'json'"), '：解析 JSON（默认）'],
+        [inlineCode("'text'"), '：响应文本'],
+        [inlineCode("'blob'"), '：Blob 数据'],
+        [inlineCode("'arrayBuffer'"), '：ArrayBuffer 数据'],
+        [inlineCode("'response'"), '：原生 Response'],
+      ]),
+    ],
+  },
 ];

@@ -225,6 +225,31 @@ createApp({ root: Layout }).use(router).mount();
 `redirect` 路由会解析到其目标；`*` 路由匹配所有未命中的路径，剩余路径可通过
 `params.pathMatch` 获取。
 
+## 请求
+
+从独立子路径导入可选请求客户端。它基于原生 `fetch`，默认解析 JSON，且没有
+运行时依赖：
+
+```typescript
+import { createRequest } from '@geektech/tsone/request';
+
+const api = createRequest({ baseURL: '/api' });
+
+api.interceptors.request.use((config) => ({
+  ...config,
+  headers: { ...config.headers, Authorization: 'Bearer token' },
+}));
+api.interceptors.error.use(() => ({ offline: true }));
+
+const user = await api.get('/users/1');
+const health = await api.get('/health', { responseType: 'text' });
+```
+
+请求前、响应成功和响应失败拦截器均按注册顺序执行，且可以是异步函数。非 2xx
+响应会进入失败链；失败拦截器返回值可恢复该请求。默认返回 JSON；通过
+`responseType` 可改为 `text`、`blob`、`arrayBuffer` 或 `response`，其中
+`response` 返回原生 `Response`。
+
 ## 开发命令
 
 ```bash
@@ -250,7 +275,7 @@ bun run dev:admin
 文档站点使用 typed content registry：中文内容维护在
 `packages/tsone/docs/app/content/zh/`，英文内容维护在
 `packages/tsone/docs/app/content/en/`，中英文逻辑路由必须一致。
-中英文 catalog 当前各包含 16 条逻辑路由；新增或删除路由时必须同步修改两边。
+中英文 catalog 当前各包含 17 条逻辑路由；新增或删除路由时必须同步修改两边。
 
 内容链接保持 locale-neutral，不要手写 `/en/`。中文公开路由不带前缀，英文公开
 路由使用 `/en/`。浏览器语言检测仅在 `/` 生效；手动选择优先并持久化，后续访问

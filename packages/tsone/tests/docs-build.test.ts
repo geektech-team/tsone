@@ -134,15 +134,16 @@ describe('docs static build', () => {
     try {
       const result = await buildDocs({ outDir });
 
-      expect(result.pagesBuilt).toBe(32);
+      expect(result.pagesBuilt).toBe(34);
       expect(result.assetsBuilt).toEqual([
         join(outDir, 'assets/docs-client.js'),
         join(outDir, 'assets/docs-locale.js'),
         join(outDir, 'assets/architecture.svg'),
       ]);
-      expect(collectHtmlFiles(outDir)).toHaveLength(32);
+      expect(collectHtmlFiles(outDir)).toHaveLength(34);
       expect(existsSync(join(outDir, 'index.html'))).toBe(true);
       expect(existsSync(join(outDir, 'api/component/index.html'))).toBe(true);
+      expect(existsSync(join(outDir, 'api/request/index.html'))).toBe(true);
       expect(existsSync(join(outDir, 'en/index.html'))).toBe(true);
       expect(existsSync(join(outDir, 'en/api/component/index.html'))).toBe(
         true
@@ -180,6 +181,7 @@ describe('docs static build', () => {
         ['/api/reactive/', '/en/api/reactive/'],
         ['/api/router/', '/en/api/router/'],
         ['/api/style/', '/en/api/style/'],
+        ['/api/request/', '/en/api/request/'],
         ['/examples/basic/', '/en/examples/basic/'],
         ['/contributing/', '/en/contributing/'],
         [
@@ -267,7 +269,7 @@ describe('docs static build', () => {
     try {
       const result = await buildDocs({ outDir, basePath: '/tsone' });
 
-      expect(result.pagesBuilt).toBe(32);
+      expect(result.pagesBuilt).toBe(34);
 
       const home = readFileSync(join(outDir, 'index.html'), 'utf8');
       expect(home).toContain('data-doc-base="/tsone"');
