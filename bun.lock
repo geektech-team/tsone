@@ -23,7 +23,7 @@
         "@geektech/tsone-cli": "workspace:*",
       },
       "peerDependencies": {
-        "@geektech/tsone": ">=0.5.1 <0.6.0",
+        "@geektech/tsone": ">=0.6.0 <0.7.0",
       },
     },
     "packages/one-chart": {
@@ -34,12 +34,12 @@
         "@geektech/tsone-cli": "workspace:*",
       },
       "peerDependencies": {
-        "@geektech/tsone": ">=0.5.1 <0.6.0",
+        "@geektech/tsone": ">=0.6.0 <0.7.0",
       },
     },
     "packages/tsone": {
       "name": "@geektech/tsone",
-      "version": "0.5.1",
+      "version": "0.6.0",
     },
     "packages/tsone-cli": {
       "name": "@geektech/tsone-cli",

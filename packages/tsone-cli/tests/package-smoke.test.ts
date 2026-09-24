@@ -438,7 +438,7 @@ describe('CLI package smoke', () => {
         dependencies?: Record<string, string>;
       };
       expect(extractedManifest.dependencies).toEqual({
-        '@geektech/tsone': '0.5.1',
+        '@geektech/tsone': '0.6.0',
         typescript: '^5.3.3',
       });
       const binTarget = extractedManifest.bin?.tsone;
@@ -510,7 +510,7 @@ describe('CLI package smoke', () => {
         `${consumerNodeModules}${sep}`
       );
       expect(installedCliRoot).toStartWith(`${consumerNodeModules}${sep}`);
-      expect(installedFrameworkManifest.version).toBe('0.5.1');
+      expect(installedFrameworkManifest.version).toBe('0.6.0');
       expect(installedCliManifest.version).toBe('1.0.0');
 
       expect(
