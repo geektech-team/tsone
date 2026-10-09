@@ -160,7 +160,7 @@ export const guidePages: DocPage[] = [
         'create 会在当前目录脚手架一个基础 TSone 项目（package.json、tsone.config.ts、tsconfig.json、.gitignore，以及展示 TSone 名称与 GitHub 链接的 src/main.ts 首页），并拒绝覆盖已有文件。dev 接受 host/port 覆盖以及 --no-watch 标志，build 只接受 out-dir；支持 --port 3000 与 --port=3000 两种形式。build.outDir 必须是项目根目录内部的子目录。'
       ),
       paragraph(
-        'tsone dev 默认监听项目文件：源码、样式或配置变更时重建当前页面并通知已连接的浏览器刷新，tsone.config.ts 变更会以新配置重启开发服务器；传入 --no-watch 则退化为普通的按需构建服务器。'
+        'tsone dev 默认监听项目文件：源码、样式或配置变更时重建当前页面并通知已连接的浏览器刷新。监听模式为每个入口只保留最新成功构建的产物代，在通知刷新前删除上一代，旧资源 URL 返回 404；构建失败时保留最后可用的产物，且不通知刷新。tsone.config.ts 变更会以新配置重启开发服务器，并在旧实例停止且待处理请求完成后删除该实例的会话产物；传入 --no-watch 则使用保留各代产物的普通按需构建服务器。'
       ),
       paragraph(
         'CLI 首版配置不提供 plugins、WebSocket、HMR、SSR、函数式配置、public/ 复制以及公开的 minify/sourcemap 配置。'

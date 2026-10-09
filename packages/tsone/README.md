@@ -167,6 +167,12 @@ tsone build [--out-dir <path>]
 `build` accepts the output-directory override; both `--port 3000` and
 `--port=3000` forms are valid. `tsone dev` watches the project by default and
 notifies browsers to reload over `/__tsone/reload` when a watched file changes.
+Watch mode keeps the latest successful bundle generation for each entry and
+deletes the previous generation before notifying browsers; old resource URLs
+return 404. Failed builds keep the last working artifacts and do not trigger a
+reload. `--no-watch` retains its on-demand generations.
+Config changes restart the server and remove the old instance's session artifacts
+after it stops and its pending requests finish.
 Build output must remain a safe child directory inside the project root.
 
 Programmatic tooling is imported from `@geektech/tsone-cli`, not from the

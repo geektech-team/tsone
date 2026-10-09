@@ -143,7 +143,7 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'paragraph',
         content: [
-          'tsone dev watches the project by default: source, style, or config changes rebuild the current page and notify connected browsers to reload, while a change to tsone.config.ts restarts the server with the fresh configuration. Pass --no-watch to serve as a plain on-demand builder.',
+          'tsone dev watches the project by default: source, style, or config changes rebuild the current page and notify connected browsers to reload. Watch mode keeps only the latest successful bundle generation for each entry, deleting the previous generation before notifying browsers; old resource URLs return 404. Failed builds keep the last working artifacts without sending a reload notification. A change to tsone.config.ts restarts the server with the fresh configuration, removing the old instance session artifacts after it stops and its pending requests finish. Pass --no-watch to serve as a plain on-demand builder that retains its generations.',
         ],
       },
       {

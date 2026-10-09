@@ -201,10 +201,15 @@ library build described above.
 `tsone dev` watches the project by default: when a source, style, or config
 file changes it rebuilds the current page and notifies connected browsers to
 reload over a server-sent events stream at `/__tsone/reload`, so the page
-updates without a manual refresh. A failed rebuild keeps the last working page
-served, and changes to `tsone.config.ts` restart the development server with
-the fresh configuration. Pass `--no-watch` to disable file watching and keep
-the server as a plain on-demand builder.
+updates without a manual refresh. Watch mode keeps only the latest successful
+bundle generation for each entry: a successful replacement deletes the previous
+generation's files before notifying browsers, and its resource URLs return 404.
+A failed rebuild keeps the last working page and artifacts without sending a
+reload notification. Changes to `tsone.config.ts` restart the development server
+with the fresh configuration, removing the old instance's session artifacts
+after it stops and its pending requests finish. Pass `--no-watch` to disable file
+watching and keep the server as a plain on-demand builder that retains its exact
+generations.
 
 `tsone dev` serves the generated HTML at `/` and `/index.html`, plus one route
 per configured page. Each document build writes an immutable browser ESM

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { rm } from 'node:fs/promises';
 import {
   basename,
   extname,
@@ -78,21 +79,18 @@ async function startWatchingDevServer(
   }
 
   async function rebuildAndReload(): Promise<void> {
-    const entries = [...new Set(Object.values(instance.config.pages))];
-    instance.markDirty(entries);
-    for (const entry of entries) {
-      const bundle = await instance.getBundle(entry);
-      if (bundle instanceof Response) {
-        console.error('TSone rebuild failed; keeping the last working page.');
-        return;
-      }
+    const rebuildingInstance = instance;
+    if (!(await rebuildingInstance.rebuild())) {
+      console.error('TSone rebuild failed; keeping the last working page.');
+      return;
     }
-    instance.liveReload?.broadcast();
+    rebuildingInstance.liveReload?.broadcast();
   }
 
   async function restart(): Promise<void> {
     watcher.dispose();
     instance.server.stop(true);
+    await instance.dispose();
     instance = await createServerInstance(options, true);
     watcher = createProjectWatcher(instance, onChange);
     console.log(
@@ -114,7 +112,9 @@ function createProjectWatcher(
     root: instance.config.root,
     isRelevant: (relativePath) => isWatchedFile(instance, relativePath),
     onChange: (changedPath) => {
-      void onChange(changedPath);
+      void onChange(changedPath).catch((error: unknown) =>
+        console.error(error)
+      );
     },
   });
 }
@@ -122,8 +122,8 @@ function createProjectWatcher(
 interface DevServerInstance {
   server: DevServer;
   config: ResolvedConfig;
-  getBundle: (entry: string) => Promise<DevelopmentBundle | Response>;
-  markDirty: (entries: string[]) => void;
+  rebuild: () => Promise<boolean>;
+  dispose: () => Promise<void>;
   liveReload: LiveReloadHub | undefined;
 }
 
@@ -148,31 +148,66 @@ async function createServerInstance(
   const sessionId = createGenerationId();
   const sessionOutDir = resolve(developmentOutDir, sessionId);
   const artifacts = new Map<string, DevelopmentOutput>();
-  const buildProject = createDevelopmentBuilder(sessionId, sessionOutDir);
+  const enqueue = createDevelopmentTaskQueue();
+  const buildProject = (entry: string) =>
+    buildProjectBundle(entry, sessionId, sessionOutDir);
   const liveReload = watch ? createLiveReloadHub() : undefined;
   const bundles = new Map<string, DevelopmentBundle>();
-  const dirtyEntries = new Set<string>();
 
   const getBundle = async (
     entry: string
   ): Promise<DevelopmentBundle | Response> => {
     const cached = bundles.get(entry);
-    if (watch && cached !== undefined && !dirtyEntries.has(entry)) {
+    if (watch && cached !== undefined) {
       return cached;
     }
     const bundle = await buildProject(entry);
-    if (bundle instanceof Response) {
-      if (watch) {
-        dirtyEntries.add(entry);
-      }
-      return bundle;
-    }
-    if (watch) {
+    if (watch && !(bundle instanceof Response)) {
       bundles.set(entry, bundle);
-      dirtyEntries.delete(entry);
     }
     return bundle;
   };
+
+  const rebuild = (): Promise<boolean> =>
+    enqueue(async () => {
+      const pending = new Map<string, DevelopmentBundle>();
+      const entries = [...new Set(Object.values(config.pages))];
+      for (const entry of entries) {
+        const bundle = await buildProject(entry);
+        if (bundle instanceof Response) {
+          for (const unused of pending.values()) {
+            await removeDevelopmentBundle(unused, artifacts);
+          }
+          return false;
+        }
+        pending.set(entry, bundle);
+      }
+
+      try {
+        for (const [route, entry] of Object.entries(config.pages)) {
+          const bundle = pending.get(entry);
+          if (!bundle) {
+            throw new Error(`Missing development bundle for entry: ${entry}`);
+          }
+          await renderDevelopmentDocument(config, bundle, entry, route);
+        }
+      } catch (error: unknown) {
+        console.error(error);
+        for (const unused of pending.values()) {
+          await removeDevelopmentBundle(unused, artifacts);
+        }
+        return false;
+      }
+
+      const previousBundles = [...bundles.values()];
+      for (const [entry, bundle] of pending) {
+        bundles.set(entry, bundle);
+      }
+      for (const previous of previousBundles) {
+        await removeDevelopmentBundle(previous, artifacts);
+      }
+      return true;
+    });
 
   const server = Bun.serve({
     hostname: config.server.host,
@@ -184,13 +219,15 @@ async function createServerInstance(
       }
       return (
         (await proxy(request)) ??
-        serveProjectRequest(
-          request,
-          config,
-          config.pages,
-          getBundle,
-          artifacts,
-          liveReload
+        enqueue(() =>
+          serveProjectRequest(
+            request,
+            config,
+            config.pages,
+            getBundle,
+            artifacts,
+            liveReload
+          )
         )
       );
     },
@@ -199,10 +236,8 @@ async function createServerInstance(
   return {
     server,
     config,
-    getBundle,
-    markDirty: (entries) => {
-      entries.forEach((entry) => dirtyEntries.add(entry));
-    },
+    rebuild,
+    dispose: () => enqueue(() => removeDevelopmentDirectory(sessionOutDir)),
     liveReload,
   };
 }
@@ -250,16 +285,9 @@ async function serveProjectRequest(
     }
 
     try {
-      const { renderProjectHtml } = await import('./project');
-      const html = await renderProjectHtml(
+      const html = await renderDevelopmentDocument(
         config,
-        {
-          head: bundle.stylesheets.map(({ pathname: href }) => ({
-            tag: 'link',
-            attributes: { rel: 'stylesheet', href },
-          })),
-          scripts: [{ type: 'module', src: bundle.entry.pathname }],
-        },
+        bundle,
         entry,
         route
       );
@@ -311,6 +339,27 @@ async function serveProjectRequest(
     status: 404,
     headers: { 'cache-control': 'no-store' },
   });
+}
+
+async function renderDevelopmentDocument(
+  config: ResolvedConfig,
+  bundle: DevelopmentBundle,
+  entry: string,
+  route: string
+): Promise<string> {
+  const { renderProjectHtml } = await import('./project');
+  return renderProjectHtml(
+    config,
+    {
+      head: bundle.stylesheets.map(({ pathname: href }) => ({
+        tag: 'link',
+        attributes: { rel: 'stylesheet', href },
+      })),
+      scripts: [{ type: 'module', src: bundle.entry.pathname }],
+    },
+    entry,
+    route
+  );
 }
 
 function pageRouteForPathname(
@@ -451,21 +500,19 @@ interface DevelopmentOutput {
 }
 
 interface DevelopmentBundle {
+  outDir: string;
   entry: DevelopmentOutput;
   stylesheets: DevelopmentOutput[];
   artifacts: ReadonlyMap<string, DevelopmentOutput>;
 }
 
-function createDevelopmentBuilder(
-  sessionId: string,
-  sessionOutDir: string
-): (entry: string) => Promise<DevelopmentBundle | Response> {
+function createDevelopmentTaskQueue(): <T>(
+  task: () => Promise<T>
+) => Promise<T> {
   let queue = Promise.resolve();
 
-  return (entry) => {
-    const result = queue.then(() =>
-      buildProjectBundle(entry, sessionId, sessionOutDir)
-    );
+  return (task) => {
+    const result = queue.then(task);
     queue = result.then(
       () => undefined,
       () => undefined
@@ -506,6 +553,7 @@ async function buildProjectBundle(
       if (!entryArtifact) {
         console.error('Failed to build project bundle: no JavaScript output');
       }
+      await removeDevelopmentDirectory(generationOutDir);
       return buildFailureResponse();
     }
 
@@ -536,6 +584,7 @@ async function buildProjectBundle(
     }
 
     return {
+      outDir: generationOutDir,
       entry,
       stylesheets: result.outputs
         .filter(isStylesheetOutput)
@@ -545,7 +594,26 @@ async function buildProjectBundle(
     };
   } catch (error: unknown) {
     console.error(error);
+    await removeDevelopmentDirectory(generationOutDir);
     return buildFailureResponse();
+  }
+}
+
+async function removeDevelopmentBundle(
+  bundle: DevelopmentBundle,
+  artifacts: Map<string, DevelopmentOutput>
+): Promise<void> {
+  for (const pathname of bundle.artifacts.keys()) {
+    artifacts.delete(pathname);
+  }
+  await removeDevelopmentDirectory(bundle.outDir);
+}
+
+async function removeDevelopmentDirectory(outDir: string): Promise<void> {
+  try {
+    await rm(outDir, { recursive: true, force: true });
+  } catch (error: unknown) {
+    console.error(error);
   }
 }
 

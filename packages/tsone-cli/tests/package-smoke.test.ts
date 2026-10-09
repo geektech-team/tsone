@@ -511,7 +511,7 @@ describe('CLI package smoke', () => {
       );
       expect(installedCliRoot).toStartWith(`${consumerNodeModules}${sep}`);
       expect(installedFrameworkManifest.version).toBe('0.6.0');
-      expect(installedCliManifest.version).toBe('1.0.0');
+      expect(installedCliManifest.version).toBe('1.0.1');
 
       expect(
         findInstalledPackage(join(consumerRoot, 'node_modules'), 'happy-dom')
