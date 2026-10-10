@@ -223,8 +223,13 @@ describe('TSone CLI multi-page', () => {
       `export default { pages: { '/about': 'src/shared.ts', '/docs/guide': 'src/shared.ts' }, build: { directoryPages: true } };`
     );
     let buildCalls = 0;
+    let discoveryCalls = 0;
     const originalBuild = Bun.build;
-    Bun.build = (async () => {
+    Bun.build = (async (options: Bun.BuildConfig) => {
+      if (!options.outdir) {
+        discoveryCalls++;
+        return { success: true, logs: [], outputs: [] };
+      }
       buildCalls += 1;
       const entryPath = join(root, 'dist', 'build', 'h5', 'shared.js');
       mkdirSync(join(root, 'dist', 'build', 'h5'), { recursive: true });
@@ -254,6 +259,7 @@ describe('TSone CLI multi-page', () => {
     const result = await build({ root });
 
     expect(buildCalls).toBe(2);
+    expect(discoveryCalls).toBe(2);
     expect(existsSync(join(root, 'dist', 'build', 'h5', 'index.html'))).toBe(
       true
     );
