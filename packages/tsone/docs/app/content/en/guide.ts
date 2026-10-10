@@ -121,7 +121,7 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'paragraph',
         content: [
-          'During development each page is served at its route, and tsone build emits one HTML document per page (index.html, about.html, docs/guide.html) with asset URLs relative to each document.',
+          'During development each page is served at its route, and tsone build emits one HTML document per page (index.html, about.html, docs/guide.html) with asset URLs relative to each document. Site JavaScript entries use content-hashed filenames such as main-<hash>.js, and each document references the emitted filename.',
         ],
       },
       {
@@ -2275,7 +2275,7 @@ export const enGuidePages: DocPage[] = [
       {
         type: 'paragraph',
         content: [
-          'Site builds automatically emit static CSS for document.styles and fixed initStyles / fresh StyleManager initialization. Existing literals, local/module forEach arrays and supported pure theme expressions need no changes; props/state, unknown calls or visible mutations remain dynamic. Synchronous inline CSS stays until matching external CSS loads. Edits restore its position and unmount cleans up only that instance. styleElement is null during external activation, rules remain in the bundle and first initialization still serializes CSS. Relative/fragment URLs, @import, ambiguous URLs and base elements fall back. Dev, watch and library builds keep their existing paths; discovery adds a build pass.',
+          'Site builds and dev automatically emit static CSS for document.styles and fixed initStyles / fresh StyleManager initialization. Existing literals, local/module forEach arrays and supported pure theme expressions need no changes; props/state, unknown calls or visible mutations remain dynamic. Synchronous inline CSS stays until matching external CSS loads. Edits restore its position and unmount cleans up only that instance. styleElement is null during external activation, rules remain in the bundle and first initialization still serializes CSS. Relative/fragment URLs, @import, ambiguous URLs and base elements fall back. Dev serves CSS under its exact generation URL. Watch replaces scripts and CSS together on success and retains previous artifacts on failure. Non-watch dev retains generations; library builds keep their existing path. Discovery adds a build pass.',
         ],
       },
       {

@@ -55,7 +55,7 @@ class App extends Component<Record<string, never>, AppState> {
   protected initState(): AppState {
     return {
       count: 0,
-      version: '0.6.0',
+      version: '0.6.1',
     };
   }
 
@@ -143,6 +143,8 @@ export default defineConfig({
 `pages` 的键必须以 `/` 开头并支持嵌套；根路径 `/` 由 `entry` 提供。开发时每个
 页面在其路由下提供服务，`tsone build` 会为每个页面输出一个 HTML 文档
 （`index.html`、`about.html`、`docs/guide.html`），资源 URL 相对各文档。
+站点 JavaScript 入口使用 `main-<hash>.js` 等带内容 hash 的文件名，HTML
+自动引用实际生成的文件名。
 
 ```text
 tsone create
@@ -370,20 +372,21 @@ const html = app.renderHtmlDocument({
 - `watch(source, callback, options)`——响应式侦听，支持 `immediate`、`deep`、
   `sync` 选项
 - `nextTick()` / `flushSync()`
-- `version`，当前为 `0.6.0`
+- `version`，当前为 `0.6.1`
 
 `@geektech/tsone/style` 子入口导出 `StyleManager` 和
 `renderManagedStyleSheet(styles: Iterable<StyleOptions>)`。
 
-站点 build 自动将 `document.styles`、固定的 `initStyles()` 和新建
+站点 build 和 dev 自动将 `document.styles`、固定的 `initStyles()` 和新建
 `StyleManager` 初始化规则输出为内容哈希 CSS。直接字面量、局部或模块数组的
 `forEach` 和支持的纯主题表达式保持现有写法；无法确认的规则继续动态处理。
 组件先同步生成内联 CSS，匹配外链加载成功后在原位置切换；修改恢复原位置的
 内联样式，卸载仅删除当前实例节点。`useStaticStyleSheet(href)` 供生成代码
 使用，外链激活时 `styleElement` 为 `null`。规则对象仍保留在 JavaScript 中
 支持回退，首次初始化仍序列化样式。相对/片段 URL、`@import`、不明确地址和
-HTML base 元素保留内联路径。dev 和 library 构建保持原流程；模块发现增加
-一次构建，不承诺缩短 build 时间。
+HTML base 元素保留内联路径。dev CSS 使用当前构建版本的资源 URL，watch
+成功后一起替换 JavaScript 和 CSS，失败保留上一版资源。library 保持原流程；
+模块发现增加一次构建，不承诺缩短构建时间。
 
 ## 渲染、通信与表单
 

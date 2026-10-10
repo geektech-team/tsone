@@ -1034,7 +1034,7 @@ export const enApiPages: DocPage[] = [
         [inlineCode('destroy()'), ': cleans up this instance’s style nodes'],
         [
           inlineCode('useStaticStyleSheet(href)'),
-          ': requests static CSS from generated build code; failures keep inline CSS',
+          ': requests static CSS from generated dev/build code; failures keep inline CSS',
         ],
       ]),
       paragraph(

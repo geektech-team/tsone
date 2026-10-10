@@ -966,7 +966,7 @@ export const apiPages: DocPage[] = [
         [inlineCode('destroy()'), ': 清理本实例的样式节点'],
         [
           inlineCode('useStaticStyleSheet(href)'),
-          ': 供 build 生成代码申请静态样式；失败保持内联',
+          ': 供 dev/build 生成代码申请静态样式；失败保持内联',
         ],
       ]),
       paragraph(

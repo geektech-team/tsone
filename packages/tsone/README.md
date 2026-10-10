@@ -61,7 +61,7 @@ class App extends Component<Record<string, never>, AppState> {
   protected initState(): AppState {
     return {
       count: 0,
-      version: '0.6.0',
+      version: '0.6.1',
     };
   }
 
@@ -155,7 +155,9 @@ export default defineConfig({
 `pages` keys must start with `/` and may nest; the root `/` is served by
 `entry`. During development each page is served at its route, and `tsone build`
 emits one HTML document per page (`index.html`, `about.html`,
-`docs/guide.html`) with page-relative asset URLs.
+`docs/guide.html`) with page-relative asset URLs. Site JavaScript entries use
+content-hashed filenames such as `main-<hash>.js`, and each document references
+the emitted filename.
 
 ```text
 tsone create
@@ -402,12 +404,12 @@ The main `@geektech/tsone` entry point exports:
 - `watch(source, callback, options)` — reactive watching with `immediate`,
   `deep`, and `sync` options
 - `nextTick()` / `flushSync()`
-- `version`, currently `0.6.0`
+- `version`, currently `0.6.1`
 
 The `@geektech/tsone/style` entry exports `StyleManager` and
 `renderManagedStyleSheet(styles: Iterable<StyleOptions>)`.
 
-Site builds automatically emit content-hashed CSS for `document.styles` and
+Site builds and development automatically emit content-hashed CSS for `document.styles` and
 fixed `initStyles()` / fresh `StyleManager` registrations. Existing literals,
 local or module arrays with `forEach`, and supported pure theme expressions
 need no changes. Uncertain rules stay dynamic. Components keep synchronous
@@ -417,8 +419,10 @@ the original position and unmount removes only that instance's nodes.
 `null` while external CSS is active. Rules remain in the JavaScript bundle for
 fallback, and first initialization still serializes CSS. Relative/fragment
 URLs, `@import`, ambiguous URLs and HTML base elements retain inline behavior.
-Development and library builds retain their existing paths. Module discovery
-adds a build pass; this optimization does not promise shorter build times.
+Dev serves CSS from its exact generation URL. Watch replaces JavaScript and CSS
+together after a successful rebuild; failures keep the previous artifacts.
+Library builds keep their existing path. Module discovery adds a build pass;
+this optimization does not promise shorter build times.
 
 ## Rendering, Communication, and Forms
 

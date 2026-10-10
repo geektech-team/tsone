@@ -88,7 +88,9 @@ export function makeStaticStyleAsset(cssText: string): StaticStyleAsset {
 }
 
 export async function externalizeDocumentStyles(
-  html: string
+  html: string,
+  hrefForAsset: (asset: StaticStyleAsset) => string = (asset) =>
+    `./${asset.filename}`
 ): Promise<{ html: string; assets: StaticStyleAsset[] }> {
   const sheets: string[] = [];
   let active: number | undefined;
@@ -133,7 +135,7 @@ export async function externalizeDocumentStyles(
         const asset = replacements[index++];
         if (asset)
           element.replace(
-            `<link rel="stylesheet" href="./${asset.filename}">`,
+            `<link rel="stylesheet" href="${Bun.escapeHTML(hrefForAsset(asset))}">`,
             { html: true }
           );
       },

@@ -438,7 +438,7 @@ describe('CLI package smoke', () => {
         dependencies?: Record<string, string>;
       };
       expect(extractedManifest.dependencies).toEqual({
-        '@geektech/tsone': '0.6.0',
+        '@geektech/tsone': '0.6.1',
         typescript: '^5.3.3',
       });
       const binTarget = extractedManifest.bin?.tsone;
@@ -510,8 +510,8 @@ describe('CLI package smoke', () => {
         `${consumerNodeModules}${sep}`
       );
       expect(installedCliRoot).toStartWith(`${consumerNodeModules}${sep}`);
-      expect(installedFrameworkManifest.version).toBe('0.6.0');
-      expect(installedCliManifest.version).toBe('1.0.1');
+      expect(installedFrameworkManifest.version).toBe('0.6.1');
+      expect(installedCliManifest.version).toBe('1.1.0');
 
       expect(
         findInstalledPackage(join(consumerRoot, 'node_modules'), 'happy-dom')
@@ -587,7 +587,17 @@ describe('CLI package smoke', () => {
       );
       run('bun', ['run', 'tsone', 'build'], consumerRoot, env);
       expect(existsSync(join(consumerRoot, 'dist', 'index.html'))).toBe(true);
-      expect(existsSync(join(consumerRoot, 'dist', 'main.js'))).toBe(true);
+      const buildHtml = readFileSync(
+        join(consumerRoot, 'dist', 'index.html'),
+        'utf8'
+      );
+      const buildScript = buildHtml.match(
+        /src="(\.\/main-[a-z0-9]+\.js)"/
+      )?.[1];
+      expect(buildScript).toBeDefined();
+      if (!buildScript) throw new Error('Missing hashed build entry');
+      expect(existsSync(join(consumerRoot, 'dist', buildScript))).toBe(true);
+      expect(existsSync(join(consumerRoot, 'dist', 'main.js'))).toBe(false);
       const staticCss = readdirSync(join(consumerRoot, 'dist')).filter((file) =>
         /^tsone-static-.*\.css$/.test(file)
       );
@@ -625,10 +635,22 @@ describe('CLI package smoke', () => {
       const devHtml = await page.text();
       const devJs = await bundle.text();
       expect(devHtml).toContain('Installed TSone App');
-      expect(devHtml).toContain('data-tsone-document-style');
-      expect(devHtml).not.toContain('tsone-static-');
+      expect(devHtml).not.toContain('data-tsone-document-style');
+      const documentCss = devHtml.match(
+        /href="([^"\s]+tsone-static-[a-f0-9]+\.css)"/
+      )?.[1];
+      const componentCss = devJs.match(
+        /"(\/dev\/[^"\s]+tsone-static-[a-f0-9]+\.css)"/
+      )?.[1];
+      if (!documentCss || !componentCss)
+        throw new Error('Expected development static CSS');
+      expect(
+        await (await fetch(new URL(documentCss, page.url))).text()
+      ).toContain('.packed-document');
+      expect(
+        await (await fetch(new URL(componentCss, bundle.url))).text()
+      ).toBe('.packed-fixed {\ncolor: red;\n}\n');
       expect(devJs).toContain('Installed TSone App');
-      expect(devJs).not.toContain('tsone-static-');
     } finally {
       if (devProcess) {
         await stopProcess(devProcess);

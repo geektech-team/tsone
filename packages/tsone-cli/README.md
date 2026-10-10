@@ -225,11 +225,15 @@ outside the project through a symlink is rejected before the development server
 starts.
 
 `tsone build` writes a Bun browser bundle and one HTML document per page to the
-safe output directory.
+safe output directory. Entry JavaScript and imported stylesheet bundles use
+content-hashed filenames, such as `main-<hash>.js`, and each HTML document
+references the emitted filenames. Unchanged bundle content keeps the same hash;
+updated content gets a new URL. Library builds retain stable export filenames.
 
-Site builds automatically extract `document.styles` and provably fixed
+Site builds and `dev` automatically extract `document.styles` and provably fixed
 component `initStyles()` / fresh `StyleManager` registrations into
-`tsone-static-<sha256>.css` beside each HTML file. Keep existing literals,
+`tsone-static-<sha256>.css`. Site builds place CSS beside each HTML file; dev
+serves it under the exact `/dev/<session>/<generation>/` URL. Keep existing literals,
 local/module arrays with `forEach`, and supported pure theme expressions;
 props/state, uncertain control flow, mutations or unknown calls stay dynamic.
 Component CSS is activated per instance after matching CSS loads, keeping
@@ -240,7 +244,9 @@ null. Rules remain in the bundle for fallback, and first initialization still
 serializes CSS. Relative/fragment URLs, `@import`, ambiguous URLs or HTML base
 elements retain inline behavior. Discovery adds a build pass, with component
 extraction skipped when Bun lacks resolved-import metadata. No config change
-is required; `dev`, watch and `build --library` retain their existing paths.
+is required. Watch rebuilds replace the JavaScript and CSS generation together;
+failed rebuilds retain the previous artifacts. Non-watch dev retains exact
+generations. `build --library` keeps its existing path.
 
 ## Development Proxy
 

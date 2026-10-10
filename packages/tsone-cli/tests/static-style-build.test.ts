@@ -55,9 +55,9 @@ test('build emits component and document CSS without activating component assets
   expect(html).not.toContain(basename(componentCss));
   expect(html).not.toContain('data-tsone-document-style');
   expect(html).toContain('tsone-static-');
-  expect(readFileSync(join(built.outDir, 'main.js'), 'utf8')).toContain(
-    basename(componentCss)
-  );
+  const script = built.assetsBuilt.find((path) => path.endsWith('.js'));
+  if (!script) throw new Error('Missing JavaScript output');
+  expect(readFileSync(script, 'utf8')).toContain(basename(componentCss));
   expect(readFileSync(entry, 'utf8')).toBe(originalSource);
 });
 

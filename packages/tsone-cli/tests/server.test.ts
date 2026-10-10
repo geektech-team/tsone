@@ -75,7 +75,10 @@ function mockBuild(result: BuildResult): void {
 
 function mockBuildImplementation(implementation: typeof Bun.build): void {
   const originalBuild = Bun.build;
-  Bun.build = implementation;
+  Bun.build = (async (options) =>
+    options.outdir
+      ? implementation(options)
+      : { success: true, logs: [], outputs: [] }) as typeof Bun.build;
   restorers.push(() => {
     Bun.build = originalBuild;
   });

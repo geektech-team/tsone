@@ -1,24 +1,16 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { isEntryJavaScriptOutput, isStylesheetOutput } from './build-output';
 import { resolveConfig } from './config';
 import { assertSafeSubdirectoryDoesNotContain } from './safe-path';
 import type { BuildOptions, BuildResult } from './types';
 import {
-  discoverModules,
-  RuntimeModuleGraph,
-  sourcesUnchanged,
-  type Discovery,
-} from './static-styles/module-graph';
+  prepareStaticStyles,
+  buildWithStaticStyles,
+  type PreparedStyles,
+} from './static-styles/bundle';
 import {
-  analyzeFixedStyles,
-  transformStaticStyles,
-  type FixedStyleGroup,
-} from './static-styles/analyze';
-import {
-  canExternalizeCss,
   externalizeDocumentStyles,
-  makeStaticStyleAsset,
   writeStaticStyleAssets,
   type StaticStyleAsset,
 } from './static-styles/assets';
@@ -32,11 +24,6 @@ interface BuiltPage {
   javascriptAssets: string[];
   stylesheetAssets: string[];
   staticStyles: StaticStyleAsset[];
-}
-
-interface PreparedStyles {
-  discovery: Discovery;
-  groups: FixedStyleGroup[];
 }
 
 export async function build(options: BuildOptions = {}): Promise<BuildResult> {
@@ -65,16 +52,14 @@ export async function build(options: BuildOptions = {}): Promise<BuildResult> {
 
   const prepared = new Map<string, PreparedStyles>();
   for (const entry of entries) {
-    let discovery: Discovery;
     try {
-      discovery = await discoverModules(pageBuildOptions(config, entry));
+      prepared.set(
+        entry,
+        await prepareStaticStyles(pageBuildOptions(config, entry))
+      );
     } catch (error) {
       throw buildFailure([pageFailureReason(entry, [errorMessage(error)])]);
     }
-    const groups = analyzeFixedStyles(new RuntimeModuleGraph(discovery)).filter(
-      (group) => canExternalizeCss(group.cssText)
-    );
-    prepared.set(entry, { discovery, groups });
   }
 
   await rm(config.build.outDir, { recursive: true, force: true });
@@ -201,57 +186,13 @@ async function buildPage(
   prepared: PreparedStyles
 ): Promise<BuiltPage | string> {
   let result: Awaited<ReturnType<typeof Bun.build>>;
-  let groups = (await sourcesUnchanged(prepared.discovery))
-    ? prepared.groups
-    : [];
-  let changed = false;
-  const plugin: Bun.BunPlugin = {
-    name: 'tsone-static-styles',
-    setup(builder) {
-      builder.onLoad(
-        { filter: /\.[cm]?[jt]sx?$/, namespace: 'file' },
-        async (args) => {
-          const module = prepared.discovery.modules.get(resolve(args.path));
-          if (!module) {
-            changed = true;
-            return;
-          }
-          const source = await readFile(args.path, 'utf8');
-          if (source !== module.source) {
-            changed = true;
-            return { contents: source, loader: module.loader };
-          }
-          const candidates = groups.filter(
-            (group) => group.modulePath === module.path
-          );
-          return {
-            contents: transformStaticStyles(
-              source,
-              candidates,
-              (css) => `./${makeStaticStyleAsset(css).filename}`
-            ),
-            loader: module.loader,
-          };
-        }
-      );
-    },
-  };
+  let staticStyles: StaticStyleAsset[];
   try {
-    result = await Bun.build({
-      ...pageBuildOptions(config, entry),
-      plugins: groups.length ? [plugin] : undefined,
-    });
-    if (changed) {
-      groups = [];
-      const beforeRetry = new Map<string, string>();
-      for (const module of prepared.discovery.modules.values())
-        beforeRetry.set(module.path, await readFile(module.path, 'utf8'));
-      result = await Bun.build(pageBuildOptions(config, entry));
-      for (const [path, source] of beforeRetry) {
-        if ((await readFile(path, 'utf8')) !== source)
-          throw new Error('Sources kept changing during static CSS build');
-      }
-    }
+    ({ result, staticStyles } = await buildWithStaticStyles(
+      pageBuildOptions(config, entry),
+      prepared,
+      (asset) => `./${asset.filename}`
+    ));
   } catch (error: unknown) {
     return pageFailureReason(entry, [errorMessage(error)]);
   }
@@ -280,14 +221,7 @@ async function buildPage(
     assets,
     javascriptAssets,
     stylesheetAssets,
-    staticStyles: [
-      ...new Map(
-        groups.map((group) => {
-          const asset = makeStaticStyleAsset(group.cssText);
-          return [asset.filename, asset];
-        })
-      ).values(),
-    ],
+    staticStyles,
   };
 }
 
@@ -301,7 +235,7 @@ function pageBuildOptions(
     target: 'browser',
     format: 'esm',
     minify: process.env.TSONE_MINIFY !== '0',
-    naming: { entry: '[name].[ext]', chunk: '[name]-[hash].[ext]' },
+    naming: { entry: '[name]-[hash].[ext]', chunk: '[name]-[hash].[ext]' },
     throw: false,
   };
 }

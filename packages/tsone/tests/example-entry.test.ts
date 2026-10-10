@@ -138,13 +138,11 @@ describe('playground entries', () => {
       {
         name: 'official-site',
         title: 'TSone Playground 官网',
-        bundle: './main.js',
         bundleText: '纯 TypeScript 前端框架',
       },
       {
         name: 'admin-dashboard',
         title: 'TSone Playground 后台',
-        bundle: './main.js',
         bundleText: 'TSone 控制台',
       },
     ];
@@ -173,11 +171,12 @@ describe('playground entries', () => {
         const html = readFileSync(join(outDir, 'index.html'), 'utf8');
         expect(html).toContain(`<title>${project.title}</title>`);
         expect(html).toContain('<div id="app"></div>');
-        expect(html).toContain(
-          `<script type="module" src="${project.bundle}"></script>`
-        );
-
-        const mainBundle = join(outDir, 'main.js');
+        const bundle = html.match(
+          /<script type="module" src="(\.\/main-[a-z0-9]+\.js)"><\/script>/
+        )?.[1];
+        expect(bundle).toBeDefined();
+        if (!bundle) throw new Error('Missing hashed playground entry');
+        const mainBundle = join(outDir, bundle);
         expect(existsSync(mainBundle)).toBe(true);
         expect(readFileSync(mainBundle, 'utf8')).toContain(project.bundleText);
       } finally {

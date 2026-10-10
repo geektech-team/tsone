@@ -149,7 +149,7 @@ export const guidePages: DocPage[] = [
         "import { defineConfig } from '@geektech/tsone-cli';\n\nexport default defineConfig({\n  entry: 'src/main.ts',\n  pages: {\n    '/about': 'src/about.ts',\n    '/docs/guide': 'src/guide.ts',\n  },\n});"
       ),
       paragraph(
-        '开发时每个页面在其路由下提供服务，tsone build 会为每个页面输出一个 HTML 文档（index.html、about.html、docs/guide.html），资源 URL 相对各文档。'
+        '开发时每个页面在其路由下提供服务，tsone build 会为每个页面输出一个 HTML 文档（index.html、about.html、docs/guide.html），资源 URL 相对各文档。站点 JavaScript 入口使用 main-<hash>.js 等带内容 hash 的文件名，HTML 自动引用实际生成的文件名。'
       ),
       heading(2, '运行应用'),
       codeBlock(
@@ -1602,7 +1602,7 @@ export const guidePages: DocPage[] = [
       heading(3, 'StyleManager'),
       paragraph('每个组件实例都有 styleManager，可用于添加、修改和删除样式。'),
       paragraph(
-        'tsone build 自动将 document.styles 和固定 initStyles / 新建 StyleManager 的初始化规则输出为静态 CSS，无需改写字面量或局部、模块数组的 forEach。纯主题表达式可分析，props/state、未知调用或可见修改保留运行时路径。组件同步内联样式在匹配外链加载后切换；动态修改恢复原位置，卸载清理实例节点。styleElement 在外链激活时为 null，规则对象仍在 bundle 中，首次初始化仍序列化。相对或片段 URL、@import、不明确地址和 base 元素回退；dev、watch、library 保持原流程。模块发现增加构建步骤，不承诺更快 build。'
+        'tsone build 和 dev 自动将 document.styles 和固定 initStyles / 新建 StyleManager 的初始化规则输出为静态 CSS，无需改写字面量或局部、模块数组的 forEach。纯主题表达式可分析，props/state、未知调用或可见修改保留运行时路径。组件同步内联样式在匹配外链加载后切换；动态修改恢复原位置，卸载清理实例节点。styleElement 在外链激活时为 null，规则对象仍在 bundle 中，首次初始化仍序列化。相对或片段 URL、@import、不明确地址和 base 元素回退；dev CSS 使用当前构建版本的资源 URL；watch 成功后一起替换脚本和 CSS，失败保留上一版，非 watch dev 保留各次构建资源；library 保持原流程。模块发现增加构建步骤，不承诺更快 build。'
       ),
       heading(3, '样式对象'),
       list([

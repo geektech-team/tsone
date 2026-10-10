@@ -7,7 +7,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'bun:test';
 import { build } from '../src/build';
 import { resolveConfig } from '../src/config';
@@ -196,18 +196,28 @@ describe('TSone CLI multi-page', () => {
       existsSync(join(root, 'dist', 'build', 'h5', 'docs', 'guide.html'))
     ).toBe(true);
     expect(indexHtml).toContain('<title>Home Page</title>');
-    expect(indexHtml).toContain('<script type="module" src="./main.js">');
+    const mainScript = indexHtml.match(/src="(\.\/main-[a-z0-9]+\.js)"/)?.[1];
+    expect(mainScript).toBeDefined();
     expect(aboutHtml).toContain('<title>About</title>');
-    expect(aboutHtml).toContain('<script type="module" src="./about.js">');
+    const aboutScript = aboutHtml.match(/src="(\.\/about-[a-z0-9]+\.js)"/)?.[1];
+    expect(aboutScript).toBeDefined();
     expect(guideHtml).toContain('<title>Guide</title>');
-    expect(guideHtml).toContain('<script type="module" src="./../guide.js">');
+    const guideScript = guideHtml.match(
+      /src="(\.\/\.\.\/guide-[a-z0-9]+\.js)"/
+    )?.[1];
+    expect(guideScript).toBeDefined();
+    if (!mainScript || !aboutScript || !guideScript)
+      throw new Error('Missing page scripts');
+    const scriptPaths = [mainScript, aboutScript, guideScript].map((script) =>
+      join(result.outDir, basename(script))
+    );
+    for (const script of scriptPaths) expect(existsSync(script)).toBe(true);
     expect(result.assetsBuilt).toEqual(
       expect.arrayContaining([
         join(root, 'dist', 'build', 'h5', 'index.html'),
         join(root, 'dist', 'build', 'h5', 'about.html'),
         join(root, 'dist', 'build', 'h5', 'docs', 'guide.html'),
-        join(root, 'dist', 'build', 'h5', 'main.js'),
-        join(root, 'dist', 'build', 'h5', 'about.js'),
+        ...scriptPaths,
       ])
     );
   });

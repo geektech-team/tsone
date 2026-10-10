@@ -13,6 +13,15 @@ import { resolveConfig } from './config';
 import { createProxyHandler } from './proxy';
 import { assertSafeSubdirectory } from './safe-path';
 import { createFileWatcher, type FileWatcher } from './watch';
+import {
+  prepareStaticStyles,
+  buildWithStaticStyles,
+} from './static-styles/bundle';
+import {
+  externalizeDocumentStyles,
+  writeStaticStyleAssets,
+  type StaticStyleAsset,
+} from './static-styles/assets';
 import type { ResolveConfigOptions, ResolvedConfig } from './types';
 
 const DEVELOPMENT_URL_PREFIX = '/dev';
@@ -168,6 +177,15 @@ async function createServerInstance(
     return bundle;
   };
 
+  const discardUnpublishedBundle = async (
+    entry: string,
+    bundle: DevelopmentBundle
+  ): Promise<void> => {
+    if (artifacts.has(bundle.entry.pathname)) return;
+    if (bundles.get(entry) === bundle) bundles.delete(entry);
+    await removeDevelopmentBundle(bundle, artifacts);
+  };
+
   const rebuild = (): Promise<boolean> =>
     enqueue(async () => {
       const pending = new Map<string, DevelopmentBundle>();
@@ -225,6 +243,7 @@ async function createServerInstance(
             config,
             config.pages,
             getBundle,
+            discardUnpublishedBundle,
             artifacts,
             liveReload
           )
@@ -271,6 +290,10 @@ async function serveProjectRequest(
   config: ResolvedConfig,
   pages: Record<string, string>,
   getBundle: (entry: string) => Promise<DevelopmentBundle | Response>,
+  discardUnpublishedBundle: (
+    entry: string,
+    bundle: DevelopmentBundle
+  ) => Promise<void>,
   artifacts: Map<string, DevelopmentOutput>,
   liveReload: LiveReloadHub | undefined
 ): Promise<Response> {
@@ -300,6 +323,7 @@ async function serveProjectRequest(
       });
     } catch (error: unknown) {
       console.error(error);
+      await discardUnpublishedBundle(entry, bundle);
       return buildFailureResponse();
     }
   }
@@ -348,7 +372,7 @@ async function renderDevelopmentDocument(
   route: string
 ): Promise<string> {
   const { renderProjectHtml } = await import('./project');
-  return renderProjectHtml(
+  const html = await renderProjectHtml(
     config,
     {
       head: bundle.stylesheets.map(({ pathname: href }) => ({
@@ -360,6 +384,12 @@ async function renderDevelopmentDocument(
     entry,
     route
   );
+  const documentStyles = await externalizeDocumentStyles(
+    html,
+    (asset) => `${bundle.urlPrefix}/${asset.filename}`
+  );
+  await addStaticStyleAssets(bundle, documentStyles.assets);
+  return documentStyles.html;
 }
 
 function pageRouteForPathname(
@@ -501,9 +531,10 @@ interface DevelopmentOutput {
 
 interface DevelopmentBundle {
   outDir: string;
+  urlPrefix: string;
   entry: DevelopmentOutput;
   stylesheets: DevelopmentOutput[];
-  artifacts: ReadonlyMap<string, DevelopmentOutput>;
+  artifacts: Map<string, DevelopmentOutput>;
 }
 
 function createDevelopmentTaskQueue(): <T>(
@@ -535,7 +566,6 @@ async function buildProjectBundle(
     target: 'browser' as const,
     format: 'esm' as const,
     sourcemap: 'inline' as const,
-    write: true,
     throw: false,
     publicPath: `${generationUrl}/`,
     naming: {
@@ -546,7 +576,12 @@ async function buildProjectBundle(
   };
 
   try {
-    const result = await Bun.build(buildOptions);
+    const prepared = await prepareStaticStyles(buildOptions);
+    const { result, staticStyles } = await buildWithStaticStyles(
+      buildOptions,
+      prepared,
+      (asset) => `${generationUrl}/${asset.filename}`
+    );
     const entryArtifact = result.outputs.find(isEntryJavaScriptOutput);
     if (!result.success || !entryArtifact) {
       result.logs.forEach((log) => console.error(log));
@@ -583,8 +618,9 @@ async function buildProjectBundle(
       throw new Error('Development entry output was not indexed');
     }
 
-    return {
+    const bundle: DevelopmentBundle = {
       outDir: generationOutDir,
+      urlPrefix: generationUrl,
       entry,
       stylesheets: result.outputs
         .filter(isStylesheetOutput)
@@ -592,10 +628,29 @@ async function buildProjectBundle(
         .filter((output): output is DevelopmentOutput => output !== undefined),
       artifacts: pendingArtifacts,
     };
+    await addStaticStyleAssets(bundle, staticStyles);
+    return bundle;
   } catch (error: unknown) {
     console.error(error);
     await removeDevelopmentDirectory(generationOutDir);
     return buildFailureResponse();
+  }
+}
+
+async function addStaticStyleAssets(
+  bundle: DevelopmentBundle,
+  assets: readonly StaticStyleAsset[]
+): Promise<void> {
+  const paths = await writeStaticStyleAssets(
+    resolve(bundle.outDir, 'index.html'),
+    assets
+  );
+  for (const path of paths) {
+    const output = createDevelopmentOutput(bundle.outDir, bundle.urlPrefix, {
+      path,
+      type: 'text/css;charset=utf-8',
+    });
+    bundle.artifacts.set(output.pathname, output);
   }
 }
 
@@ -636,7 +691,10 @@ function publishDevelopmentBundle(
 function createDevelopmentOutput(
   generationOutDir: string,
   generationUrl: string,
-  output: Awaited<ReturnType<typeof Bun.build>>['outputs'][number]
+  output: Pick<
+    Awaited<ReturnType<typeof Bun.build>>['outputs'][number],
+    'path' | 'type'
+  >
 ): DevelopmentOutput {
   const filePath = resolve(output.path);
   const pathFromGeneration = relative(generationOutDir, filePath);

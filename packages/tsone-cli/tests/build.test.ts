@@ -9,7 +9,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from 'bun:test';
 import { build } from '../src/build';
@@ -138,32 +138,33 @@ describe('TSone production build', () => {
       join(root, 'dist', 'build', 'h5', 'index.html'),
       'utf8'
     );
+    const script = result.assetsBuilt.find((path) => path.endsWith('.js'));
+    const stylesheet = result.assetsBuilt.find((path) => path.endsWith('.css'));
+    if (!script || !stylesheet) throw new Error('Missing build assets');
 
     expect(existsSync(join(root, 'dist', 'build', 'h5', 'stale.txt'))).toBe(
       false
     );
-    expect(existsSync(join(root, 'dist', 'build', 'h5', 'main.js'))).toBe(true);
-    expect(
-      readFileSync(join(root, 'dist', 'build', 'h5', 'main.js'), 'utf8')
-    ).not.toBe('');
-    expect(existsSync(join(root, 'dist', 'build', 'h5', 'main.css'))).toBe(
-      true
-    );
-    expect(
-      readFileSync(join(root, 'dist', 'build', 'h5', 'main.css'), 'utf8')
-    ).toContain('color:');
+    expect(basename(script)).toMatch(/^main-[a-z0-9]+\.js$/);
+    expect(readFileSync(script, 'utf8')).not.toBe('');
+    expect(basename(stylesheet)).toMatch(/^main-[a-z0-9]+\.css$/);
+    expect(readFileSync(stylesheet, 'utf8')).toContain('color:');
     expect(result).toEqual({
       root,
       outDir: join(root, 'dist', 'build', 'h5'),
       assetsBuilt: expect.arrayContaining([
         join(root, 'dist', 'build', 'h5', 'index.html'),
-        join(root, 'dist', 'build', 'h5', 'main.js'),
-        join(root, 'dist', 'build', 'h5', 'main.css'),
+        script,
+        stylesheet,
       ]),
     });
     expect(html).toContain('<title>Built TSone App</title>');
-    expect(html).toContain('<script type="module" src="./main.js"></script>');
-    expect(html).toContain('<link rel="stylesheet" href="./main.css">');
+    expect(html).toContain(
+      `<script type="module" src="./${basename(script)}"></script>`
+    );
+    expect(html).toContain(
+      `<link rel="stylesheet" href="./${basename(stylesheet)}">`
+    );
     const documentUrl = pathToFileURL(
       join(root, 'dist', 'build', 'h5', 'index.html')
     );
@@ -178,18 +179,50 @@ describe('TSone production build', () => {
       throw new Error('Expected build document assets');
     }
 
-    expect(fileURLToPath(new URL(scriptSource, documentUrl))).toBe(
-      join(root, 'dist', 'build', 'h5', 'main.js')
-    );
+    expect(fileURLToPath(new URL(scriptSource, documentUrl))).toBe(script);
     expect(existsSync(fileURLToPath(new URL(scriptSource, documentUrl)))).toBe(
       true
     );
     expect(fileURLToPath(new URL(stylesheetHref, documentUrl))).toBe(
-      join(root, 'dist', 'build', 'h5', 'main.css')
+      stylesheet
     );
     expect(
       existsSync(fileURLToPath(new URL(stylesheetHref, documentUrl)))
     ).toBe(true);
+  });
+
+  it('keeps entry hashes stable until bundle content changes and updates the document URL', async () => {
+    const root = makeRoot();
+    const first = await build({ root });
+    const firstScript = first.assetsBuilt.find((path) => path.endsWith('.js'));
+    if (!firstScript) throw new Error('Missing JavaScript output');
+    expect(basename(firstScript)).toMatch(/^main-[a-z0-9]+\.js$/);
+    const firstContents = readFileSync(firstScript, 'utf8');
+    const repeated = await build({ root });
+    expect(repeated.assetsBuilt).toContain(firstScript);
+    expect(readFileSync(firstScript, 'utf8')).toBe(firstContents);
+
+    const entry = join(root, 'src', 'main.ts');
+    writeFileSync(
+      entry,
+      readFileSync(entry, 'utf8').replace(
+        'Built TSone App',
+        'Updated TSone App'
+      )
+    );
+    const updated = await build({ root });
+    const updatedScript = updated.assetsBuilt.find((path) =>
+      path.endsWith('.js')
+    );
+    if (!updatedScript) throw new Error('Missing updated JavaScript output');
+    expect(basename(updatedScript)).toMatch(/^main-[a-z0-9]+\.js$/);
+    expect(updatedScript).not.toBe(firstScript);
+    expect(readFileSync(updatedScript, 'utf8')).not.toBe(firstContents);
+    expect(existsSync(firstScript)).toBe(false);
+    expect(existsSync(join(updated.outDir, 'main.js'))).toBe(false);
+    const html = readFileSync(join(updated.outDir, 'index.html'), 'utf8');
+    expect(html).toContain(`src="./${basename(updatedScript)}"`);
+    expect(html).not.toContain(basename(firstScript));
   });
 
   it('minifies production bundles by default', async () => {

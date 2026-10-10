@@ -223,6 +223,7 @@ describe('TSone development server watch mode', () => {
     const originalBuild = Bun.build;
     Bun.build = (async (options: Bun.BuildConfig) => {
       buildCount += 1;
+      if (!options.outdir) return { success: true, logs: [], outputs: [] };
       const outDir =
         'outdir' in options && typeof options.outdir === 'string'
           ? options.outdir
@@ -262,7 +263,7 @@ describe('TSone development server watch mode', () => {
     await fetch(`${serverUrl(server)}/index.html`);
     await fetch(`${serverUrl(server)}/bundle.js`);
 
-    expect(buildCount).toBe(1);
+    expect(buildCount).toBe(2);
   });
 
   it('removes replaced JavaScript, CSS and file assets before broadcasting reload', async () => {
