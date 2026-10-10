@@ -1,3 +1,5 @@
+import { renderManagedStyleSheet } from './managed-sheet';
+
 export interface StyleOptions {
   selector: string;
   properties: Record<string, string | number>;
@@ -47,15 +49,6 @@ export class StyleManager {
     return this.styleElement;
   }
 
-  private convertToCSS(properties: Record<string, string | number>): string {
-    return Object.entries(properties)
-      .map(([key, value]) => {
-        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-        return `${cssKey}: ${value};`;
-      })
-      .join('\n');
-  }
-
   private updateStyles(): void {
     if (this.styles.size === 0) {
       if (this.styleElement) {
@@ -65,25 +58,6 @@ export class StyleManager {
     }
 
     const element = this.ensureStyleElement();
-    let cssText = '';
-
-    this.styles.forEach((style) => {
-      // 基础样式
-      cssText += `${style.selector} {\n${this.convertToCSS(style.properties)}\n}\n`;
-
-      // hover 样式
-      if (style.hover) {
-        cssText += `${style.selector}:hover {\n${this.convertToCSS(style.hover)}\n}\n`;
-      }
-
-      // media 查询
-      if (style.media) {
-        Object.entries(style.media).forEach(([query, properties]) => {
-          cssText += `@media ${query} {\n${style.selector} {\n${this.convertToCSS(properties)}\n}\n}\n`;
-        });
-      }
-    });
-
-    element.textContent = cssText;
+    element.textContent = renderManagedStyleSheet(this.styles.values());
   }
 }

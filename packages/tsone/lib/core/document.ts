@@ -74,7 +74,7 @@ export function renderHtmlDocument(options: HtmlDocumentOptions): string {
       : '',
     ...(options.head ?? []).map((element) => `  ${renderHeadElement(element)}`),
     options.styles && options.styles.length > 0
-      ? `  <style>${renderStyleSheet(options.styles)}</style>`
+      ? `  <style data-tsone-document-style>${renderStyleSheet(options.styles)}</style>`
       : '',
     '</head>',
     `<body${bodyAttributes}>`,
