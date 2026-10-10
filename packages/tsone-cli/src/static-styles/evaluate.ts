@@ -75,7 +75,7 @@ export class StaticEvaluator {
           : evaluate(node.argumentExpression, scope);
         if (!base.ok || !key.ok || (typeof key.value !== 'string' && typeof key.value !== 'number') ||
           ['__proto__', 'constructor', 'prototype'].includes(String(key.value))) return failed;
-        if (isStaticRecord(base.value) && Object.hasOwn(base.value, key.value)) {
+        if (isStaticRecord(base.value) && Object.prototype.hasOwnProperty.call(base.value, key.value)) {
           return { ok: true, value: base.value[String(key.value)] };
         }
         if (Array.isArray(base.value) && (key.value === 'length' || /^\d+$/.test(String(key.value)))) {
