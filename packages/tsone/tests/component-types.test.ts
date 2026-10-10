@@ -41,6 +41,11 @@ describe('component public types', () => {
         [
           "import { Button, Component, Div, EventListeners, HTMLProps, InjectionKey, Input, P, Section, Span, Tag, TransitionAnimationType, TransitionGroup, VNode, createForm, minLength, required, validate } from 'tsone-source';",
           "import { RouteLocation, RouteMeta, createRouter } from 'tsone-source/router';",
+          "import { StyleManager, renderManagedStyleSheet, type StyleOptions } from 'tsone-source/style';",
+          "const styles: StyleOptions[] = [{ selector: '.typed', properties: { opacity: 1 } }];",
+          'const css: string = renderManagedStyleSheet(styles);',
+          "const staticRequest: void = new StyleManager().useStaticStyleSheet('./fixed.css');",
+          'void css; void staticRequest;',
           '',
           'interface Props {',
           '  label: string;',
@@ -145,6 +150,7 @@ describe('component public types', () => {
                 'tsone-source/router': [
                   join(packageRoot, 'lib/router/index.ts'),
                 ],
+                'tsone-source/style': [join(packageRoot, 'lib/style/index.ts')],
               },
             },
             include: ['component-consumer.ts'],

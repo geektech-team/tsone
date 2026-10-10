@@ -544,10 +544,16 @@ describe('CLI package smoke', () => {
       writeFileSync(
         join(consumerRoot, 'src', 'main.ts'),
         [
-          "import { createApp } from '@geektech/tsone';",
+          "import { Component, createApp } from '@geektech/tsone';",
+          'export class PackedWidget extends Component {',
+          '  protected initState() { return {}; }',
+          "  protected initStyles() { this.styleManager.addStyle('fixed', { selector: '.packed-fixed', properties: { color: 'red' } }); }",
+          "  protected render() { return { tag: 'div' }; }",
+          '}',
           '',
           'export const app = createApp({',
-          "  document: { title: 'Installed TSone App' },",
+          '  root: PackedWidget,',
+          "  document: { title: 'Installed TSone App', styles: [{ selector: '.packed-document', properties: { color: 'blue' } }] },",
           '});',
         ].join('\n')
       );
@@ -582,6 +588,15 @@ describe('CLI package smoke', () => {
       run('bun', ['run', 'tsone', 'build'], consumerRoot, env);
       expect(existsSync(join(consumerRoot, 'dist', 'index.html'))).toBe(true);
       expect(existsSync(join(consumerRoot, 'dist', 'main.js'))).toBe(true);
+      const staticCss = readdirSync(join(consumerRoot, 'dist')).filter((file) =>
+        /^tsone-static-.*\.css$/.test(file)
+      );
+      expect(staticCss).toHaveLength(2);
+      expect(
+        staticCss.map((file) =>
+          readFileSync(join(consumerRoot, 'dist', file), 'utf8')
+        )
+      ).toContain('.packed-fixed {\ncolor: red;\n}\n');
 
       devProcess = Bun.spawn(
         [
@@ -607,8 +622,13 @@ describe('CLI package smoke', () => {
 
       expect(page.status).toBe(200);
       expect(bundle.status).toBe(200);
-      expect(await page.text()).toContain('Installed TSone App');
-      expect(await bundle.text()).toContain('Installed TSone App');
+      const devHtml = await page.text();
+      const devJs = await bundle.text();
+      expect(devHtml).toContain('Installed TSone App');
+      expect(devHtml).toContain('data-tsone-document-style');
+      expect(devHtml).not.toContain('tsone-static-');
+      expect(devJs).toContain('Installed TSone App');
+      expect(devJs).not.toContain('tsone-static-');
     } finally {
       if (devProcess) {
         await stopProcess(devProcess);

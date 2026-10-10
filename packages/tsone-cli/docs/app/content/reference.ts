@@ -79,8 +79,8 @@ console.log(result.root, result.outDir, result.assetsBuilt);`
         name: 'build',
         signature: '(options?) => Promise<BuildResult>',
         description: t(
-          '校验入口与输出路径，然后返回 { root, outDir, assetsBuilt }；结果中的路径为绝对路径。',
-          'Validates the entry and output path, then returns { root, outDir, assetsBuilt }; the paths in the result are absolute.'
+          '校验入口与输出路径，站点构建提取可确认的固定 CSS，然后返回 { root, outDir, assetsBuilt }；assetsBuilt 包含静态 CSS，路径绝对且去重。',
+          'Validates the entry and output path, extracts provably fixed CSS in site builds, then returns { root, outDir, assetsBuilt }; assetsBuilt includes static CSS with unique absolute paths.'
         ),
       },
       {
@@ -92,16 +92,12 @@ console.log(result.root, result.outDir, result.assetsBuilt);`
         ),
       },
     ]),
-    callout(
-      'tip',
-      t('生命周期约定', 'Lifecycle contract'),
-      [
-        t(
-          'startDevServer 返回的服务器由调用方管理：确保在进程退出前调用 server.stop()。build 与 resolveConfig 是纯异步函数，返回后不保留任何后台资源。',
-          'The server returned by startDevServer is owned by the caller: make sure server.stop() is called before the process exits. build and resolveConfig are plain async functions that keep no background resources after they resolve.'
-        ),
-      ]
-    ),
+    callout('tip', t('生命周期约定', 'Lifecycle contract'), [
+      t(
+        'startDevServer 返回的服务器由调用方管理：确保在进程退出前调用 server.stop()。build 与 resolveConfig 是纯异步函数，返回后不保留任何后台资源。',
+        'The server returned by startDevServer is owned by the caller: make sure server.stop() is called before the process exits. build and resolveConfig are plain async functions that keep no background resources after they resolve.'
+      ),
+    ]),
     heading(2, 'types', t('公开类型', 'Public types')),
     paragraph(
       t(

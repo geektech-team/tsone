@@ -9,7 +9,9 @@ function renderProperties(properties: Record<string, string | number>): string {
     .join('\n');
 }
 
-export function renderManagedStyleSheet(styles: Iterable<StyleOptions>): string {
+export function renderManagedStyleSheet(
+  styles: Iterable<StyleOptions>
+): string {
   let css = '';
   for (const style of styles) {
     css += `${style.selector} {\n${renderProperties(style.properties)}\n}\n`;

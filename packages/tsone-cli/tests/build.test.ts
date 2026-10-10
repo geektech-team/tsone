@@ -74,9 +74,14 @@ function createBuildOutput(
 
 function mockBuild(result: BunBuildResult): void {
   const originalBuild = Bun.build;
-  Bun.build = (async (options) => options.outdir ? result : {
-    success: true, logs: [], outputs: [],
-  }) as typeof Bun.build;
+  Bun.build = (async (options: Bun.BuildConfig) =>
+    options.outdir
+      ? result
+      : {
+          success: true,
+          logs: [],
+          outputs: [],
+        }) as typeof Bun.build;
   restorers.push(() => {
     Bun.build = originalBuild;
   });
@@ -84,7 +89,7 @@ function mockBuild(result: BunBuildResult): void {
 
 function mockRejectedBuild(error: Error): void {
   const originalBuild = Bun.build;
-  Bun.build = (async (options) => {
+  Bun.build = (async (options: Bun.BuildConfig) => {
     if (!options.outdir) return { success: true, logs: [], outputs: [] };
     throw error;
   }) as unknown as typeof Bun.build;
@@ -498,7 +503,7 @@ describe('TSone library build', () => {
 
     let captured: Record<string, unknown> | undefined;
     const originalBuild = Bun.build;
-    Bun.build = (async (options) => {
+    Bun.build = (async (options: Bun.BuildConfig) => {
       captured = options as unknown as Record<string, unknown>;
       const entryPath = join(root, 'lib-dist', 'index.js');
       mkdirSync(join(root, 'lib-dist'), { recursive: true });

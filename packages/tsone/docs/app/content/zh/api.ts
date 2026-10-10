@@ -960,12 +960,18 @@ export const apiPages: DocPage[] = [
       ),
       heading(2, 'StyleManager 方法'),
       list([
-        [inlineCode('addStyle(selector, style)'), ': 添加样式规则'],
-        [inlineCode('removeStyle(selector)'), ': 移除指定样式'],
-        [inlineCode('getStyle(selector)'), ': 读取指定样式'],
+        [inlineCode('addStyle(name, options)'), ': 添加或覆盖命名规则'],
+        [inlineCode('removeStyle(name)'), ': 移除指定规则'],
         [inlineCode('clearStyles()'), ': 清空所有样式'],
-        [inlineCode('addStyleFromCSS(css)'), ': 从 CSS 字符串批量导入规则'],
+        [inlineCode('destroy()'), ': 清理本实例的样式节点'],
+        [
+          inlineCode('useStaticStyleSheet(href)'),
+          ': 供 build 生成代码申请静态样式；失败保持内联',
+        ],
       ]),
+      paragraph(
+        'renderManagedStyleSheet(styles: Iterable<StyleOptions>): string 是无 DOM 的管理器规则序列化函数。静态样式激活后 styleElement 为 null，styles 仍保留完整 Map；修改恢复原位置的内联节点。'
+      ),
       codeBlock(
         'ts',
         [
@@ -1022,9 +1028,7 @@ export const apiPages: DocPage[] = [
     order: 6,
     body: [
       heading(1, '请求 API'),
-      paragraph(
-        '请求客户端从独立子路径导入，基于原生 fetch，默认解析 JSON。'
-      ),
+      paragraph('请求客户端从独立子路径导入，基于原生 fetch，默认解析 JSON。'),
       codeBlock(
         'ts',
         [
@@ -1055,7 +1059,8 @@ export const apiPages: DocPage[] = [
         },
         {
           name: 'interceptors.request.use',
-          signature: '(config: RequestConfig) => RequestConfig | Promise<RequestConfig>',
+          signature:
+            '(config: RequestConfig) => RequestConfig | Promise<RequestConfig>',
           description: '在 fetch 之前执行，可替换请求配置。',
         },
         {

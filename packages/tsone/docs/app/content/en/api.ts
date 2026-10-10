@@ -1025,15 +1025,21 @@ export const enApiPages: DocPage[] = [
       ),
       heading(2, 'StyleManager Methods'),
       list([
-        [inlineCode('addStyle(selector, style)'), ': adds a style rule'],
-        [inlineCode('removeStyle(selector)'), ': removes a specific style'],
-        [inlineCode('getStyle(selector)'), ': reads a specific style'],
-        [inlineCode('clearStyles()'), ': clears all styles'],
         [
-          inlineCode('addStyleFromCSS(css)'),
-          ': imports rules from a CSS string',
+          inlineCode('addStyle(name, options)'),
+          ': adds or replaces a named rule',
+        ],
+        [inlineCode('removeStyle(name)'), ': removes a named rule'],
+        [inlineCode('clearStyles()'), ': clears all styles'],
+        [inlineCode('destroy()'), ': cleans up this instance’s style nodes'],
+        [
+          inlineCode('useStaticStyleSheet(href)'),
+          ': requests static CSS from generated build code; failures keep inline CSS',
         ],
       ]),
+      paragraph(
+        'renderManagedStyleSheet(styles: Iterable<StyleOptions>): string serializes managed rules without a DOM. styleElement is null while static CSS is active; styles retains the full Map and edits restore inline CSS at the original position.'
+      ),
       codeBlock(
         'ts',
         [
@@ -1124,7 +1130,8 @@ export const enApiPages: DocPage[] = [
         },
         {
           name: 'interceptors.request.use',
-          signature: '(config: RequestConfig) => RequestConfig | Promise<RequestConfig>',
+          signature:
+            '(config: RequestConfig) => RequestConfig | Promise<RequestConfig>',
           description: 'Runs before fetch and can replace the request config.',
         },
         {
@@ -1135,7 +1142,8 @@ export const enApiPages: DocPage[] = [
         {
           name: 'interceptors.error.use',
           signature: '(error: unknown) => unknown | Promise<unknown>',
-          description: 'Runs for request, transport, parsing, and non-2xx failures; returning a value recovers the request.',
+          description:
+            'Runs for request, transport, parsing, and non-2xx failures; returning a value recovers the request.',
         },
       ]),
       heading(2, 'Response Types and Errors'),

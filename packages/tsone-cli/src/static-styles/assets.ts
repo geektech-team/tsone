@@ -1,13 +1,19 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
-export interface StaticStyleAsset { filename: string; cssText: string; }
+export interface StaticStyleAsset {
+  filename: string;
+  cssText: string;
+}
 
 export function canExternalizeCss(css: string): boolean {
   let index = 0;
   const whitespace = (): boolean => {
     while (index < css.length) {
-      if (/\s/.test(css[index])) { index++; continue; }
+      if (/\s/.test(css[index])) {
+        index++;
+        continue;
+      }
       if (css.startsWith('/*', index)) {
         const end = css.indexOf('*/', index + 2);
         if (end < 0) return false;
@@ -45,14 +51,16 @@ export function canExternalizeCss(css: string): boolean {
       if (token === '@import') return false;
       if (!whitespace()) return false;
       if (css[index] !== '(') continue;
-      if (['image-set', '-webkit-image-set', 'image', 'src'].includes(token)) return false;
+      if (['image-set', '-webkit-image-set', 'image', 'src'].includes(token))
+        return false;
       if (token !== 'url') continue;
       index++;
       if (!whitespace()) return false;
       let address: string | undefined;
       if (css[index] === '"' || css[index] === "'") {
         address = quoted();
-        if (address === undefined || !whitespace() || css[index++] !== ')') return false;
+        if (address === undefined || !whitespace() || css[index++] !== ')')
+          return false;
       } else {
         const begin = index;
         while (index < css.length && css[index] !== ')') {
@@ -62,7 +70,11 @@ export function canExternalizeCss(css: string): boolean {
         if (index >= css.length) return false;
         address = css.slice(begin, index++).trim();
       }
-      if (!address || !(/^[a-z][a-z0-9+.-]*:/i.test(address) || address.startsWith('/'))) return false;
+      if (
+        !address ||
+        !(/^[a-z][a-z0-9+.-]*:/i.test(address) || address.startsWith('/'))
+      )
+        return false;
       continue;
     }
     index++;
@@ -75,36 +87,66 @@ export function makeStaticStyleAsset(cssText: string): StaticStyleAsset {
   return { filename: `tsone-static-${hash}.css`, cssText };
 }
 
-export async function externalizeDocumentStyles(html: string): Promise<{ html: string; assets: StaticStyleAsset[] }> {
+export async function externalizeDocumentStyles(
+  html: string
+): Promise<{ html: string; assets: StaticStyleAsset[] }> {
   const sheets: string[] = [];
   let active: number | undefined;
   let hasBase = false;
   const selector = 'head > style[data-tsone-document-style]';
-  await new HTMLRewriter().on('base', { element() { hasBase = true; } })
+  await new HTMLRewriter()
+    .on('base', {
+      element() {
+        hasBase = true;
+      },
+    })
     .on(selector, {
       element(element) {
         active = sheets.length;
         sheets.push('');
-        element.onEndTag(() => { active = undefined; });
+        element.onEndTag(() => {
+          active = undefined;
+        });
       },
-      text(chunk) { if (active !== undefined) sheets[active] += chunk.text; },
-    }).transform(new Response(html)).text();
+      text(chunk) {
+        if (active !== undefined) sheets[active] += chunk.text;
+      },
+    })
+    .transform(new Response(html))
+    .text();
   if (hasBase) return { html, assets: [] };
-  const replacements = sheets.map(css => css.trim() && canExternalizeCss(css) ? makeStaticStyleAsset(css) : undefined);
-  const assets = [...new Map(replacements.filter((asset): asset is StaticStyleAsset => asset !== undefined)
-    .map(asset => [asset.filename, asset])).values()];
+  const replacements = sheets.map((css) =>
+    css.trim() && canExternalizeCss(css) ? makeStaticStyleAsset(css) : undefined
+  );
+  const assets = [
+    ...new Map(
+      replacements
+        .filter((asset): asset is StaticStyleAsset => asset !== undefined)
+        .map((asset) => [asset.filename, asset])
+    ).values(),
+  ];
   if (assets.length === 0) return { html, assets };
   let index = 0;
-  const rewritten = await new HTMLRewriter().on(selector, {
-    element(element) {
-      const asset = replacements[index++];
-      if (asset) element.replace(`<link rel="stylesheet" href="./${asset.filename}">`, { html: true });
-    },
-  }).transform(new Response(html)).text();
+  const rewritten = await new HTMLRewriter()
+    .on(selector, {
+      element(element) {
+        const asset = replacements[index++];
+        if (asset)
+          element.replace(
+            `<link rel="stylesheet" href="./${asset.filename}">`,
+            { html: true }
+          );
+      },
+    })
+    .transform(new Response(html))
+    .text();
   return { html: rewritten, assets };
 }
 
-export async function writeStaticStyleAssets(htmlFile: string, assets: readonly StaticStyleAsset[]): Promise<string[]> {
+export async function writeStaticStyleAssets(
+  htmlFile: string,
+  assets: readonly StaticStyleAsset[]
+): Promise<string[]> {
   const directory = dirname(htmlFile);
   await mkdir(directory, { recursive: true });
   const paths = new Set<string>();
@@ -112,11 +154,15 @@ export async function writeStaticStyleAssets(htmlFile: string, assets: readonly 
     const path = resolve(directory, asset.filename);
     if (paths.has(path)) continue;
     let existing: string | undefined;
-    try { existing = await readFile(path, 'utf8'); } catch (error) {
+    try {
+      existing = await readFile(path, 'utf8');
+    } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
     }
-    if (existing !== undefined && existing !== asset.cssText) throw new Error(`Static CSS filename collision: ${path}`);
-    if (existing === undefined) await writeFile(path, asset.cssText, { flag: 'wx' });
+    if (existing !== undefined && existing !== asset.cssText)
+      throw new Error(`Static CSS filename collision: ${path}`);
+    if (existing === undefined)
+      await writeFile(path, asset.cssText, { flag: 'wx' });
     paths.add(path);
   }
   return [...paths];

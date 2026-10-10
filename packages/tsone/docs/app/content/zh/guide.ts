@@ -1601,6 +1601,9 @@ export const guidePages: DocPage[] = [
       heading(2, '核心概念'),
       heading(3, 'StyleManager'),
       paragraph('每个组件实例都有 styleManager，可用于添加、修改和删除样式。'),
+      paragraph(
+        'tsone build 自动将 document.styles 和固定 initStyles / 新建 StyleManager 的初始化规则输出为静态 CSS，无需改写字面量或局部、模块数组的 forEach。纯主题表达式可分析，props/state、未知调用或可见修改保留运行时路径。组件同步内联样式在匹配外链加载后切换；动态修改恢复原位置，卸载清理实例节点。styleElement 在外链激活时为 null，规则对象仍在 bundle 中，首次初始化仍序列化。相对或片段 URL、@import、不明确地址和 base 元素回退；dev、watch、library 保持原流程。模块发现增加构建步骤，不承诺更快 build。'
+      ),
       heading(3, '样式对象'),
       list([
         [inlineCode('selector'), ': CSS 选择器'],

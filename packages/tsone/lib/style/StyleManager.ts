@@ -60,48 +60,68 @@ export class StyleManager {
     this.invalidateStaticStyle();
     const inline = this.styleElement;
     if (
-      !inline || !inline.isConnected || !this.writtenCss ||
-      inline !== this.writtenElement || inline.textContent !== this.writtenCss ||
+      !inline ||
+      !inline.isConnected ||
+      !this.writtenCss ||
+      inline !== this.writtenElement ||
+      inline.textContent !== this.writtenCss ||
       inline.ownerDocument.querySelector('base') ||
       this.addStyle !== originalMethods.addStyle ||
       this.removeStyle !== originalMethods.removeStyle ||
       this.clearStyles !== originalMethods.clearStyles ||
       this.destroy !== originalMethods.destroy
-    ) return;
+    )
+      return;
     let absoluteHref: string;
     try {
-      absoluteHref = new URL(href,
-        inline.ownerDocument.baseURI || inline.ownerDocument.URL).href;
+      absoluteHref = new URL(
+        href,
+        inline.ownerDocument.baseURI || inline.ownerDocument.URL
+      ).href;
     } catch {
       return;
     }
     const generation = this.generation;
     const css = this.writtenCss;
-    const current = () => this.generation === generation &&
-      this.styleElement === inline && inline.isConnected && inline.textContent === css;
-    void fetchStaticStyleSheet(absoluteHref).then(fetched => {
-      if (fetched !== css || !current()) return;
-      const link = inline.ownerDocument.createElement('link');
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('media', 'not all');
-      this.pendingLink = link;
-      const discard = () => {
-        link.remove();
-        if (this.pendingLink === link) this.pendingLink = null;
-      };
-      link.addEventListener('error', discard, { once: true });
-      link.addEventListener('load', () => {
-        if (!current()) { discard(); return; }
-        link.removeAttribute('media');
-        inline.remove();
-        this.styleElement = null;
-        this.writtenElement = null;
-        this.staticLink = link;
-        this.pendingLink = null;
-      }, { once: true });
-      link.setAttribute('href', absoluteHref);
-      inline.parentNode!.insertBefore(link, inline);
-    }).catch(() => {});
+    const current = () =>
+      this.generation === generation &&
+      this.styleElement === inline &&
+      inline.isConnected &&
+      inline.textContent === css;
+    void fetchStaticStyleSheet(absoluteHref)
+      .then((fetched) => {
+        if (fetched !== css || !current()) return;
+        const link = inline.ownerDocument.createElement('link');
+        link.setAttribute('rel', 'stylesheet');
+        link.setAttribute('media', 'not all');
+        this.pendingLink = link;
+        const discard = () => {
+          link.remove();
+          if (this.pendingLink === link) this.pendingLink = null;
+        };
+        link.addEventListener('error', discard, { once: true });
+        link.addEventListener(
+          'load',
+          () => {
+            if (!current()) {
+              discard();
+              return;
+            }
+            link.removeAttribute('media');
+            inline.remove();
+            this.styleElement = null;
+            this.writtenElement = null;
+            this.staticLink = link;
+            this.pendingLink = null;
+          },
+          { once: true }
+        );
+        link.setAttribute('href', absoluteHref);
+        const parent = inline.parentNode;
+        if (parent) parent.insertBefore(link, inline);
+        else discard();
+      })
+      .catch(() => {});
   }
 
   private invalidateStaticStyle(): void {

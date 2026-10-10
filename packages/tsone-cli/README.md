@@ -227,6 +227,21 @@ starts.
 `tsone build` writes a Bun browser bundle and one HTML document per page to the
 safe output directory.
 
+Site builds automatically extract `document.styles` and provably fixed
+component `initStyles()` / fresh `StyleManager` registrations into
+`tsone-static-<sha256>.css` beside each HTML file. Keep existing literals,
+local/module arrays with `forEach`, and supported pure theme expressions;
+props/state, uncertain control flow, mutations or unknown calls stay dynamic.
+Component CSS is activated per instance after matching CSS loads, keeping
+synchronous inline styles until then. Edits restore inline CSS at its original
+position; unmount removes only that instance. Generated code uses
+`useStaticStyleSheet(href)` and an active external sheet makes `styleElement`
+null. Rules remain in the bundle for fallback, and first initialization still
+serializes CSS. Relative/fragment URLs, `@import`, ambiguous URLs or HTML base
+elements retain inline behavior. Discovery adds a build pass, with component
+extraction skipped when Bun lacks resolved-import metadata. No config change
+is required; `dev`, watch and `build --library` retain their existing paths.
+
 ## Development Proxy
 
 The development server serves HTTP only. Proxy targets may use HTTP or HTTPS.

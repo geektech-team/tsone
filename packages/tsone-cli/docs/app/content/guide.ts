@@ -59,16 +59,12 @@ export const app = createApp({
 
 app.mount();`
     ),
-    callout(
-      'note',
-      t('入口导出约定', 'Entry export contract'),
-      [
-        t(
-          '导出必须写作 export const app；默认导出或其他名称不会被 CLI 使用。entry 是根页面：开发时在 / 提供，构建时输出为 index.html。',
-          'The export must be written as export const app; a default export or another name is not used by the CLI. entry is the root page: it is served at / during development and built to index.html.'
-        ),
-      ]
-    ),
+    callout('note', t('入口导出约定', 'Entry export contract'), [
+      t(
+        '导出必须写作 export const app；默认导出或其他名称不会被 CLI 使用。entry 是根页面：开发时在 / 提供，构建时输出为 index.html。',
+        'The export must be written as export const app; a default export or another name is not used by the CLI. entry is the root page: it is served at / during development and built to index.html.'
+      ),
+    ]),
     heading(2, 'create', t('创建项目', 'Create a project')),
     paragraph(
       t(
@@ -83,7 +79,7 @@ app.mount();`
       inlineCode('tsone dev'),
       t('；构建生产产物：', '; build production output:'),
       inlineCode('tsone build'),
-      t('。详见命令参考。', '. See the commands reference.'),
+      t('。详见命令参考。', '. See the commands reference.')
     ),
   ],
 };
@@ -140,6 +136,12 @@ tsone build [--out-dir <path>]`
       )
     ),
     heading(2, 'multi-page', t('多页应用', 'Multi-page applications')),
+    paragraph(
+      t(
+        '站点 build 自动将 document.styles 和固定 initStyles / 新建 StyleManager 的初始化规则输出为 HTML 同目录的 tsone-static-<sha256>.css。字面量、局部/模块 forEach 数组和支持的纯主题表达式无需改写；props/state、可见修改或未知调用继续动态处理。组件先同步内联，匹配 CSS 外链加载成功后按实例激活；修改恢复原位置，卸载清理本实例。外链激活时 styleElement 为 null，规则仍留在 bundle 支持回退，首次初始化仍序列化。相对/片段 URL、@import、不明确 URL 和 base 元素回退。发现阶段增加一次构建；缺少可信 Bun 模块 metadata 时跳过组件提取。dev、watch 和 library 不启用本优化，无需新配置。',
+        'Site builds emit document.styles and fixed initStyles / fresh StyleManager initialization as tsone-static-<sha256>.css next to each HTML file. Existing literals, local/module forEach arrays and supported pure theme expressions need no changes; props/state, visible mutations or unknown calls remain dynamic. Components keep synchronous inline CSS until matching external CSS loads, activate per instance, restore the original position on edits and clean up on unmount. styleElement becomes null during external activation; rules remain in the bundle for fallback and first initialization still serializes CSS. Relative/fragment URLs, @import, ambiguous URLs and base elements fall back. Discovery adds a build pass; component extraction is skipped without trusted Bun module metadata. Dev, watch and library builds retain their existing paths; no new config is needed.'
+      )
+    ),
     paragraph(
       t(
         '用 pages 选项为每个路由配置独立的页面入口，每个入口必须满足与 entry 相同的 app 约定。路由键必须以 / 开头且可嵌套；结尾斜杠会被归一化（/about/ 与 /about 同样生效）。根路由 / 不能在 pages 中重新定义——请用 entry。每条路由独立打包与渲染。',

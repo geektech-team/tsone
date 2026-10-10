@@ -394,6 +394,7 @@ The main `@geektech/tsone` entry point exports:
 - `createApp(options).renderHtmlDocument(options)`
 - `renderHtmlDocument(options)`
 - `StyleSheet` / `renderStyleSheet(styles)`
+
 - `reactive()` / `readonly()`
 - `effect()` / `stop()`
 - `computed()`
@@ -402,6 +403,22 @@ The main `@geektech/tsone` entry point exports:
   `deep`, and `sync` options
 - `nextTick()` / `flushSync()`
 - `version`, currently `0.6.0`
+
+The `@geektech/tsone/style` entry exports `StyleManager` and
+`renderManagedStyleSheet(styles: Iterable<StyleOptions>)`.
+
+Site builds automatically emit content-hashed CSS for `document.styles` and
+fixed `initStyles()` / fresh `StyleManager` registrations. Existing literals,
+local or module arrays with `forEach`, and supported pure theme expressions
+need no changes. Uncertain rules stay dynamic. Components keep synchronous
+inline CSS until matching external CSS loads; edits restore inline styles at
+the original position and unmount removes only that instance's nodes.
+`useStaticStyleSheet(href)` is used by generated code; `styleElement` becomes
+`null` while external CSS is active. Rules remain in the JavaScript bundle for
+fallback, and first initialization still serializes CSS. Relative/fragment
+URLs, `@import`, ambiguous URLs and HTML base elements retain inline behavior.
+Development and library builds retain their existing paths. Module discovery
+adds a build pass; this optimization does not promise shorter build times.
 
 ## Rendering, Communication, and Forms
 

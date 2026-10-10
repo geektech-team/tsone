@@ -6,7 +6,8 @@ const managers: StyleManager[] = [];
 let sequence = 0;
 const url = () => `https://styles.test/${++sequence}.css`;
 const rule = (color = 'red'): StyleOptions => ({
-  selector: '.same', properties: { color },
+  selector: '.same',
+  properties: { color },
 });
 function manager(): StyleManager {
   const instance = new StyleManager();
@@ -15,7 +16,7 @@ function manager(): StyleManager {
   return instance;
 }
 async function flush(): Promise<void> {
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
 }
 function candidate(instance: StyleManager): Element {
   const element = instance.styleElement!.previousSibling!;
@@ -55,7 +56,10 @@ test('compares the written snapshot rather than mutable rule objects', async () 
   const instance = manager();
   const written = instance.styleElement!.textContent!;
   let finish!: (response: Response) => void;
-  globalThis.fetch = () => new Promise(resolve => { finish = resolve; });
+  globalThis.fetch = () =>
+    new Promise((resolve) => {
+      finish = resolve;
+    });
   instance.useStaticStyleSheet(url());
   await flush();
   instance.styles.get('same')!.properties.color = 'green';
@@ -68,17 +72,21 @@ test('compares the written snapshot rather than mutable rule objects', async () 
 });
 
 test.each(['different', 'reject', 'status', 'link-error'])(
-  'keeps inline CSS on %s resource failure', async failure => {
+  'keeps inline CSS on %s resource failure',
+  async (failure) => {
     const instance = manager();
     const inline = instance.styleElement!;
     globalThis.fetch = async () => {
       if (failure === 'reject') throw new Error('offline');
-      return new Response(failure === 'different' ? '.different{}' : inline.textContent,
-        { status: failure === 'status' ? 404 : 200 });
+      return new Response(
+        failure === 'different' ? '.different{}' : inline.textContent,
+        { status: failure === 'status' ? 404 : 200 }
+      );
     };
     instance.useStaticStyleSheet(url());
     await flush();
-    if (failure === 'link-error') candidate(instance).dispatchEvent(new Event('error'));
+    if (failure === 'link-error')
+      candidate(instance).dispatchEvent(new Event('error'));
     expect(instance.styleElement).toBe(inline);
     expect(inline.textContent).toContain('color: red');
     expect(inline.isConnected).toBe(true);
@@ -86,11 +94,15 @@ test.each(['different', 'reject', 'status', 'link-error'])(
 );
 
 test.each(['add', 'remove', 'clear', 'destroy'])(
-  'invalidates late fetch after %s', async operation => {
+  'invalidates late fetch after %s',
+  async (operation) => {
     const instance = manager();
     const css = instance.styleElement!.textContent!;
     let finish!: (response: Response) => void;
-    globalThis.fetch = () => new Promise(resolve => { finish = resolve; });
+    globalThis.fetch = () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      });
     instance.useStaticStyleSheet(url());
     await flush();
     if (operation === 'add') instance.addStyle('same', rule('blue'));
@@ -112,7 +124,10 @@ test('instances share fetch but keep separate nodes, load order and lifecycle', 
   const second = manager();
   const css = first.styleElement!.textContent!;
   let requests = 0;
-  globalThis.fetch = async () => { requests++; return new Response(css); };
+  globalThis.fetch = async () => {
+    requests++;
+    return new Response(css);
+  };
   const href = url();
   first.useStaticStyleSheet(href);
   second.useStaticStyleSheet(href);
@@ -151,7 +166,9 @@ test('repeated requests and direct node edits cannot activate stale candidates',
 
 test('base elements and overridden manager methods preserve inline behavior', async () => {
   const instance = manager();
-  globalThis.fetch = async () => { throw new Error('must not fetch'); };
+  globalThis.fetch = async () => {
+    throw new Error('must not fetch');
+  };
   const base = document.createElement('base');
   document.head.append(base);
   instance.useStaticStyleSheet(url());
@@ -174,7 +191,10 @@ test('base elements and overridden manager methods preserve inline behavior', as
 test('destroy preserves the existing clearStyles override hook', () => {
   let cleared = 0;
   class CustomManager extends StyleManager {
-    public override clearStyles(): void { cleared++; super.clearStyles(); }
+    public override clearStyles(): void {
+      cleared++;
+      super.clearStyles();
+    }
   }
   const custom = new CustomManager();
   custom.addStyle('same', rule());

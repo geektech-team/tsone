@@ -362,6 +362,7 @@ const html = app.renderHtmlDocument({
 - `createApp(options).renderHtmlDocument(options)`
 - `renderHtmlDocument(options)`
 - `StyleSheet` / `renderStyleSheet(styles)`
+
 - `reactive()` / `readonly()`
 - `effect()` / `stop()`
 - `computed()`
@@ -370,6 +371,19 @@ const html = app.renderHtmlDocument({
   `sync` 选项
 - `nextTick()` / `flushSync()`
 - `version`，当前为 `0.6.0`
+
+`@geektech/tsone/style` 子入口导出 `StyleManager` 和
+`renderManagedStyleSheet(styles: Iterable<StyleOptions>)`。
+
+站点 build 自动将 `document.styles`、固定的 `initStyles()` 和新建
+`StyleManager` 初始化规则输出为内容哈希 CSS。直接字面量、局部或模块数组的
+`forEach` 和支持的纯主题表达式保持现有写法；无法确认的规则继续动态处理。
+组件先同步生成内联 CSS，匹配外链加载成功后在原位置切换；修改恢复原位置的
+内联样式，卸载仅删除当前实例节点。`useStaticStyleSheet(href)` 供生成代码
+使用，外链激活时 `styleElement` 为 `null`。规则对象仍保留在 JavaScript 中
+支持回退，首次初始化仍序列化样式。相对/片段 URL、`@import`、不明确地址和
+HTML base 元素保留内联路径。dev 和 library 构建保持原流程；模块发现增加
+一次构建，不承诺缩短 build 时间。
 
 ## 渲染、通信与表单
 
