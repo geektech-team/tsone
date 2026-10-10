@@ -198,3 +198,61 @@ test('generated code preserves runtime forEach/getter observations and old-manag
     expect(new old.Widget().styleManager.styles.size).toBe(2);
   });
 });
+
+test.each(
+  ['StyleManager', 'Component'].flatMap((kind) =>
+    [
+      'direct',
+      'array',
+      'object',
+      'loop',
+      ...(kind === 'Component' ? ['class'] : []),
+    ].map((assignment) => [kind, assignment])
+  )
+)(
+  'reassigned %s constructor aliases preserve foreign-class behavior (%s)',
+  async (kind, assignment) => {
+    const foreign = `
+      export const events=[];
+      class ForeignManager {
+        addStyle(name){events.push(name)}
+        useStaticStyleSheet(){throw new Error('foreign activation was called')}
+      }
+      class ForeignComponent {
+        constructor(){this.styleManager=new ForeignManager();this.initStyles()}
+      }`;
+    const replacement =
+      kind === 'StyleManager' ? 'ForeignManager' : 'ForeignComponent';
+    const reassign =
+      assignment === 'array'
+        ? `[Factory]=[${replacement}];`
+        : assignment === 'object'
+          ? `({replacement:Factory}={replacement:${replacement}});`
+          : assignment === 'loop'
+            ? `for (Factory of [${replacement}]) {}`
+            : `Factory=${replacement};`;
+    const setup =
+      kind === 'StyleManager'
+        ? `let Factory=StyleManager; ${reassign}
+           const manager=new Factory();
+           manager.addStyle('a',{selector:'.a',properties:{color:'red'}});`
+        : `${assignment === 'class' ? 'class Factory extends Component {}' : 'let Factory=Component;'} ${reassign}
+           class Widget extends Factory {
+             initStyles(){this.styleManager.addStyle('a',{selector:'.a',properties:{color:'red'}})}
+           }
+           new Widget();`;
+    const source = `${imports}${foreign}${setup}`;
+    await withStyleGraph(source, async (graph, entry) => {
+      const groups = analyzeFixedStyles(graph);
+      await Bun.write(
+        entry,
+        transformStaticStyles(source, groups, () => './unused.css')
+      );
+      const result = (await import(pathToFileURL(entry).href)) as {
+        events: string[];
+      };
+      expect(result.events).toEqual(['a']);
+      expect(groups).toHaveLength(0);
+    });
+  }
+);

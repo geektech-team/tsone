@@ -133,6 +133,7 @@ export class RuntimeModuleGraph {
   private checker: ts.TypeChecker;
   private framework = new Map<string, Set<ts.Declaration>>();
   private mutation = new Map<ts.Declaration, boolean>();
+  private bindingMutation = new Map<ts.Declaration, boolean>();
 
   constructor(discovery: Discovery) {
     const files = new Map<string, ts.SourceFile>();
@@ -233,6 +234,12 @@ export class RuntimeModuleGraph {
     const check = (node: ts.Expression): boolean => {
       const declaration = this.resolveDeclaration(node);
       if (!declaration || seen.has(declaration)) return false;
+      if (
+        (ts.isVariableDeclaration(declaration) ||
+          ts.isClassDeclaration(declaration)) &&
+        this.hasObservableMutation(declaration, true)
+      )
+        return false;
       if (this.framework.get(name)?.has(declaration)) return true;
       seen.add(declaration);
       if (ts.isVariableDeclaration(declaration) && declaration.initializer) {
@@ -252,8 +259,12 @@ export class RuntimeModuleGraph {
     };
     return check(expression);
   }
-  public hasObservableMutation(declaration: ts.Declaration): boolean {
-    const cached = this.mutation.get(declaration);
+  public hasObservableMutation(
+    declaration: ts.Declaration,
+    bindingOnly = false
+  ): boolean {
+    const cache = bindingOnly ? this.bindingMutation : this.mutation;
+    const cached = cache.get(declaration);
     if (cached !== undefined) return cached;
     let mutated = false;
     const root = (node: ts.Node): ts.Node =>
@@ -261,13 +272,33 @@ export class RuntimeModuleGraph {
         ? root(node.expression)
         : node;
     const refers = (node: ts.Node) =>
-      this.resolveDeclaration(root(node)) === declaration;
+      this.resolveDeclaration(bindingOnly ? node : root(node)) === declaration;
+    const assigned = (node: ts.Node): boolean => {
+      if (refers(node)) return true;
+      if (
+        ts.isArrayLiteralExpression(node) ||
+        ts.isObjectLiteralExpression(node) ||
+        ts.isSpreadElement(node) ||
+        ts.isSpreadAssignment(node) ||
+        ts.isPropertyAssignment(node) ||
+        ts.isShorthandPropertyAssignment(node) ||
+        ts.isParenthesizedExpression(node) ||
+        ts.isBinaryExpression(node)
+      )
+        return ts.forEachChild(node, assigned) === true;
+      return false;
+    };
     const visit = (node: ts.Node): void => {
       if (
         ts.isBinaryExpression(node) &&
         node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
         node.operatorToken.kind <= ts.SyntaxKind.LastAssignment &&
-        refers(node.left)
+        assigned(node.left)
+      )
+        mutated = true;
+      if (
+        (ts.isForOfStatement(node) || ts.isForInStatement(node)) &&
+        assigned(node.initializer)
       )
         mutated = true;
       if (
@@ -279,7 +310,7 @@ export class RuntimeModuleGraph {
         refers(node.operand)
       )
         mutated = true;
-      if (ts.isCallExpression(node)) {
+      if (ts.isCallExpression(node) && !bindingOnly) {
         if (
           ts.isPropertyAccessExpression(node.expression) &&
           refers(node.expression.expression) &&
@@ -305,7 +336,7 @@ export class RuntimeModuleGraph {
       ts.forEachChild(node, visit);
     };
     for (const file of this.getSourceFiles()) visit(file);
-    this.mutation.set(declaration, mutated);
+    cache.set(declaration, mutated);
     return mutated;
   }
 }
